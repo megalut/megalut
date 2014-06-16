@@ -1,0 +1,88 @@
+\documentclass[a4paper,11pt]{scrartcl}
+\usepackage[utf8]{inputenc}
+\usepackage[breaklinks=true]{hyperref}
+\usepackage[table]{xcolor}
+\newcommand{\mail}[1]{{\href{mailto:#1}{#1}}}
+\newcommand{\todo}[1]{\textbf{{\color{red}#1}}}
+\usepackage{natbib}
+\usepackage{units}
+\bibpunct{(}{)}{;}{a}{}{,}
+
+\title{MegaLUT for GREAT3}
+\author{Malte Tewes \\\mail{mtewes@astro.uni-bonn.de}\and Thibault Kuntzer\\\mail{thibault.kuntzer@epfl.ch}}
+
+\begin{document}
+\maketitle
+
+%a) A description of the basic principles used by the method
+%b) A description of how output shear estimators were weighted to make GREAT3 submissions (if at all)
+%c) Where multiple submissions have been made using the same method, a description of what differs between these submissions.
+
+\section{Introduction}
+
+MegaLUT relies on supervised machine learning to estimate galaxy shape parameters using measurements performed on the PSF-convolved and noisy image of the galaxies. The method can be seen as a detailed empirical calibration of a priori inaccurate shape measurement algorithms, such as raw moments of the observed light distribution of a galaxy. A distinctive feature of MegaLUT is to completely leave it to the machine learning to ``deconvolve'' and ``correct'' crude shape measurements by the PSF and for the noise bias, instead of calibrating only for residual biases of a priori more accurate techniques. In this way, the input to the machine learning remains close to the recorded information of each galaxy, avoiding potential information loss resulting from deconvolutions. A further advantage of this approach is the very low computational cost, as the rather simple shape measurements remain fast.
+
+\section{MegaLUT implementation for GREAT3}
+
+To build the learning samples on which MegaLUT is trained for GREAT3, we have exclusively used simple S\'ersic profiles to represent the galaxies before PSF-convolution. We can therefore train the machine learning to directly predict the S\'ersic profile parameters, in particular the well-defined ellipticity of the profile isophotes. For the branches with constant known PSFs, we perform this training separately for each PSF. The measurements on the galaxies are based on SExtractor \citep{sextractor}, the adaptive moments implemented in GalSim \citep{galsim, Hirata:2003ji}, and, for some submissions, on moments of the discrete autocorrelation function \citep[ACF, ][]{Waerbeke97}. The most fundamental evolution of MegaLUT with respect to its implementation for GREAT10 \citep[described in][]{Tewes:2012gy} is the machine learning itself. MegaLUT now uses feed-forward artificial neural networks (ANNs), which are trained interchangeably via the SkyNet \citep{skynet} or FANN \citep{nissen03} software implementations.
+
+There are no qualitative differences between our MegaLUT implementations for control and real galaxy branches, as well as for ground- and space-based PSFs. For the multiepoch branches, we performed a coadd of the images with the stacking algorithm provided by the GREAT3 EC. For the pre-deadline submissions, we had not simulated this coadding in our learning sample, and MegaLUT could therefore not learn about potential related biases. This will be the subject of further work. Regarding the variable PSF branches, we have developed an approach which incorporates the PSF interpolation into the machine learning. In essence, the position of a galaxy on the detector is included as input to the ANN, which is trained using PSFs at various locations across the detector. Prior to the deadline, we did not reach a mature enough stage in the treatment of variable PSF branches to obtain a significant proof of concept of this novel approach.
+
+\section{Overview of differences between submissions}
+
+Multiple submissions of MegaLUT to the same branches differ in details of the learning sample generation,
+the shape measurement, the selection of input parameters of the ANN, the architecture of the ANN, and finally the rejection of faint or unresolved galaxies. We stress that the distribution of shape parameters of the learning sample does not have to closely mimic the ``observations'', as it does not act as prior. For those parameters which do affect the shape measurement output, the distributions used to generate the learning sample merely define the location in parameter space over which the machine learning can perform an accurate regression. For example, our best results were obtained by uniformly distributing the ellipticity of training galaxies in the $(g_1, g_2)$ plane. We also note that using a learning sample with higher signal-to-noise than the observations increases the quality of the regression. We observed that these effects can be studied directly on the MegaLUT training simulations, without relying on trial-and-error submissions. Our submissions do not exploit the ``deep'' datasets. We did not weight the output shear estimators, aside of rejections following simple criteria.
+
+The following lists provide a glossary of keywords that we used to differentiate our submission names.
+
+\subsection{Common keywords}
+
+\begin{description}
+
+\item[v4] Submissions resulting from our MegaLUT pipeline v4 have in common that, \emph{if not stated otherwise}, they make use of:
+\begin{itemize}
+\item GalSim adaptive moment measurements
+\item separate ANNs to predict the flux, size, S\'ersic index, and ellipticity $(g_1, g_2)$ of the galaxies
+\item network architectures containing two hidden layers of 20 neurons each
+\item an ANN predicting $(g_1, g_2)$ that uses ellipticity, flux, and several radii and concentration measurements as ``features'', that is input
+\item ANN training with the FANN library, using the RPROP algorithm
+\end{itemize}
+Submissions prior to v4 may suffer from insufficient ANN training and bugs.
+
+\item[hn, qn, ln, tn, asp] These keywords refer to the noise level used when generating the training samples. By default, we mimic the noise level that we measure on the ``observations''. The keyword {\bfseries hn} means that half of this noise level was used (so twice the $S/N$, for each galaxy), {\bf qn} uses \nicefrac{1}{4} of the noise level, and {\bf ln $\approx$ tn $\approx$ asp} use \nicefrac{1}{10} of the noise, or even less.
+
+\item [gcircp$N$] The distribution of true galaxy ellipticities used in the learning samples is uniform on a disk in the $(g_1, g_2)$ plane, with a maximum value of 0.$N$. This is the case for most v4 submissions.
+
+\item [gmp$N$] The $g$ values predicted by the ANN are ``clipped'' to have a maximum module of 0.$N$, without changing the orientation of the ellipticity.
+
+\item [flag*] The flags attempt to reject galaxies with unreliable predictions, based on the prediction quality observed on the learning sample. The cuts are defined in a parameter space composed of $S/N$, size ratio between observed galaxy and PSF, and predicted galaxy size.
+
+\end{description}
+
+\subsection{More specialized keywords}
+\begin{description}
+
+\item [A] The ACF is used to measure the shape.
+\item [cascade] Training each neuron of the ANN separately, one after the other.
+\item [comite, committee] Several ANNs are trained, and their outputs are averaged.
+\item [lowcx] The ANN architecture is modified (lower complexity, higher complexity, or SkyNet instead of FANN training).
+\item [mp] The pipeline has measured the PSF shape. This does not affect the algorithm.  
+\item [peeled] For constant shear branches, uses variants of convex hull peeling to find the ``average'' shear.
+\item [pos\_t] For variable PSF branches, trains MegaLUT using all galaxies in the image, but specifying their position in the tile. Two features are added with respect to the control branches: the position within the tile.
+\item [prior] Negative values in the aperture mass variance are set to 0.0 in the submissions.
+\item [trcl] MegaLUT trains on a subset of the regular training sample, omitting small and faint galaxies. The ANN will have to extrapolate when predicting the shape of those small and faint galaxies.
+\item [trig] The shear module distribution in the simulations is triangularly distributed.
+\item [rmKR$x$] Rejects galaxies with measured Kron Radius lower than $x$ (very similar to a {\bf flag}).
+\item [to] For variable PSF branches, trains MegaLUT using all galaxies in the image, but specifying in which tile they are located. Two features are added with respect to the control branches: the indexes of the tile.
+\item [tpt] For variable PSF branches, trains MegaLUT tile per tile.
+
+\end{description}
+
+\bibliography{megalut_description}
+\bibliographystyle{abbrvnat}
+
+
+\end{document}
+
+
+
