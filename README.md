@@ -1,4 +1,9 @@
-MegaLUT
-=======
+MegaLUT v5
+==========
 
-Test edit commited with Versions.app, to discover how the github wiki is seen via my SVN client.
+Directory structure
+-------------------
+
+- **related**: slides, images, special documentation...
+- **v4**: a copy of MegaLUT v4 as used for GREAT3.
+
