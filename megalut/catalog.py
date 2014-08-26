@@ -7,28 +7,32 @@ import copy as pythoncopy
 
 class Galaxy:
 	"""
-	Represents a galaxy and all its information. It's mainly a dict.
+	Represents a galaxy and all its information.
 	"""
 
-	def __init__(self, id="0", ra=0.0, dec=0.0):
+	def __init__(self, id="0"):
 		"""
 		Minimal constructor.
 		The pythonic way is to avoid type checking. But in principle, we expect id to be a string...
-		The minimal fields given here should always exist.
+		The minimal fields given here should always exist.	
 		"""
-		self.fields = {"id"=id, "ra":ra, "dec":dec}
+		self.id = id
+		"""A unique identification for this galaxy (typically a string)"""
+		
+		self.fields = {}
+		"""A dict to hold all the data"""
 	
 	
 	def __str__(self):
 		"""
-		Uses only the minimal fields ?
+		A oneliner, using only the minimal fields
 		"""
-		return "Galaxy %i (ra = %.6f, dec = %.6f) with %i fields" % (self.fields["id"], self.fields["ra"], self.fields["dec"], len(self.fields)) 
+		return "Galaxy %i with %i fields" % (str(self.id), len(self.fields)) 
 		
 		
 	def copy(self):
 		"""
-		Returns a copy of myself.
+		Returns a copy of myself
 		"""
 		return pythoncopy.deepcopy(self)
 													
@@ -36,7 +40,9 @@ class Galaxy:
 	def getarray(self, keys):
 		"""
 		Returns numerical field values in form a numpy array. Useful for instance to feed machine learning, both for features or labels.
+		
 		:param keys: a list of key names, or just a single key
+		
 		"""
 		# We could check that everything is float / int / numeric here ? I guess better not.
 		
@@ -47,12 +53,17 @@ class Galaxy:
 			raise err
 			
 		
-	def setarray(self, array, keylist, overwritewarning=True):
+	def setarray(self, array, keys, overwritewarning=True):
 		"""
-		The inverse of getarray. Useful for instance to write some predicted data into the catalog. 
+		The inverse of getarray. Useful for instance to write some predicted data into the catalog.
+		
+		:param array: array or list containing the data
+		:param keys: list of keys that should be used to store this data
+		:param overwritewarning: If set to False, I do not complain if you ask me to overwrite existing fields.
+		
 		"""
-		assert len(array) == len(keylist)
-		for val, key in zip(array, keylist):
+		assert len(array) == len(keys)
+		for val, key in zip(array, keys):
 			if overwritewarning:
 				if key in self.fields:
 					# We need a logging system here !
