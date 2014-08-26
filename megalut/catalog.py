@@ -27,7 +27,7 @@ class Galaxy:
 		"""
 		A oneliner, using only the minimal fields
 		"""
-		return "Galaxy %i with %i fields" % (str(self.id), len(self.fields)) 
+		return "Galaxy %s with %i fields" % (str(self.id), len(self.fields)) 
 		
 		
 	def copy(self):
@@ -41,7 +41,7 @@ class Galaxy:
 		"""
 		Returns numerical field values in form a numpy array. Useful for instance to feed machine learning, both for features or labels.
 		
-		:param keys: a list of key names, or just a single key
+		:param keys: a list of field names
 		
 		"""
 		# We could check that everything is float / int / numeric here ? I guess better not.
