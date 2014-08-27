@@ -25,7 +25,7 @@ class Branch:
 		"""Root directory of the unzipped GREAT3 data"""
 		
 		#self.workdir = workdir
-	
+		
 	
 	def branchtuple(self):
 		"""
@@ -33,7 +33,11 @@ class Branch:
 		"""
 		return(self.experiment, self.obstype, self.sheartype)
 	
+
+	def __str__(self):
+		return "(%s, %s, %s)" % self.branchtuple()
 	
+
 	def gets(self):
 		"""
 		The stamp size "s" of this branch, in pixels
@@ -54,16 +58,16 @@ class Branch:
 	# For now we online define here the "input" stuff, set by GREAT3.
 	# The MegaLUT output could be rethought, and is commented out.
 
-	def obsgalimgfilepath(self, subfield, epoch=0):
+	def galimgfilepath(self, subfield, epoch=0):
 		return os.path.join(self.branchdir(), "image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
 
-	def obspsfimgfilepath(self, subfield, epoch=0):
+	def psfimgfilepath(self, subfield, epoch=0):
 		return os.path.join(self.branchdir(), "starfield_image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
 
-	def obsgalcatfilepath(self, subfield):
+	def galcatfilepath(self, subfield):
 		return os.path.join(self.branchdir(), "galaxy_catalog-%03i.txt" % (subfield)) # This is set by GREAT3
 		
-	def obsstarcatpath(self, subfield):
+	def starcatpath(self, subfield):
 		return os.path.join(self.branchdir(), 'star_catalog-%03i.txt' % subfield) # This is set by GREAT3
 
 

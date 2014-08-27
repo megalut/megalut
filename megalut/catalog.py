@@ -83,6 +83,46 @@ class Galaxy:
 
 
 
+class Catalog:
+	"""
+	A class containing a dict of galaxies, using the ids as keys, and a dict of metadata.
+	The constructor takes a list of galaxies as input, and optionally a dict containing meta information about those galaxies.
+	
+	I though that for convenience, this guy should be iterable: for galaxy in catalog
+	Let's test this. It might be too dangerous, confusions between list and dict, random ordering etc.
+	
+	"""
+
+	def __init__(self, galaxies, meta=None):
+		
+		# We check that the ids are unique:
+		assert len(galaxies) == len(set([gal.id for gal in galaxies])), "Your galaxies have non-unique ids !"
+		
+		self.galaxies = {gal.id: gal for gal in galaxies}
+		self.meta = meta
+		
+	def __len__(self):
+		return len(self.galaxies)
+		
+	def __str__(self):
+		return "Catalog with %i galaxies and %i metadata" % (len(self), len(self.meta))
+
+	def write(filepath):
+		"""
+		Writes the catalog to a pickle
+		"""
+		pass
+
+
+	# Kind of works but is too confusing. Let's keep it simple
+	#def __getitem__(self, galid):
+	#	return self.galaxies[galid]
+	#
+	#def __iter__(self):
+	#	for item in self.galaxies.values():
+	#		yield item
+	
+
 
 
 
