@@ -48,5 +48,5 @@ def readgalcat(branch, subfield):
 	
 	galaxies = readgalcataslist(filepath)
 	
-	return catalog.Catalog(galaxies, meta={"branch":branch, "filepath":filepathsssssssssssssssssssssss})
+	return catalog.Catalog(galaxies, meta={"branch":branch, "filepath":filepaths})
 	
