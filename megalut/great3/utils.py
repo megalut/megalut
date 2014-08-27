@@ -2,13 +2,16 @@
 General utility stuff for GREAT3
 """
 
+import os
+
+
 class Branch:
 	"""
 	A class to define the file paths of the GREAT3 data and other branch-specific stuff.
 	For now I commented-out all the MegaLUT output things. They are a priori not related to GREAT3.
 	"""
 
-	def __init__(self, experiment, obs_type, shear_type, datadir=None, workdir=None):
+	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None):
 	
 		assert experiment in ['control', 'real_galaxy', 'variable_psf', 'multiepoch', 'full']
 		assert obstype in ['ground', 'space']
@@ -28,7 +31,7 @@ class Branch:
 		"""
 		The branch codes in form of a tuple
 		"""
-		return(self.experiement, self.obstype, self.sheartype)
+		return(self.experiment, self.obstype, self.sheartype)
 	
 	
 	def gets(self):
@@ -57,7 +60,7 @@ class Branch:
 	def obspsfimgfilepath(self, subfield, epoch=0):
 		return os.path.join(self.branchdir(), "starfield_image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
 
-	def obscatfilepath(self, subfield):
+	def obsgalcatfilepath(self, subfield):
 		return os.path.join(self.branchdir(), "galaxy_catalog-%03i.txt" % (subfield)) # This is set by GREAT3
 		
 	def obsstarcatpath(self, subfield):
