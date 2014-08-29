@@ -13,17 +13,10 @@ subfield = 0
 
 inputcat = megalut.great3.io.readgalcat(branch, subfield)
 
-meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat)
+meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat, stampsize=branch.stampsize())
 
 meascat.write("meascat.pkl")
 
 for gal in meascat.data.values()[:5]:
 	print gal.fields
-
-#print cat
-#print cat.meta["branch"] # The actual branch object is saved
-
-
-#for gal in cat.data.itervalues():
-#	print gal
 

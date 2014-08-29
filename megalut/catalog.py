@@ -26,9 +26,10 @@ class Galaxy:
 	
 	def __str__(self):
 		"""
-		A oneliner, using only the minimal fields
+		A oneliner
 		"""
-		return "Galaxy %s with %i fields" % (str(self.id), len(self.fields)) 
+		#return "Galaxy %s with %i fields" % (str(self.id), len(self.fields)) 
+		return "Galaxy %s" % (str(self.id)) 
 		
 		
 	def copy(self):

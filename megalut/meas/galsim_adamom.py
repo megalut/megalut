@@ -14,25 +14,26 @@ from .. import catalog as megalutcatalog
 #starfield_im.setOrigin(0,0)
 
 
-def measure(imgfilepath, catalog, stamp_size=100):
+def measure(imgfilepath, catalog, stampsize=100):
 	"""
 	I use the positions "x" and "y" of the input catalog to extract postage stamps from the image and measure their shapes.
 	
 	:param imgfilepath: FITS image
 	:param catalog: Catalog of objects that I should measure
-	:param stamp_size: width and height of stamps
+	:param stampsize: width and height of stamps
 	
 	"""
 	
+	starttime = datetime.now()
+	logger.info("Measuring shapes on %s..." % (os.path.basename(imgfilepath)))
+	
 	# We read in the imgfile
 	bigimg = galsim.fits.read(imgfilepath)
+	bigimg.setOrigin(0,0)
+	logger.warning("The origin and stamp size conventions of this code should be tested !")
 	
 	bigimgnp = utils.fromfits(imgfilepath)
 	shape = bigimgnp.shape
-	
-	starttime = datetime.now()
-	
-	logger.info("Measuring shapes on %s..." % (os.path.basename(imgfilepath)))
 	
 	failed = 0
 	n = len(catalog)
@@ -48,13 +49,13 @@ def measure(imgfilepath, catalog, stamp_size=100):
 		#sys.stdout.flush()
 	
 		# We cut out the postage stamp
-		xmin = int(np.clip(int(np.floor(x)) - stamp_size/2 + 1, 1, shape[0]-1))
-		xmax = int(np.clip(int(np.floor(x)) + stamp_size/2 + 1, 1, shape[0]-1))
-		ymin = int(np.clip(int(np.floor(y)) - stamp_size/2 + 1, 1, shape[1]-1))
-		ymax = int(np.clip(int(np.floor(y)) + stamp_size/2 + 1, 1, shape[1]-1))
+		xmin = int(np.clip(int(np.floor(x)) - stampsize/2 + 1, 1, shape[0]-1))
+		xmax = int(np.clip(int(np.floor(x)) + stampsize/2 + 1, 1, shape[0]-1))
+		ymin = int(np.clip(int(np.floor(y)) - stampsize/2 + 1, 1, shape[1]-1))
+		ymax = int(np.clip(int(np.floor(y)) + stampsize/2 + 1, 1, shape[1]-1))
 		
 		bounds = galsim.BoundsI(xmin, xmax, ymin, ymax)
-		gps = bigimg[bounds]
+		gps = bigimg[bounds] # galaxy postage stamp
 		
 		# We measure the moments...
 		
@@ -70,7 +71,7 @@ def measure(imgfilepath, catalog, stamp_size=100):
 			gal.fields["mes_gs_rho4"] = res.moments_rho4
 
 		except:		
-			logger.debug("Failed on Galaxy %s" % (str(gal)))
+			logger.debug("Failed on %s" % (str(gal)))
 			failed += 1
 			
 
