@@ -2,12 +2,13 @@
 I/O functions directly related to the GREAT3 files
 """
 
-
+import logging
 import numpy as np
 import os
 
 from .. import catalog
 
+logger = logging.getLogger(__name__)
 
 def readgalcataslist(filepath):
 	"""
@@ -34,6 +35,7 @@ def readgalcataslist(filepath):
 		return gal
 	
 	galaxies = [makegal(line) for line in data]
+	logger.info("Read %i galaxies from %s" % (len(galaxies), filepath))
 	return galaxies
 
 
@@ -48,5 +50,5 @@ def readgalcat(branch, subfield):
 	
 	galaxies = readgalcataslist(filepath)
 	
-	return catalog.Catalog(galaxies, meta={"branch":branch, "filepath":filepaths})
+	return catalog.Catalog(galaxies, meta={"branch":branch, "filepath":filepath})
 	

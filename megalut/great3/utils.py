@@ -38,7 +38,7 @@ class Branch:
 		return "(%s, %s, %s)" % self.branchtuple()
 	
 
-	def gets(self):
+	def stampsize(self):
 		"""
 		The stamp size "s" of this branch, in pixels
 		"""

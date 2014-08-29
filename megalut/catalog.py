@@ -37,7 +37,7 @@ class Galaxy:
 		return pythoncopy.deepcopy(self)
 													
 				
-	def getarray(self, keys):
+	def get_array(self, keys):
 		"""
 		Returns numerical field values in form a numpy array. Useful for instance to feed machine learning, both for features or labels.
 		
@@ -53,7 +53,7 @@ class Galaxy:
 			raise err
 			
 		
-	def setarray(self, array, keys, overwritewarning=True):
+	def set_array(self, array, keys, overwritewarning=True):
 		"""
 		The inverse of getarray. Useful for instance to write some predicted data into the catalog.
 		
