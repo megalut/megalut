@@ -10,7 +10,7 @@ class Galaxy:
 	Represents a galaxy and all its information.
 	"""
 
-	def __init__(self, id="0"):
+	def __init__(self, id="Andromeda"):
 		"""
 		Minimal constructor.
 		The pythonic way is to avoid type checking. But in principle, we expect id to be a string...
