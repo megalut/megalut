@@ -4,10 +4,12 @@ General purpose unspecific helper functions
 
 import os
 import cPickle as pickle
+import logging
+
+logger = logging.getLogger(__name__)
 
 	
-	
-def writepickle(obj, filepath, verbose=False, protocol = -1):
+def writepickle(obj, filepath, protocol = -1):
 	"""
 	I write your python object obj into a pickle file at filepath.
 	If filepath ends with .gz, I'll use gzip to compress the pickle.
@@ -20,9 +22,10 @@ def writepickle(obj, filepath, verbose=False, protocol = -1):
 	
 	pickle.dump(obj, pkl_file, protocol)
 	pkl_file.close()
-	if verbose: print "Wrote %s" % filepath	
+	logger.info("Wrote %s" % filepath)
 	
-def readpickle(filepath, verbose=False):
+	
+def readpickle(filepath):
 	"""
 	I read a pickle file and return whatever object it contains.
 	If the filepath ends with .gz, I'll unzip the pickle file.
@@ -33,5 +36,5 @@ def readpickle(filepath, verbose=False):
 		pkl_file = open(filepath, 'rb')
 	obj = pickle.load(pkl_file)
 	pkl_file.close()
-	if verbose: print "Read %s" % filepath
+	logger.info("Read %s" % filepath)
 	return obj

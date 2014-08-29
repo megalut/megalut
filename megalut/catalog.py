@@ -42,7 +42,7 @@ class Galaxy:
 		Returns numerical field values in form a numpy array. Useful for instance to feed machine learning, both for features or labels.
 		
 		:param keys: a list of field names
-		
+		:returns: a numpy array
 		"""
 		# We could check that everything is float / int / numeric here ? I guess better not.
 		
@@ -88,8 +88,15 @@ class Catalog:
 	A class containing a dict of galaxies, using the ids as keys, and a dict of metadata.
 	The constructor takes a list of galaxies as input, and optionally a dict containing meta information about those galaxies.
 	
-	I though that for convenience, this guy should be iterable: for galaxy in catalog
-	Let's test this. It might be too dangerous, confusions between list and dict, random ordering etc.
+	How to loop over galaxies in a Catalog:
+
+	>>> for galaxy in catalog.data.itervalues():
+	>>> 	print galaxy
+	
+	
+	Inheriting directly form dict is apparently a bad idea.
+	I first though that for convenience, this guy should be iterable: for galaxy in catalog
+	Code for this is commented. It seems too dangerous, confusions between list and dict, random ordering etc.
 	
 	"""
 
@@ -98,11 +105,11 @@ class Catalog:
 		# We check that the ids are unique:
 		assert len(galaxies) == len(set([gal.id for gal in galaxies])), "Your galaxies have non-unique ids !"
 		
-		self.galaxies = {gal.id: gal for gal in galaxies}
+		self.data = {gal.id: gal for gal in galaxies}
 		self.meta = meta
 		
 	def __len__(self):
-		return len(self.galaxies)
+		return len(self.data)
 		
 	def __str__(self):
 		return "Catalog with %i galaxies and %i metadata" % (len(self), len(self.meta))
