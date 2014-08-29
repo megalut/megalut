@@ -4,9 +4,12 @@ General purpose unspecific helper functions
 
 import os
 import cPickle as pickle
+import astropy.io.fits
+
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 	
 def writepickle(obj, filepath, protocol = -1):
@@ -38,3 +41,27 @@ def readpickle(filepath):
 	pkl_file.close()
 	logger.info("Read %s" % filepath)
 	return obj
+
+
+def fromfits(filepath):
+	"""
+	Read simple 1-hdu FITS files -> numpy arrays, so that the indexes [x,y] follow the orientations of
+	x, y on ds9, respectively.
+	"""
+	data = astropy.io.fits.getdata(filepath).transpose()
+	logger.info("Read FITS images %s from file %s" % (data.shape, filepath))
+	return data
+	
+
+def tofits(a, filepath):
+	"""
+	Writes a simply 2D numpy array to FITS, same convention.
+	"""
+	
+	if os.exists(filepath):
+		logger.warning("File %s exists, I will overwrite it!" % (filepath))
+
+	astropy.io.fits.writeto(filepath, a.transpose(), clobber=1)
+	logger.info("Wrote %s array to %s" % (data.shape, filepath))
+
+

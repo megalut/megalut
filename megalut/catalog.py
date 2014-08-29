@@ -4,6 +4,7 @@ A catalog is simply a dict (or a list, depending on what we do) of Galaxy object
 """
 
 import copy as pythoncopy
+import utils
 
 class Galaxy:
 	"""
@@ -88,14 +89,19 @@ class Catalog:
 	A class containing a dict of galaxies, using the ids as keys, and a dict of metadata.
 	The constructor takes a list of galaxies as input, and optionally a dict containing meta information about those galaxies.
 	
-	How to loop over galaxies in a Catalog:
+	How to loop over galaxies in a Catalog if you want to modify them:
 
 	>>> for galaxy in catalog.data.itervalues():
 	>>> 	print galaxy
 	
+	And if you want to have a list of copies:
+	
+	>>> for galaxy in catalog.data.values():
+	>>> 	print galaxy
+	
 	
 	Inheriting directly form dict is apparently a bad idea.
-	I first though that for convenience, this guy should be iterable: for galaxy in catalog
+	I first though that for convenience, this guy should be iterable: for galaxy in catalog.
 	Code for this is commented. It seems too dangerous, confusions between list and dict, random ordering etc.
 	
 	"""
@@ -114,12 +120,15 @@ class Catalog:
 	def __str__(self):
 		return "Catalog with %i galaxies and %i metadata" % (len(self), len(self.meta))
 
-	def write(filepath):
+	def write(self, filepath):
 		"""
 		Writes the catalog to a pickle
 		"""
-		pass
-
+		
+		utils.writepickle(self, filepath, protocol = -1)
+		
+		
+		
 
 	# Kind of works but is too confusing. Let's keep it simple
 	#def __getitem__(self, galid):

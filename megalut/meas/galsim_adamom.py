@@ -1,86 +1,89 @@
 import numpy as np
-import utils
 import sys, os
 from datetime import datetime
-import galaxy
+
+import logging
+logger = logging.getLogger(__name__)
 
 import galsim
+from .. import utils
+from .. import catalog as megalutcatalog
+
 
 # use this in front of your code...
 #starfield_im.setOrigin(0,0)
 
 
-def measure(imgfilepath, galaxies, s):
+def measure(imgfilepath, catalog, stamp_size=100):
 	"""
-	I use the positions of your galaxies to extract postage stamps from the image and measure their shapes.
-	I add my measurements to your galaxy objects.
-	Every galaxy gets them. When I fail, I put its mes_gs_flux to -1.0
+	I use the positions "x" and "y" of the input catalog to extract postage stamps from the image and measure their shapes.
 	
-	s is the stamp size I should extract
+	:param imgfilepath: FITS image
+	:param catalog: Catalog of objects that I should measure
+	:param stamp_size: width and height of stamps
 	
 	"""
 	
 	# We read in the imgfile
 	bigimg = galsim.fits.read(imgfilepath)
-	bigimgnp = utils.fromfits(imgfilepath)
 	
+	bigimgnp = utils.fromfits(imgfilepath)
 	shape = bigimgnp.shape
-	#print shape
+	
 	starttime = datetime.now()
-	print "Measuring shapes with galsim AdaptativeMom on %s..." % (os.path.basename(imgfilepath))
+	
+	logger.info("Measuring shapes on %s..." % (os.path.basename(imgfilepath)))
 	
 	failed = 0
-	n = len(galaxies)
+	n = len(catalog)
 	
-	for (i, gal) in enumerate(galaxies):
+	measgalaxies = []
+	
+	for (i, gal) in enumerate(catalog.data.values()): # So we work on copies
+	
+		x = gal.fields["x"]
+		y = gal.fields["y"]
 		
-		sys.stdout.write("\rProgress %i / %i" % (i, n))
-		sys.stdout.flush()
+		#sys.stdout.write("\rProgress %i / %i" % (i, n))
+		#sys.stdout.flush()
 	
 		# We cut out the postage stamp
-		xmin = int(np.clip(int(np.floor(gal.x)) - s/2 + 1, 1, shape[0]-1))
-		xmax = int(np.clip(int(np.floor(gal.x)) + s/2 + 1, 1, shape[0]-1))
-		ymin = int(np.clip(int(np.floor(gal.y)) - s/2 + 1, 1, shape[1]-1))
-		ymax = int(np.clip(int(np.floor(gal.y)) + s/2 + 1, 1, shape[1]-1))
+		xmin = int(np.clip(int(np.floor(x)) - stamp_size/2 + 1, 1, shape[0]-1))
+		xmax = int(np.clip(int(np.floor(x)) + stamp_size/2 + 1, 1, shape[0]-1))
+		ymin = int(np.clip(int(np.floor(y)) - stamp_size/2 + 1, 1, shape[1]-1))
+		ymax = int(np.clip(int(np.floor(y)) + stamp_size/2 + 1, 1, shape[1]-1))
 		
 		bounds = galsim.BoundsI(xmin, xmax, ymin, ymax)
 		gps = bigimg[bounds]
 		
 		# We measure the moments...
+		
 		try:
-			
-			# Important : we measure only good galaxies, as sometimes the galsim C++ code fails
-			# without raising an exception...
-			#if not gal.isgood():
-			#	raise RuntimeError("We'll skip this one...")
-				
 			res = galsim.hsm.FindAdaptiveMom(gps)
 			
-			gal.mes_gs_flux = res.moments_amp
-			gal.mes_gs_sigma = res.moments_sigma
-			gal.mes_gs_g1 = res.observed_shape.g1
-			gal.mes_gs_g2 = res.observed_shape.g2
-			gal.mes_gs_x = res.moments_centroid.x
-			gal.mes_gs_y = res.moments_centroid.y
-			gal.mes_gs_rho4 = res.moments_rho4
+			gal.fields["mes_gs_flux"] = res.moments_amp
+			gal.fields["mes_gs_sigma"] = res.moments_sigma
+			gal.fields["mes_gs_g1"] = res.observed_shape.g1
+			gal.fields["mes_gs_g2"] = res.observed_shape.g2
+			gal.fields["mes_gs_x"] = res.moments_centroid.x
+			gal.fields["mes_gs_y"] = res.moments_centroid.y
+			gal.fields["mes_gs_rho4"] = res.moments_rho4
 
-
-		except:
-		
+		except:		
+			logger.debug("Failed on Galaxy %s" % (str(gal)))
 			failed += 1
-			gal.mes_gs_flux = -1.0
-			gal.mes_gs_sigma = 0.0
-			gal.mes_gs_g1 = 0.0
-			gal.mes_gs_g2 = 0.0
-			gal.mes_gs_x = 0.0
-			gal.mes_gs_y = 0.0
-			gal.mes_gs_rho4 = 0.0
 			
+
+		measgalaxies.append(gal)
+		
+		
 	endtime = datetime.now()	
-	print "\rDone.                        "
-	print "I failed on %i out of %i galaxies (%.1f percent)" % (failed, n, 100.0*float(failed)/float(n))
-	print "This measurement took %s" % (str(endtime - starttime))
+	#print "\rDone.                        "
 	
+	logger.info("I failed on %i out of %i sources (%.1f percent)" % (failed, n, 100.0*float(failed)/float(n)))
+	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
+	
+	return megalutcatalog.Catalog(measgalaxies, meta={"imgfilepath":imgfilepath})
 
 		
 	
