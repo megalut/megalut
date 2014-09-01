@@ -3,7 +3,7 @@ A demo that measures some moments with galsim
 """
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG) # This time we use debug level, as an illustration
 
 import megalut
 import megalut.great3
@@ -16,6 +16,7 @@ subfield = 0
 
 inputcat = megalut.great3.io.readgalcat(branch, subfield)
 
+# These things work !
 #inputcat = inputcat[:1000]
 #inputcat = inputcat[inputcat["ID"] == 245007]
 
@@ -27,11 +28,10 @@ print meascat
 # A scatter plot, as an illustration:
 
 import matplotlib.pyplot as plt
-import numpy as np
 resi_x = meascat["mes_adamom_x"] - meascat["x"]
 resi_y = meascat["mes_adamom_y"] - meascat["y"]
-c = meascat["mes_adamom_flag"]
-plt.scatter(resi_x, resi_y, c=c, lw=0, s=60)
+flag = meascat["mes_adamom_flag"]
+plt.scatter(resi_x, resi_y, c=flag, lw=0, s=60)
 plt.show()
 
 
