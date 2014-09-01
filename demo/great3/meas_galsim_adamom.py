@@ -3,7 +3,7 @@ A demo that measures some moments with galsim
 """
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 import megalut
 import megalut.great3
@@ -16,13 +16,22 @@ subfield = 0
 
 inputcat = megalut.great3.io.readgalcat(branch, subfield)
 
-inputcat = inputcat[:10]
+#inputcat = inputcat[:1000]
+#inputcat = inputcat[inputcat["ID"] == 245007]
 
-print inputcat.meta
+meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat, stampsize=branch.stampsize())
 
-#meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat, stampsize=branch.stampsize())
+print meascat
 
-#print meascat[:5]
 
-#megalut.utils.writepickle(meascat, "meascat.pkl")
+# A scatter plot, as an illustration:
+
+import matplotlib.pyplot as plt
+import numpy as np
+resi_x = meascat["mes_adamom_x"] - meascat["x"]
+resi_y = meascat["mes_adamom_y"] - meascat["y"]
+c = meascat["mes_adamom_flag"]
+plt.scatter(resi_x, resi_y, c=c, lw=0, s=60)
+plt.show()
+
 
