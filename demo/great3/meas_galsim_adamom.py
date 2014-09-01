@@ -1,6 +1,9 @@
 """
-A demo on how to read a GREAT3 input catalog
+A demo that measures some moments with galsim
 """
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 import megalut
 import megalut.great3
@@ -13,10 +16,13 @@ subfield = 0
 
 inputcat = megalut.great3.io.readgalcat(branch, subfield)
 
-meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat, stampsize=branch.stampsize())
+inputcat = inputcat[:10]
 
-meascat.write("meascat.pkl")
+print inputcat.meta
 
-for gal in meascat.data.values()[:5]:
-	print gal.fields
+#meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat, stampsize=branch.stampsize())
+
+#print meascat[:5]
+
+#megalut.utils.writepickle(meascat, "meascat.pkl")
 
