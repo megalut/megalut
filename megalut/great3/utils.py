@@ -35,7 +35,7 @@ class Branch:
 	
 
 	def __str__(self):
-		return "(%s, %s, %s)" % self.branchtuple()
+		return "Branch (%s, %s, %s)" % self.branchtuple()
 	
 
 	def stampsize(self):

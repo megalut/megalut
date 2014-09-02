@@ -34,7 +34,15 @@ print cat.meta["subfield"]# This as well...
 
 megalut.utils.writepickle(cat, "cat.pkl")
 
+
+# Mini demo of astropy tables:
+
 # Yes, this works !
-for gal in cat[:10]:
+for gal in cat[:5]:
 	gal["x"] *= -1
+
+# Even cooler:
+cat[:5]["y"] = -5.0
+
+print cat[:10]
 
