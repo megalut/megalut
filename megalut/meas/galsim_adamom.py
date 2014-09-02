@@ -19,7 +19,8 @@ def loadimg(imgfilepath):
 	"""
 	Uses GalSim to load and image from a FITS file, enforcing that the GalSim origin is (0, 0).
 	
-	:returns: image
+	:param imgfilepath: path to FITS image
+	:returns: galsim image
 	"""
 	
 	logger.info("Loading FITS image %s..." % (os.path.basename(imgfilepath)))
@@ -144,8 +145,7 @@ def getstamp(x, y, bigimg, stampsize):
 	I prepare a bounded galsim image stamp "centered" at position (x, y) of your input galsim image.
 	You can use the array attribute of the stamp if you want to get the actual pixels.
 	
-	:returns:(stamp, flag)
-	
+	:returns: a tuple(stamp, flag)
 	"""
 
 	assert int(stampsize)%2 == 0 # checking that it's even
