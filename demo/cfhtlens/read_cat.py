@@ -15,7 +15,7 @@ megalut.cfhtlens.utils.removejunk(incat)
 
 megalut.utils.writepickle(incat, "incat.pkl")
 """
-
+"""
 incat = megalut.utils.readpickle("incat.pkl")
 incat = incat[:10000]
 
@@ -26,6 +26,21 @@ meascat = megalut.meas.galsim_adamom.measure(img, incat, stampsize=50, xname="Xp
 
 
 megalut.utils.writepickle(meascat, "meascat.pkl")
+"""
+
+incat = megalut.utils.readpickle("incat.pkl")
+good_rows = np.logical_and(incat['U'] > 100, t['V'] > 100, t['Real'] > 1)
+#incat = incat[good_rows]
+
+
+
+incat = incat[:100]
+
+imgfilepath = "/vol/braid1/vol1/thomas/SHEARCOLLAB/Bonn/W1m0m0/i/coadd_V2.2A/W1m0m0_i.V2.2A.swarp.cut.fits"
+img = megalut.meas.galsim_adamom.loadimg(imgfilepath)
+
+megalut.meas.galsim_adamom.pngstampgrid("test.png", img, incat, stampsize=50, xname="Xpos", yname="Ypos")
+
 """
 
 

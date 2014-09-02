@@ -24,9 +24,14 @@ img = megalut.meas.galsim_adamom.loadimg(branch.galimgfilepath(subfield))
 meascat = megalut.meas.galsim_adamom.measure(img, inputcat, stampsize=branch.stampsize())
 
 
-#print meascat[:10]
-# To see only the failed measurements:
-print meascat[meascat["mes_adamom_flag"] > 0]
+# To see the failed measurements:
+failedcat = meascat[meascat["mes_adamom_flag"] > 0]
+print failedcat
+
+"""
+
+# A little helper to view the stamps:
+megalut.meas.galsim_adamom.pngstampgrid("failed.png", img, failedcat, stampsize=branch.stampsize(), z1=-0.3, z2=2.0)
 
 
 # A scatter plot of the position residuals, as an illustration:
@@ -37,4 +42,4 @@ flag = meascat["mes_adamom_flag"]
 plt.scatter(resi_x, resi_y, c=flag, lw=0, s=60)
 plt.show()
 
-
+"""

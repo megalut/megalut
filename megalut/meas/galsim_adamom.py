@@ -36,7 +36,7 @@ def loadimg(imgfilepath):
 
 
 
-def measure(bigimg, catalog, stampsize=100, prefix="mes_adamom", xname="x", yname="y"):
+def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamom"):
 	"""
 	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
 	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
@@ -48,12 +48,12 @@ def measure(bigimg, catalog, stampsize=100, prefix="mes_adamom", xname="x", ynam
 	
 	:param img: galsim image
 	:param catalog: astropy table of objects that I should measure
+	:param xname: column name containing the x coordinates in pixels
+	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
 	:param prefix: a string to prefix the field names that I'll write
-	:param xname: column name containing the x coordinates in pixels
-	:param yname: idem for y
-	
+		
 	:returns: astropy table
 	
 	"""
@@ -168,3 +168,86 @@ def getstamp(x, y, bigimg, stampsize):
 	assert stamp.array.shape == (stampsize, stampsize)
 	
 	return (stamp, 0)
+	
+	
+	
+	
+	
+#def npstampgrid(bigimg, catalog, xname="x", yname="y", stampsize=100):
+#	"""
+#	I build a numpy array with stamps, intended for visualization
+#	"""
+#
+#	#n = len(catalog)
+#	#nrows = int(np.ceil(n/10))
+#	#big = np.zeros((10*stampsize, nrows*stampsize))
+#	#print n, nrows
+#	
+#	stamplist = []
+#	for gal in catalog:
+#		(x, y) = (gal[xname], gal[yname])
+#		(gps, flag) = getstamp(x, y, bigimg, stampsize)
+#		if flag != 0:
+#			stamplist.append(np.zeros(stampsize, stampsize))
+#		else:
+#			stamplist.append(gps.array)
+#	
+#	big = np.vstack(stamplist)
+#	return big
+
+
+
+def pngstampgrid(pngfilepath, bigimg, catalog, xname="x", yname="y", stampsize=100, ncols=5, upsample=4, z1="auto", z2="auto"):
+	"""
+	I write a grid of stamps corresponding to your catalog in a png image, so that you can visualize those galaxies...
+	For this I need f2n, but anyway I'm just a little helper.
+	"""
+	
+	try:
+		import f2n
+	except:
+		logger.exception("Could not import f2n, will skip this...")
+		return
+		
+	n = len(catalog)
+	nrows = int(np.ceil(float(n)/float(ncols)))
+		
+	stamprows = []
+	for nrow in range(nrows):
+		stamprow = []
+		for ncol in range(ncols):
+			
+			index = ncol + ncols*nrow
+			if index < n: # Then we have a galaxy to show
+				gal = catalog[index]
+				(x, y) = (gal[xname], gal[yname])
+				(gps, flag) = getstamp(x, y, bigimg, stampsize)
+				npstamp = gps.array
+				
+				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)
+
+				f2nstamp.setzscale(z1, z2)
+				f2nstamp.makepilimage("log", negative = False)
+				f2nstamp.upsample(upsample)
+			
+				txt = [
+					"%i (%i, %i)" % (gal.index, x, y),
+				]
+				f2nstamp.writeinfo(txt, colour=(255, 255, 100))
+				
+			else: # No more galaxies, we just fill the splot with a grey empty stamp.
+				npstamp = np.zeros((stampsize, stampsize))
+				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)
+				f2nstamp.setzscale(-1.0, 1.0)
+				f2nstamp.makepilimage("lin", negative = False)
+				f2nstamp.upsample(4)
+			
+			
+			stamprow.append(f2nstamp)
+		stamprows.append(stamprow)
+	f2n.compose(stamprows, pngfilepath)
+	logger.info("Wrote %s" % (pngfilepath))
+	
+	
+	
+	
