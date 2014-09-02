@@ -14,9 +14,9 @@ import astropy.table
 import galsim
 
 
-def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom"):
+def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x", yname="y"):
 	"""
-	I use the positions "x" and "y" of the input table to extract postage stamps from the image and measure their shapes.
+	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
 	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
 	
 	* 0: OK
@@ -26,8 +26,11 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom"):
 	
 	:param imgfilepath: FITS image
 	:param catalog: astropy table of objects that I should measure
-	:param stampsize: width = height of stamps
+	:param stampsize: width = height of stamps, has to be even
+	:type stampsize: int
 	:param prefix: a string to prefix the field names that I'll write
+	:param xname: column name containing the x coordinates in pixels
+	:param yname: idem for y
 	
 	:returns: astropy table
 	
@@ -40,6 +43,9 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom"):
 	
 	# We read in the imgfile. Using only galsim, this is new (and should be checked) !
 	bigimg = galsim.fits.read(imgfilepath)
+	logger.info("Done with opening file %s..." % (os.path.basename(imgfilepath)))
+	
+	
 	bigimg.setOrigin(0,0)
 	(bigxmin, bigxmax, bigymin, bigymax) = (bigimg.getXMin(), bigimg.getXMax(), bigimg.getYMin(), bigimg.getYMax())
 	logger.warning("The origin and stampsize conventions are new and should be tested !")
@@ -64,12 +70,20 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom"):
 	
 	# Let's save something useful to the meta dict
 	output.meta[prefix + "_imgfilepath"] = imgfilepath
+	output.meta[prefix + "_xname"] = xname
+	output.meta[prefix + "_yname"] = yname
+	
+	n = len(output)
 	
 	# And loop
 	for gal in output:
-	
-		x = gal["x"]
-		y = gal["y"]
+		
+		# Some simplistic progress indication:
+		if gal.index%5000 == 0:
+			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n), gal.index, n))
+		
+		x = gal[xname]
+		y = gal[yname]
 		
 		xmin = int(np.floor(x)) - int(stampsize)/2 + 1
 		xmax = int(np.floor(x)) + int(stampsize)/2
@@ -117,11 +131,10 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom"):
 	
 	endtime = datetime.now()	
 	
-	n = len(output)
 	nfailed = np.sum(output[prefix+"_flag"] > 0)
 	
 	logger.info("I failed on %i out of %i sources (%.1f percent)" % (nfailed, n, 100.0*float(nfailed)/float(n)))
-	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
+	logger.info("This measurement took %.3f ms per galaxy (including FITS image reading)" % (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
 	return output
 		
