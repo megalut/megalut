@@ -14,7 +14,28 @@ import astropy.table
 import galsim
 
 
-def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x", yname="y"):
+
+def loadimg(imgfilepath):
+	"""
+	Uses GalSim to load and image from a FITS file, enforcing that the GalSim origin is (0, 0).
+	
+	:returns: image
+	"""
+	
+	logger.info("Loading FITS image %s..." % (os.path.basename(imgfilepath)))
+	bigimg = galsim.fits.read(imgfilepath)
+	bigimg.setOrigin(0,0)
+	logger.info("Done with loading %s, shape is %s" % (os.path.basename(imgfilepath), bigimg.array.shape))
+	
+	logger.warning("The origin and stampsize conventions are new and should be tested !")
+	
+	bigimg.origimgfilepath = imgfilepath # Just to keep this somewhere
+	
+	return bigimg
+
+
+
+def measure(bigimg, catalog, stampsize=100, prefix="mes_adamom", xname="x", yname="y"):
 	"""
 	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
 	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
@@ -24,7 +45,7 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x",
 	* 2: galsim centroid failed (distance > 10 pixels...)
 	* 3: galsim failed
 	
-	:param imgfilepath: FITS image
+	:param img: galsim image
 	:param catalog: astropy table of objects that I should measure
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
@@ -39,16 +60,7 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x",
 	assert int(stampsize)%2 == 0 # checking that it's even
 	
 	starttime = datetime.now()
-	logger.info("Measuring shapes on %s..." % (os.path.basename(imgfilepath)))
-	
-	# We read in the imgfile. Using only galsim, this is new (and should be checked) !
-	bigimg = galsim.fits.read(imgfilepath)
-	logger.info("Done with opening file %s..." % (os.path.basename(imgfilepath)))
-	
-	
-	bigimg.setOrigin(0,0)
-	(bigxmin, bigxmax, bigymin, bigymax) = (bigimg.getXMin(), bigimg.getXMax(), bigimg.getYMin(), bigimg.getYMax())
-	logger.warning("The origin and stampsize conventions are new and should be tested !")
+	logger.info("Starting shape measurements on %ix%i stamps" % (stampsize, stampsize))
 	
 	# We prepare an output table with all the required columns
 	output = copy.deepcopy(catalog)
@@ -69,7 +81,7 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x",
 	#astropy.table.MaskedColumn(name="mes_adamom_flux", dtype=float, length=len(output), fill_value=-1)
 	
 	# Let's save something useful to the meta dict
-	output.meta[prefix + "_imgfilepath"] = imgfilepath
+	output.meta[prefix + "_imgfilepath"] = bigimg.origimgfilepath
 	output.meta[prefix + "_xname"] = xname
 	output.meta[prefix + "_yname"] = yname
 	
@@ -82,28 +94,13 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x",
 		if gal.index%5000 == 0:
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n), gal.index, n))
 		
-		x = gal[xname]
-		y = gal[yname]
+		(x, y) = (gal[xname], gal[yname])
+		(gps, flag) = getstamp(x, y, bigimg, stampsize)
 		
-		xmin = int(np.floor(x)) - int(stampsize)/2 + 1
-		xmax = int(np.floor(x)) + int(stampsize)/2
-		ymin = int(np.floor(y)) - int(stampsize)/2 + 1
-		ymax = int(np.floor(y)) + int(stampsize)/2
-			
-		assert ymax - ymin == stampsize - 1
-		assert xmax - xmin == stampsize - 1
-	
-		# We check that these bounds are fully within the image
-		#print xmin, xmax, ymin, ymax
-		if xmin < 0 or xmax > bigxmax+1 or ymin < 0 or ymax > bigymax+1:
+		if flag != 0:
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
-			gal[prefix+"_flag"] = 1
+			gal[prefix+"_flag"] = flag
 			continue
-		
-		# We prepare the stamp
-		bounds = galsim.BoundsI(xmin, xmax, ymin, ymax)
-		gps = bigimg[bounds] # galaxy postage stamp
-		assert gps.array.shape == (stampsize, stampsize)
 		
 		# We measure the moments... galsim may fail from time to time, hence the try:
 		try:
@@ -130,11 +127,44 @@ def measure(imgfilepath, catalog, stampsize=100, prefix="mes_adamom", xname="x",
 		
 	
 	endtime = datetime.now()	
-	
+	logger.info("All done")
+
 	nfailed = np.sum(output[prefix+"_flag"] > 0)
 	
 	logger.info("I failed on %i out of %i sources (%.1f percent)" % (nfailed, n, 100.0*float(nfailed)/float(n)))
-	logger.info("This measurement took %.3f ms per galaxy (including FITS image reading)" % (1e3*(endtime - starttime).total_seconds() / float(n)))
+	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
 	return output
+
+
+
 		
+def getstamp(x, y, bigimg, stampsize):
+	"""
+	I prepare a bounded galsim image stamp "centered" at position (x, y) of your input galsim image.
+	You can use the array attribute of the stamp if you want to get the actual pixels.
+	
+	:returns:(stamp, flag)
+	
+	"""
+
+	assert int(stampsize)%2 == 0 # checking that it's even
+
+	xmin = int(np.floor(x)) - int(stampsize)/2 + 1
+	xmax = int(np.floor(x)) + int(stampsize)/2
+	ymin = int(np.floor(y)) - int(stampsize)/2 + 1
+	ymax = int(np.floor(y)) + int(stampsize)/2
+			
+	assert ymax - ymin == stampsize - 1
+	assert xmax - xmin == stampsize - 1
+	
+	# We check that these bounds are fully within the image
+	if xmin < bigimg.getXMin() or xmax > bigimg.getXMax()+1 or ymin < bigimg.getYMin() or ymax > bigimg.getYMax()+1:
+		return (None, 1)
+		
+	# We prepare the stamp
+	bounds = galsim.BoundsI(xmin, xmax, ymin, ymax)
+	stamp = bigimg[bounds] # galaxy postage stamp
+	assert stamp.array.shape == (stampsize, stampsize)
+	
+	return (stamp, 0)

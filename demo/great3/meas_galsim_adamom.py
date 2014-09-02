@@ -3,7 +3,7 @@ A demo that measures some moments with galsim
 """
 
 import logging
-logging.basicConfig(level=logging.DEBUG) # This time we use debug level, as an illustration
+logging.basicConfig(level=logging.INFO) # This time we use debug level, as an illustration
 
 import megalut
 import megalut.great3
@@ -20,13 +20,16 @@ inputcat = megalut.great3.io.readgalcat(branch, subfield)
 #inputcat = inputcat[:1000]
 #inputcat = inputcat[inputcat["ID"] == 245007]
 
-meascat = megalut.meas.galsim_adamom.measure(branch.galimgfilepath(subfield), inputcat, stampsize=branch.stampsize())
+img = megalut.meas.galsim_adamom.loadimg(branch.galimgfilepath(subfield))
+meascat = megalut.meas.galsim_adamom.measure(img, inputcat, stampsize=branch.stampsize())
 
-print meascat
+
+#print meascat[:10]
+# To see only the failed measurements:
+print meascat[meascat["mes_adamom_flag"] > 0]
 
 
-# A scatter plot, as an illustration:
-
+# A scatter plot of the position residuals, as an illustration:
 import matplotlib.pyplot as plt
 resi_x = meascat["mes_adamom_x"] - meascat["x"]
 resi_y = meascat["mes_adamom_y"] - meascat["y"]
