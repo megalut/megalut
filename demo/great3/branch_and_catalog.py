@@ -46,3 +46,7 @@ cat[:5]["y"] = -5.0
 
 print cat[:10]
 
+
+# To select 
+#selector = np.logical_and(incat['weight'] < 0.1, incat['fitclass'] == 1, incat['CLASS_STAR'] == 1)
+#incat = incat[selector]
