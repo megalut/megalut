@@ -110,7 +110,8 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 		except:
 			# This is awesome, but clutters the output 
 			#logger.exception("GalSim failed on: %s" % (str(gal)))
-			logger.debug("GalSim failed on:\n %s" % (str(gal)))	
+			# So insted of logging this as an exception, we use debug, but include the tarceback :
+			logger.debug("GalSim failed on:\n %s" % (str(gal)), exc_info = True)	
 			gal[prefix + "_flag"] = 3	
 			continue
 		

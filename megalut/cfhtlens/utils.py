@@ -12,7 +12,7 @@ def readcat(filepath):
 	"""
 	
 	"""
-	return astropy.table.Table.read(filepath)
+	return astropy.table.Table.read(filepath, hdu=1) # Despite beeing not documented, this hdu=1 works !
 
 
 

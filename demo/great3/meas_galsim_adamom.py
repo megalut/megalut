@@ -3,7 +3,7 @@ A demo that measures some moments with galsim
 """
 
 import logging
-logging.basicConfig(level=logging.INFO) # This time we use debug level, as an illustration
+logging.basicConfig(level=logging.DEBUG) # This time we use debug level, as an illustration
 
 import megalut
 import megalut.great3

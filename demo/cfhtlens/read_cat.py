@@ -5,16 +5,20 @@ import megalut.meas
 import logging
 logging.basicConfig(level=logging.INFO)
 
-"""
-catfile = "/vol/fohlen11/fohlen11_1/hendrik/data/CFHTLenS/release_cats/W1m0m0_izrgu_release_mask.cat"
-#field = "W1m0m0"
+import numpy as np
 
+
+catfile = "/vol/fohlen11/fohlen11_1/hendrik/data/CFHTLenS/release_cats/W1m0m0_izrgu_release_mask.cat"
 incat = megalut.cfhtlens.utils.readcat(catfile)
-#incat = incat[:1000]
+
 megalut.cfhtlens.utils.removejunk(incat)
 
 megalut.utils.writepickle(incat, "incat.pkl")
-"""
+incat.write("incat.fits")
+
+exit()
+
+
 """
 incat = megalut.utils.readpickle("incat.pkl")
 incat = incat[:10000]
@@ -28,10 +32,14 @@ meascat = megalut.meas.galsim_adamom.measure(img, incat, stampsize=50, xname="Xp
 megalut.utils.writepickle(meascat, "meascat.pkl")
 """
 
+# Select stars
 incat = megalut.utils.readpickle("incat.pkl")
-good_rows = np.logical_and(incat['U'] > 100, t['V'] > 100, t['Real'] > 1)
-#incat = incat[good_rows]
+print len(incat)
 
+selector = np.logical_and(incat['weight'] < 0.1, incat['fitclass'] == 1, incat['CLASS_STAR'] == 1)
+incat = incat[selector]
+
+print len(incat)
 
 
 incat = incat[:100]
