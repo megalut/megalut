@@ -55,12 +55,12 @@ class Params:
 		(g1, g2) = self.get_g()
 		
 		return {
-			"sig" : self.get_sig(),
-			"rad" : self.get_rad(),
-			"flux" : self.get_flux(),
-			"sersicn" : self.get_sersicn(ix=ix, iy=iy, n=n),
-			"g1" : g1,
-			"g2" : g2,
+			"tru_sig" : self.get_sig(),
+			"tru_rad" : self.get_rad(),
+			"tru_flux" : self.get_flux(),
+			"tru_sersicn" : self.get_sersicn(ix=ix, iy=iy, n=n),
+			"tru_g1" : g1,
+			"tru_g2" : g2,
 			"ix" : ix,
 			"iy" : iy
 		}

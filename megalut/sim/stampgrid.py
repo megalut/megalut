@@ -18,15 +18,19 @@ from datetime import datetime
 
 
 
-def drawcat(params, n=10):
+def drawcat(params, n=10, stampsize=64, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
 	:param params: a sim.Params instance that controls all the random distributions of parameters
 	:param n: sqrt(number): I will generate n x n galaxies, on a grid !
-	:type n: int
+	:type n: int	
+	:param stampsize: width = height of desired stamps, in pixels
+	:type stampsize: int
+	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
 	
 	"""
+	assert int(stampsize)%2 == 0 # checking that it's even
 
 	logger.info("Drawing a catalog of %i x %i galaxies..." % (n, n))
 		
@@ -35,7 +39,11 @@ def drawcat(params, n=10):
 	for iy in range(n):
 		for ix in range(n):
 		
-			rows.append(params.get(ix, iy, n)) # So rows will be a list of dicts
+			gal = params.get(ix, iy, n) # That's a dict
+			gal["id"] = idprefix + str(ix + n*iy)
+			gal["x"] = ix*stampsize + int(stampsize/2) -1# I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
+			gal["y"] = iy*stampsize + int(stampsize/2) -1
+			rows.append(gal) # So rows will be a list of dicts
 		
 	# There are many ways to build a new astropy.table
 	# One of them directly uses a list of dicts...
@@ -44,23 +52,22 @@ def drawcat(params, n=10):
 	logger.info("Drawing of catalog done")
 	
 	catalog.meta["n"] = n
+	catalog.meta["stampsize"] = stampsize
+	
 	
 	return catalog
 	
 
 
 
-def drawimg(catalog, stampsize, simgalimgfilepath, simtrugalimgfilepath = None, 
+def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None, 
 	simpsfimgfilepath = None):
 	"""
 	Truns a catalog as obtained from drawcat into FITS images.
 	The position jitter and the pixel noise are randomized.
 	Call me several times for the same catalog to get different realizations of the same galaxies.
 	
-	:param catalog: an input catalog, as returned by drawcat.
-	:param stampsize: width = height of desired stamps, in pixels
-	:type stampsize: int
-	
+	:param catalog: an input catalog, as returned by drawcat.	
 	:param simgalimgfilepath: : where I write my output image
 	:param simtrugalimgfilepath: : optional, where I write the image without convolution and noise
 	:param simpsfimgfilepath: : optional, where I write the PSFs
@@ -77,8 +84,12 @@ def drawimg(catalog, stampsize, simgalimgfilepath, simtrugalimgfilepath = None,
 	
 	if "n" not in catalog.meta.keys():
 		raise RuntimeError("Provide n in the meta data of the input catalog to drawimg.")
+	if "stampsize" not in catalog.meta.keys():
+		raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")
 	
 	n = catalog.meta["n"]
+	stampsize = catalog.meta["stampsize"]
+	
 	starttime = datetime.now()	
 	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
 	
@@ -108,8 +119,8 @@ def drawimg(catalog, stampsize, simgalimgfilepath, simtrugalimgfilepath = None,
 		psf_stamp = psf_image[bounds]
 	
 		# We draw a sersic profile
-		gal = galsim.Sersic(n=row["sersicn"], half_light_radius=row["rad"], flux=row["flux"])
-		gal.applyShear(g1=row["g1"], g2=row["g2"]) # This combines shear AND the ellipticity of the galaxy
+		gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
+		gal.applyShear(g1=row["tru_g1"], g2=row["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
 		
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
@@ -131,7 +142,7 @@ def drawimg(catalog, stampsize, simgalimgfilepath, simtrugalimgfilepath = None,
 		psf.draw(psf_stamp)
 	
 		# And add shot noise to the convolved galaxy:
-		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=row["sig"]))
+		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=row["tru_sig"]))
 		
 		
 	logger.info("Done with drawing, now writing output FITS files ...")	
