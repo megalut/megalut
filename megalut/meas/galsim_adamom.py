@@ -160,7 +160,7 @@ def getstamp(x, y, bigimg, stampsize):
 	assert xmax - xmin == stampsize - 1
 	
 	# We check that these bounds are fully within the image
-	if xmin < bigimg.getXMin() or xmax > bigimg.getXMax()+1 or ymin < bigimg.getYMin() or ymax > bigimg.getYMax()+1:
+	if xmin < bigimg.getXMin() or xmax > bigimg.getXMax() or ymin < bigimg.getYMin() or ymax > bigimg.getYMax():
 		return (None, 1)
 		
 	# We prepare the stamp
