@@ -31,6 +31,7 @@ General python
 
 * tab indentation
 * lowercase for all modules and packages
-* lowercase for free functions, attributes, methods 
-* Classes start with an uppercase
+* lowercase for free functions, attributes, methods
+* we_try_to_avoid_too_many_underscores in method names, except to highlight a recuring structure, such as in get_x(), get_flux(), ... 
+* CamelCase for classes
 
