@@ -9,11 +9,11 @@ class Params:
 	
 	The minimal methods implemented here are just examples.	Example how you could inherit and override this:
 	
-	>>> class Mysimparams(megalut.sim.params.Params):
+	>>> class MySimParams(megalut.sim.params.Params):
 	>>> 	def get_flux(self):
 	>>> 		return 120.0
 	>>> 	
-	>>> mysimparams = Mysimparams()
+	>>> mysimparams = MySimParams()
 
 	
 	"""

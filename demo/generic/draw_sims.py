@@ -12,11 +12,11 @@ import megalut.meas
 
 # First, we set the desired distributions of parameters, by overwriting the default distributions.
 
-class Mysimparams(megalut.sim.params.Params):
+class MySimParams(megalut.sim.params.Params):
 	def get_flux(self):
 		return 300.0
 		
-mysimparams = Mysimparams()
+mysimparams = MySimParams()
 
 simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=10, stampsize=48)
 
