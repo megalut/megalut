@@ -1,188 +1,164 @@
 """
-A module to connect the "Galaxies" and Machine Learning (ML) wrappers
-
-
+A module to connect the shape measurement stuff (astropy.table catalogs...) to the mchine learning (ml) wrappers.
 """
 
-import skynetwrapper
-#import ffnetwrapper
-#import pybrainwrapper
-import fannwrapper
-#import minilut
-	
 import numpy as np
-#import mlparams
 from datetime import datetime
 import os
+
+import skynetwrapper
+import fannwrapper
+#import ffnetwrapper
+#import pybrainwrapper
+#import minilut
+
+import astropy.table
+import copy
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class MLParams:
 	"""
-	A container for the general parameters describing the machine learning.
+	A container for the general parameters describing the machine learning: what features should I use to predict what labels ?
+	Features, labels, and predlabels are lists of strings, with the names of the columns of the catalog to use.
 	
-	The standart example with sextractor was :
-	features = ["mes_g1", "mes_g2", "mes_size", "mes_flux", "mes_rad30", "mes_rad50", "mes_rad70", "mes_rad90"],
-	labels = ["tru_g1", "tru_g2"]
-	predlabels = ["pre_g1", "pre_g2"]
+	:param name: a string describing these machine learning params.
+	:param features: the list of column names to be used as input, i.e. "features", for the machine learning
+	:param labels: the list of column names that I should learn to predict (that is, the "truth")
+	:param predlabels: the corresponding list of column names where I should write my predictions
+		
+	To give a minimal example, to predict shear you could use something like:
 	
-	
-	Something that worked well with galsim was :
-	features = ["mes_gs_g1", "mes_gs_g2", "mes_gs_sigma", "mes_gs_flux", "mes_gs_rho4"]
-
+	>>> features = ["mes_g1", "mes_g2", "mes_size", "mes_flux"],
+	>>> labels = ["tru_g1", "tru_g2"]
+	>>> predlabels = ["pre_g1", "pre_g2"]
 	
 	"""
 	
-	def __init__(self, name, features, labels, predlabels, nb_committee=1):
+	def __init__(self, name, features, labels, predlabels):
 		"""
-		name is a string describing this ML run. Make sure it is unique for these parameters. Could contain a counter, of course.
-		
-		features and labels are lists of strings, with the names of the attributes of Galaxy objects to use
-		- features is the list of attributes to be used as input
-		- labels is the list of attributes you want me to predict.
-		- predlabels is the corresponding list of attributes where I should write my predictions.
-		
+		Text written here does not show up in the doc with the default sphinx apidoc params, as __init__ is private.
+		One reason why we'll replace apidoc...
 		"""
 		
 		self.name = name
 		self.features = features
 		self.labels = labels
 		self.predlabels = predlabels
-		self.nb_committee = nb_committee
-		assert self.nb_committee >= 1
-		assert len(self.labels) == len(self.predlabels)
 
-		
-		#self.method = method
-		#assert self.method in ["skynet", "pybrain"]
-		#self.methodpars = methodpars
+		assert len(self.labels) == len(self.predlabels)
 		
 
 	def __str__(self):
-		txt = "ML parameters for %s:\n" % (self.name) + \
+		txt = "ML parameters \"%s\":\n" % (self.name) + \
 			"Features:    %s\n" % (", ".join(self.features)) + \
 			"Labels:      %s\n" % (", ".join(self.labels)) + \
-			"Predictions: %s\n" % (", ".join(self.predlabels)) + \
-			"Nb Neural Network: %i" % (self.nb_committee)
+			"Predictions: %s" % (", ".join(self.predlabels))
 		return txt
 
 
 
 
 class ML:
+	"""
+	This is a class that will hopefully nicely wrap any machine learning regression code.
+	
+	:param mlparams: an MLParams object, describing *what* to learn.
+	:param toolparams: this describes *how* to learn. For instance a FANNParams object, if you want to use FANN.
+	:param workdir: a working directory in which I keep what I've learned.
+	
+	
+	This class has two key methods: train and predict. These methods directly call the train and predict methods of the underlying machine learning wrappers.
+	So any machine learning wrapper has to implement such methods.
 	
 	"""
-	This is a class that will hopefully nicely wrap NN or other Machine Learning (ML) regression codes.
-	So far it only uses skynet.py, but the idea is that it could do more later and stay very general.
-	"""
 
-	def __init__(self, mlparams, toolparams, workdir):
-		"""
-		features and labels are lists of strings, with the names of the attributes of Galaxy objects to use
-		- features is the list of attributes to be used as input
-		- labels is the list of attributes you want me to predict.
-		- predlabels is the corresponding list of attributes where I should write my predictions.
-		
-		nndir is a directory in which the ML will work and store what it learned.
-		"""
+	def __init__(self, mlparams, toolparams, workdir = None):
 		
 		self.mlparams = mlparams
-		self.tool = toolparams.tool
 		self.toolparams = toolparams
-		self.workdir = workdir
 		
-		assert self.tool in ["skynet", "ffnet", "pybrain", "fann", "minilut"]
-			
-		self.objs=[]
-
-		for nn_i in range(self.mlparams.nb_committee):
-
-			nn_i_workdir=os.path.join(self.workdir,"%i" % nn_i)
-			if self.tool == "skynet":
-				self.objs.append(skynet.SkyNet(self.toolparams, workdir=nn_i_workdir)) # The instance of the ML code.
-			elif self.tool == "ffnet":
-				self.objs.append(ffnetwrapper.FfnetWrapper(self.toolparams, workdir=nn_i_workdir))
-			elif self.tool == "pybrain":
-				self.objs.append(pybrainwrapper.PyBrainWrapper(self.toolparams, workdir=nn_i_workdir))
-			elif self.tool == "fann":
-				self.objs.append(fannwrapper.FANNWrapper(self.toolparams, workdir=nn_i_workdir))
-			elif self.tool == "minilut":
-				self.objs.append(minilut.MiniLUT(self.toolparams, workdir=nn_i_workdir))
-			else:
-				raise RuntimeError("Not implemented !")
+		if workdir == None:
+			self.workdir = "mlworkdir"
+		else:
+			self.workdir = workdir
+	
+		if isinstance(self.toolparams, fannwrapper.FANNParams):
+			self.toolname = "FANN"
+			self.tool = fannwrapper.FANNWrapper(self.toolparams, workdir=self.workdir)
+		elif isinstance(self.toolparams, skynetwrapper.SkyNetParams):
+			self.toolname = "SkyNet"
+			self.tool = skynet.SkyNetWrapper(self.toolparams, workdir=self.workdir)
+		else:
+			raise RuntimeError()
+			# ["skynet", "ffnet", "pybrain", "fann", "minilut"]
 		
 	
-	def train(self, galaxies):
+	def train(self, catalog):
 		"""
-		galaxies is a list of Galaxy objects
+		Runs the training, by extracting the numbers from the catalog and feeding them into the "train" method of the ml tool.
+		
+		:param catalog: an input astropy table. Has to contain the features and the labels.
 		
 		"""	
 		starttime = datetime.now()
+			
+		logger.info("Training %s (%s, %s) with %i galaxies in %s..." % (self.toolname, self.mlparams.name, self.toolparams.name, len(catalog), self.workdir))
+		logger.info(str(self.mlparams))
+		logger.info(str(self.toolparams))
 		
-		for g in galaxies:
-			g.calcmes() # Not sure if this is required, but doesn't harm...
-#			if not g.isgood():
-#				g.info()
-#				exit()
-	
-		print "Training a ML in %s" % (self.workdir)
-		print self.mlparams
 		
-		featuresdata = np.array([g.getattrs(self.mlparams.features) for g in galaxies])
-		labelsdata = np.array([g.getattrs(self.mlparams.labels) for g in galaxies])
+		# Now we turn the relevant columns of catalog into 2D numpy arrays.
+		# There are several ways of turning astropy.tables into plain numpy arrays. The shortest is np.array(table...)
+		#featurescat = catalog[self.mlparams.features]
+		#featuresdata = np.array(featurescat).view((float, len(featurescat.dtype.names)))
 		
-		for nn_i in range(self.mlparams.nb_committee):
-			message = 'Training NN %s %i/%i' % (self.mlparams.name,nn_i+1,self.mlparams.nb_committee)
-			print (len(message)+4)*'*'
-			print '*', message, '*'
-			print (len(message)+4)*'*'
-
-			#self.objs[nn_i].train(features=featuresdata, labels=labelsdata) << That's all we do here
-			if self.tool == "skynet":
-				self.objs[nn_i].prep(features=featuresdata, labels=labelsdata)
-				self.objs[nn_i].train(verbose=False)
-			elif self.tool == "ffnet":
-				self.objs[nn_i].train(features=featuresdata, labels=labelsdata)
-			elif self.tool =="pybrain":
-				self.objs[nn_i].train(features=featuresdata, labels=labelsdata)	
-			elif self.tool =="fann":
-				self.objs[nn_i].train(features=featuresdata, labels=labelsdata)
-			elif self.tool =="minilut":
-				self.objs[nn_i].train(features=featuresdata, labels=labelsdata)
-			else:
-				raise RuntimeError("Not implemented !")
+		# I use the following one, as I find it the most explicit (in terms of respecting the order of features and labels)
+		# We could add dtype control, but the automatic way should work fine.
+		
+		featuresdata = np.column_stack([np.array(catalog[colname]) for colname in self.mlparams.features])
+		labelsdata = np.column_stack([np.array(catalog[colname]) for colname in self.mlparams.labels])
+		
+		assert featuresdata.shape[0] == labelsdata.shape[0]
+		
+		self.tool.train(features=featuresdata, labels=labelsdata)
 	
 		endtime = datetime.now()
-		print "This ML training took %s" % (str(endtime - starttime))
+		logger.info("Done! This training took %s" % (str(endtime - starttime)))
+
+
 	
 
-	def predict(self, galaxies):
+	def predict(self, catalog):
 		"""
-		Same idea as for train, but to compute predicted labels for your features.
-		I will *update* the galaxies in place
+		Same idea as for train, but now with the prediction.
+		Of course I will return a new astropy.table to which I add the "predlabels" columns, instead of changing your catalog in place !
 		"""
 		
-		for g in galaxies:
-			g.calcmes() # Not sure if this is required, but doesn't harm...
-
-		preddata_list=[]
-		for nn_i in range(self.mlparams.nb_committee):
-			print "Predicting with ML in %s for NN %s %i/%i" % (self.mlparams.name,self.objs[nn_i].workdir,nn_i+1,self.mlparams.nb_committee)
-			print self.mlparams
-			print "Predicting %i galaxies" % (len(galaxies))
-			 
-
-			featuresdata = np.array([g.getattrs(self.mlparams.features) for g in galaxies])
-			preddata_list.append(self.objs[nn_i].pred(featuresdata))
-
+		# First let's check that the predlabels do not yet exist
+		for colname in self.mlparams.predlabels:
+			assert colname not in catalog.colnames
 		
-		for k, g in enumerate(galaxies):
-			for i, predlabel in enumerate(self.mlparams.predlabels):
-				listname = "%s_committee_%s_%s" % (predlabel, self.mlparams.name, self.toolparams.name)
-				data=[]
-				for nn_i in range(len(preddata_list)):
-					#print nn_i, k, i
-					data.append(preddata_list[nn_i][k,i])
-				setattr(g, listname, data) # Save everything
-				setattr(g, predlabel, np.mean(np.asarray(data))) # Take mean
+		logger.info("Predicting %i galaxies using the %s (%s, %s) in %s..." % (len(catalog), self.toolname, self.mlparams.name, self.toolparams.name, self.workdir))
+		
+		# Again, we get the features
+		featuresdata = np.column_stack([np.array(catalog[colname]) for colname in self.mlparams.features])
 
+		preddata = self.tool.predict(features=featuresdata)
+		
+		assert preddata.shape[0] == len(catalog) # Number of galaxies has to match
+		assert preddata.shape[1] == len(self.mlparams.predlabels) # Number of predlabels has to match
+		
+		# We prepare the output catalog
+		output = copy.deepcopy(catalog)
+		
+		# An explicit loop, to highlight that we care very much about the order.
+		# Note that this might be slow for large tables anyway (adding columns generates copies in memory)
+		for (i, predlabel) in enumerate(self.mlparams.predlabels):
+			output.add_column(astropy.table.Column(name = predlabel, data = preddata[:,i]))
+		
+		return output
+		
 

@@ -1,20 +1,26 @@
 """
+Wrapper around the FANN neural network library, using pyfann that ships with FANN 2.1 beta.
+http://leenissen.dk/fann/wp/
 
-Wrapper around FANN, using pyfann that ships with FANN 2.1 beta
-
-This is meant ot be generic, no "galaxies" here !
+Wrapper initially written for MegaLUT, December 2013.
+This is a standalone module, using only numpy arrays. It is not limited to shape measurement.
+Run it as a script to see a demo.
 
 """
+
+
 import os
 import numpy as np
 from datetime import datetime
-import utils
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 try:
 	from pyfann import libfann
 except:
-	print "I can't import pyfann: not a problem if you don't use it."
+	logger.debug("I can't import pyfann: not a problem if you don't use FANN.", exc_info = True)
 
 
 def writedata(filename, inputs, outputs):#=None, noutput=1):
@@ -37,36 +43,8 @@ def writedata(filename, inputs, outputs):#=None, noutput=1):
 		f.write(" ".join(["%.6f" % item for item in inputline]) + "\n")
 		f.write(" ".join(["%.6f" % item for item in outputline]) + "\n")
 	f.close()
-	print "Wrote %s\n(datapoints : %i, inputs : %i, outputs : %i)" % (filename, ndp, nin, nout)
+	logger.debug("Wrote %s\n(datapoints : %i, inputs : %i, outputs : %i)" % (filename, ndp, nin, nout))
 
-
-
-# The unsymmetric way :
-"""
-def standardize(data, params=None):
-
-	if params == None:
-		(mins, maxs) = (np.min(data, axis=0), np.max(data, axis=0))
-	else:
-		(mins, maxs) = params
-		
-		
-	std_data = (data - mins)/(maxs - mins)
-	std_data = 0.1 + 0.8 * std_data
-	
-	if params == None:
-		return (std_data, (mins, maxs))
-	else:
-		return std_data
-	
-
-def unstandardize(data, params):
-	
-	(mins, maxs) = params
-	unstd_data = (data - 0.1)/0.8
-	unstd_data = mins + unstd_data * (maxs - mins)
-	return unstd_data
-"""
 
 
 # Note that FANN does provide some scale unscale functions. Didn't see this.
@@ -98,7 +76,31 @@ def unstandardize(data, params, rangeval=1.0):
 	return unstd_data
 
 
-
+# The unsymmetric way :
+#def standardize(data, params=None):
+#
+#	if params == None:
+#		(mins, maxs) = (np.min(data, axis=0), np.max(data, axis=0))
+#	else:
+#		(mins, maxs) = params
+#		
+#		
+#	std_data = (data - mins)/(maxs - mins)
+#	std_data = 0.1 + 0.8 * std_data
+#	
+#	if params == None:
+#		return (std_data, (mins, maxs))
+#	else:
+#		return std_data
+#
+#
+#def unstandardize(data, params):
+#	
+#	(mins, maxs) = params
+#	unstd_data = (data - 0.1)/0.8
+#	unstd_data = mins + unstd_data * (maxs - mins)
+#	return unstd_data
+#
 
 
 
@@ -108,7 +110,7 @@ class FANNParams:
 			learning_rate=0.7, activation_steepness_hidden=0.5,
 			desired_error=1.0e-7, max_iterations=10000, iterations_between_reports=None,
 			rangeval = 1.0, activation_function_hidden = "SIGMOID_SYMMETRIC",
-			name="fann", verbose=False):
+			name="default", verbose=False):
 		"""
 		Choices for activation_function_hidden:
 			SIGMOID_SYMMETRIC
@@ -142,9 +144,10 @@ class FANNParams:
 		self.activation_function_hidden = activation_function_hidden	
 		
 		self.name = name
-		self.tool = "fann"
 		self.verbose = verbose
-		
+	
+	def __str__(self):
+		return "FANN parameters \"%s\": nhid=%s, max_iterations=%i, %s" % (self.name, str(self.nhid), self.max_iterations, self.activation_function_hidden)	
 		
 
 class FANNWrapper:
@@ -152,7 +155,7 @@ class FANNWrapper:
 	def __init__(self, params, workdir=None):
 	
 		if workdir == None:
-			self.workdir = "FANNdir"
+			self.workdir = "FANN_workdir"
 		else:
 			self.workdir = workdir
 			
@@ -161,8 +164,6 @@ class FANNWrapper:
 		
 	def __str__(self):
 		return "FANN in %s" % (os.path.basename(self.workdir))
-
-
 
 	
 	def train(self, features, labels):
@@ -177,7 +178,7 @@ class FANNWrapper:
 		arch.append(labels.shape[1])
 		
 		self.arch = arch
-		print "Network architecture : %s" % (str(self.arch))
+		logger.info("Network architecture : %s" % (str(self.arch)))
 		
 		ann = libfann.neural_net()
 		#ann.create_standard_array(self.arch)
@@ -216,7 +217,7 @@ class FANNWrapper:
 		
 	
 	
-	def pred(self, features):
+	def predict(self, features):
 		
 		ann = libfann.neural_net()
 		ann.create_from_file(os.path.join(self.workdir, "FANN.net"))
@@ -267,7 +268,7 @@ if __name__ == "__main__":
 	
 		# Let's make some predictions on a fine grid of points :
 		pred_features = np.linspace(-2, 12, 1000).reshape(1000, 1)
-		pred_labels = obj.pred(pred_features)
+		pred_labels = obj.predict(pred_features)
 	
 		#print pred_labels.shape
 		#print pred_features.shape
