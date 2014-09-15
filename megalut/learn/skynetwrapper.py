@@ -1,9 +1,9 @@
 """
-This is a standalone tiny python wrapper around SkyNet regressions
-Malte Tewes, December 2013
+Wrapper around SkyNet neural network regression
+http://arxiv.org/abs/1309.0790
 
-There is an example at the bottom of this file.
-Execute this file to see it at work.
+Wrapper written for MegaLUT, December 2013.
+This is a standalone module, you can run it as a script to see a demo.
 """
 
 import csv
@@ -11,6 +11,9 @@ import os
 import numpy as np
 import random
 from datetime import datetime
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 """
@@ -47,7 +50,7 @@ def writedata(filename, inputs, outputs=None, noutput=1):
 	"""
 	Writes data files to be read by SkyNet, low level function
 	
-	If you do not specify outputs (e.g., for predictions), I will write nouput zeroes.
+	If you do not specify outputs (e.g., for predictions), I will write noutput zeroes.
 	Having the correct number of output labels seems mandatory for SkyNet.
 	
 	"""
@@ -79,24 +82,27 @@ def readpred(filename):
 class SkyNetParams:
 	"""
 	A container for the internal parameters for SkyNet
+	
 	"""
 	
-	def __init__(self, nhid, pretrain=0, sigma=0.1, confidence_rate=0.3, confidence_rate_minimum = 0.01, iteration_print_frequency = 10, max_iter = 200, name="skynet"):
+	def __init__(self, hidden_nodes, pretrain=0, sigma=0.1, confidence_rate=0.3,
+		     confidence_rate_minimum = 0.01, iteration_print_frequency = 10,
+		     max_iterations = 200, name="default"):
 		"""
-		nhid is a list of number of nodes in the hidden layers. example: [5] means one hidden layer with 5 nodes...
+		:param hidden_nodes: a list of number of nodes in the hidden layers.
+		                     example: (5) means one hidden layer with 5 nodes...
 		"""
-		self.nhid = nhid
+		self.hidden_nodes = hidden_nodes
 		self.pretrain = pretrain
 		self.sigma = sigma
 		self.confidence_rate = confidence_rate
 		self.confidence_rate_minimum = confidence_rate_minimum
 		self.iteration_print_frequency = iteration_print_frequency
-		self.max_iter = max_iter
+		self.max_iterations = max_iterations
 		self.name = name # Just a string to identify this parameter set...
-		self.tool = "skynet" # Do not change this. Allows simple checks that these params are meant for skynet.
 
 
-class SkyNet():
+class SkyNetWrapper():
 	"""
 	Represents a SkyNet run
 	"""
@@ -107,7 +113,7 @@ class SkyNet():
 		"""
 		
 		if workdir == None:
-			self.workdir = "workdir"
+			self.workdir = "SkyNet_workdir"
 		else:
 			self.workdir = workdir
 		
@@ -116,14 +122,15 @@ class SkyNet():
 
 
 	def __str__(self):
-		return "SkyNet in %s: max_iter %i" % (os.path.basename(self.workdir), self.params.max_iter)
+		return "SkyNet in %s: max_iterations %i" % (os.path.basename(self.workdir),
+							    self.params.max_iterations)
 
 
-	def prep(self, features, labels):
+	def _prep(self, features, labels):
 		"""
-		Top-level method to prepare a SkyNet training using this data.
-		Writes the input files for SkyNet
-		features is a 2D numpy array, each line (first index) contains the features of one element.
+		Prepare a SkyNet training, by writing the input files. This is called by train.
+		features is a 2D numpy array, each line (first index) contains the features of
+		one element.
 		labels contains the corresponding labels.
 		Those two must have the same number of lines
 		
@@ -131,7 +138,8 @@ class SkyNet():
 
 		assert np.shape(features)[0] == np.shape(labels)[0]
 		
-		print "Preparing SkyNet run on %i elements in %s..." % (np.shape(features)[0], self.workdir)
+		print "Preparing SkyNet run on %i elements in %s..." % (np.shape(features)[0],
+									self.workdir)
 
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
@@ -158,7 +166,7 @@ class SkyNet():
 		writedata(os.path.join(self.workdir, "skynet_train.txt"), trainfeatures, trainlabels)
 		writedata(os.path.join(self.workdir, "skynet_test.txt"), testfeatures, testlabels)
 
-		self.nhidbloc = "\n".join(["#nhid\n%i" % (e) for e in self.params.nhid])
+		self.nhidbloc = "\n".join(["#nhid\n%i" % (e) for e in self.params.hidden_nodes])
 		
 		skynetinptxt = """#input_root
 skynet_
@@ -208,7 +216,7 @@ skynet_
 #convergence_function
 1
 #max_iter
-{self.params.max_iter}
+{self.params.max_iterations}
 """.format(self=self)
 	
 
@@ -219,10 +227,13 @@ skynet_
 		skynetinp.close()
 
 	
-	def train(self, exe = "nice -n 15 SkyNet", verbose=False):
+	def train(self, features, labels, exe = "nice -n 15 SkyNet", verbose=False):
 		"""
-		Calls SkyNet
+		Top-level function to train a SkyNet network.
 		"""
+		# First we prepare the input files:
+		self._prep(features, labels)
+		
 		print "Starting the training of"
 		print str(self)
 		
@@ -243,7 +254,7 @@ skynet_
 			print "This training took %s" % (str(endtime - starttime))
 	
 	
-	def pred(self, features, exe = "nice -n 15 CalPred"):
+	def predict(self, features, exe = "nice -n 15 CalPred"):
 		"""
 		Top-level function to compute predictions.
 		Give me features, I return the corresponding labels
@@ -301,20 +312,19 @@ if __name__ == "__main__":
 	y = np.sin(x)*x + 0.3*np.random.randn(len(x))
 	
 	# x and y are 1D arrays. But our SkyNet wrapper works only with 2D arrays.
-	# First index = datapoint, sedond index : the different features.
+	# First index = datapoint, second index : the different features.
 	
 	features = x.reshape(100, 1)
 	labels = y.reshape(100, 1)
 	
-	snparams = SkyNetParams(nhid = [3], max_iter=100)
+	snparams = SkyNetParams(hidden_nodes = [5], max_iterations=100)
 	
-	sn = SkyNet(snparams)
-	sn.prep(features, labels)
-	sn.train()
+	sn = SkyNetWrapper(snparams)
+	sn.train(features, labels)
 	
 	# Let's make some predictions on a fine grid of points :
 	pred_features = np.linspace(-2, 12, 1000).reshape(1000, 1)
-	pred_labels = sn.pred(pred_features)
+	pred_labels = sn.predict(pred_features)
 	
 	plt.plot(x, y, "r.")
 	plt.plot(pred_features, pred_labels, "g-")
@@ -333,8 +343,8 @@ if __name__ == "__main__":
 	y = np.vstack((y1, y2)).T
 	
 	sn = SkyNet()
-	sn.nhid = [5]
-	sn.max_iter = 100
+	sn.hidden_nodes = [5]
+	sn.max_iterations = 100
 
 	sn.prep(x, y)
 	sn.train()
