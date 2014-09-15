@@ -43,11 +43,13 @@ def writedata(filename, inputs, outputs):#=None, noutput=1):
 		f.write(" ".join(["%.6f" % item for item in inputline]) + "\n")
 		f.write(" ".join(["%.6f" % item for item in outputline]) + "\n")
 	f.close()
-	logger.debug("Wrote %s\n(datapoints : %i, inputs : %i, outputs : %i)" % (filename, ndp, nin, nout))
+	logger.debug("Wrote %s\n(datapoints : %i, inputs : %i, outputs : %i)" % (filename, ndp,
+										 nin, nout))
 
 
 
-# Note that FANN does provide some scale unscale functions. Didn't see this in time, and so here are own implementations :
+# Note that FANN does provide some scale unscale functions. Didn't see this in time, and so
+# here are own implementations :
 def standardize(data, params=None, rangeval=1.0):
 	"""
 	output will be between -rangeval and +rangeval ...
@@ -77,7 +79,8 @@ def unstandardize(data, params, rangeval=1.0):
 
 
 # The unsymmetric way (for activation functions with non-symmetric input value range)
-# This commented code is here to tell you to be careful about these intervals if you tweak activatiton functions.
+# This commented code is here to tell you to be careful about these intervals if you tweak
+# activatiton functions.
 #def standardize(data, params=None):
 #
 #	if params == None:
@@ -144,7 +147,8 @@ class FANNParams:
 		self.connection_rate = connection_rate
 		
 		self.learning_rate = learning_rate
-		self.activation_steepness_hidden = activation_steepness_hidden # Steepness of sigmoid for hidden nodes
+		# Steepness of sigmoid for hidden nodes
+		self.activation_steepness_hidden = activation_steepness_hidden
 		
 		self.desired_error = desired_error
 		self.max_iterations = max_iterations
@@ -161,7 +165,9 @@ class FANNParams:
 		self.verbose = verbose
 	
 	def __str__(self):
-		return "FANN parameters \"%s\": hidden_nodes=%s, max_iterations=%i, %s" % (self.name, str(self.hidden_nodes), self.max_iterations, self.activation_function_hidden)	
+		return "FANN parameters \"%s\": hidden_nodes=%s, max_iterations=%i, %s" % \
+		    (self.name, str(self.hidden_nodes), self.max_iterations,
+		     self.activation_function_hidden)
 		
 
 class FANNWrapper:
@@ -209,22 +215,32 @@ class FANNWrapper:
 		ann.set_learning_rate(self.params.learning_rate)
 		
 		ann.set_activation_function_output(libfann.LINEAR) # IMPORTANT FOR REGRESSIONS !!!
-		ann.set_activation_steepness_output(0.5) # No real influence, given the linear output layer.
+		ann.set_activation_steepness_output(0.5) # No real influence, given the
+		                                         # linear output layer.
 		
-		eval("ann.set_activation_function_hidden(libfann." + self.params.activation_function_hidden + ")")
+		eval("ann.set_activation_function_hidden(libfann." + \
+			     self.params.activation_function_hidden + ")")
 		ann.set_activation_steepness_hidden(self.params.activation_steepness_hidden)
 
-		(std_features, self.features_norm_params) = standardize(features, rangeval=self.params.rangeval)
-		(std_labels, self.labels_norm_params) = standardize(labels, rangeval=self.params.rangeval)
+		(std_features, self.features_norm_params) = \
+		    standardize(features, rangeval=self.params.rangeval)
+		(std_labels, self.labels_norm_params) = \
+		    standardize(labels, rangeval=self.params.rangeval)
 		writedata(os.path.join(self.workdir, "input.data"), std_features, std_labels)
 		
 		if self.params.verbose:
 			ann.print_parameters()
 		
-		#ann.randomize_weights(-0.2, 0.2) # They are already random, this does not seem to work anyway.
+		#ann.randomize_weights(-0.2, 0.2) # They are already random,
+		                                  # this does not seem to work anyway.
 		
-		ann.train_on_file(os.path.join(self.workdir, "input.data"), self.params.max_iterations, self.params.iterations_between_reports, self.params.desired_error)
-		#ann.train_on_file(os.path.join(self.workdir, "input.data"), self.params.max_iterations, self.params.iterations_between_reports, self.params.desired_error)
+		ann.train_on_file(os.path.join(self.workdir, "input.data"),
+				  self.params.max_iterations,
+				  self.params.iterations_between_reports, self.params.desired_error)
+		#ann.train_on_file(os.path.join(self.workdir, "input.data"),
+		#		  self.params.max_iterations,
+		#		  self.params.iterations_between_reports,
+		#		  self.params.desired_error)
 
 		ann.save(os.path.join(self.workdir, "FANN.net"))
 	
@@ -236,9 +252,11 @@ class FANNWrapper:
 		ann = libfann.neural_net()
 		ann.create_from_file(os.path.join(self.workdir, "FANN.net"))
 
-		std_features = standardize(features, self.features_norm_params, rangeval=self.params.rangeval)
+		std_features = standardize(features, self.features_norm_params,
+					   rangeval=self.params.rangeval)
 		std_output = np.array(map(ann.run, std_features))
-		output = unstandardize(std_output, self.labels_norm_params, rangeval=self.params.rangeval)
+		output = unstandardize(std_output, self.labels_norm_params,
+				       rangeval=self.params.rangeval)
 		#output = std_output
 		#print output
 		
@@ -275,7 +293,8 @@ if __name__ == "__main__":
 	for nhid in [10]:
 	
 		plt.clf()
-		params = FANNParams(hidden_nodes = [nhid], learning_rate=0.5, max_iterations=1000, activation_steepness_hidden=0.5)
+		params = FANNParams(hidden_nodes = [nhid], learning_rate=0.5,
+				    max_iterations=1000, activation_steepness_hidden=0.5)
 	
 		obj = FANNWrapper(params)
 		obj.train(features, labels)
@@ -299,8 +318,3 @@ if __name__ == "__main__":
 		#plt.title("%i hidden nodes" % (nhid))
 		#plt.savefig("%i.pdf" % (nhid))
 		plt.show()
-
-		
-		
-		
-		
