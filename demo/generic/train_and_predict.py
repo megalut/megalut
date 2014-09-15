@@ -1,5 +1,5 @@
 """
-We read the measurements from the previous demo, train a FANN, and self-predict the training set to see if it worked.
+We read the measurements from the draw_and_measure_sims.py script, train a FANN, and self-predict the training set to see if it worked.
 """
 
 
