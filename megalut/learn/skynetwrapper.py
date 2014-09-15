@@ -85,9 +85,12 @@ class SkyNetParams:
 	
 	"""
 	
-	def __init__(self, hidden_nodes, pretrain=0, sigma=0.1, confidence_rate=0.3, confidence_rate_minimum = 0.01, iteration_print_frequency = 10, max_iterations = 200, name="default"):
+	def __init__(self, hidden_nodes, pretrain=0, sigma=0.1, confidence_rate=0.3,
+		     confidence_rate_minimum = 0.01, iteration_print_frequency = 10,
+		     max_iterations = 200, name="default"):
 		"""
-		:param hidden_nodes: a list of number of nodes in the hidden layers. example: (5) means one hidden layer with 5 nodes...
+		:param hidden_nodes: a list of number of nodes in the hidden layers.
+		                     example: (5) means one hidden layer with 5 nodes...
 		"""
 		self.hidden_nodes = hidden_nodes
 		self.pretrain = pretrain
@@ -125,7 +128,8 @@ class SkyNetWrapper():
 	def _prep(self, features, labels):
 		"""
 		Prepare a SkyNet training, by writing the input files. This is called by train.
-		features is a 2D numpy array, each line (first index) contains the features of one element.
+		features is a 2D numpy array, each line (first index) contains the features of
+		one element.
 		labels contains the corresponding labels.
 		Those two must have the same number of lines
 		
@@ -133,7 +137,8 @@ class SkyNetWrapper():
 
 		assert np.shape(features)[0] == np.shape(labels)[0]
 		
-		print "Preparing SkyNet run on %i elements in %s..." % (np.shape(features)[0], self.workdir)
+		print "Preparing SkyNet run on %i elements in %s..." % (np.shape(features)[0],
+									self.workdir)
 
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
