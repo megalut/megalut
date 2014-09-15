@@ -122,7 +122,8 @@ class SkyNetWrapper():
 
 
 	def __str__(self):
-		return "SkyNet in %s: max_iterations %i" % (os.path.basename(self.workdir), self.params.max_iterations)
+		return "SkyNet in %s: max_iterations %i" % (os.path.basename(self.workdir),
+							    self.params.max_iterations)
 
 
 	def _prep(self, features, labels):
