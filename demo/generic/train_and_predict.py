@@ -1,5 +1,6 @@
 """
-We read the measurements from the draw_and_measure_sims.py script, train a FANN, and self-predict the training set to see if it worked.
+We read the measurements from the draw_and_measure_sims.py script, train a FANN, and self-predict
+the training set to see if it worked.
 """
 
 
@@ -19,10 +20,12 @@ inputcat = inputcat[inputcat["mes_flag"] == 0]
 #print inputcat.colnames
 
 # What to train:
-mymlparams = megalut.learn.MLParams(name = "foo", features = ["mes_g1", "mes_g2"], labels = ["tru_g1", "tru_g2"], predlabels = ["pre_g1", "pre_g2"])
+mymlparams = megalut.learn.MLParams(name = "foo", features = ["mes_g1", "mes_g2"],
+                                    labels = ["tru_g1", "tru_g2"], predlabels = ["pre_g1", "pre_g2"])
 
 # How to train:
-myfannparams = megalut.learn.fannwrapper.FANNParams(name = "bar", hidden_nodes = [6, 6], max_iterations = 1000)
+myfannparams = megalut.learn.fannwrapper.FANNParams(name = "bar", hidden_nodes = [6, 6],
+                                                    max_iterations = 1000)
 
 
 # Here we go:
