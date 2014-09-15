@@ -27,7 +27,7 @@ def writedata(filename, inputs, outputs):#=None, noutput=1):
 	"""
 	Writes data files to be read by FANN, low level function
 	
-	#If you do not specify outputs (e.g., for predictions), I will write nouput zeroes.
+	#If you do not specify outputs (e.g., for predictions), I will write noutput zeroes.
 	#Having the correct number of output labels seems mandatory for SkyNet.
 	
 	"""
