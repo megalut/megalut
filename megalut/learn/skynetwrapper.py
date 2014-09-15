@@ -311,7 +311,7 @@ if __name__ == "__main__":
 	y = np.sin(x)*x + 0.3*np.random.randn(len(x))
 	
 	# x and y are 1D arrays. But our SkyNet wrapper works only with 2D arrays.
-	# First index = datapoint, sedond index : the different features.
+	# First index = datapoint, second index : the different features.
 	
 	features = x.reshape(100, 1)
 	labels = y.reshape(100, 1)
