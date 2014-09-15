@@ -24,7 +24,7 @@ class MLParams:
 	A container for the general parameters describing the machine learning: what features should I use to predict what labels ?
 	Features, labels, and predlabels are lists of strings, with the names of the columns of the catalog to use.
 	
-	:param name: a string describing these machine learning params.
+	:param name: pick a short string describing these machine learning params. It will be used within filenames to store ML data.
 	:param features: the list of column names to be used as input, i.e. "features", for the machine learning
 	:param labels: the list of column names that I should learn to predict (that is, the "truth")
 	:param predlabels: the corresponding list of column names where I should write my predictions
@@ -67,7 +67,7 @@ class ML:
 	
 	:param mlparams: an MLParams object, describing *what* to learn.
 	:param toolparams: this describes *how* to learn. For instance a FANNParams object, if you want to use FANN.
-	:param workdir: a working directory in which I keep what I've learned.
+	:param workbasedir: path to a directory in which I should keep what I've learned. Within this directroy, I will create subdirectories using the mlparams.name and toolparams.name. If not specified, I use the current directory as workbasedir.
 	
 	
 	This class has two key methods: train and predict. These methods directly call the train and predict methods of the underlying machine learning wrappers.
@@ -75,27 +75,27 @@ class ML:
 	
 	"""
 
-	def __init__(self, mlparams, toolparams, workdir = None):
+	def __init__(self, mlparams, toolparams, workbasedir = "."):
 		
 		self.mlparams = mlparams
 		self.toolparams = toolparams
 		
-		if workdir == None:
-			self.workdir = "mlworkdir"
-		else:
-			self.workdir = workdir
-	
 		if isinstance(self.toolparams, fannwrapper.FANNParams):
 			self.toolname = "FANN"
+			self.workdir = os.path.join(workbasedir, "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name))
 			self.tool = fannwrapper.FANNWrapper(self.toolparams, workdir=self.workdir)
 		elif isinstance(self.toolparams, skynetwrapper.SkyNetParams):
 			self.toolname = "SkyNet"
+			self.workdir = os.path.join(workbasedir, "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name))
 			self.tool = skynet.SkyNetWrapper(self.toolparams, workdir=self.workdir)
 		else:
 			raise RuntimeError()
 			# ["skynet", "ffnet", "pybrain", "fann", "minilut"]
 		
-	
+		
+		if os.path.exists(self.workdir):
+			logger.warning("ML workdir %s already exists, I might overwrite stuff !" % self.workdir)
+		
 	def train(self, catalog):
 		"""
 		Runs the training, by extracting the numbers from the catalog and feeding them into the "train" method of the ml tool.

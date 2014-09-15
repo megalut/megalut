@@ -26,9 +26,11 @@ myfannparams = megalut.ml.fannwrapper.FANNParams(name = "bar", nhid = [6, 6], ma
 
 
 # Here we go:
-myml = megalut.ml.ML(mymlparams, myfannparams, workdir = "myworkdir")
+myml = megalut.ml.ML(mymlparams, myfannparams)
 
 myml.train(inputcat)
+
+# Note the name of the directory that was created to store the trained network!
 
 outputcat = myml.predict(inputcat)
 
