@@ -1,5 +1,5 @@
 """
-A module to connect the shape measurement stuff (astropy.table catalogs...) to the mchine learning (ml) wrappers.
+A module to connect the shape measurement stuff (astropy.table catalogs...) to the machine learning (ml) wrappers.
 """
 
 import numpy as np

@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 import megalut
-import megalut.ml
+import megalut.learn
 
 inputcat = megalut.utils.readpickle("meascat.pkl")
 
@@ -19,14 +19,14 @@ inputcat = inputcat[inputcat["mes_flag"] == 0]
 #print inputcat.colnames
 
 # What to train:
-mymlparams = megalut.ml.MLParams(name = "foo", features = ["mes_g1", "mes_g2"], labels = ["tru_g1", "tru_g2"], predlabels = ["pre_g1", "pre_g2"])
+mymlparams = megalut.learn.MLParams(name = "foo", features = ["mes_g1", "mes_g2"], labels = ["tru_g1", "tru_g2"], predlabels = ["pre_g1", "pre_g2"])
 
 # How to train:
-myfannparams = megalut.ml.fannwrapper.FANNParams(name = "bar", nhid = [6, 6], max_iterations = 1000)
+myfannparams = megalut.learn.fannwrapper.FANNParams(name = "bar", nhid = [6, 6], max_iterations = 1000)
 
 
 # Here we go:
-myml = megalut.ml.ML(mymlparams, myfannparams)
+myml = megalut.learn.ML(mymlparams, myfannparams)
 
 myml.train(inputcat)
 
