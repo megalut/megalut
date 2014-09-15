@@ -206,7 +206,10 @@ class FANNWrapper:
 		
 		ann.set_training_algorithm(libfann.TRAIN_RPROP)
 		"""
-		Options for set_training_algorithm():
+
+
+
+		Choices for set_training_algorithm:
 
 		 TRAIN_INCREMENTAL
 		 TRAIN_BATCH
@@ -214,6 +217,9 @@ class FANNWrapper:
 		 TRAIN_QUICKPROP
 
 		 http://leenissen.dk/fann/html/files/fann_data-h.html#fann_train_enum
+
+
+
 		"""
 		
 		ann.set_learning_rate(self.params.learning_rate)
