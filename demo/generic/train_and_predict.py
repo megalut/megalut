@@ -22,7 +22,7 @@ inputcat = inputcat[inputcat["mes_flag"] == 0]
 mymlparams = megalut.learn.MLParams(name = "foo", features = ["mes_g1", "mes_g2"], labels = ["tru_g1", "tru_g2"], predlabels = ["pre_g1", "pre_g2"])
 
 # How to train:
-myfannparams = megalut.learn.fannwrapper.FANNParams(name = "bar", nhid = [6, 6], max_iterations = 1000)
+myfannparams = megalut.learn.fannwrapper.FANNParams(name = "bar", hidden_nodes = [6, 6], max_iterations = 1000)
 
 
 # Here we go:

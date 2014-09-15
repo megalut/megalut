@@ -47,7 +47,7 @@ def writedata(filename, inputs, outputs):#=None, noutput=1):
 
 
 
-# Note that FANN does provide some scale unscale functions. Didn't see this.
+# Note that FANN does provide some scale unscale functions. Didn't see this in time, and so here are own implementations :
 def standardize(data, params=None, rangeval=1.0):
 	"""
 	output will be between -rangeval and +rangeval ...
@@ -76,7 +76,8 @@ def unstandardize(data, params, rangeval=1.0):
 	return unstd_data
 
 
-# The unsymmetric way :
+# The unsymmetric way (for activation functions with non-symmetric input value range)
+# This commented code is here to tell you to be careful about these intervals if you tweak activatiton functions.
 #def standardize(data, params=None):
 #
 #	if params == None:
@@ -105,13 +106,29 @@ def unstandardize(data, params, rangeval=1.0):
 
 
 class FANNParams:
+	"""
 	
-	def __init__(self, nhid, connection_rate=1.0,
+	:param hidden_nodes: a list or tuple of the number of nodes in hidden layers.
+		For example, ``(5, 5)`` means two hidden layers with 5 nodes each. 
+	
+	:param connection_rate: controls how many connections there will be in the network. 
+		If the connection rate is set to 1, the network will be fully connected,
+		but if it is set to 0.5 only half of the connections will be set. 
+		A connection rate of 1 will yield the same result as fann_create_standard
+	
+	See source and FANN documentation for the other parameters...
+	"""
+	
+	
+	def __init__(self, hidden_nodes, connection_rate=1.0,
 			learning_rate=0.7, activation_steepness_hidden=0.5,
 			desired_error=1.0e-7, max_iterations=10000, iterations_between_reports=None,
 			rangeval = 1.0, activation_function_hidden = "SIGMOID_SYMMETRIC",
 			name="default", verbose=False):
 		"""
+		
+		
+		
 		Choices for activation_function_hidden:
 			SIGMOID_SYMMETRIC
 			SIGMOID_SYMMETRIC_STEPWISE (same but faster)
@@ -123,11 +140,8 @@ class FANNParams:
 			
 		"""
 		
-		self.nhid = nhid # a tuple of numbers of nodes per hidden layer
-		self.connection_rate = connection_rate # controls how many connections there will be in the network. 
-			# If the connection rate is set to 1, the network will be fully connected,
-			# but if it is set to 0.5 only half of the connections will be set. 
-			# A connection rate of 1 will yield the same result as fann_create_standard
+		self.hidden_nodes = hidden_nodes 
+		self.connection_rate = connection_rate
 		
 		self.learning_rate = learning_rate
 		self.activation_steepness_hidden = activation_steepness_hidden # Steepness of sigmoid for hidden nodes
@@ -147,7 +161,7 @@ class FANNParams:
 		self.verbose = verbose
 	
 	def __str__(self):
-		return "FANN parameters \"%s\": nhid=%s, max_iterations=%i, %s" % (self.name, str(self.nhid), self.max_iterations, self.activation_function_hidden)	
+		return "FANN parameters \"%s\": hidden_nodes=%s, max_iterations=%i, %s" % (self.name, str(self.hidden_nodes), self.max_iterations, self.activation_function_hidden)	
 		
 
 class FANNWrapper:
@@ -174,7 +188,7 @@ class FANNWrapper:
 		starttime = datetime.now()
 		
 		arch = [features.shape[1]]
-		arch.extend(self.params.nhid)
+		arch.extend(self.params.hidden_nodes)
 		arch.append(labels.shape[1])
 		
 		self.arch = arch
@@ -261,7 +275,7 @@ if __name__ == "__main__":
 	for nhid in [10]:
 	
 		plt.clf()
-		params = FANNParams(nhid = [nhid], learning_rate=0.5, max_iterations=1000, activation_steepness_hidden=0.5)
+		params = FANNParams(hidden_nodes = [nhid], learning_rate=0.5, max_iterations=1000, activation_steepness_hidden=0.5)
 	
 		obj = FANNWrapper(params)
 		obj.train(features, labels)

@@ -82,13 +82,14 @@ def readpred(filename):
 class SkyNetParams:
 	"""
 	A container for the internal parameters for SkyNet
+	
 	"""
 	
-	def __init__(self, nhid, pretrain=0, sigma=0.1, confidence_rate=0.3, confidence_rate_minimum = 0.01, iteration_print_frequency = 10, max_iterations = 200, name="default"):
+	def __init__(self, hidden_nodes, pretrain=0, sigma=0.1, confidence_rate=0.3, confidence_rate_minimum = 0.01, iteration_print_frequency = 10, max_iterations = 200, name="default"):
 		"""
-		nhid is a list of number of nodes in the hidden layers. example: [5] means one hidden layer with 5 nodes...
+		:param hidden_nodes: a list of number of nodes in the hidden layers. example: (5) means one hidden layer with 5 nodes...
 		"""
-		self.nhid = nhid
+		self.hidden_nodes = hidden_nodes
 		self.pretrain = pretrain
 		self.sigma = sigma
 		self.confidence_rate = confidence_rate
@@ -159,7 +160,7 @@ class SkyNetWrapper():
 		writedata(os.path.join(self.workdir, "skynet_train.txt"), trainfeatures, trainlabels)
 		writedata(os.path.join(self.workdir, "skynet_test.txt"), testfeatures, testlabels)
 
-		self.nhidbloc = "\n".join(["#nhid\n%i" % (e) for e in self.params.nhid])
+		self.nhidbloc = "\n".join(["#nhid\n%i" % (e) for e in self.params.hidden_nodes])
 		
 		skynetinptxt = """#input_root
 skynet_
@@ -310,9 +311,9 @@ if __name__ == "__main__":
 	features = x.reshape(100, 1)
 	labels = y.reshape(100, 1)
 	
-	snparams = SkyNetParams(nhid = [5], max_iterations=100)
+	snparams = SkyNetParams(hidden_nodes = [5], max_iterations=100)
 	
-	sn = SkyNet(snparams)
+	sn = SkyNetWrapper(snparams)
 	sn.train(features, labels)
 	
 	# Let's make some predictions on a fine grid of points :
@@ -336,7 +337,7 @@ if __name__ == "__main__":
 	y = np.vstack((y1, y2)).T
 	
 	sn = SkyNet()
-	sn.nhid = [5]
+	sn.hidden_nodes = [5]
 	sn.max_iterations = 100
 
 	sn.prep(x, y)
