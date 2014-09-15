@@ -51,7 +51,7 @@ clean:
 	rm -rf source/apidoc
 
 apidoc:
-	sphinx-apidoc -s rst -T -f -o source/apidoc ../megalut/
+	sphinx-apidoc -s rst -T -e -d 2 -f -o source/apidoc ../megalut/
 	@echo
 	@echo "Run of sphinx-apidoc finished! Now run e.g. make html."
 
