@@ -205,12 +205,16 @@ class FANNWrapper:
 		ann.create_sparse_array(self.params.connection_rate, self.arch)
 		
 		ann.set_training_algorithm(libfann.TRAIN_RPROP)
-		# TRAIN_INCREMENTAL
-		# TRAIN_BATCH
-		# TRAIN_RPROP == the default !
-		# TRAIN_QUICKPROP
-		# http://leenissen.dk/fann/html/files/fann_data-h.html#fann_train_enum
-		
+		"""
+		Options for set_training_algorithm():
+
+		 TRAIN_INCREMENTAL
+		 TRAIN_BATCH
+		 TRAIN_RPROP == the default !
+		 TRAIN_QUICKPROP
+
+		 http://leenissen.dk/fann/html/files/fann_data-h.html#fann_train_enum
+		"""
 		
 		ann.set_learning_rate(self.params.learning_rate)
 		
