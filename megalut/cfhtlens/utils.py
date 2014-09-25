@@ -1,11 +1,51 @@
-
+import os
+import glob
 
 import astropy.table
+import astropy.wcs
 
 
 import logging
 logger = logging.getLogger(__name__)
 
+
+
+class Pointing():
+	"""
+	A CFHTLenS pointing
+	"""
+
+
+	def __init__(self, label="W1m0m0", filtername="i",
+		surveydir = "/vol/braid1/vol1/thomas/SHEARCOLLAB/Bonn/",
+		swarpconfigpath = "/users/mtewes/CFHTLenS/create_coadd_swarp.swarp"
+	):
+		
+		self.surveydir = surveydir
+		self.label = label
+		self.filtername = filtername # can be hotchanged...
+		self.basedir = os.path.join(self.surveydir, self.label)
+
+		self.swarpconfigpath = swarpconfigpath
+
+	def datadir(self):
+		return os.path.join(self.basedir, self.filtername, "single_V2.2A")
+
+	def headdir(self):
+		return os.path.join(self.basedir, self.filtername, "headers_V2.2A")
+
+	def psfdir(self):
+		return os.path.join(self.basedir, self.filtername, "lensfit_V2.2A_v7p0p3-beta_origpsfweight/psfs")
+
+	def swarpconfig(self):
+		return self.swarpconfigpath
+
+	def explistdir(self):
+		return os.path.join(self.basedir, self.filtername, "lensfit_V2.2A_v7p1p0-beta_origpsfweight/work")
+	
+	def explists(self):
+		filepaths = glob.glob(os.path.join(self.explistdir(), "*.list"))
+		return map(lambda x: os.path.splitext(os.path.basename(x))[0], filepaths)
 
 
 def readcat(filepath):
@@ -18,7 +58,7 @@ def readcat(filepath):
 
 def removejunk(cat):
 	"""
-	Tries to make those catalogs a bit smaller by removing some columns
+	Makes those catalogs a bit smaller by removing some "array" columns
 	"""
 	
 	toremove = [
@@ -43,13 +83,14 @@ def removejunk(cat):
 
 
 
-def computepos(imgfilepath, cat):
+def computepos(imgfilepath, cat, alpha="ALPHA_J2000", delta="DELTA_J2000", x="new_x", y="new_y"):
 	"""
 	I use the fits header WCS to compute the pixel postions of the galaxies in cat.
 	"""
-
+	from astropy import wcs
 
 	pass
+
 
 
 
