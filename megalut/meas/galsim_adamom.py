@@ -118,8 +118,8 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 			continue
 		
 		gal[prefix+"_flux"] = res.moments_amp
-		gal[prefix+"_x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed
-		gal[prefix+"_y"] = res.moments_centroid.y + 1.0
+		gal[prefix+"_x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed. Maybe it's the setOrigin(0, 0).
+		gal[prefix+"_y"] = res.moments_centroid.y + 1.0 # But I would expect that GalSim would internally keep track of these origin issues.
 		gal[prefix+"_g1"] = res.observed_shape.g1
 		gal[prefix+"_g2"] = res.observed_shape.g2
 		gal[prefix+"_sigma"] = res.moments_sigma
