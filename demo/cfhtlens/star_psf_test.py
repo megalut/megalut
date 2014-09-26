@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 import numpy as np
 
 
-"""
+
 catfile = "/vol/fohlen11/fohlen11_1/hendrik/data/CFHTLenS/release_cats/W1m0m0_izrgu_release_mask.cat"
 cat = megalut.cfhtlens.utils.readcat(catfile)
 
@@ -43,7 +43,7 @@ starcat_bothmes = megalut.meas.galsim_adamom.measure(img, starcat_coaddmes, stam
 
 megalut.utils.writepickle(starcat_bothmes, "starcat_bothmes.pkl")
 
-"""
+
 
 
 cat = megalut.utils.readpickle("starcat_bothmes.pkl")
