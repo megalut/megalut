@@ -102,9 +102,9 @@ def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None,
 	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
 	psf_image = galsim.ImageF(stampsize * n , stampsize * n)
 
-	gal_image.setScale(1.0)
-	trugal_image.setScale(1.0)
-	psf_image.setScale(1.0)
+	gal_image.scale = 1.0
+	trugal_image.scale = 1.0
+	psf_image.scale = 1.0
 
 	# And loop through the catalog:
 	for row in catalog:
