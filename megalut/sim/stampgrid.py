@@ -108,7 +108,13 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 	# We prepare the big images :
 	gal_image = galsim.ImageF(stampsize * n , stampsize * n)
 	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
-	psf_image = galsim.ImageF(stampsize * n , stampsize * n)
+	
+		
+	# guess the PSF stamp size from the size of the total size of the psf image	
+	psf_stampsize = np.asarray(np.shape(psf_img))/n
+	assert psf_stampsize[0]==psf_stampsize[1]
+	psf_stampsize = int(psf_stampsize)
+	psf_image = galsim.ImageF(psf_stampsize * n , psf_stampsize * n)
 
 	gal_image.scale = 1.0
 	trugal_image.scale = 1.0
@@ -138,14 +144,9 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 		# We draw the pure unconvolved galaxy
 		gal.draw(trugal_stamp)
 
-		# We prepare the PSF
-		psf_index_x=psf_info["ix"]
-		psf_index_y=psf_info["iy"]
-		# guess the PSF stamp size from the size of the total size of the psf image
-		
-		psf_stampsize = np.asarray(np.shape(psf_img))/n
-		assert psf_stampsize[0]==psf_stampsize[1]
-		psf_stampsize = int(psf_stampsize)
+		# get the PSF stamp
+		# TODO: call a function to do this
+		psf=psf_img[psf_stampsize*psf_info["ix"]:psf_stampsize*(1+psf_info["ix"]),psf_stampsize*psf_info["iy"]:psf_stampsize*(1+psf_info["iy"])]
 		
 		#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
 		#psf = galsim.Gaussian(flux=1., sigma=1.5)
@@ -169,7 +170,8 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 		trugal_image.write(simtrugalimgfilepath)
 	
 	if simpsfimgfilepath != None:
-		psf_image.write(simpsfimgfilepath)
+		utils.tofits(psf_img,simpsfimgfilepath)
+		#psf_image.write(simpsfimgfilepath)
 	
 	endtime = datetime.now()
 	logger.info("This drawing took %s" % (str(endtime - starttime)))
