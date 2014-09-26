@@ -60,14 +60,16 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 
 
 
-def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None, 
+def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfilepath = None, 
 	simpsfimgfilepath = None):
 	"""
 	Truns a catalog as obtained from drawcat into FITS images.
 	The position jitter and the pixel noise are randomized.
 	Call me several times for the same catalog to get different realizations of the same galaxies.
 	
-	:param catalog: an input catalog, as returned by drawcat.	
+	:param gal_catalog: an input catalog, as returned by drawcat.	
+	:param psf_catalog: an input psf catalog, must be the same length as drawcat and contain the index of the psf to be used for each galaxy
+	:param psf_img:	a Numpy array containing all of the PSFs, organised on a nxn grid.
 	:param simgalimgfilepath: : where I write my output image
 	:param simtrugalimgfilepath: : optional, where I write the image without convolution and noise
 	:param simpsfimgfilepath: : optional, where I write the PSFs
@@ -82,16 +84,22 @@ def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None,
 	
 	"""
 	
-	if "n" not in catalog.meta.keys():
-		raise RuntimeError("Provide n in the meta data of the input catalog to drawimg.")
-	if "stampsize" not in catalog.meta.keys():
-		raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")
+	if "n" not in gal_catalog.meta.keys():
+		raise RuntimeError("Provide n in the meta data of the input gal_catalog to drawimg.")
+	if "stampsize" not in gal_catalog.meta.keys():
+		raise RuntimeError("Provide stampsize in the meta data of the input gal_catalog to drawimg.")
+	try:
+		assert len(gal_catalog) == len(psf_catalog)
 	
-	n = catalog.meta["n"]
-	stampsize = catalog.meta["stampsize"]
+	# Checking that the PSF catalog is of the right size.
+	except AssertionError:
+		raise AssertionError("The length of the catalogs (gal_ and psf_) are not the same.")
+	
+	n = gal_catalog.meta["n"]
+	stampsize = gal_catalog.meta["stampsize"]
 	
 	starttime = datetime.now()	
-	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
+	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(gal_catalog), n, n))
 	
 	# Galsim random number generators
 	rng = galsim.BaseDeviate()
@@ -106,8 +114,8 @@ def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None,
 	trugal_image.scale = 1.0
 	psf_image.scale = 1.0
 
-	# And loop through the catalog:
-	for row in catalog:
+	# And loop through the gal_ and psf_ catalogs:
+	for row, psf_info in zip(gal_catalog,psf_catalog):
 		
 		# We will draw this galaxy in a postage stamp :
 		ix = int(row["ix"])
@@ -131,8 +139,16 @@ def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None,
 		gal.draw(trugal_stamp)
 
 		# We prepare the PSF
+		psf_index_x=psf_info["ix"]
+		psf_index_y=psf_info["iy"]
+		# guess the PSF stamp size from the size of the total size of the psf image
+		
+		psf_stampsize = np.asarray(np.shape(psf_img))/n
+		assert psf_stampsize[0]==psf_stampsize[1]
+		psf_stampsize = int(psf_stampsize)
+		
 		#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
-		psf = galsim.Gaussian(flux=1., sigma=1.5)
+		#psf = galsim.Gaussian(flux=1., sigma=1.5)
 
 		# Convolution by the PSF
 		galconv = galsim.Convolve([gal,psf], real_space=False)
