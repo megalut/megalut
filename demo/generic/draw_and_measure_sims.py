@@ -21,6 +21,7 @@ mysimparams = MySimParams()
 simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=10, stampsize=48)
 
 print simcat[:5]
+exit()
 
 # Now, we pass this catalog to drawimg, to generate the actual simulated images.
 
