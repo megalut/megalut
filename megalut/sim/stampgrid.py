@@ -39,10 +39,10 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	for iy in range(n):
 		for ix in range(n):
 		
-			gal = params.get(ix, iy, n) # That's a dict
+			gal = params.get(ix, iy, n) # That's a dict, containing, among the params, also "ix" and "iy".
 			gal["id"] = idprefix + str(ix + n*iy)
-			gal["x"] = ix*stampsize + int(stampsize/2) -1# I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
-			gal["y"] = iy*stampsize + int(stampsize/2) -1
+			gal["x"] = ix*stampsize + stampsize/2.0 + 0.5 # I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
+			gal["y"] = iy*stampsize + stampsize/2.0 + 0.5
 			rows.append(gal) # So rows will be a list of dicts
 		
 	# There are many ways to build a new astropy.table
