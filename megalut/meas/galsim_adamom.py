@@ -82,9 +82,11 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 	#astropy.table.MaskedColumn(name="mes_adamom_flux", dtype=float, length=len(output), fill_value=-1)
 	
 	# Let's save something useful to the meta dict
-	output.meta[prefix + "_imgfilepath"] = bigimg.origimgfilepath
 	output.meta[prefix + "_xname"] = xname
 	output.meta[prefix + "_yname"] = yname
+	
+	# We do not store this long string here, as it leads to problems when saving the cat to FITS
+	#output.meta[prefix + "_imgfilepath"] = bigimg.origimgfilepath
 	
 	n = len(output)
 	
