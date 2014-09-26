@@ -39,10 +39,10 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	for iy in range(n):
 		for ix in range(n):
 		
-			gal = params.get(ix, iy, n) # That's a dict
+			gal = params.get(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy, including `ix` and `iy`.
 			gal["id"] = idprefix + str(ix + n*iy)
-			gal["x"] = ix*stampsize + int(stampsize/2) -1# I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
-			gal["y"] = iy*stampsize + int(stampsize/2) -1
+			gal["x"] = ix*stampsize + stampsize/2.0 + 0.5 # I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
+			gal["y"] = iy*stampsize + stampsize/2.0 + 0.5
 			rows.append(gal) # So rows will be a list of dicts
 		
 	# There are many ways to build a new astropy.table
@@ -102,9 +102,9 @@ def drawimg(catalog, simgalimgfilepath, simtrugalimgfilepath = None,
 	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
 	psf_image = galsim.ImageF(stampsize * n , stampsize * n)
 
-	gal_image.setScale(1.0)
-	trugal_image.setScale(1.0)
-	psf_image.setScale(1.0)
+	gal_image.scale = 1.0
+	trugal_image.scale = 1.0
+	psf_image.scale = 1.0
 
 	# And loop through the catalog:
 	for row in catalog:
