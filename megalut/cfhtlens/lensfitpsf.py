@@ -38,8 +38,7 @@ def makeexppsfs(cat, pointing, workdir="."):
 	Runs createPSFcube for every source in cat and on every exposure of that pointing.
 	
 	createPSFcube only works if its argument is just the basename of the explist (not the full path)
-	(what the hell ???)
-	So we have to copy that file and chdir.
+	So we have to copy that file and chdir. This is very ugly, to not immitate if not required !
 	
 	"""
 	
@@ -49,8 +48,11 @@ def makeexppsfs(cat, pointing, workdir="."):
 	
 	if not os.path.isdir(workdir):
 		os.mkdir(workdir)
+	
+	# VERY IMPORTANT: we have to go back to the current dir at the end of this function !
+	cwd = os.getcwd()
 	os.chdir(workdir)
-
+	
 	writecat(cat, "cat.txt")
 	
 	# We prepare the environment...
@@ -91,6 +93,10 @@ def makeexppsfs(cat, pointing, workdir="."):
 		if err != "":
 			logger.warning(err)
 
+
+	os.chdir(cwd) # It's quite a mess if you don't go back to where you left !
+	print os.getcwd()
+	
 
 def stackexppsfs(cat, workdir, gridwidth=50):
 	"""

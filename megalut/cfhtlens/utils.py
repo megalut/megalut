@@ -4,6 +4,8 @@ import glob
 import astropy.table
 import astropy.wcs
 
+import numpy as np
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -79,6 +81,16 @@ def removejunk(cat):
 		
 		cat.remove_column(colname)
 	
+
+def stars(cat):
+	"""
+	Quick and dirty example keeping only stars
+	"""
+
+	selector = np.logical_and(cat['weight'] < 0.1, cat['fitclass'] == 1)
+	selector = np.logical_and(selector, cat['CLASS_STAR'] > 0.95)
+	
+	return cat[selector]
 
 
 
