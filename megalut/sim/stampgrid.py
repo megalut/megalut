@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 import astropy.table
 import galsim
+import megalut
 
 from datetime import datetime
 
@@ -68,8 +69,8 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 	Call me several times for the same catalog to get different realizations of the same galaxies.
 	
 	:param gal_catalog: an input catalog, as returned by drawcat.	
-	:param psf_catalog: an input psf catalog, must be the same length as drawcat and contain the index of the psf to be used for each galaxy
-	:param psf_img:	a Numpy array containing all of the PSFs, organised on a nxn grid.
+	:param psf_catalog: an input psf catalog, must be the same length as drawcat and contain the index of the psf to be used for each galaxy (astropy Table psfgridx, psfgridy)
+	:param psf_img:	a list containing the Numpy array containing all of the PSFs, organised on a nxn grid and the psf stamp size
 	:param simgalimgfilepath: : where I write my output image
 	:param simtrugalimgfilepath: : optional, where I write the image without convolution and noise
 	:param simpsfimgfilepath: : optional, where I write the PSFs
@@ -87,7 +88,7 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 	if "n" not in gal_catalog.meta.keys():
 		raise RuntimeError("Provide n in the meta data of the input gal_catalog to drawimg.")
 	if "stampsize" not in gal_catalog.meta.keys():
-		raise RuntimeError("Provide stampsize in the meta data of the input gal_catalog to drawimg.")
+		raise RuntimeError("Provide stampsize in the meta data of the input gal_catalog to drawimg.")	
 	try:
 		assert len(gal_catalog) == len(psf_catalog)
 	
@@ -110,11 +111,10 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
 	
 		
-	# guess the PSF stamp size from the size of the total size of the psf image	
-	psf_stampsize = np.asarray(np.shape(psf_img))/n
-	assert psf_stampsize[0]==psf_stampsize[1]
-	psf_stampsize = int(psf_stampsize)
-	psf_image = galsim.ImageF(psf_stampsize * n , psf_stampsize * n)
+	# get the PSF stamp size
+	psf_stampsize = psf_img[1]
+	psf_img=psf_img[0]
+	psf_image = galsim.ImageF(psf_stampsize, psf_stampsize)
 
 	gal_image.scale = 1.0
 	trugal_image.scale = 1.0
@@ -130,7 +130,6 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 		bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
 		gal_stamp = gal_image[bounds]
 		trugal_stamp = trugal_image[bounds]
-		psf_stamp = psf_image[bounds]
 	
 		# We draw a sersic profile
 		gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
@@ -145,9 +144,20 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 		gal.draw(trugal_stamp)
 
 		# get the PSF stamp
-		# TODO: call a function to do this
-		psf=psf_img[psf_stampsize*psf_info["ix"]:psf_stampsize*(1+psf_info["ix"]),psf_stampsize*psf_info["iy"]:psf_stampsize*(1+psf_info["iy"])]
 		
+		psf_bounds = galsim.BoundsI(psf_info[0]*psf_stampsize+1 , 
+				(psf_info[0]+1)*psf_stampsize, 
+				psf_info[1]*psf_stampsize+1 , 
+				(psf_info[1]+1)*psf_stampsize) # Default Galsim convention, index starts at 1.
+		"""psf_bounds = galsim.BoundsI(
+				int(psf_info['psfgridx']-0.5-psf_stampsize/2+1), 
+				int(psf_info['psfgridy']-0.5+psf_stampsize/2),
+				int(psf_info['psfgridy']-0.5-psf_stampsize/2+1), 
+				int(psf_info['psfgridy']-0.5+psf_stampsize/2)) # Default Galsim convention, index starts at 1."""
+		psf_stamp = psf_image[galsim.BoundsI(1,psf_stampsize,1,psf_stampsize)]
+		#psf=psf_img[psf_bounds]
+		psf = galsim.InterpolatedImage(psf_img[psf_bounds], flux=1.0, dx=1.0)
+
 		#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
 		#psf = galsim.Gaussian(flux=1., sigma=1.5)
 
@@ -170,8 +180,7 @@ def drawimg(gal_catalog, psf_catalog, psf_img, simgalimgfilepath, simtrugalimgfi
 		trugal_image.write(simtrugalimgfilepath)
 	
 	if simpsfimgfilepath != None:
-		utils.tofits(psf_img,simpsfimgfilepath)
-		#psf_image.write(simpsfimgfilepath)
+		psf_img.write(simpsfimgfilepath)
 	
 	endtime = datetime.now()
 	logger.info("This drawing took %s" % (str(endtime - starttime)))

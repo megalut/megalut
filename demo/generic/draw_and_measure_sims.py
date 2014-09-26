@@ -9,6 +9,8 @@ import megalut
 import megalut.sim
 import megalut.meas
 
+import galsim
+import numpy as np
 
 # First, we set the desired distributions of parameters, by overwriting the default distributions.
 
@@ -18,14 +20,26 @@ class MySimParams(megalut.sim.params.Params):
 		
 mysimparams = MySimParams()
 
-simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=10, stampsize=48)
+# What's the square root of the number of galaxies to simulate ?
+n = 100
 
-print simcat[:5]
-exit()
+simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=n, stampsize=48)
+
+#print simcat[:5]
+
+psf_stampsize = 32
+# First load the PSF image...
+psf = galsim.Gaussian(flux=1., sigma=1.5)
+psf_image = galsim.ImageF(psf_stampsize , psf_stampsize)
+psf_img = galsim.fits.read("psfs/psfgrid.fits"), 32
+
+# Then assign PSF to a galaxy stamp
+psf_catalog=np.random.randint(10,size=(n**2,2))
 
 # Now, we pass this catalog to drawimg, to generate the actual simulated images.
 
-megalut.sim.stampgrid.drawimg(simcat,
+megalut.sim.stampgrid.drawimg(simcat, psf_catalog,
+	psf_img=psf_img,
 	simgalimgfilepath="simgalimg.fits",
 	simtrugalimgfilepath="simtrugalimg.fits",
 	simpsfimgfilepath="simpsfimg.fits"
