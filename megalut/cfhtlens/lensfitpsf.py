@@ -160,8 +160,8 @@ def stackexppsfs(cat, workdir, gridwidth=50):
 		
 		grid[xmin:xmax, ymin:ymax] = stack[i].transpose() / float(counter[i])
 		
-		xpos = xmin + stampsize/2.0 - 1.0
-		ypos = ymin + stampsize/2.0 - 1.0
+		xpos = xmin + stampsize/2.0 + 0.5
+		ypos = ymin + stampsize/2.0 + 0.5
 		outcat[i]["psfgridx"] = xpos
 		outcat[i]["psfgridy"] = ypos
 		outcat[i]["psfgridn"] = counter[i]
