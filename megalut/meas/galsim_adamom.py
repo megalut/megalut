@@ -118,8 +118,8 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 			continue
 		
 		gal[prefix+"_flux"] = res.moments_amp
-		gal[prefix+"_x"] = res.moments_centroid.x
-		gal[prefix+"_y"] = res.moments_centroid.y
+		gal[prefix+"_x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed
+		gal[prefix+"_y"] = res.moments_centroid.y + 1.0
 		gal[prefix+"_g1"] = res.observed_shape.g1
 		gal[prefix+"_g2"] = res.observed_shape.g2
 		gal[prefix+"_sigma"] = res.moments_sigma
@@ -148,22 +148,25 @@ def getstamp(x, y, bigimg, stampsize):
 	I prepare a bounded galsim image stamp "centered" at position (x, y) of your input galsim image.
 	You can use the array attribute of the stamp if you want to get the actual pixels.
 	
+	This assumes that the origin of bigimg is set to (0, 0) as done by loadimg()
+	(This is the default for GalSim, but not for GREAT3 if I remember well).
+	
 	:returns: a tuple(stamp, flag)
 	"""
 
 	assert int(stampsize)%2 == 0 # checking that it's even
 
-	xmin = int(np.floor(x)) - int(stampsize)/2 + 1
-	xmax = int(np.floor(x)) + int(stampsize)/2
-	ymin = int(np.floor(y)) - int(stampsize)/2 + 1
-	ymax = int(np.floor(y)) + int(stampsize)/2
+	xmin = int(np.round(x - 0.5)) - int(stampsize)/2
+	xmax = int(np.round(x - 0.5)) + int(stampsize)/2 - 1
+	ymin = int(np.round(y - 0.5)) - int(stampsize)/2
+	ymax = int(np.round(y - 0.5)) + int(stampsize)/2 - 1
 			
-	assert ymax - ymin == stampsize - 1
+	assert ymax - ymin == stampsize - 1 # This is the GalSim convention, both extremas are "included" in the bounds.
 	assert xmax - xmin == stampsize - 1
 	
 	# We check that these bounds are fully within the image
 	if xmin < bigimg.getXMin() or xmax > bigimg.getXMax() or ymin < bigimg.getYMin() or ymax > bigimg.getYMax():
-		return (None, 1)
+		return (None, 1) # Ugly, should maybe be implemented as raising an exception catched higher up!
 		
 	# We prepare the stamp
 	bounds = galsim.BoundsI(xmin, xmax, ymin, ymax)
