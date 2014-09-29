@@ -87,6 +87,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		http://galsim-developers.github.io/GalSim/classgalsim_1_1base_1_1_sersic.html
 	
 	"""
+	starttime = datetime.now()	
 	
 	if "n" not in galcat.meta.keys():
 		raise RuntimeError("Provide n in the meta data of the input galcat to drawimg.")
@@ -95,17 +96,20 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	
 	n = galcat.meta["n"]
 	stampsize = galcat.meta["stampsize"] # The stamps I'm going to draw
-
+	
+	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(galcat), n, n))
+	logger.info("The stampsize for the simulated galaxies is of %i pixels." % (stampsize))
+	
 	if psfcat is not None: # If the user provided some PSFs:
 		assert len(galcat) == len(psfcat)
 		assert "stampsize" in psfcat.meta
 		assert psfimg is not None
 		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
+		logger.info("I will use provided PSFs with a stampsize of %i" % (psfstampsize))
 	else:
 		psfcat = [None] * len(galcat)
-	
-	starttime = datetime.now()	
-	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(galcat), n, n))
+		logger.info("No PSFs given: I will use plain Gaussians!")
+
 	
 	# Galsim random number generators
 	rng = galsim.BaseDeviate()
@@ -122,6 +126,11 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 
 	# And loop through the gal and psf catalogs:
 	for galrow, psfrow in zip(galcat, psfcat):
+		
+		# Some simplistic progress indication:
+		fracdone = float(galrow.index) / len(galcat)
+		if galrow.index%500 == 0:
+			logger.info("%6.2f%% done (%i/%i) " % (fracdone*100.0, galrow.index, len(galcat)))
 		
 		# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
 		ix = int(galrow["ix"])
