@@ -8,8 +8,9 @@ logging.basicConfig(level=logging.INFO)
 import numpy as np
 
 
+pointing = megalut.cfhtlens.utils.Pointing(label="W1m0m0", filtername="i")
 
-catfile = "/vol/fohlen11/fohlen11_1/hendrik/data/CFHTLenS/release_cats/W1m0m0_izrgu_release_mask.cat"
+catpath = pointing.catpath()
 cat = megalut.cfhtlens.utils.readcat(catfile)
 
 megalut.cfhtlens.utils.removejunk(cat)
@@ -31,8 +32,6 @@ megalut.utils.writepickle(starcat_coaddmes, "starcat_coaddmes.pkl")
 
 
 starcat_coaddmes = megalut.utils.readpickle("starcat_coaddmes.pkl")
-
-pointing = megalut.cfhtlens.utils.Pointing(label="W1m0m0", filtername="i")
 
 megalut.cfhtlens.lensfitpsf.makeexppsfs(starcat_coaddmes, pointing, workdir = "test")
 starcat_coaddmes = megalut.cfhtlens.lensfitpsf.stackexppsfs(starcat_coaddmes, workdir = "test")

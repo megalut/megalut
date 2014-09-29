@@ -20,7 +20,8 @@ class Pointing():
 
 	def __init__(self, label="W1m0m0", filtername="i",
 		surveydir = "/vol/braid1/vol1/thomas/SHEARCOLLAB/Bonn/",
-		swarpconfigpath = "/users/mtewes/CFHTLenS/create_coadd_swarp.swarp"
+		swarpconfigpath = "/users/mtewes/CFHTLenS/create_coadd_swarp.swarp",
+		catdir = "/vol/fohlen11/fohlen11_1/hendrik/data/CFHTLenS/release_cats/"
 	):
 		
 		self.surveydir = surveydir
@@ -29,6 +30,8 @@ class Pointing():
 		self.basedir = os.path.join(self.surveydir, self.label)
 
 		self.swarpconfigpath = swarpconfigpath
+		self.catdir = catdir
+		
 
 	def datadir(self):
 		return os.path.join(self.basedir, self.filtername, "single_V2.2A")
@@ -49,6 +52,15 @@ class Pointing():
 		filepaths = glob.glob(os.path.join(self.explistdir(), "*.list"))
 		return map(lambda x: os.path.splitext(os.path.basename(x))[0], filepaths)
 
+	def catpath(self):
+		"""
+		FIX ME, I'm working on this.
+		"""
+		
+		candidates = sorted(glob.glob(os.path.join(self.catdir, "%s_*_release_mask.cat" % (self.label))))
+		assert len(candidates) == 1
+		return candidates[0]
+		
 
 def readcat(filepath):
 	"""
