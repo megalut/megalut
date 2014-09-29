@@ -13,10 +13,9 @@ logger = logging.getLogger(__name__)
 
 import astropy.table
 import galsim
-import megalut
-
 from datetime import datetime
 
+from .. import gsutils
 
 
 def drawcat(params, n=10, stampsize=64, idprefix=""):
@@ -61,7 +60,7 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 
 
 
-def drawimg(galcat, psfcat = None, psfimg = None, psfxname="psfgridx", psfyname="psfgridy",
+def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 			simgalimgfilepath = "test.fits", simtrugalimgfilepath = None, simpsfimgfilepath = None):
 
 	"""
@@ -73,7 +72,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="psfgridx", psfyname=
 	:param psfcat: (optional) an input psf catalog, of the same length as galcat (line-by-line correspondence).
 		It contains the positions of the psf in psfimg to be used for each galaxy.
 	:param psfimg: (optinal) a list containing the Numpy array containing all of the PSFs, organised on a nxn grid and the psf stamp size
-	:param psfxname: column name of psfcat containing the x coordinate
+	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
 	:param psfyname: idem for y
 	:param simgalimgfilepath: where I write my output image
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
@@ -115,23 +114,18 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="psfgridx", psfyname=
 	# We prepare the big images :
 	gal_image = galsim.ImageF(stampsize * n , stampsize * n)
 	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
-	
-		
-	# get the PSF stamp size
-	psf_stampsize = psfimg[1]
-	psfimg=psfimg[0]
-	psf_image = galsim.ImageF(psf_stampsize, psf_stampsize)
+	psf_image = galsim.ImageF(stampsize * n , stampsize * n)
 
 	gal_image.scale = 1.0
 	trugal_image.scale = 1.0
 	psf_image.scale = 1.0
 
-	# And loop through the gal_ and psf_ catalogs:
-	for row, psf_info in zip(galcat,psfcat):
+	# And loop through the gal and psf catalogs:
+	for galrow, psfrow in zip(galcat, psfcat):
 		
-		# We will draw this galaxy in a postage stamp :
-		ix = int(row["ix"])
-		iy = int(row["iy"])
+		# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
+		ix = int(galrow["ix"])
+		iy = int(galrow["iy"])
 		assert ix < n and iy < n
 		bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
 		gal_stamp = gal_image[bounds]
@@ -149,20 +143,10 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="psfgridx", psfyname=
 		# We draw the pure unconvolved galaxy
 		gal.draw(trugal_stamp)
 
-		# get the PSF stamp
+		# We get the PSF stamp
 		
-		psf_bounds = galsim.BoundsI(psf_info[0]*psf_stampsize+1 , 
-				(psf_info[0]+1)*psf_stampsize, 
-				psf_info[1]*psf_stampsize+1 , 
-				(psf_info[1]+1)*psf_stampsize) # Default Galsim convention, index starts at 1.
-		"""psf_bounds = galsim.BoundsI(
-				int(psf_info['psfgridx']-0.5-psf_stampsize/2+1), 
-				int(psf_info['psfgridy']-0.5+psf_stampsize/2),
-				int(psf_info['psfgridy']-0.5-psf_stampsize/2+1), 
-				int(psf_info['psfgridy']-0.5+psf_stampsize/2)) # Default Galsim convention, index starts at 1."""
-		psf_stamp = psf_image[galsim.BoundsI(1,psf_stampsize,1,psf_stampsize)]
-		#psf=psfimg[psf_bounds]
-		psf = galsim.InterpolatedImage(psfimg[psf_bounds], flux=1.0, dx=1.0)
+		(psfstamp, flag) = gsutils.getstamp(psfrow["psfxname"], psfrow["psfyname"], psfimg, psfstampsize)
+		psf = galsim.InterpolatedImage(psf_stamp.array, flux=1.0, dx=1.0)
 
 		#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
 		#psf = galsim.Gaussian(flux=1., sigma=1.5)
