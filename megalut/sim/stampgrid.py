@@ -146,8 +146,10 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 
 		# We get the PSF stamp, if provided
 		if psfimg is not None:
-			(inputpsfstamp, flag) = gsutils.getstamp(psfrow["psfxname"], psfrow["psfyname"], psfimg, psfstampsize)
-			psf = galsim.InterpolatedImage(inputpsfstamp.array, flux=1.0, dx=1.0)
+			assert psfxname in psfcat.colnames and psfyname in psfcat.colnames
+			(inputpsfstamp, flag) = gsutils.getstamp(psfrow[psfxname], psfrow[psfyname], psfimg, psfstampsize)
+			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
+			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 					
 		else:
 			#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
