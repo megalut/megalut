@@ -20,26 +20,15 @@ class MySimParams(megalut.sim.params.Params):
 		
 mysimparams = MySimParams()
 
-# What's the square root of the number of galaxies to simulate ?
-n = 100
 
-simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=n, stampsize=48)
+# We make a catalog of 100 x 100 simulated galaxies :
 
-#print simcat[:5]
+simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=10, stampsize=48)
 
-psf_stampsize = 32
-# First load the PSF image...
-psf = galsim.Gaussian(flux=1., sigma=1.5)
-psf_image = galsim.ImageF(psf_stampsize , psf_stampsize)
-psf_img = galsim.fits.read("psfs/psfgrid.fits"), 32
-
-# Then assign PSF to a galaxy stamp
-psf_catalog=np.random.randint(10,size=(n**2,2))
 
 # Now, we pass this catalog to drawimg, to generate the actual simulated images.
 
-megalut.sim.stampgrid.drawimg(simcat, psf_catalog,
-	psf_img=psf_img,
+megalut.sim.stampgrid.drawimg(simcat, 
 	simgalimgfilepath="simgalimg.fits",
 	simtrugalimgfilepath="simtrugalimg.fits",
 	simpsfimgfilepath="simpsfimg.fits"
@@ -47,7 +36,7 @@ megalut.sim.stampgrid.drawimg(simcat, psf_catalog,
 
 # We can directly proceed by measuring the images
 
-gridimg = megalut.meas.galsim_adamom.loadimg("simgalimg.fits")
+gridimg = megalut.gsutils.loadimg("simgalimg.fits")
 meascat = megalut.meas.galsim_adamom.measure(gridimg, simcat, stampsize=48, prefix="mes")
 
 # meascat is the output catalog, it contains the measured features:
