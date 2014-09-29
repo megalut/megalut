@@ -13,30 +13,11 @@ logger = logging.getLogger(__name__)
 import astropy.table
 import galsim
 
-
-
-def loadimg(imgfilepath):
-	"""
-	Uses GalSim to load and image from a FITS file, enforcing that the GalSim origin is (0, 0).
-	
-	:param imgfilepath: path to FITS image
-	:returns: galsim image
-	"""
-	
-	logger.info("Loading FITS image %s..." % (os.path.basename(imgfilepath)))
-	bigimg = galsim.fits.read(imgfilepath)
-	bigimg.setOrigin(0,0)
-	logger.info("Done with loading %s, shape is %s" % (os.path.basename(imgfilepath), bigimg.array.shape))
-	
-	logger.warning("The origin and stampsize conventions are new and should be tested !")
-	
-	bigimg.origimgfilepath = imgfilepath # Just to keep this somewhere
-	
-	return bigimg
+from .. import gsutils
 
 
 
-def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamom"):
+def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamom"):
 	"""
 	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
 	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
@@ -86,7 +67,7 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 	output.meta[prefix + "_yname"] = yname
 	
 	# We do not store this long string here, as it leads to problems when saving the cat to FITS
-	#output.meta[prefix + "_imgfilepath"] = bigimg.origimgfilepath
+	#output.meta[prefix + "_imgfilepath"] = img.origimgfilepath
 	
 	n = len(output)
 	
@@ -98,7 +79,7 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n), gal.index, n))
 		
 		(x, y) = (gal[xname], gal[yname])
-		(gps, flag) = getstamp(x, y, bigimg, stampsize)
+		(gps, flag) = gsutils.getstamp(x, y, img, stampsize)
 		
 		if flag != 0:
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
@@ -140,46 +121,8 @@ def measure(bigimg, catalog, xname="x", yname="y", stampsize=100, prefix="mes_ad
 	
 	return output
 
-
-
-		
-def getstamp(x, y, bigimg, stampsize):
-	"""
-	I prepare a bounded galsim image stamp "centered" at position (x, y) of your input galsim image.
-	You can use the array attribute of the stamp if you want to get the actual pixels.
 	
-	This assumes that the origin of bigimg is set to (0, 0) as done by loadimg()
-	(This is the default for GalSim, but not for GREAT3 if I remember well).
-	
-	:returns: a tuple(stamp, flag)
-	"""
-
-	assert int(stampsize)%2 == 0 # checking that it's even
-
-	xmin = int(np.round(x - 0.5)) - int(stampsize)/2
-	xmax = int(np.round(x - 0.5)) + int(stampsize)/2 - 1
-	ymin = int(np.round(y - 0.5)) - int(stampsize)/2
-	ymax = int(np.round(y - 0.5)) + int(stampsize)/2 - 1
-			
-	assert ymax - ymin == stampsize - 1 # This is the GalSim convention, both extremas are "included" in the bounds.
-	assert xmax - xmin == stampsize - 1
-	
-	# We check that these bounds are fully within the image
-	if xmin < bigimg.getXMin() or xmax > bigimg.getXMax() or ymin < bigimg.getYMin() or ymax > bigimg.getYMax():
-		return (None, 1) # Ugly, should maybe be implemented as raising an exception catched higher up!
-		
-	# We prepare the stamp
-	bounds = galsim.BoundsI(xmin, xmax, ymin, ymax)
-	stamp = bigimg[bounds] # galaxy postage stamp
-	assert stamp.array.shape == (stampsize, stampsize)
-	
-	return (stamp, 0)
-	
-	
-	
-	
-	
-#def npstampgrid(bigimg, catalog, xname="x", yname="y", stampsize=100):
+#def npstampgrid(img, catalog, xname="x", yname="y", stampsize=100):
 #	"""
 #	I build a numpy array with stamps, intended for visualization
 #	"""
@@ -192,7 +135,7 @@ def getstamp(x, y, bigimg, stampsize):
 #	stamplist = []
 #	for gal in catalog:
 #		(x, y) = (gal[xname], gal[yname])
-#		(gps, flag) = getstamp(x, y, bigimg, stampsize)
+#		(gps, flag) = getstamp(x, y, img, stampsize)
 #		if flag != 0:
 #			stamplist.append(np.zeros(stampsize, stampsize))
 #		else:
@@ -203,7 +146,7 @@ def getstamp(x, y, bigimg, stampsize):
 
 
 
-def pngstampgrid(pngfilepath, bigimg, catalog, xname="x", yname="y", stampsize=100, ncols=5, upsample=4, z1="auto", z2="auto"):
+def pngstampgrid(pngfilepath, img, catalog, xname="x", yname="y", stampsize=100, ncols=5, upsample=4, z1="auto", z2="auto"):
 	"""
 	I write a grid of stamps corresponding to your catalog in a png image, so that you can visualize those galaxies...
 	For this I need f2n, but anyway I'm just a little helper.
@@ -227,7 +170,7 @@ def pngstampgrid(pngfilepath, bigimg, catalog, xname="x", yname="y", stampsize=1
 			if index < n: # Then we have a galaxy to show
 				gal = catalog[index]
 				(x, y) = (gal[xname], gal[yname])
-				(gps, flag) = getstamp(x, y, bigimg, stampsize)
+				(gps, flag) = getstamp(x, y, img, stampsize)
 				npstamp = gps.array
 				
 				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)

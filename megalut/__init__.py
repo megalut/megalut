@@ -11,4 +11,6 @@ __all__ = ["ml", "great3", "cfhtlens", "meas"]
 
 #import catalog
 import utils
+import gsutils
+
 

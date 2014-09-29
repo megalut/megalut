@@ -9,6 +9,8 @@ import megalut
 import megalut.sim
 import megalut.meas
 
+import galsim
+import numpy as np
 
 # First, we set the desired distributions of parameters, by overwriting the default distributions.
 
@@ -18,13 +20,15 @@ class MySimParams(megalut.sim.params.Params):
 		
 mysimparams = MySimParams()
 
+
+# We make a catalog of 100 x 100 simulated galaxies :
+
 simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=10, stampsize=48)
 
-print simcat[:5]
 
 # Now, we pass this catalog to drawimg, to generate the actual simulated images.
 
-megalut.sim.stampgrid.drawimg(simcat,
+megalut.sim.stampgrid.drawimg(simcat, 
 	simgalimgfilepath="simgalimg.fits",
 	simtrugalimgfilepath="simtrugalimg.fits",
 	simpsfimgfilepath="simpsfimg.fits"
@@ -32,7 +36,7 @@ megalut.sim.stampgrid.drawimg(simcat,
 
 # We can directly proceed by measuring the images
 
-gridimg = megalut.meas.galsim_adamom.loadimg("simgalimg.fits")
+gridimg = megalut.gsutils.loadimg("simgalimg.fits")
 meascat = megalut.meas.galsim_adamom.measure(gridimg, simcat, stampsize=48, prefix="mes")
 
 # meascat is the output catalog, it contains the measured features:
