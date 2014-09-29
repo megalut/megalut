@@ -6,6 +6,7 @@ import os
 import cPickle as pickle
 import astropy.io.fits
 
+import numpy as np
 import logging
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,7 @@ def writepickle(obj, filepath, protocol = -1):
 	Leave protocol = -1 : I'll use the latest binary protocol of pickle.
 	"""
 	if os.path.splitext(filepath)[1] == ".gz":
+		import gzip
 		pkl_file = gzip.open(filepath, 'wb')
 	else:
 		pkl_file = open(filepath, 'wb')
@@ -63,5 +65,6 @@ def tofits(a, filepath):
 
 	astropy.io.fits.writeto(filepath, a.transpose(), clobber=1)
 	logger.info("Wrote %s array to %s" % (a.shape, filepath))
+
 
 

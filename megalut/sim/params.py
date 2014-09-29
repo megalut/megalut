@@ -45,7 +45,7 @@ class Params:
 		return 0.5 + pseudorand * 3.0
 		
 	def get_g(self):
-		return np.random.uniform(low=-0.65, high=0.65, size=2)
+		return np.random.uniform(low=-0.4, high=0.4, size=2)
 		
 	def get(self, ix, iy, n):
 		"""
