@@ -93,16 +93,16 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	if "stampsize" not in galcat.meta.keys():
 		raise RuntimeError("Provide stampsize in the meta data of the input galcat to drawimg.")	
 	
-	if psfcat is not None:
+	n = galcat.meta["n"]
+	stampsize = galcat.meta["stampsize"] # The stamps I'm going to draw
+
+	if psfcat is not None: # If the user provided some PSFs:
 		assert len(galcat) == len(psfcat)
 		assert "stampsize" in psfcat.meta
 		assert psfimg is not None
-	
-	
-	n = galcat.meta["n"]
-	stampsize = galcat.meta["stampsize"] # The stamps I'm going to draw
-	psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
-	
+		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
+	else:
+		psfcat = [None] * len(galcat)
 	
 	starttime = datetime.now()	
 	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(galcat), n, n))
@@ -130,10 +130,11 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
 		gal_stamp = gal_image[bounds]
 		trugal_stamp = trugal_image[bounds]
+		psf_stamp = psf_image[bounds]
 	
 		# We draw a sersic profile
-		gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
-		gal.applyShear(g1=row["tru_g1"], g2=row["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
+		gal = galsim.Sersic(n=galrow["tru_sersicn"], half_light_radius=galrow["tru_rad"], flux=galrow["tru_flux"])
+		gal.applyShear(g1=galrow["tru_g1"], g2=galrow["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
 		
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
@@ -143,23 +144,24 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		# We draw the pure unconvolved galaxy
 		gal.draw(trugal_stamp)
 
-		# We get the PSF stamp
-		
-		(psfstamp, flag) = gsutils.getstamp(psfrow["psfxname"], psfrow["psfyname"], psfimg, psfstampsize)
-		psf = galsim.InterpolatedImage(psf_stamp.array, flux=1.0, dx=1.0)
-
-		#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
-		#psf = galsim.Gaussian(flux=1., sigma=1.5)
+		# We get the PSF stamp, if provided
+		if psfimg is not None:
+			(inputpsfstamp, flag) = gsutils.getstamp(psfrow["psfxname"], psfrow["psfyname"], psfimg, psfstampsize)
+			psf = galsim.InterpolatedImage(inputpsfstamp.array, flux=1.0, dx=1.0)
+					
+		else:
+			#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
+			psf = galsim.Gaussian(flux=1., sigma=1.5)
+			psf.draw(psf_stamp)
 
 		# Convolution by the PSF
 		galconv = galsim.Convolve([gal,psf], real_space=False)
 		
-		# Draw the convolved galaxy and the PSF		
+		# Draw the convolved galaxy	
 		galconv.draw(gal_stamp)
-		psf.draw(psf_stamp)
-	
+		
 		# And add shot noise to the convolved galaxy:
-		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=row["tru_sig"]))
+		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=galrow["tru_sig"]))
 		
 		
 	logger.info("Done with drawing, now writing output FITS files ...")	
@@ -170,7 +172,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		trugal_image.write(simtrugalimgfilepath)
 	
 	if simpsfimgfilepath != None:
-		psfimg.write(simpsfimgfilepath)
+		psf_image.write(simpsfimgfilepath)
 	
 	endtime = datetime.now()
 	logger.info("This drawing took %s" % (str(endtime - starttime)))
