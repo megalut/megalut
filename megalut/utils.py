@@ -5,6 +5,7 @@ General purpose unspecific helper functions
 import os
 import cPickle as pickle
 import astropy.io.fits
+import gzip
 
 import numpy as np
 import logging
@@ -20,7 +21,6 @@ def writepickle(obj, filepath, protocol = -1):
 	Leave protocol = -1 : I'll use the latest binary protocol of pickle.
 	"""
 	if os.path.splitext(filepath)[1] == ".gz":
-		import gzip
 		pkl_file = gzip.open(filepath, 'wb')
 	else:
 		pkl_file = open(filepath, 'wb')
