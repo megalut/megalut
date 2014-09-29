@@ -25,7 +25,7 @@ def loadimg(imgfilepath):
 	logger.info("Loading FITS image %s..." % (os.path.basename(imgfilepath)))
 	img = galsim.fits.read(imgfilepath)
 	img.setOrigin(0,0)
-	logger.info("Done with loading %s, shape is %s" % (os.path.basename(imgfilepath), bigimg.array.shape))
+	logger.info("Done with loading %s, shape is %s" % (os.path.basename(imgfilepath), img.array.shape))
 	
 	logger.warning("The origin and stampsize conventions are new and should be tested !")
 	
@@ -51,7 +51,9 @@ def getstamp(x, y, img, stampsize):
 	:returns: a tuple(stamp, flag). Flag is 1 if the stamp could not be extracted, 0 otherwise.
 	"""
 
-	assert img.origin() = (0, 0)
+	
+	#assert img.origin() == (0, 0) # This would be nice, but is only available in newer GalSims...
+	assert img.xmin == 0 and img.ymin == 0
 	assert int(stampsize)%2 == 0 # checking that it's even
 
 	xmin = int(np.round(x - 0.5)) - int(stampsize)/2
