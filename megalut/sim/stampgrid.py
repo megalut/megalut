@@ -29,6 +29,8 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	:type stampsize: int
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
 	
+	:returns: A catalog (astropy table). The stampsize is stored in meta.
+	
 	"""
 	assert int(stampsize)%2 == 0 # checking that it's even
 
@@ -64,7 +66,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 			simgalimgfilepath = "test.fits", simtrugalimgfilepath = None, simpsfimgfilepath = None):
 
 	"""
-	Truns a catalog as obtained from drawcat into FITS images.
+	Turns a catalog as obtained from drawcat into FITS images.
 	Only the position jitter and the pixel noise are randomized. All the other info is taken from the input catalogs.
 	So simply call me several times for the same input to get different realizations of the same galaxies.
 	
