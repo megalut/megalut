@@ -82,13 +82,15 @@ class Pointing():
 			logger.critical("Problem with cat identification for %s: %S" % (str(self), candidates))
 		return candidates[0]
 
+	def coaddimgpath(self):
+		return os.path.join(self.basedir(), self.filtername, "coadd_V2.2A", "%s_%s.V2.2A.swarp.cut.fits" % (self.label, self.filtername))
 	
 	
 	def validate(self):
 		"""
 		Checks that all these files do indeed exist.
 		"""
-		for path in [self.basedir(), self.datadir(), self.headdir(), self.swarpconfig(), self.explistdir(), self.catpath()]:	
+		for path in [self.basedir(), self.datadir(), self.headdir(), self.swarpconfig(), self.explistdir(), self.catpath(), self.coaddimgpath()]:	
 			if not os.path.exists(path):
 				logger.warning("Cannot find path %s" % path)
 		if len(self.explists()) == 0:
