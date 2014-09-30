@@ -29,6 +29,8 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	:type stampsize: int
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
 	
+	:returns: A catalog (astropy table). The stampsize is stored in meta.
+	
 	"""
 	assert int(stampsize)%2 == 0 # checking that it's even
 
@@ -64,13 +66,16 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 			simgalimgfilepath = "test.fits", simtrugalimgfilepath = None, simpsfimgfilepath = None):
 
 	"""
-	Truns a catalog as obtained from drawcat into FITS images.
+	Turns a catalog as obtained from drawcat into FITS images.
 	Only the position jitter and the pixel noise are randomized. All the other info is taken from the input catalogs.
 	So simply call me several times for the same input to get different realizations of the same galaxies.
 	
-	:param galcat: an input catalog, as returned by drawcat.	
+	:param galcat: an input catalog of galaxy shape parameters, as returned by drawcat.
+		The corresponding stampsize must be provided as galcat.meta["stampsize"].
 	:param psfcat: (optional) an input psf catalog, of the same length as galcat (line-by-line correspondence).
 		It contains the positions of the psf in psfimg to be used for each galaxy.
+		As for the galcat, the stampsize of the PSFs must be provided as psfcat.meta["stampsize"].
+		If psfcat is not specified, I just use Gaussians.
 	:param psfimg: (optinal) a list containing the Numpy array containing all of the PSFs, organised on a nxn grid and the psf stamp size
 	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
 	:param psfyname: idem for y
@@ -98,14 +103,14 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	stampsize = galcat.meta["stampsize"] # The stamps I'm going to draw
 	
 	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(galcat), n, n))
-	logger.info("The stampsize for the simulated galaxies is of %i pixels." % (stampsize))
+	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
 	if psfcat is not None: # If the user provided some PSFs:
 		assert len(galcat) == len(psfcat)
 		assert "stampsize" in psfcat.meta
 		assert psfimg is not None
 		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
-		logger.info("I will use provided PSFs with a stampsize of %i" % (psfstampsize))
+		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
 	else:
 		psfcat = [None] * len(galcat)
 		logger.info("No PSFs given: I will use plain Gaussians!")
