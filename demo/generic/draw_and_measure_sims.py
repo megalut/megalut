@@ -5,12 +5,8 @@ A minimal demo about drawing simulated galaxies
 import logging
 logging.basicConfig(level=logging.INFO)
 
-import megalut
 import megalut.sim
 import megalut.meas
-
-import galsim
-import numpy as np
 
 # First, we set the desired distributions of parameters, by overwriting the default distributions.
 
