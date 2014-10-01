@@ -2,7 +2,7 @@
 Standalone demo illustrating the use of the sextractor wrapper.
 """
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 from megalut.meas.sextractor import SExtractor
 
@@ -30,7 +30,7 @@ params = ["X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "FLUX_AUTO", "BACKGROUND", "FLAGS"
 
 config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0}
 
-se = SExtractor(params=params, config=config)
+se = SExtractor(params=params, config=config, workdir = "test")
 #print se.get_version()
 
 cat = se.run("psfs/psfgrid.fits")
