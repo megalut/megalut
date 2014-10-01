@@ -30,7 +30,7 @@ params = ["X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "FLUX_AUTO", "BACKGROUND", "FLAGS"
 
 config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0}
 
-se = SExtractor(params=params, config=config, workdir = "test")
+se = SExtractor(params=params, config=config, workdir="test")
 #print se.get_version()
 
 cat = se.run("psfs/psfgrid.fits")
