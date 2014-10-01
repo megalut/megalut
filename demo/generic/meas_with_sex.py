@@ -12,7 +12,8 @@ se = SExtractor()
 
 #print se.get_version()
 
-cat = se.run("simgalimg.fits")
+# Any FITS image would be fine for this minimal example, let's use this one:
+cat = se.run("psfs/psfgrid.fits")
 
 print cat
 
