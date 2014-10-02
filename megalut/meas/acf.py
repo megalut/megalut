@@ -8,21 +8,42 @@ logger = logging.getLogger(__name__)
 
 ###################################################################################################
 
-def run(imgfilepath, gal_catalog, stampsize=32, method=None, acf_weight="gaussian", prefix="mes_acf", show=False):
+def run(imgfilepath, gal_catalog, stampsize=32, method=None, acf_weight="gaussian", 
+        prefix="mes_acf", find_with='gs', show=False):
     """
-    Shape measurement with AutoCorrelation Function
-    http://adsabs.harvard.edu/abs/1997A%26A...317..303V
-    Runs acf on the image
+    Shape measurement with AutoCorrelation Function.
+    Inspired by http://adsabs.harvard.edu/abs/1997A%26A...317..303V.
+    This function runs acf on a image and returns a catalog.
     
     :param imgfilepath: The filepath of the image
-    :gal_catalog: The catalog of the galaxy with an entry for : id, x, y
-    :stampsize: the stamp size to use for the measurement. Default: 32
-    :method: which method to use ? Choice : "AdaptiveMoments", "EllipticityGradients",
+    :param gal_catalog: The catalog of the galaxy with an entry for : id, x, y
+    :param stampsize: the stamp size to use for the measurement. Default: 32
+    :param method: which method to use ? Choice : "AdaptiveMoments", "EllipticityGradients",
         "QuadrupoleMoments". Default: AdaptiveMoments
-    :acf_weight: Weight for the convolution ie, Data*=weight before the convolution.
+    :param acf_weight: Weight for the convolution ie, Data*=weight before the convolution.
         default: "gaussian" or None
-    :prefix: for the output catalog, what is the prefix of the variable?, Default "mes_acf"
-    :show: if True, then prints an image of the data and the ACF.
+    :param prefix: for the output catalog, what is the prefix of the variable?, Default "mes_acf"
+    :param find_with: Either sex or gs. Chooses what soft to use when finding the location of the object.
+        Default: gs
+    :param show: if True, then prints an image of the data and the ACF.
+    
+    :returns: astropy table
+    
+    Possible flags:
+    
+    * 0: OK
+    * 1: stamp is not fully within image
+    * 2: weight map in ACF failed
+    * 3: ACF shape measurement failed
+    
+    .. Note:: The method AdaptativeMoments returns not only the shear, but flux, sigma, rho4, centroid.
+    
+    .. Note:: The method EllipticityGradients is the fastest and works almost as well as AdaptativeMoments
+    
+    :Requires: galsim or/and sextractor to precisely find the position of the object. This is
+        only required is acf_weight est "gaussian".
+        
+    .. Warning:: The sextractor find_obj is not multiprocessing safe yet
     """
     if method=="None" or not method in ["AdaptiveMoments",
                                         "EllipticityGradients",
@@ -41,32 +62,35 @@ def run(imgfilepath, gal_catalog, stampsize=32, method=None, acf_weight="gaussia
     rows=[]  
     
     logger.info('Running acf measurements on %s. This could take a while...' % (imgfilepath))
+    # Loading complete image
     whole_image = utils.fromfits(imgfilepath)
     for gal in gal_catalog:
         x,y=gal["x"], gal["y"]
-        # By MegaLUT's definition, a pixel is centered at 0.5,0.5
-        dd=+.0#.5
-        xmin=round(int(x-dd-stampsize/2))
-        xmax=round(int(x-dd+stampsize/2))
-        ymin=round(int(y-dd-stampsize/2))
-        ymax=round(int(y-dd+stampsize/2))
-        img=whole_image[xmin:xmax,ymin:ymax]
+        img,flag=utils.getstamp(x, y, whole_image, stampsize)
         
-        acf.set_data(img.copy())
+        if flag==0:
+            acf.set_data(img.copy())
+            flag=acf.compute_acf(weights=acf_weight,find_with=find_with)
         
-        acf.compute_acf(weights=acf_weight)
-        acf.measure()
-        if method == 'AdaptiveMoments':
-            output=acf.get_measurements(prefix=prefix)
-        else:
-            g1,g2=acf.get_shear()
-            output={prefix+"_g1":g1,prefix+"_g2":g2}
+        if flag==0:
+            flag=acf.measure()
+        
+        if flag==0:
+            # Get the output measurements back
+            if method == 'AdaptiveMoments':
+                output=acf.get_measurements(prefix=prefix)
+            else:
+                # Other methods yield only the shear
+                g1,g2=acf.get_shear()
+                output={prefix+"_g1":g1,prefix+"_g2":g2}
             
         output['id']=gal["id"]
+        output['flag']=flag
         rows.append(output)
         
-        if show: acf.show_acf()
+        if show and flag==0: acf.show_acf()
         
+        # Clear all variable in the instance, get ready for next stamp
         acf.clear()
 
     catalog = astropy.table.Table(rows=rows)
@@ -83,10 +107,11 @@ class _ACF(object):
     This class is not to be used directly as it is inherited by ACF measurements methods!
     '''
     
-    def __init__(self, image=None, show=True):
-        ''' Polymorphic constructor takes 3 arguments (one is mandatory):
+    def __init__(self, image=None, show=False):
+        ''' Polymorphic constructor takes 2 arguments (None is mandatory):
             
-            :param image: (mandatory) Either the path to the image or a numpy array containing the data.
+            :param image: (optional) Either the path to the image or a numpy array containing the data
+                or None only meant to create the instance.
             :param show: (optional) allows the system to show images.
         '''
         if not image==None:
@@ -132,7 +157,7 @@ class _ACF(object):
             utils.tofits(acf, fname)
         logger.info('Wrote acf to %s' % fname)
         
-    def compute_acf(self,weights=None, clip=False, **kwargs):
+    def compute_acf(self,weights=None, find_with="gs", clip=False, **kwargs):
         ''' Computes the acf from the data using FFT by the equation
             acf = F^-1 ( F(weights.data).(F(weights.data))* )
             where F is the Fourier transform, F^-1 its inverse and * the complex conjugate, the operator . denotes multiplication
@@ -142,6 +167,7 @@ class _ACF(object):
             aligned to a first guess of the shape by SExtractor) or "tophat" same as gaussian, but once
             the shape is estimated, the Gaussian is replaced by a top-hat.
             :param clip: clip the data to [0, data_max]
+            :param compute_with: sex or gs (default), which find_obj method to use?
         '''
         from numpy.fft import fft2, ifft2, fftshift   
         
@@ -155,7 +181,9 @@ class _ACF(object):
             else:
                 weights_params = None
             logger.info('Weights params (for weight type: %s) %s' % (weights, weights_params))
-            weights_map = self._BuildWeightMap(self.data, weights_type = weights, weights_params=weights_params)
+            weights_map = self._BuildWeightMap(self.data, weights_type = weights, weights_params=weights_params, find_with=find_with)
+            if weights_map==None:
+                return 2 # If the creation of the weight failed, flag this as 2.
             data=self.data*weights_map
             endtime = datetime.now()
             logger.info('Time needed to build weight map [s]: %s' % (str(endtime - starttime)))
@@ -168,7 +196,7 @@ class _ACF(object):
         dataFT = fft2(data)
         self.acf = fftshift(ifft2(dataFT * np.conjugate(dataFT))).real
         
-        weights_map = self._BuildWeightMap(self.acf, weights_type = weights, weights_params=weights_params)
+        weights_map = self._BuildWeightMap(self.acf, weights_type = weights, weights_params=None, find_with=find_with)
         self.acf=self.acf*weights_map
         if clip:
             self.acf = np.clip(self.acf, 0., np.amax(self.acf))
@@ -176,6 +204,9 @@ class _ACF(object):
         self.acf=self.acf.transpose().copy()
         endtime = datetime.now()
         logger.info('Needed to compute acf [s]:%s', (str(endtime - starttime)))
+        
+        # Nothing went wrong, happily reporting 0
+        return 0
         
     def show_acf(self, fname=None, title=None, zoom = 1):
         ''' Shows the image of the data and the ACF with the estimation of the ellipticity if already computed.
@@ -185,7 +216,8 @@ class _ACF(object):
         :param zoom: (optional) changes the size of the ellipse drawn on top of the ACF
         
         :raise RuntimeError: Raise an exception if the ACF is not computed 
-        requires:: Pylab
+        
+        :Requires: Pylab
         '''
         
         if self.acf == None: 
@@ -197,7 +229,7 @@ class _ACF(object):
         
         plt.subplot(121)
         plt.imshow(self.data, origin='lower', interpolation='nearest',cmap=plt.cm.gray, vmin = np.amin(self.data)*0.999, vmax = np.amax(self.data)*1.001)
-        plt.title('Data')
+        plt.title('data')
         
         ax=plt.subplot(122)
         plt.imshow(self.acf,origin='lower', interpolation='nearest', vmin = np.amin(self.acf)*0.999, vmax = np.amax(self.acf)*1.001)
@@ -229,6 +261,10 @@ class _ACF(object):
         :param a: numpy array of the data
         '''
         self.data=a
+
+    def get_data(self):
+        ''' GET method for the data '''
+        return self.data
     
     def set_acf(self, a):
         ''' SET method for the acf 
@@ -249,11 +285,17 @@ class _ACF(object):
         
     def find_obj_sex(self, data):
         #TODO: This is an old way of doing things... use sextractor wrapper!
+        #TODO: make this multithread safe.
         ''' Runs Sextractor on the specifed data.
+        
         :param data: numpy array with data
         :return: Catalogue as generated by SExtractor and according the parameters below
-        :requires: pysex
-        :requires: SExtractor 
+        
+        .. Warning::  TODO: This is an old way of doing things... use sextractor wrapper!
+        
+        .. Warning::  TODo: Make this multithread safe.
+        
+        :Requires: pysex & SExtractor
         '''
 
         import pysex
@@ -261,30 +303,45 @@ class _ACF(object):
         config = {'DETECT_MINAREA':5, 'DETECT_THRESH':2., 'VERBOSE_TYPE':'QUIET'}
         cat = pysex.run(data, params=params, conf_args=config)
 
-        return np.array(zip(cat[params[0]], cat[params[1]], cat[params[2]], cat[params[3]], cat[params[4]], cat[params[5]]))
+        cat = np.array(zip(cat[params[0]], cat[params[1]], cat[params[2]], cat[params[3]], cat[params[4]], cat[params[5]]))
+        
+        if np.size(cat)==0:
+            return None
+        else:
+            return cat
     
     def find_obj_gs(self, data):
         import galsim
 
-        gps=galsim.ImageD(data.copy())       
-        res = galsim.hsm.FindAdaptiveMom(gps)
+        gps=galsim.ImageD(data.copy())  
+        try:     
+            res = galsim.hsm.FindAdaptiveMom(gps)
+        except:
+            logger.debug("GalSim failed in find object.", exc_info = True)    
+            return None
 
         return np.array([[res.moments_centroid.x + 1.0,res.moments_centroid.y + 1.0, res.moments_sigma, 1, 1, 0]])
     
-    def _BuildWeightMap(self, data, weights_type,weights_params):
+    def _BuildWeightMap(self, data, weights_type,weights_params,find_with):
         ''' Creates the weights map for a given image according to a given weight type '''
 
         if weights_type==None:
             return np.ones_like(data)
         
         def gaussian(width_x, width_y, rotation):
-            """Returns a gaussian function with the given parameters"""
+            """Returns a gaussian function with the given parameters
+            :param width_x: sigma along 1st axis
+            :param width_y: sigma along 2nd axis
+            :param rotation: angle in degree of the 1st axis
+            
+            """
             width_x = float(width_x)
             width_y = float(width_y)
  
             rotation = np.deg2rad(rotation)
  
             def rotgauss(x,y):
+                
                 xp = x * np.cos(rotation) - y * np.sin(rotation)
                 yp = x * np.sin(rotation) + y * np.cos(rotation)
                 g = np.exp(-((xp/width_x)**2+(yp/width_y)**2)/2.)
@@ -292,6 +349,9 @@ class _ACF(object):
             return rotgauss
         
         def _create(weights,xf,yf,x_obj,y_obj, radius, ib, ia, iphi, weights_type):
+            """
+            Actually creates the array containing the weight maps, does it by reference.
+            """
             r = np.shape(self.data)[0]/2
            
             #if weights_type == 'acfgaussian':
@@ -325,7 +385,11 @@ class _ACF(object):
             return 1
             
         if weights_params == None: 
-            cat = self.find_obj_gs(data)
+            if find_with=="gs": cat = self.find_obj_gs(data)
+            elif find_with=="sex": cat = self.find_obj_sex(data)
+            else: raise ValueError("find_with param must be either gs or sex")
+            
+            if cat==None: return None
             if np.shape(cat)[0]>1: logger.error("Got more than 1 match")
             elif np.shape(cat)[0]==0: logger.error("No match")
         else: cat = weights_params
@@ -349,13 +413,14 @@ class _ACF(object):
 class QuadrupoleMoments(_ACF):
     ''' ACF measurement class
         Uses quadrupole moments to measure the ellipticity
-        Example usage::
+        
+        :Example usage:
             >>> img = QuadrupoleMoments(image_filename)
             >>> img.compute_acf(clip=True, weights='gaussian')
             >>> img.measure(region=region)
             >>> g1os, g2os = img.Get_Shear()
     '''
-    def __init__(self,image=None, show=True): 
+    def __init__(self,image=None, show=False): 
         _ACF.__init__(self, image, show)
         logger.info('*** Using %s ***' % (self.__class__.__name__))
     
@@ -393,6 +458,8 @@ class QuadrupoleMoments(_ACF):
         xi = (Ixx - Iyy + 2.j*Ixy) / (Ixx+Iyy) / 2
         self.g1 = xi.real
         self.g2 = xi.imag
+        
+        return 0
         '''
         elli = abs(xi)
         q = (1.+elli)/(1.-elli)
@@ -406,13 +473,14 @@ class QuadrupoleMoments(_ACF):
 class EllipticityGradients(_ACF):
     ''' ACF measurement class
         Uses quadrupole moments to measure the ellipticity
-        Example usage:
-            img = QuadrupoleMoments(image_filename, verbose=False)
-            img.compute_acf(clip=True, weights='gaussian')
-            img.measure(region=region)
-            g1os, g2os = img.Get_Shear()
+        
+        :Example usage:
+            >>> img = EllipticityGradients(image_filename)
+            >>> img.compute_acf(clip=True, weights='gaussian')
+            >>> img.measure(region=region)
+            >>> g1os, g2os = img.Get_Shear()
     '''
-    def __init__(self, image=None, show=True): 
+    def __init__(self, image=None, show=False): 
         _ACF.__init__(self, image, show)
         logger.info('*** Using %s ***' % (self.__class__.__name__))
     
@@ -426,22 +494,25 @@ class EllipticityGradients(_ACF):
         self.g1= -np.mean(dx*dx - dy*dy)/np.mean(dx*dx + dy*dy+delta)/2.
         self.g2= -np.mean(dx*dy)/np.mean(dx*dx + dy*dy+delta)#*2.
         
+        return 0
+        
         
 # END OF CLASS
 ###################################################################################################
 class AdaptiveMoments(_ACF):
     ''' ACF measurement class
         Uses quadrupole moments to measure the ellipticity
-        Example usage:
-            img = QuadrupoleMoments(image_filename, verbose=False)
-            img.compute_acf(clip=True, weights='gaussian')
-            img.measure(region=region)
-            g1os, g2os = img.Get_Shear()
+        
+        :Example usage:
+            >>> img = AdaptiveMoments(image_filename)
+            >>> img.compute_acf(clip=True, weights='gaussian')
+            >>> img.measure(region=region)
+            >>> output = img.get_measurements()
     '''
     
     
     
-    def __init__(self, image=None, show=True): 
+    def __init__(self, image=None, show=False): 
         _ACF.__init__(self, image, show)
         logger.info('*** Using %s ***' % (self.__class__.__name__))
     
@@ -451,13 +522,18 @@ class AdaptiveMoments(_ACF):
         
         import galsim
         stampsize = np.shape(self.acf)
-        bounds = galsim.BoundsI(1 , stampsize[0], 1, stampsize[1]) # Default Galsim convention, index starts at 1.
-        gps=galsim.ImageD(self.acf)#, bounds=bounds)
-        res = galsim.hsm.FindAdaptiveMom(gps)
+        gps=galsim.ImageD(self.acf)
+        try:
+            res = galsim.hsm.FindAdaptiveMom(gps)
+        except:
+            return 3 # some kind on error while mesuring
+            logger.debug("GalSim failed on the measurement of the ACF.", exc_info=True)
         
         self.res = res
         self.g1=res.observed_shape.g1
         self.g2=res.observed_shape.g2
+        
+        return 0
         
     def get_measurements(self, prefix="acf_"):
         gal={}

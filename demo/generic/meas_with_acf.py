@@ -18,7 +18,7 @@ class MySimParams(megalut.sim.params.Params):
     
 mysimparams = MySimParams()
 # We make a catalog of 100 x 100 simulated galaxies :
-simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=10, stampsize=48)
+simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=20, stampsize=32)
 # Now, we pass this catalog to drawimg, to generate the actual simulated images.
 megalut.sim.stampgrid.drawimg(simcat, 
     simgalimgfilepath="simgalimg.fits",

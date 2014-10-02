@@ -65,6 +65,39 @@ def tofits(a, filepath):
 
 	astropy.io.fits.writeto(filepath, a.transpose(), clobber=1)
 	logger.info("Wrote %s array to %s" % (a.shape, filepath))
+	
+def getstamp(x, y, img, stampsize):
+	"""
+	I prepare a mage stamp "centered" at position (x, y) of your input *numpy* image.
+	You can use the array attribute of the stamp if you want to get the actual pixels.
+	
+	:param x: x position of the stamp "center" (i.e., the object), in pixels.
+	:param y: 
+	:param img: The numpy array from which I should extract the stamp
+	:param stampsize: width = height of the stamp, in pixels. Has to be even. 
+	
+	:returns: a tuple(stamp, flag). Flag is 1 if the stamp could not be extracted, 0 otherwise.
+	"""
+
+	assert int(stampsize)%2 == 0 # checking that it's even
+
+	# By MegaLUT's definition, a pixel is centered at 0.5,0.5
+	dd=+.5
+	xmin=round(int(x-dd-stampsize/2))
+	xmax=round(int(x-dd+stampsize/2))
+	ymin=round(int(y-dd-stampsize/2))
+	ymax=round(int(y-dd+stampsize/2))
+	
+	# We check that these bounds are fully within the image
+	if xmin < 0 or xmax > np.shape(img)[0] or ymin < 0 or ymax > np.shape(img)[1]:
+		return (None, 1) # Ugly, should maybe be implemented as raising an exception caught higher up!
+		
+	# We prepare the stamp
+	stamp=img[xmin:xmax,ymin:ymax]
+	assert np.shape(stamp) == (stampsize, stampsize)
+	
+	return (stamp, 0)
+
 
 
 
