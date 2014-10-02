@@ -171,7 +171,7 @@ class _ACF(object):
         '''
         from numpy.fft import fft2, ifft2, fftshift   
         
-        if weights == 'gaussian' or weights == 'acfgaussian' or weights == 'tophat':
+        if weights == 'gaussian':
             starttime = datetime.now()    
             if ('x_obj' in kwargs and 'y_obj' in kwargs and 'radius' in kwargs and 'a' in kwargs and 'b' in kwargs and 'theta' in kwargs):
                 weights_params = [kwargs['x_obj'], kwargs['y_obj'], kwargs['radius'], kwargs['a'], kwargs['b'],kwargs['theta']]
