@@ -180,13 +180,13 @@ class _ACF(object):
                 weights_params=kwargs['weights_params']
             else:
                 weights_params = None
-            logger.info('Weights params (for weight type: %s) %s' % (weights, weights_params))
+            logger.debug('Weights params (for weight type: %s) %s' % (weights, weights_params))
             weights_map = self._BuildWeightMap(self.data, weights_type = weights, weights_params=weights_params, find_with=find_with)
             if weights_map==None:
                 return 2 # If the creation of the weight failed, flag this as 2.
             data=self.data*weights_map
             endtime = datetime.now()
-            logger.info('Time needed to build weight map [s]: %s' % (str(endtime - starttime)))
+            logger.debug('Time needed to build weight map [s]: %s' % (str(endtime - starttime)))
         else:
             data = self.data
             weights_params = None
@@ -204,7 +204,7 @@ class _ACF(object):
         
         self.acf=self.acf.transpose().copy()
         endtime = datetime.now()
-        logger.info('Needed to compute acf [s]:%s', (str(endtime - starttime)))
+        logger.debug('Needed to compute acf [s]:%s', (str(endtime - starttime)))
         
         # Nothing went wrong, happily reporting 0
         return 0
@@ -248,7 +248,6 @@ class _ACF(object):
         
     def clear(self):
         ''' Resets all the ellipticity parameters to None '''
-        logger.info("Resetting all ellipticities measurements.")
         self.acf=None
         self.data=None
         self.g1 = None
