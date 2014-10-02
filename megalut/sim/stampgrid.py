@@ -147,8 +147,8 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		psf_stamp = psf_image[bounds]
 	
 		# We draw a sersic profile
-		gal = galsim.Sersic(n=galrow["tru_sersicn"], half_light_radius=galrow["tru_rad"], flux=galrow["tru_flux"])
-		gal.applyShear(g1=galrow["tru_g1"], g2=galrow["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
+		gal = galsim.Sersic(n=float(galrow["tru_sersicn"]), half_light_radius=float(galrow["tru_rad"]), flux=float(galrow["tru_flux"]))
+		gal.applyShear(g1=float(galrow["tru_g1"]), g2=float(galrow["tru_g2"])) # This combines shear AND the ellipticity of the galaxy
 		
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
