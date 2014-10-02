@@ -83,10 +83,10 @@ def getstamp(x, y, img, stampsize):
 
 	# By MegaLUT's definition, a pixel is centered at 0.5,0.5
 	dd=+.5
-	xmin=round(int(x-dd-stampsize/2))
-	xmax=round(int(x-dd+stampsize/2))
-	ymin=round(int(y-dd-stampsize/2))
-	ymax=round(int(y-dd+stampsize/2))
+	xmin=int(round(x-dd-stampsize/2.))
+	xmax=int(round(x-dd+stampsize/2.))
+	ymin=int(round(y-dd-stampsize/2.))
+	ymax=int(round(y-dd+stampsize/2.))
 	
 	# We check that these bounds are fully within the image
 	if xmin < 0 or xmax > np.shape(img)[0] or ymin < 0 or ymax > np.shape(img)[1]:
