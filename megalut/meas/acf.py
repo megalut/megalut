@@ -143,13 +143,13 @@ class _ACF(object):
                 dy=yf
             else:
                 cx, cy = np.shape(self.acf)
-                cx /= 2
-                cy /= 2
+                cx /= 2.
+                cy /= 2.
                 dx, dy = region
-                x0 = cx - dx/2
-                y0 = cy - dy/2
-                xf = cx + dx/2
-                yf = cy + dy/2
+                x0 = int(round(cx - dx/2.))
+                y0 = int(round(cy - dy/2.))
+                xf = int(round(cx + dx/2.))
+                yf = int(round(cy + dy/2.))
             
             acf = self.acf[x0:xf,y0:yf]
             acf[dx/2,dx/2]=0.
