@@ -5,7 +5,6 @@ A demo that measures some moments with galsim
 import logging
 logging.basicConfig(level=logging.DEBUG) # This time we use debug level, as an illustration
 
-import megalut
 import megalut.great3
 import megalut.meas
 
@@ -20,8 +19,8 @@ inputcat = megalut.great3.io.readgalcat(branch, subfield)
 #inputcat = inputcat[:1000]
 #inputcat = inputcat[inputcat["ID"] == 245007]
 
-img = megalut.meas.galsim_adamom.loadimg(branch.galimgfilepath(subfield))
-meascat = megalut.meas.galsim_adamom.measure(img, inputcat, stampsize=branch.stampsize())
+gridimg = megalut.gsutils.loadimg("simgalimg.fits")
+meascat = megalut.meas.galsim_adamom.measure(img, inputcat, stampsize=branch.stampsize(), prefix="mes")
 
 
 # To see the failed measurements:
