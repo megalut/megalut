@@ -45,10 +45,10 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
         
     .. Warning:: The sextractor find_obj is not multiprocessing safe yet
     """
-    if method=="None" or not method in ["AdaptiveMoments",
-                                        "EllipticityGradients",
-                                        "QuadrupoleMoments"]:
+    if method==None:
         method="AdaptiveMoments"
+    elif not method in ["AdaptiveMoments","EllipticityGradients","QuadrupoleMoments"]:
+        raise ValueError("Unknown ACF shape measurement methods")
         
     
     logger.info("acf run on %s with method %s starting now" % (imgfilepath,method))

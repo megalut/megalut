@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 # First Create an image with a catalog (See draw_and_measure_sims.py for more info.).
 class MySimParams(megalut.sim.params.Params):
     def get_flux(self):
-        return 300
+        return 300.
     
 mysimparams = MySimParams()
 # We make a catalog of 100 simulated galaxies :
