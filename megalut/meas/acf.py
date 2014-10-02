@@ -195,6 +195,7 @@ class _ACF(object):
         dataFT = fft2(data)
         self.acf = fftshift(ifft2(dataFT * np.conjugate(dataFT))).real
         
+        #TODO Do we really need this ? if not, do not need find_obj
         weights_map = self._BuildWeightMap(self.acf, weights_type = weights, weights_params=None, find_with=find_with)
         self.acf=self.acf*weights_map
         if clip:
