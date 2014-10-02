@@ -473,7 +473,7 @@ class QuadrupoleMoments(_ACF):
 
 class EllipticityGradients(_ACF):
     ''' ACF measurement class
-        Uses quadrupole moments to measure the ellipticity
+        Uses Ellipticity Gradients to measure the ellipticity
         
         :Example usage:
             >>> img = EllipticityGradients(image_filename)
@@ -502,7 +502,7 @@ class EllipticityGradients(_ACF):
 ###################################################################################################
 class AdaptiveMoments(_ACF):
     ''' ACF measurement class
-        Uses quadrupole moments to measure the ellipticity
+        Uses AdaptiveMoments from galsim to measure the ellipticity
         
         :Example usage:
             >>> img = AdaptiveMoments(image_filename)
