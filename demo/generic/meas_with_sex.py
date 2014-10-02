@@ -25,11 +25,11 @@ print cat
 
 
 
-params = ["X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "FLUX_AUTO", "BACKGROUND", "FLAGS"]
+params = ["X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "BACKGROUND", "FLUX_RADIUS(3)", "FLAGS"]
 # Note that if you give an unknown param, I will run anyway, but you will get a nice 
 # warning with a list of all common params.
 
-config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0}
+config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "PHOT_FLUXFRAC":"0.3, 0.5, 0.8"}
 
 se = SExtractor(params=params, config=config, workdir="test")
 #print se.get_version()
