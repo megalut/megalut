@@ -24,6 +24,7 @@ print cat
 # An example with some custom configuration :
 
 
+
 params = ["X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "FLUX_AUTO", "BACKGROUND", "FLAGS"]
 # Note that if you give an unknown param, I will run anyway, but you will get a nice 
 # warning with a list of all common params.
@@ -36,6 +37,4 @@ se = SExtractor(params=params, config=config, workdir="test")
 cat = se.run("psfs/psfgrid.fits")
 
 print cat
-
-
 
