@@ -65,6 +65,7 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
     # Loading complete image
     whole_image = utils.fromfits(imgfilepath)
     for gal in gal_catalog:
+        output={}
         x,y=gal["x"], gal["y"]
         img,flag=utils.getstamp(x, y, whole_image, stampsize)
         
