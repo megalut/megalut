@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 ###################################################################################################
 
-def run(imgfilepath, gal_catalog, stampsize=32, method=None, acf_weight="gaussian", 
+def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian", 
         prefix="mes_acf", find_with='gs', show=False):
     """
     Shape measurement with AutoCorrelation Function.
@@ -17,7 +17,7 @@ def run(imgfilepath, gal_catalog, stampsize=32, method=None, acf_weight="gaussia
     
     :param imgfilepath: The filepath of the image
     :param gal_catalog: The catalog of the galaxy with an entry for : id, x, y
-    :param stampsize: the stamp size to use for the measurement. Default: 32
+    :param stampsize: the stamp size to use for the measurement.
     :param method: which method to use ? Choice : "AdaptiveMoments", "EllipticityGradients",
         "QuadrupoleMoments". Default: AdaptiveMoments
     :param acf_weight: Weight for the convolution ie, Data*=weight before the convolution.
@@ -94,7 +94,6 @@ def run(imgfilepath, gal_catalog, stampsize=32, method=None, acf_weight="gaussia
         acf.clear()
 
     catalog = astropy.table.Table(rows=rows)
-    
     return catalog
     
 

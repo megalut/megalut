@@ -27,7 +27,7 @@ megalut.sim.stampgrid.drawimg(simcat,
     )
 
 # Running the measurements
-out=run("simgalimg.fits",simcat)
+out=run("simgalimg.fits",simcat,stampsize=32)
 
 # Just plotting the raw results
 plt.figure()
