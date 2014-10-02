@@ -172,7 +172,6 @@ class _ACF(object):
         from numpy.fft import fft2, ifft2, fftshift   
         
         if weights == 'gaussian':
-            starttime = datetime.now()    
             if ('x_obj' in kwargs and 'y_obj' in kwargs and 'radius' in kwargs and 'a' in kwargs and 'b' in kwargs and 'theta' in kwargs):
                 weights_params = [kwargs['x_obj'], kwargs['y_obj'], kwargs['radius'], kwargs['a'], kwargs['b'],kwargs['theta']]
                 weights_params = np.array([weights_params])
@@ -180,19 +179,16 @@ class _ACF(object):
                 weights_params=kwargs['weights_params']
             else:
                 weights_params = None
-            logger.debug('Weights params (for weight type: %s) %s' % (weights, weights_params))
             weights_map = self._BuildWeightMap(self.data, weights_type = weights, weights_params=weights_params, find_with=find_with)
             if weights_map==None:
                 return 2 # If the creation of the weight failed, flag this as 2.
             data=self.data*weights_map
-            endtime = datetime.now()
-            logger.debug('Time needed to build weight map [s]: %s' % (str(endtime - starttime)))
+
         else:
             data = self.data
             weights_params = None
             
         data = data+0.j
-        starttime = datetime.now()    
         dataFT = fft2(data)
         self.acf = fftshift(ifft2(dataFT * np.conjugate(dataFT))).real
         
@@ -203,8 +199,6 @@ class _ACF(object):
             self.acf = np.clip(self.acf, 0., np.amax(self.acf))
         
         self.acf=self.acf.transpose().copy()
-        endtime = datetime.now()
-        logger.debug('Needed to compute acf [s]:%s', (str(endtime - starttime)))
         
         # Nothing went wrong, happily reporting 0
         return 0
