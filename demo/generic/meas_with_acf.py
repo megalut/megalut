@@ -7,7 +7,6 @@ from megalut.meas.acf import run
 import megalut.sim
 
 import pylab as plt
-import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 
