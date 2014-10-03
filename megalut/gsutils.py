@@ -51,8 +51,9 @@ def getstamp(x, y, img, stampsize):
 	:returns: a tuple(stamp, flag). Flag is 1 if the stamp could not be extracted, 0 otherwise.
 	"""
 
-	
-	#assert img.origin() == (0, 0) # This would be nice, but is only available in newer GalSims...
+	assert img.origin().x == 0 and img.origin().y == 0 # This is nice, but is only available in GalSim >=v1.1...
+	# the above is a bit heavy but assert img.origin() == (0,0) doesn't work since img.origin() is not
+	# a tuple, but a galsim._galsim.PositionI object.
 	assert img.xmin == 0 and img.ymin == 0
 	assert int(stampsize)%2 == 0 # checking that it's even
 
@@ -60,7 +61,7 @@ def getstamp(x, y, img, stampsize):
 	xmax = int(np.round(x - 0.5)) + int(stampsize)/2 - 1
 	ymin = int(np.round(y - 0.5)) - int(stampsize)/2
 	ymax = int(np.round(y - 0.5)) + int(stampsize)/2 - 1
-			
+
 	assert ymax - ymin == stampsize - 1 # This is the GalSim convention, both extermas are "included" in the bounds.
 	assert xmax - xmin == stampsize - 1
 	

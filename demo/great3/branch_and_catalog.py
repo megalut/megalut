@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 #branch = megalut.great3.utils.Branch("control", "ground", "constant",
 #	datadir="/Users/mtewes/Desktop/fake_GREAT3")
 branch = megalut.great3.utils.Branch("control", "ground", "variable",
-	datadir="/vol/fohlen11/fohlen11_1/mtewes/GREAT3")
+	datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part")
 
 
 print branch
@@ -24,7 +24,7 @@ print branch.psfimgfilepath(subfield=0)
 
 
 # We read a galaxy catalog, that will be served as an astropy table.
-cat = megalut.great3.io.readgalcat(branch, subfield=0)
+cat = megalut.great3.io.readgalcat(branch, subfield=5)
 
 print cat[:5] # Cool !
 print cat.colnames

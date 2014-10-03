@@ -85,7 +85,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamo
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
 			gal[prefix+"_flag"] = flag
 			continue
-		
+
 		# We measure the moments... galsim may fail from time to time, hence the try:
 		try:
 			res = galsim.hsm.FindAdaptiveMom(gps)
@@ -109,7 +109,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamo
 		# If we made it so far, we check that the centroid is roughly ok:
 		if np.hypot(x - gal[prefix+"_x"], y - gal[prefix+"_y"]) > 10.0:
 			gal[prefix + "_flag"] = 2
-		
 	
 	endtime = datetime.now()	
 	logger.info("All done")
