@@ -47,14 +47,15 @@ print out["table"]
 # For this we need an existing catalog and a FITS image.
 
 inputcat = megalut.utils.readpickle("psfs/cat_psfgrid.pkl")
-print inputcat
+print inputcat[:5]
 
 params = ["VECTOR_ASSOC(3)", "X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
-config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "DETECT_MINAREA":500}
+config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "DETECT_MINAREA":10}
 se = SExtractor(params=params, config=config, workdir="test")
 
 out = se.run("psfs/psfgrid.fits", assoc_cat = inputcat, assoc_xname="psfgridx", assoc_yname="psfgridy")
 
-print out["table"]
 
-print out["table"].colnames
+print out["table"][:5]
+
+
