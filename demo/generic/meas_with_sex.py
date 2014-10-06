@@ -15,9 +15,10 @@ from megalut.meas.sextractor import SExtractor
 se = SExtractor()
 
 # Any FITS image would be fine for this minimal example, let's use this one:
-cat = se.run("psfs/psfgrid.fits")
+out = se.run("psfs/psfgrid.fits")
 
-print cat
+print out["table"]
+
 """
 
 
@@ -35,9 +36,9 @@ config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "PHOT_FLUXFRAC":"0.3, 0.5, 0.8
 se = SExtractor(params=params, config=config, workdir="test")
 #print se.get_version()
 
-cat = se.run("psfs/psfgrid.fits")
+out = se.run("psfs/psfgrid.fits")
 
-print cat
+print out["table"]
 """
 
 
@@ -48,12 +49,12 @@ print cat
 inputcat = megalut.utils.readpickle("psfs/cat_psfgrid.pkl")
 print inputcat
 
-params = ["VECTOR_ASSOC(3)", "X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "BACKGROUND", "FLUX_RADIUS(3)", "FLAGS"]
-config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "PHOT_FLUXFRAC":"0.3, 0.5, 0.8", }
+params = ["VECTOR_ASSOC(3)", "X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
+config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "DETECT_MINAREA":500}
 se = SExtractor(params=params, config=config, workdir="test")
 
-cat = se.run("psfs/psfgrid.fits", assoc_cat = inputcat, assoc_xname="psfgridx", assoc_yname="psfgridy")
+out = se.run("psfs/psfgrid.fits", assoc_cat = inputcat, assoc_xname="psfgridx", assoc_yname="psfgridy")
 
-print cat
+print out["table"]
 
-
+print out["table"].colnames
