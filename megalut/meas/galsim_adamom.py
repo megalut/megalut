@@ -170,7 +170,7 @@ def pngstampgrid(pngfilepath, img, catalog, xname="x", yname="y", stampsize=100,
 			if index < n: # Then we have a galaxy to show
 				gal = catalog[index]
 				(x, y) = (gal[xname], gal[yname])
-				(gps, flag) = getstamp(x, y, img, stampsize)
+				(gps, flag) = gsutils.getstamp(x, y, img, stampsize)
 				npstamp = gps.array
 				
 				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)
