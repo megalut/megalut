@@ -96,16 +96,19 @@ class Run():
 		
 		cat = megalututils.readpickle(self.inputcat)
 		
+		
 		# With sex:
 		params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE", "FLUX_WIN", "FLUXERR_WIN",
 			 "FLUX_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS", "FLAGS_WIN", "NITER_WIN"]
-		config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "DETECT_MINAREA":6, "DETECT_THRESH":2, "ANALYSIS_THRESH":2}
-		se = meas.sextractor.SExtractor(params=params, config=config, workdir=os.path.join(self.workdir, "obs_sex"))
+		config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "DETECT_MINAREA":6, "DETECT_THRESH":2, "ANALYSIS_THRESH":2,
+			"ASSOC_RADIUS":5, "ASSOC_TYPE":"NEAREST"}
+		se = meas.sextractor.SExtractor(sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+			params=params, config=config, workdir=os.path.join(self.workdir, "obs_sex"), nice=15)
 		cat = se.run(self.pointing.coaddimgpath(), assoc_cat = cat, assoc_xname="Xpos", assoc_yname="Ypos", prefix="mlsex_")
 
 		megalututils.writepickle(cat, self.meascat)
-
-
+		
+		"""
 		# With adamom:
 		
 		img = gsutils.loadimg(self.pointing.coaddimgpath())
@@ -113,7 +116,7 @@ class Run():
 		cat = meas.galsim_adamom.measure(img, cat, stampsize=32, xname="Xpos", yname="Ypos", prefix="adamom")
 		
 		megalututils.writepickle(cat, self.meascat)
-
+		"""
 		
 		
 		#meas.galsim_adamom.pngstampgrid("test.png", img, cat[5000:5100], xname="Xpos", yname="Ypos", stampsize=32, ncols=10, upsample=4, z1="auto", z2="auto")
