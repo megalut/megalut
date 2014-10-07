@@ -33,7 +33,9 @@ class Run():
 		
 		self.inputcat = os.path.join(self.workdir, "inputcat.pkl")
 		self.inputcatmini = os.path.join(self.workdir, "inputcatmini.pkl")
-		#self.meascat = os.path.join(self.workdir, "meascat.pkl")
+		
+		self.meascat = os.path.join(self.workdir, "meascat.pkl")
+		
 		self.psfcat = os.path.join(self.workdir, "psfcat.pkl")
 		self.psfcatmeas = os.path.join(self.workdir, "psfcatmeas.pkl")
 		
@@ -84,6 +86,55 @@ class Run():
 		catmeas = meas.galsim_adamom.measure(img, cat, stampsize=32, xname="psfgridx", yname="psfgridy", prefix="psfmes")
 
 		megalututils.writepickle(catmeas, self.psfcatmeas)
+
+
+
+	def measobs(self):
+		"""
+		
+		"""
+		
+		cat = megalututils.readpickle(self.inputcat)
+		
+		# With sex:
+		params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE", "FLUX_WIN", "FLUXERR_WIN",
+			 "FLUX_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS", "FLAGS_WIN", "NITER_WIN"]
+		config = {"BACK_TYPE":"MANUAL", "BACK_VALUE":0.0, "DETECT_MINAREA":6, "DETECT_THRESH":2, "ANALYSIS_THRESH":2}
+		se = meas.sextractor.SExtractor(params=params, config=config, workdir=os.path.join(self.workdir, "obs_sex"))
+		cat = se.run(self.pointing.coaddimgpath(), assoc_cat = cat, assoc_xname="Xpos", assoc_yname="Ypos", prefix="mlsex_")
+
+		megalututils.writepickle(cat, self.meascat)
+
+
+		# With adamom:
+		
+		img = gsutils.loadimg(self.pointing.coaddimgpath())
+
+		cat = meas.galsim_adamom.measure(img, cat, stampsize=32, xname="Xpos", yname="Ypos", prefix="adamom")
+		
+		megalututils.writepickle(cat, self.meascat)
+
+		
+		
+		#meas.galsim_adamom.pngstampgrid("test.png", img, cat[5000:5100], xname="Xpos", yname="Ypos", stampsize=32, ncols=10, upsample=4, z1="auto", z2="auto")
+	
+
+
+	def drawsims(self):
+		"""
+		
+		"""
+		
+		
+		
+		
+		
+		
+
+
+
+
+
 
 
 
