@@ -12,8 +12,8 @@ Here is an illustrative example::
 
  from sextractor import SExtractor
  se = SExtractor(
- 	params=["X_IMAGE", "Y_IMAGE", "FLUX_RADIUS(3)", "FLAGS"],
-	config={"DETECT_MINAREA":10, "PHOT_FLUXFRAC":"0.3, 0.5, 0.8"}
+	params=["X_IMAGE", "Y_IMAGE", "FLUX_RADIUS(3)", "FLAGS"],
+        config={"DETECT_MINAREA":10, "PHOT_FLUXFRAC":"0.3, 0.5, 0.8"}
 	)
  out = se.run("myimage.fits")
  print out["table"] # this is an astropy table.
@@ -34,7 +34,7 @@ The philosophy is the following:
   that you want to analyse with the same params but a different config.
   Indeed you usually don't want to change params from image to image, but you might have to change
   the config (e.g., gain, seeing, ...).
-- When repeatedly calling run(), we avoid writing the SExtractor input files over and over again.
+- When repeatedly calling run(), we avoid writing the SExtractor input files to disk over and over again.
   Instead, param is written only once, and config settings are passed as command line arguments to
   the SExtractor executable, superseding the default config, which we take (if not told otherwise)
   as the output of "sextractor -d".
@@ -44,15 +44,17 @@ The philosophy is the following:
 
 .. warning:: When using *vector*-type params resulting in multiple columns (such as "FLUX_RADIUS(3)"
 	in the example above), do not put these in the last position of the params list, otherwise astropy
-	fails reading the catalog!
+	fails reading the catalog! This is probably due to the fact that the SExtractor header doesn't give
+	a hint that multiple columns are expected when a vector-type param comes last. A workaround would be
+	way too complicated.
 
 
 .. note:: 
 		   
 		The **ASSOC helper** assists you in measuring galaxies from an existing input catalog,
 		instead of just making a new catalog of all sources. In summary, you pass an existing input
-		catalog to run(), and you'll get this same catalog as output, but with the new colums corresponding to the
-		SExtractor params appended.
+		catalog to run(), and you'll get this same catalog as output, but with the new columns
+		corresponding to the SExtractor params appended.
 		
 		To use the ASSOC helper:
 
@@ -72,9 +74,9 @@ The philosophy is the following:
 		
 Recent improvements (latest on top):
 
-- better verbosity about masked ouptut of ASSOC procedure
+- better verbosity about masked output of ASSOC procedure
 - ASSOC helper implemented
-- now returns a dict
+- now returns a dict of the run() info, such as the output astropy table, catfilepath, workdir, and logfilepath
 - now also works with vector parameters such as MAG_APER(4)
 - possibility to "nice" SExtractor
 - a log file is written for every run() if not told otherwise
@@ -116,12 +118,14 @@ import tempfile
 import re
 import copy
 from datetime import datetime
+import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-defaultparams = ["XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE", "BACKGROUND", "FLUX_AUTO"]
+defaultparams = ["XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE", "BACKGROUND",
+                 "FLUX_AUTO"]
 defaultconfig = {}
 
 
@@ -138,19 +142,23 @@ class SExtractor():
 		"""
 		All arguments have default values and are optional.
 		
-		:param workdir: where I'll write my files. Specify this (e.g., "test") if you care about the output files.
+		:param workdir: where I'll write my files. Specify this (e.g., "test") if you care about the
+                        output files.
 			If None, I create a unique temporary directory myself, usually in /tmp.
 			
 		:param sexpath: path to the sextractor executable (e.g., "sex" or "sextractor", if in your PATH)
-		:param params: the parameters you want SExtractor to measure (i.e., what you would write in the "default.param" file)
+		:param params: the parameters you want SExtractor to measure (i.e., what you would write in the
+                        "default.param" file)
 		:type params: list of strings
-		:param config: config settings that will supersede the default config (e.g., what you would change in the "default.sex" file)
+		:param config: config settings that will supersede the default config (e.g., what you would
+                        change in the "default.sex" file)
 		:type config: dict
-		:param configfilepath: specify this if you want me to use an existing SExtractor config file as "default" (instead of the sextractor -d one)
+		:param configfilepath: specify this if you want me to use an existing SExtractor config file as
+                        "default" (instead of the sextractor -d one)
 		:param nice: niceness with which I should run SExtractor
 		
-		To use an existing SExtractor param-, conv-, or nnw-file, simply specify these in the config dict, using the appropriate
-		SExtractor keys (PARAMETERS_NAME, FILTER_NAME, ...)
+		To use an existing SExtractor param-, conv-, or nnw-file, simply specify these in the config
+                dict, using the appropriate SExtractor keys (PARAMETERS_NAME, FILTER_NAME, ...)
 		
 		"""
 
@@ -160,6 +168,8 @@ class SExtractor():
 		self.sexpath = sexpath
 		self.configfilepath = configfilepath
 		self.nice = nice
+		
+		logger.info("SExtractor version is %s" % (self.get_version()))
 		
 		# ... and the workdir
 		
@@ -238,7 +248,8 @@ class SExtractor():
 				cleanparam = param
 				
 			if cleanparam not in self.fullparamlist:
-				logger.warning("Parameter '%s' seems strange and might be unknown to SExtractor" % (param))
+				logger.warning("Parameter '%s' seems strange and might be unknown to SExtractor" \
+                                                   % (param))
 				strange_param_helper = True
 				
 		if strange_param_helper:
@@ -335,13 +346,14 @@ class SExtractor():
 		
 		"""
 		Writes the *default* config file, if needed.
-		I don't write this file if a specifig config file is set.
+		I don't write this file if a specific config file is set.
 		
 		:param force: if True, I overwrite any existing file.
 		"""
 		
 		if self.configfilepath is not None:
-			logger.debug("You use the existing config file %s, I don't have to write one." % (self._get_config_filepath()))
+			logger.debug("You use the existing config file %s, I don't have to write one." % \
+                                         (self._get_config_filepath()))
 			return
 		
 		if force or not os.path.exists(self._get_config_filepath()):	
@@ -404,7 +416,8 @@ class SExtractor():
 
 		lines = []
 		for (number, row) in enumerate(cat):
-			lines.append("%.3f\t%.3f\t%i\n" % (row[xname], row[yname], number)) # Seems safe(r) to not use row.index but our own number.
+                        # Seems safe(r) to not use row.index but our own number.
+			lines.append("%.3f\t%.3f\t%i\n" % (row[xname], row[yname], number))
 
 		lines = "".join(lines)
 		f = open(self._get_assoc_filepath(imgname), "w")
@@ -426,7 +439,8 @@ class SExtractor():
 
 		
 
-	def run(self, imgfilepath, imgname=None, assoc_cat=None, assoc_xname="x", assoc_yname="y", returncat=True, prefix="", writelog=True):
+	def run(self, imgfilepath, imgname=None, assoc_cat=None, assoc_xname="x", assoc_yname="y",
+                returncat=True, prefix="", writelog=True):
 		"""
 		Runs SExtractor on a given image.
 		
@@ -435,11 +449,13 @@ class SExtractor():
 		:param assoc_xname: x coordinate name I should use in the ASSOC helper
 		:param assoc_yname: idem
 		
-		:param returncat: by default I read the SExtractor output catalog and return it as an astropy table.
+		:param returncat: by default I read the SExtractor output catalog and return it as an astropy
+                        table.
 			If set to False, I do not attempt to read it.
 		:param prefix: will be prepended to the column names of the astropy table that I return
 		:type prefix: string
-		:param writelog: if True I save the sextractor command line input and output into a dedicated log file in the workdir.
+		:param writelog: if True I save the sextractor command line input and output into a dedicated
+                        log file in the workdir.
 		
 		:returns: a dict containing the keys:
 		          
@@ -460,7 +476,8 @@ class SExtractor():
 			imgname = os.path.splitext(os.path.basename(imgfilepath))[0]
 		logger.debug("Using imgname %s..." % (imgname))		
 		
-		# We make a deep copy of the config, that we can modify with settings related to this particular image.
+		# We make a deep copy of the config, that we can modify with settings related to this particular
+                # image.
 		imgconfig = copy.deepcopy(self.config)
 		
 		# We set the catalog name :
@@ -472,7 +489,7 @@ class SExtractor():
 		# We prepare the ASSOC catalog file, if needed
 		if assoc_cat is not None:
 			
-			logger.info("I will run in ASSOC mode, trying to find %i sources..." % (len(assoc_cat)))	
+			logger.info("I will run in ASSOC mode, trying to find %i sources..." % (len(assoc_cat)))
 			if "VECTOR_ASSOC(3)" not in self.params:
 				raise RuntimeError("To use the ASSOC helper, you have to add 'VECTOR_ASSOC(3)' to the params")
 			if assoc_xname not in assoc_cat.colnames or assoc_yname not in assoc_cat.colnames:
@@ -480,7 +497,8 @@ class SExtractor():
 			if "VECTOR_ASSOC_2" in assoc_cat.colnames:
 				raise RuntimeError("Do not give me an assoc_cat that already contains a column VECTOR_ASSOC_2")
 			for param in self.params + [prefix + "assoc_flag"]:
-				if prefix + param in assoc_cat.colnames: # This is not 100% correct, as some params might be vectors.
+				# This is not 100% correct, as some params might be vectors.
+				if prefix + param in assoc_cat.colnames:
 					raise RuntimeError("Your assoc_cat already has a column named %s, fix this" % (prefix + param))
 			
 			self._write_assoc(cat=assoc_cat, xname=assoc_xname, yname=assoc_yname, imgname=imgname)
@@ -495,7 +513,7 @@ class SExtractor():
 				logger.warning("ASSOC_TYPE not specified, using a default NEAREST")
 				imgconfig["ASSOC_TYPE"] = "NEAREST"
 			if "ASSOCSELEC_TYPE" in imgconfig:
-				raise RuntimeError("Sorry, you cannot mess with ASSOCSELEC_TYPE yourself when usign the helper. I'm using MATCHED.")
+				raise RuntimeError("Sorry, you cannot mess with ASSOCSELEC_TYPE yourself when using the helper. I'm using MATCHED.")
 			imgconfig["ASSOCSELEC_TYPE"] = "MATCHED"
 
 		
@@ -540,7 +558,8 @@ class SExtractor():
 			logger.critical("Ouch, something seems wrong, check SExtractor log")
 		
 		endtime = datetime.now()
-		logger.info("Running SExtractor done, it took %.2f seconds." % ((endtime - starttime).total_seconds()))
+		logger.info("Running SExtractor done, it took %.2f seconds." % \
+                                ((endtime - starttime).total_seconds()))
 
 		# We return a dict. It always contains at least the path to the sextractor catalog:
 		output = {"catfilepath":self._get_cat_filepath(imgname), "workdir":self.workdir}
@@ -550,7 +569,8 @@ class SExtractor():
 		# And we read the output, if asked for:
 		if returncat:
 			if assoc_cat is None:
-				sextable = astropy.table.Table.read(self._get_cat_filepath(imgname), format="ascii.sextractor")
+				sextable = astropy.table.Table.read(self._get_cat_filepath(imgname),
+                                                                    format="ascii.sextractor")
 				logger.info("Read %i objects from the SExtractor output catalog" % (len(sextable)))
 				self._add_prefix(sextable, prefix)
 				output["table"] = sextable
@@ -562,20 +582,38 @@ class SExtractor():
 				intable["VECTOR_ASSOC_2"] = range(len(assoc_cat))
 								
 				# We read in the SExtractor output:					
-				sextable = astropy.table.Table.read(self._get_cat_filepath(imgname), format="ascii.sextractor")
+				sextable = astropy.table.Table.read(self._get_cat_filepath(imgname),
+                                                                    format="ascii.sextractor")
 				logger.info("Read %i objects from the SExtractor output catalog" % (len(sextable)))
 				self._add_prefix(sextable, prefix)
 				sextable.remove_columns(["VECTOR_ASSOC", "VECTOR_ASSOC_1"])
-			
+				
+				# Due to what seems to be a bug in SExtractor (version 2.19.5 and earlier),
+				# we need to kick out "duplicated" (same VECTOR_ASSOC_2) rows.
+				# That's weird, as in principle we asked to keep the NEAREST !
+				sortedassoc = np.sort(sextable["VECTOR_ASSOC_2"].data)
+				duplassoc = list(np.unique(sortedassoc[sortedassoc[1:] == sortedassoc[:-1]]))
+				# The unique is here as there might be more than 2 identical numbers...
+				if len(duplassoc) > 0:
+					logger.critical("%i sources from the SExtractor catalog are strange duplicates (bug ?), I discard them." % (len(duplassoc)))
+					rowindices_to_remove = []
+					for row in sextable:
+						if row["VECTOR_ASSOC_2"] in duplassoc:
+							rowindices_to_remove.append(row.index)
+					sextable.remove_rows(rowindices_to_remove)
+							
 				# We merge the tables, keeping all entries of the "intable"
 				joined = astropy.table.join(intable, sextable,
 					join_type='left', keys='VECTOR_ASSOC_2',
-					metadata_conflicts = "error", # raises an error in case of metadata conflict.
-					table_names = ['ASSOC', 'SEx'], # Will only be used in case of colum name conflicts.
+					 # raises an error in case of metadata conflict.
+					metadata_conflicts = "error",
+					 # Will only be used in case of column name conflicts.
+					table_names = ['ASSOC', 'SEx'],
 					uniq_col_name = "{table_name}_{col_name}"
 					)
 				
-				# This join does not mix the order, as the output is sorted according to our own VECTOR_ASSOC_2
+				# This join does not mix the order, as the output is sorted according to our own
+				# VECTOR_ASSOC_2
 				
 				# We remove the last ASSOC column:
 				joined.remove_columns(["VECTOR_ASSOC_2"])
@@ -585,13 +623,15 @@ class SExtractor():
 					raise RuntimeError("Problem with joined tables: intable has %i rows, joined has %i. %s %s" % (len(intable), len(joined), intable.colnames, joined.colnames))
 				
 				# The join might return a **masked** table.
-				# In any case, we add one simply-named column with a flag telling if the identification has worked.
+				# In any case, we add one simply-named column with a flag telling if the
+                                # identification has worked.
 				
 				if joined.masked:
 					logger.info("ASSOC join done, my output is a masked table.")
 					joined[prefix + "assoc_flag"] = joined[joined.colnames[-1]].mask == False
 					nfound = sum(joined[prefix + "assoc_flag"])
-					logger.info("I could find %i out of %i sources (%i are missing)" % (nfound, len(assoc_cat), len(assoc_cat)-nfound))
+					logger.info("I could find %i out of %i sources (%i are missing)" % \
+                                                        (nfound, len(assoc_cat), len(assoc_cat)-nfound))
 				
 				else:
 					logger.info("ASSOC join done, I could find all your sources, my output is not masked.")
