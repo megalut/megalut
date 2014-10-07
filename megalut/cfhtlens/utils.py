@@ -46,8 +46,11 @@ class Pointing():
 		self.catdir = catdir
 	
 	def __str__(self):
-		return "%s_%s" % (self.label, self.filtername)
+		return self.getcode()
 
+	def getcode(self):
+		return "%s_%s" % (self.label, self.filtername)
+		
 	def setcode(self, code):
 		assert len(code) == 8
 		self.label = code[0:6]

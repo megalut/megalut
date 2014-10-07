@@ -6,3 +6,4 @@ Subpackage with code that is specific to CFHTLenS (and similar)
 
 import lensfitpsf
 import utils
+import run

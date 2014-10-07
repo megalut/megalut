@@ -95,7 +95,7 @@ def makeexppsfs(cat, pointing, workdir="."):
 
 
 	os.chdir(cwd) # It's quite a mess if you don't go back to where you left !
-	print os.getcwd()
+	#print os.getcwd()
 	
 
 def stackexppsfs(cat, workdir, gridwidth=50):
