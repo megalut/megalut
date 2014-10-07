@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 ###################################################################################################
 
 def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian", 
-        prefix="mes_acf", find_with='gs', show=False):
+        prefix="mes_acf_", find_with='gs', show=False):
     """
     Shape measurement with AutoCorrelation Function.
     Inspired by http://adsabs.harvard.edu/abs/1997A%26A...317..303V.
@@ -61,20 +61,20 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
     output = copy.deepcopy(gal_catalog)
     if method == 'AdaptiveMoments':
         output.add_columns([
-        astropy.table.Column(name=prefix+"_flag", data=np.zeros(len(output), dtype=int)),
-        astropy.table.Column(name=prefix+"_flux", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_x", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_y", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_g1", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_g2", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_sigma", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_rho4", dtype=float, length=len(output))
+        astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
+        astropy.table.Column(name=prefix+"flux", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"x", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"y", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"sigma", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"rho4", dtype=float, length=len(output))
         ])
     else:
         output.add_columns([
-        astropy.table.Column(name=prefix+"_flag", data=np.zeros(len(output), dtype=int)),
-        astropy.table.Column(name=prefix+"_g1", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"_g2", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
+        astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
+        astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
         ])
     
     starttime = datetime.now()
@@ -101,18 +101,18 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
             if method == 'AdaptiveMoments':
                 # Other methods yield only the shear
                 res=acf.get_measurements(prefix=prefix)
-                gal[prefix+"_flux"] = res.moments_amp
-                gal[prefix+"_x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed. Maybe it's the setOrigin(0, 0).
-                gal[prefix+"_y"] = res.moments_centroid.y + 1.0 # But I would expect that GalSim would internally keep track of these origin issues.
-                gal[prefix+"_g1"] = res.observed_shape.g1
-                gal[prefix+"_g2"] = res.observed_shape.g2
-                gal[prefix+"_sigma"] = res.moments_sigma
-                gal[prefix+"_rho4"] = res.moments_rho4                
+                gal[prefix+"flux"] = res.moments_amp
+                gal[prefix+"x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed. Maybe it's the setOrigin(0, 0).
+                gal[prefix+"y"] = res.moments_centroid.y + 1.0 # But I would expect that GalSim would internally keep track of these origin issues.
+                gal[prefix+"g1"] = res.observed_shape.g1
+                gal[prefix+"g2"] = res.observed_shape.g2
+                gal[prefix+"sigma"] = res.moments_sigma
+                gal[prefix+"rho4"] = res.moments_rho4                
             else:
                 g1,g2=acf.get_shear()
-                output={prefix+"_g1":g1,prefix+"_g2":g2}     
+                output={prefix+"g1":g1,prefix+"g2":g2}     
                 
-        gal[prefix+"_flag"] = flag    
+        gal[prefix+"flag"] = flag    
   
         if show and flag==0: acf.show_acf()
         
