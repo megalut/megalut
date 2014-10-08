@@ -17,11 +17,6 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 	subfields=range(5,10))
 
 # Now run the measurements on input images
-
-
-print cgv.subfields
-
-
 cgv.meas("obs")
 
 exit()

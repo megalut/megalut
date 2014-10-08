@@ -67,4 +67,9 @@ def tofits(a, filepath):
 	logger.info("Wrote %s array to %s" % (a.shape, filepath))
 
 
-
+def mkdir(workdir):
+	if os.path.isdir(workdir):
+		logger.warning("workdir '%s' exists, be careful! I will (maybe silently) delete or overwrite stuff." % (workdir))	
+	else:
+		logger.info("Making new workdir '%s'..." % (workdir))
+		os.makedirs(workdir)

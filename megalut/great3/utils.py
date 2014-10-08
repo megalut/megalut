@@ -24,14 +24,18 @@ class Branch:
 		self.datadir = datadir
 		"""Root directory of the unzipped GREAT3 data"""
 		
-		#self.workdir = workdir
-		
 	
 	def branchtuple(self):
 		"""
 		The branch codes in form of a tuple
 		"""
 		return(self.experiment, self.obstype, self.sheartype)
+	
+	def get_branchacronym(self):
+		"""
+		Get the acrnonym of the branch (e.g. cgv)
+		"""
+		return "".join([self.experiment[0], self.obstype[0], self.sheartype[0]])
 	
 
 	def __str__(self):
@@ -69,8 +73,9 @@ class Branch:
 		
 	def starcatpath(self, subfield):
 		return os.path.join(self.branchdir(), 'star_catalog-%03i.txt' % subfield) # This is set by GREAT3
-
-
+	
+ 	def galfilepath(self, subfield, imgtype):
+ 		return os.path.join(self.workdir, imgtype, "meas-img-%03i.fits" % (subfield))
 
 
 # 
