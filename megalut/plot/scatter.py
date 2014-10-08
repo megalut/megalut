@@ -16,13 +16,13 @@ def scatter2d(ax, cat, featx, featy, **kwargs):
 	:param featx: a Feature object telling me what to draw on my x axis
 	:param featy: idem for y
 	
-	Any further kwargs are passed to plot()
+	Any further kwargs are passed to plot().
 	Some commonly used kwargs:
 	
-	:param marker: default is ".", you can switch to single pixel (",") or anythign else...
-	:param ms: marker size in points
-	:param color: e.g. "red"
-	:param label: for the legend
+	* **marker**: default is ".", you can switch to single pixel (",") or anythign else...
+	* **ms**: marker size in points
+	* **color**: e.g. "red"
+	* **label**: for the legend
 	
 	"""
 	
@@ -51,8 +51,9 @@ def scatter2d(ax, cat, featx, featy, **kwargs):
 
 def simobs_scatter2d(ax, simcat, obscat, featx, featy, **kwargs):
 	"""
-	A scatter2d overplotting simulations and observations in two different colours.
+	A scatter2d overplotting simulations and observations in two different colors.
 	
+	:param ax: a matplotlib Axes object
 	:param simcat: simulation catalog
 	:param obscat: observation catalog
 	:param featx: a Feature object telling me what to draw on my x axis

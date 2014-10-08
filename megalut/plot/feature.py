@@ -10,7 +10,7 @@ class Feature():
 		:param colanme: name of a column 
 		:param low: lower bound of the interval to show on the plot.
 		:param high: higher bound
-		:param nicename: A nicer string designating the feature 
+		:param nicename: A nicer string designating the feature, to be used as axis label.
 		"""
 		
 		self.colname = colname
