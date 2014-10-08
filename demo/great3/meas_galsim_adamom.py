@@ -26,6 +26,7 @@ meascat = megalut.meas.galsim_adamom.measure(img, inputcat, stampsize=branch.sta
 
 # To see the failed measurements:
 failedcat = meascat[meascat["mes_adamom_flag"] > 0]
+print "Showing failed measurements:"
 print failedcat
 
 """
