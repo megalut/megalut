@@ -139,7 +139,7 @@ def removejunk(cat):
 
 def stars(cat):
 	"""
-	Quick and dirty example keeping only stars
+	Quick and dirty way to keep stars
 	"""
 
 	selector = np.logical_and(cat['weight'] < 0.1, cat['fitclass'] == 1)
@@ -147,6 +147,17 @@ def stars(cat):
 	
 	return cat[selector]
 
+
+def galaxies(cat):
+	"""
+	Idem for galaxies
+	"""
+	selector = cat['fitclass'] == 0
+	
+	return cat[selector]
+
+	
+	
 
 
 

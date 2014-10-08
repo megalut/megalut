@@ -2,7 +2,7 @@
 A Run class to run MegaLUT. Let's see how this evolves.
 All steps are independent
 """
-import sys, os
+import sys, os, glob
 import utils
 from .. import utils as megalututils
 from .. import gsutils
@@ -11,6 +11,7 @@ from .. import sim
 
 import lensfitpsf
 import numpy as np
+import astropy.table
 
 import logging
 logger = logging.getLogger(__name__)
@@ -40,6 +41,9 @@ class Run():
 		
 		self.psfcat = os.path.join(self.workdir, "psfcat.pkl")
 		self.psfmeascat = os.path.join(self.workdir, "psfmeascat.pkl")
+		
+		self.obsgalmeascat = os.path.join(self.workdir, "obsgalmeascat.pkl")
+		
 		
 		self.simworkdir = os.path.join(self.workdir, "sim")
 		if not os.path.exists(self.simworkdir):
@@ -97,7 +101,7 @@ class Run():
 	
 	def _meas(self, imgpath, cat, stampsize, xname, yname, sexworkdir, preprefix=""):
 		"""
-		Runs SExtractor and adamom on your stuff
+		Runs SExtractor and adamom
 		
 		:param preprefix: is added before the (fixed) prefix of sex and adamom. Useful when running on PSFs instead of galaxies ?
 		"""
@@ -189,12 +193,116 @@ class Run():
 	
 
 	
+	def meassims(self):
+		"""
+		
+		"""
+		
+		simgalimgs = sorted(glob.glob(os.path.join(self.simworkdir, "*_simgalimg.fits")))
+		logger.info("Will run on %i images..." % (len(simgalimgs)))
+		
+		simgalcat = megalututils.readpickle(self.simgalcat)
+		
+		for simgalimg in simgalimgs:
+			
+			i = int(os.path.split(simgalimg)[1].split("_")[0])
+			sexworkdir = os.path.join(self.simworkdir, "%03i_sex" % (i))
+			
+			meascat = self._meas(simgalimg, simgalcat, stampsize=simgalcat.meta["stampsize"],
+				xname="x", yname="y", sexworkdir=sexworkdir)
+		
+			megalututils.writepickle(meascat, os.path.join(self.simworkdir, "%03i_simgalmeascat.pkl" % (i)))
+			
+	
+		
+	
+	def avgsimmeas(self):
+		"""
+		Averages the measurements on the sims accross the different realizations, and writes a single reduced database.
+		"""	
+
+	def filterobsgals(self):
+		"""
+		Make a catalog with only the observed galaxies
+		"""
+		
+		incat = megalututils.readpickle(self.inputcat)
+		incatgals = utils.galaxies(incat)
+		incatgals.keep_columns(["SeqNr"])
+		logger.info("%i out of %i sources are galaxies" % (len(incatgals), len(incat)))
+
+		meascat = megalututils.readpickle(self.meascat)
+		assert len(incat) == len(meascat)
+		
+		obsgalmeascat = astropy.table.join(incatgals, meascat, join_type="left", keys="SeqNr",
+			table_names=['selector', 'orig'], uniq_col_name='{table_name}_{col_name}')
+		
+		assert len(obsgalmeascat) == len(incatgals)
+		
+		megalututils.writepickle(obsgalmeascat, self.obsgalmeascat)
+	
+
+
+	def plotsimobscompa(self):
+		"""
+		Makes plots comparing meas of the sims and the obs
+		"""
+		import matplotlib.pyplot as plt
+		
+		obscat = megalututils.readpickle(self.obsgalmeascat)
+		simcat = megalututils.readpickle(sorted(glob.glob(os.path.join(self.simworkdir, "*_simgalmeascat.pkl")))[0])
 		
 		
+		fig = plt.figure(figsize=(22, 8))
+		fig.subplots_adjust(bottom=0.15, top=0.95, left=0.05, right=0.95)
+ 
+		ax1 = fig.add_subplot(131)
+		paramx = ("adamom_flux", "Flux", -50, 1000.0)
+		paramy = ("adamom_sigma", "Size", 0, 15.0)
+		simobs_scatter(ax1, simcat, obscat, paramx, paramy)
+		
+		ax2 = fig.add_subplot(132)
+		paramx = ("adamom_sigma", "Size", 0, 15.0)
+		paramy = ("adamom_rho4", "adamom_rho4", 0, 15.0)
+		simobs_scatter(ax2, simcat, obscat, paramx, paramy)
+		
+		ax3 = fig.add_subplot(133)
+		paramx = ("adamom_g1", "g1", -0.6, 0.6)
+		paramy = ("adamom_g2", "g2", -0.6, 0.6)
+		simobs_scatter(ax3, simcat, obscat, paramx, paramy)
+		
+		
+		
+		#fig.canvas.draw()
+		plt.show()	
+			
+		
+def scatter2d(ax, cat, paramx, paramy, color, label):
+	"""
+	
+	"""
+	xdata = cat[paramx[0]].data
+	ydata = cat[paramy[0]].data
+	
+	assert len(xdata) == len(ydata)
+	
+	ax.plot(xdata, ydata, marker=",", ls="None", c=color, ms=10.0, mec="None", label=label)
+	ax.set_xlim(paramx[2], paramx[3])
+	ax.set_ylim(paramy[2], paramy[3])
+	ax.set_xlabel(paramx[1])
+	ax.set_ylabel(paramy[1])
+	
+	#ax.set_yscale('log', nonposy='clip')
+	#ax.set_xscale('log', nonposx='clip')
 
-
-
-
+		
+def simobs_scatter(ax, simcat, obscat, paramx, paramy):
+	"""
+		
+	"""
+	scatter2d(ax, simcat, paramx, paramy, "red", "Simulations")
+	scatter2d(ax, obscat, paramx, paramy, "green", "Observations")
+	ax.legend()
 
 
 
