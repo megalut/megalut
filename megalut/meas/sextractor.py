@@ -34,10 +34,12 @@ The philosophy is the following:
   that you want to analyse with the same params but a different config.
   Indeed you usually don't want to change params from image to image, but you might have to change
   the config (e.g., gain, seeing, ...).
+- In the params list, you have to specify all the parameters that you want to be measured.
+- On the other hand, in the config dict, you only have to give those settings that deviate from
+  the *default*! We take as *default* the output of "sextractor -d" (if not told otherwise).
 - When repeatedly calling run(), we avoid writing the SExtractor input files to disk over and over again.
   Instead, param is written only once, and config settings are passed as command line arguments to
-  the SExtractor executable, superseding the default config, which we take (if not told otherwise)
-  as the output of "sextractor -d".
+  the SExtractor executable, superseding the default config.
   So to change config from image to image, simply edit se.config between calls of run().
 - There is special helper functionality for using ASSOC (see note below)
 
@@ -76,7 +78,7 @@ Recent improvements (latest on top):
 
 - better verbosity about masked output of ASSOC procedure
 - ASSOC helper implemented
-- now returns a dict of the run() info, such as the output astropy table, catfilepath, workdir, and logfilepath
+- run() now returns a dict containing several objects, such as the output astropy table, catfilepath, workdir, and logfilepath.
 - now also works with vector parameters such as MAG_APER(4)
 - possibility to "nice" SExtractor
 - a log file is written for every run() if not told otherwise
@@ -90,6 +92,7 @@ Recent improvements (latest on top):
 
 To do:
 
+- move "config" to run ?
 - check that all masked columns of ASSOC do indeed share the same mask.
 - implement _check_config()
 - better detection of SExtractor failures
@@ -99,7 +102,7 @@ To do:
 
 
 Note that several SExtractor wrappers for python can be found online.
-The code for this module mixes elements inspired by:
+The code of the present module contains elements inspired by:
 
 - previous MegaLUT, alipy, and cosmouline implementations
 - pysex from Nicolas Cantale
@@ -111,7 +114,6 @@ The code for this module mixes elements inspired by:
 
 
 import os
-import shutil
 import astropy
 import subprocess
 import tempfile
@@ -130,7 +132,7 @@ defaultconfig = {}
 
 
 class SExtractorError(Exception):
-    pass
+	pass
 
 
 class SExtractor():
@@ -270,7 +272,7 @@ class SExtractor():
 		"""
 		
 		if "PARAMETERS_NAME" in self.config.keys():
-			logger.info("OK, you specified your own PARAMETERS_NAME, I will use it.")
+			logger.info("You specified your own PARAMETERS_NAME, I will use it.")
 		else:
 			self.config["PARAMETERS_NAME"] = self._get_params_filepath()
 		
@@ -416,7 +418,7 @@ class SExtractor():
 
 		lines = []
 		for (number, row) in enumerate(cat):
-                        # Seems safe(r) to not use row.index but our own number.
+			# Seems safe(r) to not use row.index but our own number.
 			lines.append("%.3f\t%.3f\t%i\n" % (row[xname], row[yname], number))
 
 		lines = "".join(lines)
@@ -477,7 +479,7 @@ class SExtractor():
 		logger.debug("Using imgname %s..." % (imgname))		
 		
 		# We make a deep copy of the config, that we can modify with settings related to this particular
-                # image.
+		# image.
 		imgconfig = copy.deepcopy(self.config)
 		
 		# We set the catalog name :
@@ -624,7 +626,7 @@ class SExtractor():
 				
 				# The join might return a **masked** table.
 				# In any case, we add one simply-named column with a flag telling if the
-                                # identification has worked.
+				# identification has worked.
 				
 				if joined.masked:
 					logger.info("ASSOC join done, my output is a masked table.")
@@ -652,7 +654,9 @@ class SExtractor():
 
 
 	# Some class attributes:
-
+	# We give this fullparamtxt here as some earlier versions of sextractor are not able to spit it out.
+	# It's only used to check your params for typos, anyway.
+	
 	fullparamtxt = """
 #NUMBER                 Running object number                                     
 #EXT_NUMBER             FITS extension number                                     
