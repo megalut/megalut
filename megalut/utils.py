@@ -69,7 +69,7 @@ def tofits(a, filepath):
 
 def mkdir(workdir):
 	if os.path.isdir(workdir):
-		logger.warning("workdir '%s' exists, be careful! I will (maybe silently) delete or overwrite stuff." % (workdir))	
+		logger.warning("Folder '%s' exists, be careful! I will (maybe silently) delete or overwrite stuff." % (workdir))	
 	else:
-		logger.info("Making new workdir '%s'..." % (workdir))
+		logger.info("Making new folder: '%s'." % (workdir))
 		os.makedirs(workdir)

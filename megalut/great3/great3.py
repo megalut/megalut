@@ -12,12 +12,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 import os
+from astropy.table import Table
+import numpy as np
 
 import utils
 import io
-from .. import meas
-from .. import gsutils
+from .. import sim
 from .. import utils as mutils
+from .. import gsutils
 
 class Run(utils.Branch):
     
@@ -47,14 +49,19 @@ class Run(utils.Branch):
             
         self.workdir=workdir
         
-    def meas(self, imgtype, method=meas.galsim_adamom):
+    def meas(self, imgtype, method, method_prefix="", overwrite=False):
         """
         :param imgtype: Measure on observation or sim
         :type params: `obs` or `sim`
-        :param method: method to use, it must be of the form megalut.meas.galsim_adamom
+        :param method: method to use, it must be a user-defined function. The signature of the
+            function must be function(img_fname,input_cat,stampsize)
+        :param overwrite: `True` all measurements and starts again, `False` (default)
+            if exists, then perfect, skip it
         
         .. note:: This typically should be inherited somehow.
         """
+        # Assert imgtype is known:
+        assert imgtype in ["obs","sim"]
 
         for subfield in self.subfields:
             if imgtype=="obs":
@@ -63,20 +70,62 @@ class Run(utils.Branch):
                 pass                                
             else: raise ValueError("Unknown image type")
             
-            # First get the input cat
-            input_cat = io.readgalcat(self,subfield)
+            cat_fname=self.galfilepath(subfield,imgtype,method_prefix)
             
-            # See issue #28 about this:
-            if method==meas.galsim_adamom:
-                img = gsutils.loadimg(img_fname)
-                meas_cat = meas.galsim_adamom.measure(img, input_cat, \
-                                                      stampsize=self.stampsize())
-            else: # TODO: implement here
-                raise NotImplemented()
+            # figure out if we need to overwrite (if applicable)
+            if os.path.exists(cat_fname):
+                if overwrite: 
+                    logger.info("Analysis of %s (subfield %d) prefix %s, I'm told to overwrite..." % (imgtype,subfield,method_prefix))
+                    os.remove(cat_fname)
+                else: 
+                    logger.info("Analysis of %s (subfield %d) prefix %s already exists, skipping..." % (imgtype,subfield,method_prefix))
+                    continue
+                
+            input_cat = io.readgalcat(self, subfield)
             
+            meas_cat=method(img_fname,input_cat,self.stampsize())
+              
             # Save the meas cat
-            cat_fname=self.galfilepath(subfield,imgtype)
-            meas_cat.write(cat_fname,format="fits")
+            meas_cat.write(cat_fname,format="fits") # TODO pkl or fits ? let's try it with fits
+            
+    def sim(self, simparams, n, overwrite=False):
+        
+        for subfield in self.subfields:
+            
+            matched_psfcat=Table.read(self.starcatpath(subfield), format="ascii")
+            
+            cat_fname=os.path.join(self.workdir,"sim","galaxy_catalog-%03i.fits" % subfield)
+            img_fname=self.simgalimgfilepath(subfield)
+            
+            # figure out if we need to overwrite (if applicable)
+            if os.path.exists(cat_fname) and os.path.exists(img_fname):
+                if overwrite: 
+                    logger.info("Sim of subfield %d, I'm told to overwrite..." % (subfield))
+                    os.remove(cat_fname)
+                else: 
+                    logger.info("Sim of subfield %d already exists, skipping..." % (subfield))
+                    continue
+    
+            sim_cat = sim.stampgrid.drawcat(simparams, n=n, stampsize=self.stampsize())
+            
+            sim_cat.write(cat_fname, format="fits") # TODO pkl or fits ? let's try it with fits
+            
+            ####
+            psf_selection=np.random.randint(low=4, high=5, size=n*n)
+            matched_psfcat = matched_psfcat[psf_selection]
+            matched_psfcat.meta["stampsize"]=self.stampsize()
+            
+            psfimg=gsutils.loadimg(self.psfimgfilepath(subfield))
+            
+            sim.stampgrid.drawimg(sim_cat, psfcat=matched_psfcat, 
+                    psfxname="col1", psfyname="col2",
+                    psfimg=psfimg,
+                    simgalimgfilepath=img_fname,
+                    simtrugalimgfilepath=os.path.join(self.workdir,"sim","simtrugalimg-%03d.fits" 
+                                                      % subfield),
+                    simpsfimgfilepath=os.path.join(self.workdir,"sim","simtrugalimg-%03d.fits" 
+                                                   % subfield)
+                )
             
             
-            exit()            
+            

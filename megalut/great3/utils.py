@@ -62,20 +62,39 @@ class Branch:
 	# For now we online define here the "input" stuff, set by GREAT3.
 	# The MegaLUT output could be rethought, and is commented out.
 
-	def galimgfilepath(self, subfield, epoch=0):
-		return os.path.join(self.branchdir(), "image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
+	def galimgfilepath(self, subfield, folder=None,epoch=0):
+		if folder==None:
+			folder=self.branchdir()
+		return os.path.join(folder, "image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
 
 	def psfimgfilepath(self, subfield, epoch=0):
 		return os.path.join(self.branchdir(), "starfield_image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
 
-	def galcatfilepath(self, subfield):
-		return os.path.join(self.branchdir(), "galaxy_catalog-%03i.txt" % (subfield)) # This is set by GREAT3
+	def galcatfilepath(self, subfield, folder=None):
+		if folder==None:
+			folder=self.branchdir()
+		return os.path.join(folder, "galaxy_catalog-%03i.txt" % (subfield)) # This is set by GREAT3
 		
 	def starcatpath(self, subfield):
 		return os.path.join(self.branchdir(), 'star_catalog-%03i.txt' % subfield) # This is set by GREAT3
 	
- 	def galfilepath(self, subfield, imgtype):
- 		return os.path.join(self.workdir, imgtype, "meas-img-%03i.fits" % (subfield))
+	def galfilepath(self, subfield, imgtype, prefix=""):  
+		return os.path.join(self.workdir, imgtype, "%sgalaxy_catalog-%03i.fits" % (prefix,subfield))
+	
+	# Stuff related to the simulations
+	
+		
+	def simgalcatfilepath(self, subfield, nimg=None):
+		if nimg == None:
+			return self.galcatfilepath(subfield, folder=os.path.join(self.workdir,"sim"))
+		else:
+			raise NotImplemented()
+		
+	def simgalimgfilepath(self, subfield, nimg=None):
+		if nimg == None:
+			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim"))
+		else:
+			raise NotImplemented()
 
 
 # 
