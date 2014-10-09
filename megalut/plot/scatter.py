@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter2d(ax, cat, featx, featy, **kwargs):
+def scatter(ax, cat, featx, featy, **kwargs):
 	"""
 	Simple 2D scatter plot of one feature against another, for a single catalog.
 	
@@ -49,9 +49,9 @@ def scatter2d(ax, cat, featx, featy, **kwargs):
 
 
 
-def simobs_scatter2d(ax, simcat, obscat, featx, featy, **kwargs):
+def simobs(ax, simcat, obscat, featx, featy, **kwargs):
 	"""
-	A scatter2d overplotting simulations and observations in two different colors.
+	A scatter plot overplotting simulations and observations in two different colors.
 	
 	:param ax: a matplotlib Axes object
 	:param simcat: simulation catalog
@@ -63,7 +63,7 @@ def simobs_scatter2d(ax, simcat, obscat, featx, featy, **kwargs):
 	
 	
 	"""
-	scatter2d(ax, simcat, featx, featy, color="red", label="Simulations", **kwargs)
-	scatter2d(ax, obscat, featx, featy, color="green", label="Observations", **kwargs)
+	scatter(ax, simcat, featx, featy, color="red", label="Simulations", **kwargs)
+	scatter(ax, obscat, featx, featy, color="green", label="Observations", **kwargs)
 	ax.legend()
 

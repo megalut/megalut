@@ -62,5 +62,5 @@ ax = fig.add_subplot(111)
 tru_g1 = megalut.plot.feature.Feature("tru_g1", -0.6, 0.6, "Nice label for true g1")
 pre_g1 = megalut.plot.feature.Feature("pre_g1") # Minimal call, just to highlight the default behavior.
 
-megalut.plot.scatter.scatter2d(ax, outputcat, tru_g1, pre_g1, color="green")
+megalut.plot.scatter.scatter(ax, outputcat, tru_g1, pre_g1, color="green")
 plt.show()
