@@ -19,7 +19,7 @@ def scatter2d(ax, cat, featx, featy, **kwargs):
 	Any further kwargs are passed to plot().
 	Some commonly used kwargs:
 	
-	* **marker**: default is ".", you can switch to single pixel (",") or anythign else...
+	* **marker**: default is ".", you can switch to single pixel (",") or anything else...
 	* **ms**: marker size in points
 	* **color**: e.g. "red"
 	* **label**: for the legend
