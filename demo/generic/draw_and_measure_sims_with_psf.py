@@ -69,7 +69,7 @@ megalut.sim.stampgrid.drawimg(galcat, psfcat=matched_psfcat, psfimg=psfimg,
 # We can directly proceed by measuring the images
 
 gridimg = megalut.gsutils.loadimg("simgalimg.fits")
-meascat = megalut.meas.galsim_adamom.measure(gridimg, galcat, stampsize=48, prefix="mes")
+meascat = megalut.meas.galsim_adamom.measure(gridimg, galcat, stampsize=48, prefix="mes_")
 
 # meascat is the output catalog, it contains the measured features:
 print meascat[:5]
