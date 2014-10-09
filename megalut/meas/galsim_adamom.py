@@ -153,13 +153,13 @@ def mad(nparray):
 def skystats(stamp):
 	"""
 	I measure some statistics of the pixels along the edge of an image or stamp.
-	Useful to measure the sky noise, but also to check for problems.
+	Useful to measure the sky noise, but also to check for problems. Use "mad"
+	directly as a robust estimate the sky std.
 	
 	:param stamp: a galsim image, usually a stamp
 	
 	:returns: a dict containing "std", "mad", "mean" and "med"
-	
-	Use "mad" to robustly estimate the sky noise !
+		Note that "mad" is already rescaled by 1.4826 to be comparable with std.
 	
 	"""
 	
@@ -175,12 +175,10 @@ def skystats(stamp):
 	
 	# And we convert the mad into an estimate of the Gaussian std:
 	return {
-		"std":np.std(edgepixels), "mad":mad(edgepixels), 
+		"std":np.std(edgepixels), "mad": 1.4826 * mad(edgepixels), 
 		"mean":np.mean(edgepixels), "med":np.median(edgepixels)
 		}
 	
-
-
 	
 #def npstampgrid(img, catalog, xname="x", yname="y", stampsize=100):
 #	"""
