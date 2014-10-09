@@ -41,7 +41,9 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	for iy in range(n):
 		for ix in range(n):
 		
-			gal = params.get(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy, including `ix` and `iy`.
+			gal = params.get(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy
+			gal["ix"] = ix
+			gal["iy"] = iy
 			gal["id"] = idprefix + str(ix + n*iy)
 			gal["x"] = ix*stampsize + stampsize/2.0 + 0.5 # I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
 			gal["y"] = iy*stampsize + stampsize/2.0 + 0.5
