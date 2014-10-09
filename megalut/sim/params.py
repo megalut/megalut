@@ -60,9 +60,7 @@ class Params:
 			"tru_flux" : self.get_flux(),
 			"tru_sersicn" : self.get_sersicn(ix=ix, iy=iy, n=n),
 			"tru_g1" : g1,
-			"tru_g2" : g2,
-			"ix" : ix,
-			"iy" : iy
+			"tru_g2" : g2
 		}
 
 
