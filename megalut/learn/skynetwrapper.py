@@ -252,6 +252,10 @@ skynet_
 		endtime = datetime.now()
 		if verbose:
 			print "This training took %s" % (str(endtime - starttime))
+			
+	def get_fnames(self):
+		# TODO: Are we missing a file here?
+		return "skynet.inp", "ML.pkl"
 	
 	
 	def predict(self, features, exe = "nice -n 15 CalPred"):

@@ -190,5 +190,8 @@ class ML:
 			output.add_column(astropy.table.Column(name = predlabel,
 							       data = preddata[:,i]))
 		return output
+	
+	def get_fnames(self):
+		return [self.tool.workdir, self.tool.get_fnames()]
 		
 

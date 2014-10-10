@@ -9,18 +9,19 @@ A demo that runs on the CGV branch (fields 005-9)
 import megalut.great3
 import megalut.meas
 import megalut.sim
+import megalut.learn
 
 # Optional: set the logging level. If omited, only warnings (and worse) will be shown.
 import logging
 logging.basicConfig(level=logging.INFO)
-
+import os
 import numpy as np
 
 ###################################################################################################
 # User-defined functions and classes needed for GREAT3
-def measure(img_fname,input_cat,stampsize):
+def measure(img_fname,input_cat,stampsize,prefix):
 	img = megalut.gsutils.loadimg(img_fname)
-	meas_cat = megalut.meas.galsim_adamom.measure(img, input_cat, stampsize=stampsize)
+	meas_cat = megalut.meas.galsim_adamom.measure(img, input_cat, stampsize=stampsize,prefix=prefix)
 	return meas_cat
 
 class CGV_simparams(megalut.sim.params.Params):
@@ -42,6 +43,17 @@ class CGV_simparams(megalut.sim.params.Params):
 		return 1.0 + (float(iy)/float(n)) * 2.0	
 		# Lower sersic index = broader
 
+learnparams = megalut.learn.MLParams(
+		name = "demo",
+		features = ["gs__g1", "gs__g2", "gs__flux"],
+		labels = ["tru_g1","tru_g2"],
+		predlabels = ["pre_g1","pre_g2"],
+		)
+
+fannparams=megalut.learn.fannwrapper.FANNParams(
+		hidden_nodes = [20, 20],
+		max_iterations = 500,
+	)
 ###################################################################################################
 # Start of the code
 
@@ -51,8 +63,19 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 	subfields=range(5,7))
 
 # Now run the measurements on input images
-cgv.meas("obs",measure,method_prefix="gs")
+cgv.meas("obs",measure,method_prefix="gs_")
 
-# Make sim catalogs
-cgv.sim(CGV_simparams(),n=10,overwrite=True)
+# Make sim catalogs & images
+cgv.sim(CGV_simparams(),n=10)
 
+# Measure the observations with the same methods than the observation
+cgv.meas("sim",measure,method_prefix="gs_")
+
+# Train the ML
+cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
+
+# Predict the output
+cgv.predict(method_prefix="gs_",overwrite=True)
+
+# Write the output catalog
+cgv.writeout("ML_FANN_demo_default")

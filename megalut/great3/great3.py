@@ -20,6 +20,9 @@ import io
 from .. import sim
 from .. import utils as mutils
 from .. import gsutils
+from .. import learn
+
+import shutil
 
 class Run(utils.Branch):
     
@@ -42,12 +45,12 @@ class Run(utils.Branch):
         if workdir==None: workdir="./%s" % (self.get_branchacronym()) 
         
         mutils.mkdir(workdir)
-            
+        self.workdir=workdir
+        
         # Now must create the sub-directories:
         for subfolder in ["obs","sim","ml","pred","out"]:
-            mutils.mkdir(os.path.join(workdir,subfolder))
-            
-        self.workdir=workdir
+            mutils.mkdir(self._get_path(subfolder))
+
         
     def meas(self, imgtype, method, method_prefix="", overwrite=False):
         """
@@ -66,27 +69,31 @@ class Run(utils.Branch):
         for subfield in self.subfields:
             if imgtype=="obs":
                 img_fname=self.galimgfilepath(subfield)
+                input_cat = io.readgalcat(self, subfield)
             elif imgtype=="sim":
-                pass                                
+                img_fname=self.simgalimgfilepath(subfield)
+                input_cat = self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
+                input_cat =  Table.read(input_cat)
             else: raise ValueError("Unknown image type")
             
-            cat_fname=self.galfilepath(subfield,imgtype,method_prefix)
+            cat_fname=self.galfilepath(subfield,imgtype,method_prefix)  
             
             # figure out if we need to overwrite (if applicable)
             if os.path.exists(cat_fname):
                 if overwrite: 
-                    logger.info("Analysis of %s (subfield %d) prefix %s, I'm told to overwrite..." % (imgtype,subfield,method_prefix))
+                    logger.info("Analysis of %s (subfield %d) prefix %s, I'm told to overwrite..."
+                                 % (imgtype,subfield,method_prefix))
                     os.remove(cat_fname)
                 else: 
-                    logger.info("Analysis of %s (subfield %d) prefix %s already exists, skipping..." % (imgtype,subfield,method_prefix))
+                    logger.info("Analysis of %s (subfield %d) prefix %s already exists, skipping..."
+                                 % (imgtype,subfield,method_prefix))
                     continue
-                
-            input_cat = io.readgalcat(self, subfield)
             
-            meas_cat=method(img_fname,input_cat,self.stampsize())
+            meas_cat=method(img_fname,input_cat,self.stampsize(),prefix=method_prefix)
               
             # Save the meas cat
-            meas_cat.write(cat_fname,format="fits") # TODO pkl or fits ? let's try it with fits
+            meas_cat.write(cat_fname,format="fits") 
+            # TODO: pkl or fits ? let's try it with fits
             
     def sim(self, simparams, n, overwrite=False):
         
@@ -94,7 +101,7 @@ class Run(utils.Branch):
             
             matched_psfcat=Table.read(self.starcatpath(subfield), format="ascii")
             
-            cat_fname=os.path.join(self.workdir,"sim","galaxy_catalog-%03i.fits" % subfield)
+            cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
             img_fname=self.simgalimgfilepath(subfield)
             
             # figure out if we need to overwrite (if applicable)
@@ -108,10 +115,12 @@ class Run(utils.Branch):
     
             sim_cat = sim.stampgrid.drawcat(simparams, n=n, stampsize=self.stampsize())
             
-            sim_cat.write(cat_fname, format="fits") # TODO pkl or fits ? let's try it with fits
+            sim_cat.write(cat_fname, format="fits") 
+            # TODO: pkl or fits ? let's try it with fits
             
             ####
-            psf_selection=np.random.randint(low=4, high=5, size=n*n)
+            psf_selection=np.random.randint(low=4, high=5, size=n*n) 
+            # TODO: make this random ?
             matched_psfcat = matched_psfcat[psf_selection]
             matched_psfcat.meta["stampsize"]=self.stampsize()
             
@@ -121,11 +130,87 @@ class Run(utils.Branch):
                     psfxname="col1", psfyname="col2",
                     psfimg=psfimg,
                     simgalimgfilepath=img_fname,
-                    simtrugalimgfilepath=os.path.join(self.workdir,"sim","simtrugalimg-%03d.fits" 
+                    simtrugalimgfilepath=self._get_path("sim","simtrugalimg-%03d.fits" 
                                                       % subfield),
-                    simpsfimgfilepath=os.path.join(self.workdir,"sim","simtrugalimg-%03d.fits" 
+                    simpsfimgfilepath=self._get_path("sim","simtrugalimg-%03d.fits" 
                                                    % subfield)
                 )
             
+    def learn(self, learnparams, mlparams, method_prefix="", overwrite=False):
+        # TODO: how to merge different measurements together ?
+        for subfield in self.subfields:            
+            ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir
+                                                                         ,"ml","%03d" % subfield))
+                        
+            ml_files=ml.get_fnames()
+            exists=True
+            for fname in ml_files[1]:
+                if not os.path.exists(os.path.join(ml_files[0],fname)) :
+                    exists=False
+
+            if exists and not overwrite:
+                logger.info("Learn of subfield %d already exists, skipping..." % (subfield))
+                continue
+            elif overwrite and exists:
+                logger.info("Learn of subfield %d, I'm told to overwrite..." % (subfield))
+                shutil.rmtree(ml_files[0])
+
+            input_cat=self.galfilepath(subfield,"sim",method_prefix)
+            input_cat=Table.read(input_cat)
             
+            # Important: we don't want to train on badly measured data!
+            input_cat = input_cat[input_cat[method_prefix+"_flag"] == 0] 
+            # TODO: The extra _ will be removed very soon
+
+            ml.train(input_cat)
+            
+            # export the ML object:
+            mutils.writepickle(ml, os.path.join(ml_files[0],"ML.pkl"))
+            
+    def predict(self,method_prefix,overwrite=False):
+        for subfield in self.subfields:    
+            for root, dirs, files in os.walk(os.path.join(self.workdir,"ml","%03d" % subfield)):
+                if not "ML.pkl" in files: continue
+                ml_name = root.split("/")[-1]
+                cat_fname=self._get_path("pred","%s-%03d.fits" % (ml_name,subfield))
+                
+                if os.path.exists(cat_fname) and overwrite:
+                    logger.info("Pred of subfield %d, I'm told to overwrite..." % (subfield))
+                    os.remove(cat_fname)
+                elif os.path.exists(cat_fname):
+                    logger.info("Pred of subfield %d already exists, skipping..." % (subfield))
+                    continue
+                
+                logger.info("Using %s to predict on subfield %03d" % (ml_name,subfield))
+
+                ml=mutils.readpickle(os.path.join(root,"ML.pkl"))
+                
+                input_cat=self.galfilepath(subfield,"obs",method_prefix)
+                input_cat=Table.read(input_cat)
+                
+                # We predict everything, we will remove flags later
+                predicted=ml.predict(input_cat)
+                
+                failed=predicted[method_prefix+"_flag"]>0
+                count_failed=0
+                for p in predicted[failed]:
+                    # TODO: Better and faster way to do this ?
+                    p["pre_g1"]=20.
+                    p["pre_g2"]=20.
+                    count_failed+=1
+                    
+                logger.info("Predicted on %d objects, %d failed" % (len(input_cat),count_failed))
+                
+                predicted.write(cat_fname,format="fits")
+                
+    def writeout(self, ml_name):
+        for subfield in self.subfields:  
+            input_cat = Table.read(self._get_path("pred","%s-%03d.fits" % (ml_name,subfield)))
+            
+            input_cat=input_cat["ID","pre_g1","pre_g2"]
+            input_cat.write(self._get_path("out","%03d.dat" % subfield),format="ascii.commented_header")
+            logger.info("Wrote shear cat for subfield %03d" % subfield)
+            
+    def _get_path(self,*args):
+        return os.path.join(self.workdir,"/".join(args))
             
