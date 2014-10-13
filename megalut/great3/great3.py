@@ -95,7 +95,7 @@ class Run(utils.Branch):
             meas_cat.write(cat_fname,format="fits") 
             # TODO: pkl or fits ? let's try it with fits
             
-    def sim(self, simparams, n, overwrite=False):
+    def sim(self, simparams, n, overwrite=False, psf_selection=(4,5)):
         
         for subfield in self.subfields:
             
@@ -112,6 +112,12 @@ class Run(utils.Branch):
                 else: 
                     logger.info("Sim of subfield %d already exists, skipping..." % (subfield))
                     continue
+            elif os.path.exists(cat_fname):
+                os.remove(cat_fname)
+                logger.warning("catalog (subfield %d) only was found, removing it" % (subfield))
+            elif os.path.exists(img_fname):
+                os.remove(img_fname)
+                logger.warning("image (subfield %d) only was found, removing it" % (subfield))
     
             sim_cat = sim.stampgrid.drawcat(simparams, n=n, stampsize=self.stampsize())
             
@@ -119,7 +125,7 @@ class Run(utils.Branch):
             # TODO: pkl or fits ? let's try it with fits
             
             ####
-            psf_selection=np.random.randint(low=4, high=5, size=n*n) 
+            psf_selection=np.random.randint(low=psf_selection[0], high=psf_selection[1], size=n*n)
             # TODO: make this random ?
             matched_psfcat = matched_psfcat[psf_selection]
             matched_psfcat.meta["stampsize"]=self.stampsize()

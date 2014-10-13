@@ -45,7 +45,7 @@ class CGV_simparams(megalut.sim.params.Params):
 
 learnparams = megalut.learn.MLParams(
 		name = "demo",
-		features = ["gs__g1", "gs__g2", "gs__flux"],
+		features = ["gs_g1", "gs_g2", "gs_flux"],
 		labels = ["tru_g1","tru_g2"],
 		predlabels = ["pre_g1","pre_g2"],
 		)
