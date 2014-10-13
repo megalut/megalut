@@ -5,12 +5,8 @@ A minimal demo about drawing simulated galaxies
 import logging
 logging.basicConfig(level=logging.INFO)
 
-import megalut
 import megalut.sim
 import megalut.meas
-
-import galsim
-import numpy as np
 
 # First, we set the desired distributions of parameters, by overwriting the default distributions.
 
@@ -36,14 +32,14 @@ megalut.sim.stampgrid.drawimg(simcat,
 
 # We can directly proceed by measuring the images
 
-gridimg = megalut.gsutils.loadimg("simgalimg.fits")
+gridimg = megalut.tools.image.loadimg("simgalimg.fits")
 meascat = megalut.meas.galsim_adamom.measure(gridimg, simcat, stampsize=48, prefix="mes_")
 
 # meascat is the output catalog, it contains the measured features:
 print meascat[:5]
 
 # We save it into a pickle
-megalut.utils.writepickle(meascat, "meascat.pkl")
+megalut.tools.io.writepickle(meascat, "meascat.pkl")
 
 # Let's make a simple comparision plot:
 import matplotlib.pyplot as plt
