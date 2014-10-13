@@ -212,9 +212,29 @@ class Run(utils.Branch):
             input_cat = Table.read(self._get_path("pred","%s-%03d.fits" % (ml_name,subfield)))
             
             input_cat=input_cat["ID","pre_g1","pre_g2"]
-            input_cat.write(self._get_path("out","%03d.dat" % subfield),format="ascii.commented_header")
+            input_cat.write(self._get_path("out","%03d.dat" % subfield),
+                            format="ascii.commented_header")
             logger.info("Wrote shear cat for subfield %03d" % subfield)
             
+    def submit(self, corr2path=".", use_weights=False):
+
+        presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
+        presubscriptpath = os.path.join(presubdir, "presubmission.py")
+        catpath = self._get_path("out", "*.dat")
+        branchcode = self.branchcode()
+        corr2path = os.path.join(corr2path, 'corr2')
+        outfilepath=self._get_path("out", "%s.cat" % branchcode)
+
+        if use_weights:
+            cmd = "python %s %s -b %s -w 3 -c2 %s -o %s" % (presubscriptpath, catpath, 
+                                                                branchcode, corr2path, outfilepath)
+        else:
+            logger.info("I am NOT using weights !")
+            cmd = "python %s %s -b %s -c2 %s -o %s" % (presubscriptpath, catpath, branchcode,
+                                                            corr2path, outfilepath)
+                
+        os.system(cmd)
+
     def _get_path(self,*args):
         return os.path.join(self.workdir,"/".join(args))
             

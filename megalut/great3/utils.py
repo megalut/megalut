@@ -31,6 +31,12 @@ class Branch:
 		"""
 		return(self.experiment, self.obstype, self.sheartype)
 	
+	def branchcode(self):
+		"""
+		The branch codes in form of a tuple
+		"""
+		return "%s-%s-%s" % (self.experiment, self.obstype, self.sheartype)
+	
 	def get_branchacronym(self):
 		"""
 		Get the acrnonym of the branch (e.g. cgv)

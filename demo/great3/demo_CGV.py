@@ -63,19 +63,19 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 	subfields=range(5,7))
 
 # Now run the measurements on input images
-cgv.meas("obs",measure,method_prefix="gs_")
+#cgv.meas("obs",measure,method_prefix="gs_")
 
 # Make sim catalogs & images
-cgv.sim(CGV_simparams(),n=10)
+#cgv.sim(CGV_simparams(),n=10)
 
 # Measure the observations with the same methods than the observation
-cgv.meas("sim",measure,method_prefix="gs_")
+#cgv.meas("sim",measure,method_prefix="gs_")
 
 # Train the ML
-cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
+#cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
 
 # Predict the output
-cgv.predict(method_prefix="gs_")
+#cgv.predict(method_prefix="gs_")
 
 # Write the output catalog
 cgv.writeout("ML_FANN_demo_default")
