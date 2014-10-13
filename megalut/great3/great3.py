@@ -148,18 +148,17 @@ class Run(utils.Branch):
             ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir
                                                                          ,"ml","%03d" % subfield))
                         
-            ml_files=ml.get_fnames()
+            ml_dir=ml.get_workdir()
             exists=True
-            for fname in ml_files[1]:
-                if not os.path.exists(os.path.join(ml_files[0],fname)) :
-                    exists=False
+            if not os.path.exists(os.path.join(ml_dir,"ML.pkl")) :
+                exists=False
 
             if exists and not overwrite:
                 logger.info("Learn of subfield %d already exists, skipping..." % (subfield))
                 continue
             elif overwrite and exists:
                 logger.info("Learn of subfield %d, I'm told to overwrite..." % (subfield))
-                shutil.rmtree(ml_files[0])
+                shutil.rmtree(ml_dir)
 
             input_cat=self.galfilepath(subfield,"sim",method_prefix)
             input_cat=Table.read(input_cat)
@@ -170,7 +169,7 @@ class Run(utils.Branch):
             ml.train(input_cat)
             
             # export the ML object:
-            mutils.writepickle(ml, os.path.join(ml_files[0],"ML.pkl"))
+            mutils.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
             
     def predict(self,method_prefix,overwrite=False):
         for subfield in self.subfields:    

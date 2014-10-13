@@ -191,7 +191,7 @@ class ML:
 							       data = preddata[:,i]))
 		return output
 	
-	def get_fnames(self):
-		return [self.tool.workdir, self.tool.get_fnames()]
+	def get_workdir(self):
+		return self.tool.workdir
 		
 

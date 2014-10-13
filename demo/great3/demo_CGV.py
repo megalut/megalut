@@ -75,7 +75,7 @@ cgv.meas("sim",measure,method_prefix="gs_")
 cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
 
 # Predict the output
-cgv.predict(method_prefix="gs_",overwrite=True)
+cgv.predict(method_prefix="gs_")
 
 # Write the output catalog
 cgv.writeout("ML_FANN_demo_default")

@@ -253,9 +253,8 @@ class FANNWrapper:
 		#		  self.params.desired_error)
 
 		ann.save(os.path.join(self.workdir, "FANN.net"))
+	
 		
-	def get_fnames(self):
-		return "FANN.net", "input.data", "ML.pkl"
 	
 	
 	def predict(self, features):
