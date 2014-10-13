@@ -12,7 +12,7 @@ import megalut.sim
 import megalut.learn
 import megalut.tools
 
-# Optional: set the logging level. If omited, only warnings (and worse) will be shown.
+# Optional: set the logging level. If omitted, only warnings (and worse) will be shown.
 import logging
 logging.basicConfig(level=logging.INFO)
 import numpy as np
@@ -81,5 +81,5 @@ cgv.predict(method_prefix="gs_")
 cgv.writeout("ML_FANN_demo_default")
 
 # Prepare the presubmission file
-# (This will fail as we work only on a subset od the data)
+# (This will fail as we work only on a subset of the data)
 cgv.presubmit()
