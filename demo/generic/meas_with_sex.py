@@ -46,7 +46,7 @@ print out["table"]
 
 # For this we need an existing catalog and a FITS image.
 
-inputcat = megalut.utils.readpickle("psfs/cat_psfgrid.pkl")
+inputcat = megalut.tools.io.readpickle("psfs/cat_psfgrid.pkl")
 print inputcat[:5]
 
 params = ["VECTOR_ASSOC(3)", "X_IMAGE", "Y_IMAGE", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]

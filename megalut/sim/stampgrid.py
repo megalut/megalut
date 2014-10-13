@@ -15,7 +15,7 @@ import astropy.table
 import galsim
 from datetime import datetime
 
-from .. import gsutils
+from .. import tools
 
 
 def drawcat(params, n=10, stampsize=64, idprefix=""):
@@ -163,7 +163,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		# We get the PSF stamp, if provided
 		if psfimg is not None:
 			assert psfxname in psfcat.colnames and psfyname in psfcat.colnames
-			(inputpsfstamp, flag) = gsutils.getstamp(psfrow[psfxname], psfrow[psfyname], psfimg, psfstampsize)
+			(inputpsfstamp, flag) = tools.image.getstamp(psfrow[psfxname], psfrow[psfyname], psfimg, psfstampsize)
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 					

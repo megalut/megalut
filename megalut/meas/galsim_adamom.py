@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 import astropy.table
 import galsim
 
-from .. import gsutils
+from .. import tools
 
 
 
@@ -79,7 +79,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_")
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n), gal.index, n))
 		
 		(x, y) = (gal[xname], gal[yname])
-		(gps, flag) = gsutils.getstamp(x, y, img, stampsize)
+		(gps, flag) = tools.image.getstamp(x, y, img, stampsize)
 		
 		if flag != 0:
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
@@ -170,7 +170,7 @@ def pngstampgrid(pngfilepath, img, catalog, xname="x", yname="y", stampsize=100,
 			if index < n: # Then we have a galaxy to show
 				gal = catalog[index]
 				(x, y) = (gal[xname], gal[yname])
-				(gps, flag) = gsutils.getstamp(x, y, img, stampsize)
+				(gps, flag) = tools.image.getstamp(x, y, img, stampsize)
 				npstamp = gps.array
 				
 				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)
