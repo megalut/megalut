@@ -17,7 +17,7 @@ from .. import gsutils
 
 
 
-def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamom"):
+def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_"):
 	"""
 	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
 	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
@@ -47,27 +47,27 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamo
 	# We prepare an output table with all the required columns
 	output = copy.deepcopy(catalog)
 	output.add_columns([
-		astropy.table.Column(name=prefix+"_flag", data=np.zeros(len(output), dtype=int)),
-		astropy.table.Column(name=prefix+"_flux", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"_x", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"_y", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"_g1", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"_g2", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"_sigma", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"_rho4", dtype=float, length=len(output))
+		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
+		astropy.table.Column(name=prefix+"flux", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"x", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"y", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"sigma", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"rho4", dtype=float, length=len(output))
 	])
 	
 	# We could have boolean columns:
-	#astropy.table.Column(name=prefix+"_ok", data=np.zeros(len(output), dtype=bool))
+	#astropy.table.Column(name=prefix+"ok", data=np.zeros(len(output), dtype=bool))
 	# One could use MaskedColumn here !
 	#astropy.table.MaskedColumn(name="mes_adamom_flux", dtype=float, length=len(output), fill_value=-1)
 	
 	# Let's save something useful to the meta dict
-	output.meta[prefix + "_xname"] = xname
-	output.meta[prefix + "_yname"] = yname
+	output.meta[prefix + "xname"] = xname
+	output.meta[prefix + "yname"] = yname
 	
 	# We do not store this long string here, as it leads to problems when saving the cat to FITS
-	#output.meta[prefix + "_imgfilepath"] = img.origimgfilepath
+	#output.meta[prefix + "imgfilepath"] = img.origimgfilepath
 	
 	n = len(output)
 	
@@ -83,9 +83,9 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamo
 		
 		if flag != 0:
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
-			gal[prefix+"_flag"] = flag
+			gal[prefix+"flag"] = flag
 			continue
-
+		
 		# We measure the moments... galsim may fail from time to time, hence the try:
 		try:
 			res = galsim.hsm.FindAdaptiveMom(gps)
@@ -95,25 +95,25 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="mes_adamo
 			#logger.exception("GalSim failed on: %s" % (str(gal)))
 			# So insted of logging this as an exception, we use debug, but include the tarceback :
 			logger.debug("GalSim failed on:\n %s" % (str(gal)), exc_info = True)	
-			gal[prefix + "_flag"] = 3	
+			gal[prefix + "flag"] = 3	
 			continue
 		
-		gal[prefix+"_flux"] = res.moments_amp
-		gal[prefix+"_x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed. Maybe it's the setOrigin(0, 0).
-		gal[prefix+"_y"] = res.moments_centroid.y + 1.0 # But I would expect that GalSim would internally keep track of these origin issues.
-		gal[prefix+"_g1"] = res.observed_shape.g1
-		gal[prefix+"_g2"] = res.observed_shape.g2
-		gal[prefix+"_sigma"] = res.moments_sigma
-		gal[prefix+"_rho4"] = res.moments_rho4
+		gal[prefix+"flux"] = res.moments_amp
+		gal[prefix+"x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed. Maybe it's the setOrigin(0, 0).
+		gal[prefix+"y"] = res.moments_centroid.y + 1.0 # But I would expect that GalSim would internally keep track of these origin issues.
+		gal[prefix+"g1"] = res.observed_shape.g1
+		gal[prefix+"g2"] = res.observed_shape.g2
+		gal[prefix+"sigma"] = res.moments_sigma
+		gal[prefix+"rho4"] = res.moments_rho4
 
 		# If we made it so far, we check that the centroid is roughly ok:
-		if np.hypot(x - gal[prefix+"_x"], y - gal[prefix+"_y"]) > 10.0:
-			gal[prefix + "_flag"] = 2
+		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
+			gal[prefix + "flag"] = 2
 	
 	endtime = datetime.now()	
 	logger.info("All done")
 
-	nfailed = np.sum(output[prefix+"_flag"] > 0)
+	nfailed = np.sum(output[prefix+"flag"] > 0)
 	
 	logger.info("I failed on %i out of %i sources (%.1f percent)" % (nfailed, n, 100.0*float(nfailed)/float(n)))
 	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
@@ -169,7 +169,7 @@ def pngstampgrid(pngfilepath, img, catalog, xname="x", yname="y", stampsize=100,
 			if index < n: # Then we have a galaxy to show
 				gal = catalog[index]
 				(x, y) = (gal[xname], gal[yname])
-				(gps, flag) = getstamp(x, y, img, stampsize)
+				(gps, flag) = gsutils.getstamp(x, y, img, stampsize)
 				npstamp = gps.array
 				
 				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)
@@ -199,3 +199,4 @@ def pngstampgrid(pngfilepath, img, catalog, xname="x", yname="y", stampsize=100,
 	
 	
 	
+
