@@ -212,15 +212,15 @@ class Run(utils.Branch):
             input_cat = Table.read(self._get_path("pred","%s-%03d.fits" % (ml_name,subfield)))
             
             input_cat=input_cat["ID","pre_g1","pre_g2"]
-            input_cat.write(self._get_path("out","%03d.dat" % subfield),
+            input_cat.write(self._get_path("out","%03d.cat" % subfield),
                             format="ascii.commented_header")
             logger.info("Wrote shear cat for subfield %03d" % subfield)
             
-    def submit(self, corr2path=".", use_weights=False):
+    def presubmit(self, corr2path=".", use_weights=False):
 
         presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
         presubscriptpath = os.path.join(presubdir, "presubmission.py")
-        catpath = self._get_path("out", "*.dat")
+        catpath = self._get_path("out", "*.cat")
         branchcode = self.branchcode()
         corr2path = os.path.join(corr2path, 'corr2')
         outfilepath=self._get_path("out", "%s.cat" % branchcode)
