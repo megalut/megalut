@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 import megalut
 import megalut.learn
 
-inputcat = megalut.utils.readpickle("meascat.pkl")
+inputcat = megalut.tools.io.readpickle("meascat.pkl")
 
 # Important: we don't want to train on badly measured data!
 
