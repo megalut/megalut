@@ -19,8 +19,10 @@ from .. import tools
 
 def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
 	"""
-	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
-	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
+	I use the pixel positions provided via the input table to extract postage stamps
+	from the image and measure their shape parameters.
+	I return a copy of your input catalog with the new columns appended.
+	One of these colums is the flag:
 	
 	* 0: OK
 	* 1: stamp is not fully within image
