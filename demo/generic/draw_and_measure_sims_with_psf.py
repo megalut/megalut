@@ -30,8 +30,8 @@ print galcat[:5]
 
 # Now, we prepare the PSF stuff. In this case we'll use existing files:
 
-psfimg = megalut.gsutils.loadimg("psfs/psfgrid.fits")
-psfcat = megalut.utils.readpickle("psfs/cat_psfgrid.pkl")
+psfimg = megalut.tools.image.loadimg("psfs/psfgrid.fits")
+psfcat = megalut.tools.io.readpickle("psfs/cat_psfgrid.pkl")
 print psfcat[:5]
 
 # The only columns we care about are those giving the position of each PSF, called psfgridx and psfgridy in this case.
@@ -68,14 +68,14 @@ megalut.sim.stampgrid.drawimg(galcat, psfcat=matched_psfcat, psfimg=psfimg,
 
 # We can directly proceed by measuring the images
 
-gridimg = megalut.gsutils.loadimg("simgalimg.fits")
+gridimg = megalut.tools.image.loadimg("simgalimg.fits")
 meascat = megalut.meas.galsim_adamom.measure(gridimg, galcat, stampsize=48, prefix="mes_")
 
 # meascat is the output catalog, it contains the measured features:
 print meascat[:5]
 
 # We save it into a pickle
-megalut.utils.writepickle(meascat, "meascat.pkl")
+megalut.tools.io.writepickle(meascat, "meascat.pkl")
 
 # Let's make a simple comparision plot:
 import matplotlib.pyplot as plt
