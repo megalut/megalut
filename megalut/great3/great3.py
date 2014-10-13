@@ -159,8 +159,7 @@ class Run(utils.Branch):
             input_cat=Table.read(input_cat)
             
             # Important: we don't want to train on badly measured data!
-            input_cat = input_cat[input_cat[method_prefix+"_flag"] == 0] 
-            # TODO: The extra _ will be removed very soon
+            input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
 
             ml.train(input_cat)
             
@@ -191,7 +190,7 @@ class Run(utils.Branch):
                 # We predict everything, we will remove flags later
                 predicted=ml.predict(input_cat)
                 
-                failed=predicted[method_prefix+"_flag"]>0
+                failed=predicted[method_prefix+"flag"]>0
                 count_failed=0
                 for p in predicted[failed]:
                     # TODO: Better and faster way to do this ?
