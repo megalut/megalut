@@ -55,10 +55,7 @@ def getstamp(x, y, img, stampsize, getfrom=None):
     else:
         logger.debug("getfrom is forced to %s" % getfrom)
         
-    try:
-        assert int(stampsize)%2 == 0 # checking that it's even
-    except:
-        raise AssertionError("stampsize must be even")
+    if not int(stampsize)%2 == 0: raise ValueError("stampsize must be even.")
     
     error=False
     
