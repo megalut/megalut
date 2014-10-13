@@ -17,10 +17,12 @@ from .. import tools
 
 
 
-def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_"):
+def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
 	"""
-	I use the pixel positions provided via the input table to extract postage stamps from the image and measure their shape parameters.
-	I return a copy of your input catalog with the new columns appended. One of these colums is the flag:
+	I use the pixel positions provided via the input table to extract postage stamps
+	from the image and measure their shape parameters.
+	I return a copy of your input catalog with the new columns appended.
+	One of these colums is the flag:
 	
 	* 0: OK
 	* 1: stamp is not fully within image
@@ -33,6 +35,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_")
 	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
+	:param measuresky: set this to False if you don't want me to measure the sky (edge of stamps)
 	:param prefix: a string to prefix the field names that I'll write
 		
 	:returns: astropy table
@@ -56,6 +59,11 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_")
 		astropy.table.Column(name=prefix+"sigma", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"rho4", dtype=float, length=len(output))
 	])
+	if measuresky:
+		output.add_column(astropy.table.Column(name=prefix+"skystd", data=np.zeros(len(output), dtype=float)))
+		output.add_column(astropy.table.Column(name=prefix+"skymad", data=np.zeros(len(output), dtype=float)))
+		output.add_column(astropy.table.Column(name=prefix+"skymean", data=np.zeros(len(output), dtype=float)))
+		output.add_column(astropy.table.Column(name=prefix+"skymed", data=np.zeros(len(output), dtype=float)))
 	
 	# We could have boolean columns:
 	#astropy.table.Column(name=prefix+"ok", data=np.zeros(len(output), dtype=bool))
@@ -110,7 +118,16 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_")
 		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 			gal[prefix + "flag"] = 2
 		
-	
+		# Now we estimate the sky noise and other stats of this stamp
+		if measuresky:
+			out = skystats(gps)
+			gal[prefix + "skystd"] = out["std"]
+			gal[prefix + "skymad"] = out["mad"]
+			gal[prefix + "skymean"] = out["mean"]
+			gal[prefix + "skymed"] = out["med"]
+			
+
+			
 	endtime = datetime.now()	
 	logger.info("All done")
 
@@ -121,6 +138,49 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, prefix="adamom_")
 	
 	return output
 
+
+
+def mad(nparray):
+	"""
+	The Median Absolute Deviation
+	http://en.wikipedia.org/wiki/Median_absolute_deviation
+	
+	Multiply this by 1.4826 to convert into an estimate of the Gaussian std.
+	"""
+
+	return np.median(np.fabs(nparray - np.median(nparray)))
+
+
+
+def skystats(stamp):
+	"""
+	I measure some statistics of the pixels along the edge of an image or stamp.
+	Useful to measure the sky noise, but also to check for problems. Use "mad"
+	directly as a robust estimate the sky std.
+	
+	:param stamp: a galsim image, usually a stamp
+	
+	:returns: a dict containing "std", "mad", "mean" and "med"
+		Note that "mad" is already rescaled by 1.4826 to be comparable with std.
+	
+	"""
+	
+	a = stamp.array
+	edgepixels = np.concatenate([
+		a[0,1:], # left
+		a[-1,1:], # right
+		a[:,0], # bottom
+		a[1:-1,-1] # top
+		])
+	assert len(edgepixels) == 2*(a.shape[0]-1) + 2*(a.shape[0]-1)
+	
+	
+	# And we convert the mad into an estimate of the Gaussian std:
+	return {
+		"std":np.std(edgepixels), "mad": 1.4826 * mad(edgepixels), 
+		"mean":np.mean(edgepixels), "med":np.median(edgepixels)
+		}
+	
 	
 #def npstampgrid(img, catalog, xname="x", yname="y", stampsize=100):
 #	"""
