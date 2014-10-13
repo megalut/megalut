@@ -18,8 +18,7 @@ import numpy as np
 import utils
 import io
 from .. import sim
-from .. import utils as mutils
-from .. import gsutils
+from .. import tools
 from .. import learn
 
 import shutil
@@ -44,12 +43,12 @@ class Run(utils.Branch):
 
         if workdir==None: workdir="./%s" % (self.get_branchacronym()) 
         
-        mutils.mkdir(workdir)
+        tools.dirs.mkdir(workdir)
         self.workdir=workdir
         
         # Now must create the sub-directories:
         for subfolder in ["obs","sim","ml","pred","out"]:
-            mutils.mkdir(self._get_path(subfolder))
+            tools.dirs.mkdir(self._get_path(subfolder))
 
         
     def meas(self, imgtype, method, method_prefix="", overwrite=False):
@@ -95,7 +94,7 @@ class Run(utils.Branch):
             meas_cat.write(cat_fname,format="fits") 
             # TODO: pkl or fits ? let's try it with fits
             
-    def sim(self, simparams, n, overwrite=False, psf_selection=(4,5)):
+    def sim(self, simparams, n, overwrite=False, psf_selection=[4,5]):
         
         for subfield in self.subfields:
             
@@ -130,7 +129,7 @@ class Run(utils.Branch):
             matched_psfcat = matched_psfcat[psf_selection]
             matched_psfcat.meta["stampsize"]=self.stampsize()
             
-            psfimg=gsutils.loadimg(self.psfimgfilepath(subfield))
+            psfimg=tools.image.loadimg(self.psfimgfilepath(subfield))
             
             sim.stampgrid.drawimg(sim_cat, psfcat=matched_psfcat, 
                     psfxname="col1", psfyname="col2",
@@ -169,7 +168,7 @@ class Run(utils.Branch):
             ml.train(input_cat)
             
             # export the ML object:
-            mutils.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
+            tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
             
     def predict(self,method_prefix,overwrite=False):
         for subfield in self.subfields:    
@@ -187,7 +186,7 @@ class Run(utils.Branch):
                 
                 logger.info("Using %s to predict on subfield %03d" % (ml_name,subfield))
 
-                ml=mutils.readpickle(os.path.join(root,"ML.pkl"))
+                ml=tools.io.readpickle(os.path.join(root,"ML.pkl"))
                 
                 input_cat=self.galfilepath(subfield,"obs",method_prefix)
                 input_cat=Table.read(input_cat)

@@ -20,12 +20,12 @@ inputcat = megalut.great3.io.readgalcat(branch, subfield)
 #inputcat = inputcat[:1000]
 #inputcat = inputcat[inputcat["ID"] == 245007]
 
-img = megalut.gsutils.loadimg(branch.galimgfilepath(subfield))
+img = megalut.tools.image.loadimg(branch.galimgfilepath(subfield))
 
 meascat = megalut.meas.galsim_adamom.measure(img, inputcat, stampsize=branch.stampsize())
 
 # To see the failed measurements:
-failedcat = meascat[meascat["mes_adamom_flag"] > 0]
+failedcat = meascat[meascat["adamom_flag"] > 0]
 print "Showing failed measurements:"
 print failedcat
 

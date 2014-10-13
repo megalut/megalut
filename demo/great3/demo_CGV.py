@@ -10,17 +10,17 @@ import megalut.great3
 import megalut.meas
 import megalut.sim
 import megalut.learn
+import megalut.tools
 
 # Optional: set the logging level. If omited, only warnings (and worse) will be shown.
 import logging
 logging.basicConfig(level=logging.INFO)
-import os
 import numpy as np
 
 ###################################################################################################
 # User-defined functions and classes needed for GREAT3
 def measure(img_fname,input_cat,stampsize,prefix):
-	img = megalut.gsutils.loadimg(img_fname)
+	img = megalut.tools.image.loadimg(img_fname)
 	meas_cat = megalut.meas.galsim_adamom.measure(img, input_cat, stampsize=stampsize,prefix=prefix)
 	return meas_cat
 

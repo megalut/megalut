@@ -32,7 +32,7 @@ print len(cat)
 print cat.meta["branch"] # The actual branch object is saved
 print cat.meta["subfield"]# This as well...
 
-megalut.utils.writepickle(cat, "cat.pkl")
+megalut.tools.io.writepickle(cat, "cat.pkl")
 
 
 # Mini demo of astropy tables:
