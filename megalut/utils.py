@@ -67,9 +67,13 @@ def tofits(a, filepath):
 	logger.info("Wrote %s array to %s" % (a.shape, filepath))
 
 
-def mkdir(workdir):
-	if os.path.isdir(workdir):
-		logger.warning("Folder '%s' exists, be careful! I will (maybe silently) delete or overwrite stuff." % (workdir))	
+def mkdir(somedir):
+	"""
+	A wrapper around os.makedirs, with some logging.
+	:param somedir: a name or path to a directory which I should make.
+	"""
+	if os.path.isdir(somedir):
+		logger.warning("Directory '%s' exists, be careful! I might (maybe silently) delete or overwrite stuff." % (somedir))	
 	else:
-		logger.info("Making new folder: '%s'." % (workdir))
-		os.makedirs(workdir)
+		logger.info("Making new directory '%s'" % (somedir))
+		os.makedirs(somedir)
