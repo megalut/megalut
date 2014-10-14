@@ -7,15 +7,14 @@ logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcNam
 
 
 
-	
 params = megalut.sim.params.Params("test1")
-
 
 drawcatkwargs = {"n":100, "stampsize":64}
 drawimgkwargs = {}
 
-megalut.sim.run.multi(params, drawcatkwargs, drawimgkwargs, simdir="foo")
+#simdir = "/vol/fohlen11/fohlen11_1/mtewes/foo"
+simdir = "foo"
 
-
+megalut.sim.run.multi(params, drawcatkwargs, drawimgkwargs, simdir=simdir)
 
 

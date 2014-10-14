@@ -14,6 +14,7 @@ import datetime
 import tempfile
 import cPickle as pickle
 import copy
+import multiprocessing
 
 import stampgrid
 
@@ -54,7 +55,7 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 	
 	
 	"""
-
+	starttime = datetime.datetime.now()
 	workdir = os.path.join(simdir, params.name)
 	if not os.path.exists(workdir):
 		os.makedirs(workdir)
@@ -111,8 +112,15 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 		stampgrid.drawimg(galcat = cat, **mydrawimgkwargs)
 	
 	
-	map(drawcatrea, catreatuples)
+	# The single-processing version works fine:
+	#map(drawcatrea, catreatuples)
 
+	# The naive multiprocessing not.
+	pool = multiprocessing.Pool(processes=ncpu)
+	pool.map(drawcatrea, catreatuples)
+
+	endtime = datetime.datetime.now()
+	logger.info("Done in %s" % (str(endtime - starttime)))
 
 	
 
