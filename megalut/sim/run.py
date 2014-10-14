@@ -8,20 +8,29 @@ This is very different from the lower-level functions such as those in stampgrid
 
 import os
 import sys
+import glob
+import datetime
+import tempfile
+import cPickle as pickle
+
+import stampgrid
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-
-
 def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="sim"):
 	"""
 	
-	Uses stampgrid.drawcat and stampgrid.drawimg to get several catalogs
-	and several realizations per catalog.
+	Uses stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
+	and several (nrea) "image realizations" per catalog.
 	I support multiprocessing!
 	And if you want even more sims, just call me again!
+	
+	I take care of generating unique filenames (avoiding "race hazard") using tempfile.
+	So you could perfectly have multiple processes running this function in parallel.
+	However I also use include the datetime in my filenames, to make things more readable.
+	
 	
 	drawcat -> make several realizations [drawimg, drawimg, drawimg]
 	
@@ -49,9 +58,35 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 	workdir = os.path.join(simdir, params.name)
 	if not os.path.exists(workdir):
 		os.makedirs(workdir)
+		logger.info("Creating a new set of simulations named '%s'" % (params.name))
+	else:
+		logger.info("I'm adding new simulations to the existing set '%s'" % (params.name))
 
-	logger.info("I'm setting up to ")
+	logger.info("I will draw %i catalogs, and %i image realizations per catalog" % (ncat, nrea))
 
+	# We create the catalogs, there is probably no need to parallelize this: 
+	catalogs = [stampgrid.drawcat(params, **drawcatkwargs) for i in range(ncat)]
 
-	catalogs =
+	# Now we save them usign single filenames.
+	# This is not done with a timestamp ! The timestamp is only here to help humans.
+	# The module tempfile takes care of making the filename unique.
+	
+	timecode = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+	prefix = "cat_%s_" % (timecode)
+	
+	for catalog in catalogs:
+		catfile = tempfile.NamedTemporaryFile(mode='wb', prefix=prefix, suffix=".pkl", dir=workdir, delete=False)
+		catalog.meta["filename"] = str(catfile.name)
+		pickle.dump(catalog, catfile) # We directly use this open file object.
+		catfile.close()
+		logger.info("Wrote catalog into '%s'" % catalog.meta["filename"])
 
+	
+	# And now we draw the realizations for those catalogs.
+	# This is done with multiprocessing
+	
+	
+	
+	
+	
+	
