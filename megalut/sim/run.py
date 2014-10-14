@@ -25,14 +25,15 @@ logger = logging.getLogger(__name__)
 def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="sim"):
 	"""
 	
-	Uses stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
+	I use stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
 	and several (nrea) "image realizations" per catalog.
 	
 	I support multiprocessing (ncpu), and furthermore I add my simulations to any
 	existing set generated previously.
-	To do so,  I take care of generating unique filenames (avoiding "race hazard") using tempfile.
+	To do so,  I take care of generating unique filenames (avoiding "race hazard") using ``tempfile``.
 	So you could perfectly have multiple processes running this function in parallel, writing
-	simulations using the same params in the same directory.
+	simulations using the same params in the same directory. Note that I also put a timestamp
+	in my filenames, but this is just to help humans. I don't rely on it for uniqueness.
 	
 
 	:param params: a sim.Params instance that defines the distributions of parameters
@@ -52,6 +53,22 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 		I will make subdirectories reflecting the name of your params inside.
 		If this directory already exists, even for the same params,
 		I will **add** my simulations to it, instead of overwriting anything.
+	
+	As an illustration, this is the directory structure I produce (ncat=2, nrea = 2)::
+	
+		% ls * simdir/name_of_params/*
+		
+		simdir/name_of_params/20141014T195755_Ggqnz4_cat.pkl
+		simdir/name_of_params/20141014T195755_Pw2mjp_cat.pkl
+
+		simdir/name_of_params/20141014T195755_Ggqnz4_img:
+		0.fits
+		1.fits
+
+		simdir/name_of_params/20141014T195755_Pw2mjp_img:
+		0.fits
+		1.fits
+
 	
 	
 	"""
