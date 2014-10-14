@@ -13,12 +13,20 @@ class Params:
 	>>> 	def get_flux(self):
 	>>> 		return 120.0
 	>>> 	
-	>>> mysimparams = MySimParams()
+	>>> mysimparams = MySimParams("test1")
 
 	
 	"""
 	
-	def __init__(self):
+	def __init__(self, name):
+		"""
+		:param name: a simple name for your Params object ("test1", "nonoise", "gdisk", ...).
+			This name might be used in filenames by pipelines, so keep it short and whitespace-free.
+		:type name: string
+		
+		"""
+		self.name = name
+	
 		self.sig = 1.0 
 		# The sky noise.
 		# If you do now overwrite get_sig, you will have to set this value at some point.
