@@ -4,4 +4,5 @@ This package is for code to generate simulated galaxy stamps, so basically some 
 
 import params
 import stampgrid
+import run
 

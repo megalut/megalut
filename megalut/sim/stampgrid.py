@@ -22,7 +22,7 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
-	:param params: a sim.Params instance that controls all the random distributions of parameters
+	:param params: a sim.Params instance that defines the distributions of parameters
 	:param n: sqrt(number): I will generate n x n galaxies, on a grid !
 	:type n: int	
 	:param stampsize: width = height of desired stamps, in pixels
