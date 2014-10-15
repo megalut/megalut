@@ -22,7 +22,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="sim"):
+def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="sim"):
 	"""
 	
 	I use stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
@@ -99,7 +99,10 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 		catfile.close()
 		logger.info("Wrote catalog into '%s'" % catalog.meta["catfilename"])
 		os.mkdir(os.path.join(workdir, catalog.meta["imgdirname"]))
-
+		
+	
+	# We simply overwrite any conflicting settings in drawimgkwargs:
+	mydrawimgkwargs = copy.deepcopy(drawimgkwargs)
 	
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
@@ -108,31 +111,14 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 	
 	catindexes = range(ncat)
 	reaindexes = range(nrea)
-	catreatuples = [(catindex, reaindex) for catindex in catindexes for reaindex in reaindexes]
+	catreatuples = [(catalogs[catindex], reaindex,mydrawimgkwargs) for catindex in catindexes for reaindex in reaindexes]
+
 	assert len(catreatuples) == ncat * nrea
-	
-	
-	# The function that draws the image.
-	# Do not put anything not multiprocessing-safe in here !
-	
-	def drawcatrea(catreatuple):
-				
-		cat = catalogs[catreatuple[0]]
-		reaindex = catreatuple[1]
-		
-		# We simply overwrite any conflicting settings in drawimgkwargs:
-		mydrawimgkwargs = copy.deepcopy(drawimgkwargs)
-		mydrawimgkwargs["simgalimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i.fits" % (reaindex))
-		mydrawimgkwargs["simtrugalimgfilepath"] = None # for now...
-		mydrawimgkwargs["simpsfimgfilepath"] = None
-		
-		stampgrid.drawimg(galcat = cat, **mydrawimgkwargs)
-	
 	
 	# The single-processing version works fine:
 	#map(drawcatrea, catreatuples)
 
-	# The naive multiprocessing not.
+	# The naive multiprocessing does too :)
 	pool = multiprocessing.Pool(processes=ncpu)
 	pool.map(drawcatrea, catreatuples)
 
@@ -140,5 +126,18 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=4, simdir="
 	logger.info("Done in %s" % (str(endtime - starttime)))
 
 	
-
+	
+def drawcatrea(catreatuple):
+	# The function that draws the image.
+	# Do not put anything not multiprocessing-safe in here !		
+	cat = catreatuple[0]#catalogs[catreatuple[0]]
+	reaindex = catreatuple[1]
+	mydrawimgkwargs = catreatuple[2]
+	
+	# We simply overwrite any conflicting settings in drawimgkwargs:
+	mydrawimgkwargs["simgalimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i.fits" % (reaindex))
+	mydrawimgkwargs["simtrugalimgfilepath"] = None # for now...
+	mydrawimgkwargs["simpsfimgfilepath"] = None
+	
+	stampgrid.drawimg(galcat = cat, **mydrawimgkwargs)
 
