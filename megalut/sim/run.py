@@ -142,7 +142,7 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	# The simple multiprocessing map is:
 	
 	pool = multiprocessing.Pool(processes=ncpu)
-	pool.map(drawcatrea, catreatuples)
+	pool.map(_drawcatrea, catreatuples)
 	pool.close()
 	pool.join()
 	
@@ -151,9 +151,10 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 
 	
 	
-def drawcatrea(catreatuple):
-	# The function that draws the image.
-	# Do not put anything not multiprocessing-safe in here !		
+def _drawcatrea(catreatuple):
+	"""
+	Worker function that the processes will execute.
+	"""		
 	cat = catreatuple[0]#catalogs[catreatuple[0]]
 	reaindex = catreatuple[1]
 	drawimgkwargs = catreatuple[2]
