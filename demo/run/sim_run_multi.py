@@ -15,6 +15,6 @@ drawimgkwargs = {}
 #simdir = "/vol/fohlen11/fohlen11_1/mtewes/foo"
 simdir = "foo"
 
-megalut.sim.run.multi(params, drawcatkwargs, drawimgkwargs, simdir=simdir)
+megalut.sim.run.multi(params, drawcatkwargs, drawimgkwargs, simdir=simdir, ncpu=4)
 
 
