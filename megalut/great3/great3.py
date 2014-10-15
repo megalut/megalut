@@ -125,7 +125,6 @@ class Run(utils.Branch):
             
             ####
             psf_selection=np.random.randint(low=psf_selection[0], high=psf_selection[1], size=n*n)
-            # TODO: make this random ?
             matched_psfcat = matched_psfcat[psf_selection]
             matched_psfcat.meta["stampsize"]=self.stampsize()
             
