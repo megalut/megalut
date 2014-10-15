@@ -41,9 +41,15 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	:returns: astropy table
 	
 	"""
-	
-	assert int(stampsize)%2 == 0 # checking that it's even
-	
+	if "stampsize" in catalog.meta:
+		if stampsize != catalog.meta["stampsize"]:
+			logger.warning("Measuring with stampsize=%i, but stamps have been generated with stampsize=%i" %\
+				(stampsize, catalog.meta["stampsize"]))
+			
+
+	if int(stampsize)%2 != 0:
+		raise RuntimeError("stampsize should be even!")
+
 	starttime = datetime.now()
 	logger.info("Starting shape measurements on %ix%i stamps" % (stampsize, stampsize))
 	
