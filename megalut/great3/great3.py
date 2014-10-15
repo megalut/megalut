@@ -95,6 +95,17 @@ class Run(utils.Branch):
             # TODO: pkl or fits ? let's try it with fits
             
     def sim(self, simparams, n, overwrite=False, psf_selection=[4,5]):
+        """
+        Does the simulation
+        
+        :param simparams: an (overloaded if needed) megalut.sim.params.Params instance
+        :param n: square root of the number of simulation
+        :param overwrite: if `True` and the simulation exist they are deleted and simulated.
+        :param psf_selection: Which PSF(s) to use in the catalogue ? Default: the center
+        (ie 4th) PSF.
+        
+        .. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
+        """
         
         for subfield in self.subfields:
             
@@ -141,6 +152,31 @@ class Run(utils.Branch):
                 )
             
     def learn(self, learnparams, mlparams, method_prefix="", overwrite=False):
+        """
+        A method that train any given algorithm.
+        
+        :param learnparams: an instance of megalut.learn.MLParams
+        :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
+        :param method_prefix: the prefix of the features
+        :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
+        
+        Example usage
+        -------------
+        
+            >>> learnparams = megalut.learn.MLParams(
+                    name = "demo",
+                    features = ["gs_g1", "gs_g2", "gs_flux"],
+                    labels = ["tru_g1","tru_g2"],
+                    predlabels = ["pre_g1","pre_g2"],
+                    )
+            
+            >>> fannparams=megalut.learn.fannwrapper.FANNParams(
+                    hidden_nodes = [20, 20],
+                    max_iterations = 500,
+                )
+                
+            >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
+        """
         # TODO: how to merge different measurements together ?
         for subfield in self.subfields:            
             ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir
@@ -170,6 +206,14 @@ class Run(utils.Branch):
             tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
             
     def predict(self,method_prefix,overwrite=False):
+        """
+        Predicts values according to the configuration of the ML pickles. 
+        Predicts on all ML available.
+        
+        :param method_prefix: the prefix of the features
+        :param overwrite: if `True` and the predictions exist they are deleted and re-predicted.
+        """
+        
         for subfield in self.subfields:    
             for root, dirs, files in os.walk(os.path.join(self.workdir,"ml","%03d" % subfield)):
                 if not "ML.pkl" in files: continue
@@ -206,6 +250,11 @@ class Run(utils.Branch):
                 predicted.write(cat_fname,format="fits")
                 
     def writeout(self, ml_name):
+        """
+        Write the shear catalog out
+        
+        :param ml_name: the name of the ML to use (from train & predict)
+        """
         for subfield in self.subfields:  
             input_cat = Table.read(self._get_path("pred","%s-%03d.fits" % (ml_name,subfield)))
             
@@ -215,7 +264,14 @@ class Run(utils.Branch):
             logger.info("Wrote shear cat for subfield %03d" % subfield)
             
     def presubmit(self, corr2path=".", use_weights=False):
-
+        """
+        :param corr2path: The directory containing the Michael Jarvis's corr2 code, 
+        which can be downloaded from http://code.google.com/p/mjarvis/ .
+        :param use_weights: is the shear catalogue using weights?
+        
+        .. requires: presubmission files in the megalut/great3/presubmission_script directory.
+        Those files can be downloaded from https://github.com/barnabytprowe/great3-public.
+        """
         presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
         presubscriptpath = os.path.join(presubdir, "presubmission.py")
         catpath = self._get_path("out", "*.cat")
@@ -234,4 +290,16 @@ class Run(utils.Branch):
         os.system(cmd)
 
     def _get_path(self,*args):
+        """
+        A helper function that returns the filepath
+        
+        :param *args: must be in order of the filepath, similar to os.path.join
+        
+        Example usage
+        -------------
+        
+            >>> self._get_path("obs","catalogue_000.fits")
+            
+        will return the filepath: self.workdir/obs/catalogue_000.fits
+        """
         return os.path.join(self.workdir,"/".join(args))
