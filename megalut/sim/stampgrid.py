@@ -32,7 +32,8 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	:returns: A catalog (astropy table). The stampsize is stored in meta.
 	
 	"""
-	assert int(stampsize)%2 == 0 # checking that it's even
+	if int(stampsize)%2 != 0:
+		raise RuntimeError("stampsize should be even!")
 
 	logger.info("Drawing a catalog of %i x %i galaxies..." % (n, n))
 		
@@ -108,9 +109,12 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
 	if psfcat is not None: # If the user provided some PSFs:
-		assert len(galcat) == len(psfcat)
-		assert "stampsize" in psfcat.meta
-		assert psfimg is not None
+		if len(galcat) != len(psfcat):
+			raise RuntimeError("Length of the galcat must match length of psfcat!")
+		if "stampsize" not in psfcat.meta:
+			raise RuntimeError("I need to have 'stampsize' in psfcat.meta!")
+		if psfimg is None:
+			raise RuntimeError("You gave me a psfcat but no psfimg!")
 		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
 		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
 	else:
