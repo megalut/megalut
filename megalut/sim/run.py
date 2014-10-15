@@ -4,7 +4,7 @@ High-level functions to create a whole set of simulations.
 These functions write their results to disk, and therefore **define a directory and
 filename structure**, containing the different realizations, catalogs, etc.
 This is very different from the lower-level functions such as those in stampgrid,
-which do not relate to any file structure.
+which do not relate to any directory and filename structure.
 """
 
 import os
@@ -40,13 +40,16 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	:param drawcatkwargs: Keyword arguments which I will directly pass to stampgrid.drawcat
 	:type drawcatkwargs: dict
 	:param drawimgkwargs: Idem for stampgrid.drawimg. However I will not respect filenames that
-		you set, as I will use my own ones.
+		you set, as I will use my own ones. If you specify anything but None as path for the
+		simtrugalimgfilepath or the simpsfimgfilepath, I will save these, using my own filenames.
+		Otherwise the true galaxy images and the PSF stamp images are not saved.
 	:type drawimgkwargs: dict
 	:param ncat: The number of catalogs I should draw
 	:type ncat: int
 	:param nrea: The number of realizations per catalog I should draw.
 	:type nrea: int
-	:param ncpu: Maximum number of processes I should use.
+	:param ncpu: Maximum number of processes I should use. Default is 1.
+		Set to 0 if I should count them myself.
 	:type ncpu: int
 	:param simdir: Path to a directory where I should write the simulations.
 		This directory has **not** to be unique for every call of this function!
@@ -54,24 +57,34 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 		If this directory already exists, even for the same params,
 		I will **add** my simulations to it, instead of overwriting anything.
 	
-	As an illustration, this is the directory structure I produce (ncat=2, nrea = 2)::
+	As an illustration, an example of the directory structure I produce (ncat=2, nrea = 2)::
 	
-		% ls simdir/name_of_params/*
+		% ls -1 simdir/name_of_params/*
+				
+		simdir/name_of_params/20141015T144705_QBHeS2_cat.pkl
+		simdir/name_of_params/20141015T144705_Yppgi__cat.pkl
 		
-		simdir/name_of_params/20141014T195755_Ggqnz4_cat.pkl
-		simdir/name_of_params/20141014T195755_Pw2mjp_cat.pkl
-
-		simdir/name_of_params/20141014T195755_Ggqnz4_img:
-		0.fits
-		1.fits
-
-		simdir/name_of_params/20141014T195755_Pw2mjp_img:
-		0.fits
-		1.fits
+		simdir/name_of_params/20141015T144705_QBHeS2_img:
+		0_galimg.fits
+		0_trugalimg.fits
+		1_galimg.fits
+		1_trugalimg.fits
+		
+		simdir/name_of_params/20141015T144705_Yppgi__img:
+		0_galimg.fits
+		0_trugalimg.fits
+		1_galimg.fits
+		1_trugalimg.fits
 
 	
 	
 	"""
+	
+	# I suppress the info logging from the lower level functions:
+	stampgridlogger = logging.getLogger("megalut.sim.stampgrid")
+	stampgridlogger.setLevel(logging.WARNING)
+
+	
 	starttime = datetime.datetime.now()
 	workdir = os.path.join(simdir, params.name)
 	if not os.path.exists(workdir):
@@ -101,9 +114,6 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 		os.mkdir(os.path.join(workdir, catalog.meta["imgdirname"]))
 		
 	
-	# We simply overwrite any conflicting settings in drawimgkwargs:
-	mydrawimgkwargs = copy.deepcopy(drawimgkwargs)
-	
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
 	# We have to make a multiprocessing loop over both catalogs and realizations,
@@ -111,17 +121,31 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	
 	catindexes = range(ncat)
 	reaindexes = range(nrea)
-	catreatuples = [(catalogs[catindex], reaindex, mydrawimgkwargs) for catindex in catindexes for reaindex in reaindexes]
+	catreatuples = [(catalogs[catindex], reaindex, drawimgkwargs) for catindex in catindexes for reaindex in reaindexes]
+	# This is not that great, as the catalogs could be heavy.
+	# It would be better to just have the catindex in this tuple.
 
 	assert len(catreatuples) == ncat * nrea
 	
-	# The single-processing version works fine:
+	if ncpu == 0:
+		try:
+			ncpu = multiprocessing.cpu_count()
+		except:
+			logger.warning("multiprocessing.cpu_count() is not implemented !")
+			ncpu = 1
+			
+	logger.info("I now start drawing %i images using %i CPUs" % (len(catreatuples), ncpu))
+	
+	# The single-processing version would be:
 	#map(drawcatrea, catreatuples)
 
-	# The naive multiprocessing does too :)
+	# The simple multiprocessing map is:
+	
 	pool = multiprocessing.Pool(processes=ncpu)
 	pool.map(drawcatrea, catreatuples)
-
+	pool.close()
+	pool.join()
+	
 	endtime = datetime.datetime.now()
 	logger.info("Done in %s" % (str(endtime - starttime)))
 
@@ -132,12 +156,17 @@ def drawcatrea(catreatuple):
 	# Do not put anything not multiprocessing-safe in here !		
 	cat = catreatuple[0]#catalogs[catreatuple[0]]
 	reaindex = catreatuple[1]
-	mydrawimgkwargs = catreatuple[2]
+	drawimgkwargs = catreatuple[2]
 	
 	# We simply overwrite any conflicting settings in drawimgkwargs:
-	mydrawimgkwargs["simgalimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i.fits" % (reaindex))
-	mydrawimgkwargs["simtrugalimgfilepath"] = None # for now...
-	mydrawimgkwargs["simpsfimgfilepath"] = None
+	drawimgkwargs["simgalimgfilepath"] =\
+		os.path.join(cat.meta["imgdirname"], "%i_galimg.fits" % (reaindex))	
+	if drawimgkwargs.get("simtrugalimgfilepath", None) is not None:
+		drawimgkwargs["simtrugalimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i_trugalimg.fits" % (reaindex))
+	if drawimgkwargs.get("simpsfimgfilepath", None) is not None:
+		drawimgkwargs["simpsfimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i_psfimg.fits" % (reaindex))
 	
-	stampgrid.drawimg(galcat = cat, **mydrawimgkwargs)
-
+	p = multiprocessing.current_process()
+	logger.info("%s is starting to draw with PID %s" % (p.name, p.pid))
+	stampgrid.drawimg(galcat = cat, **drawimgkwargs)
+	logger.info("%s is done." % (p.name))
