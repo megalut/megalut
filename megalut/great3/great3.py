@@ -235,4 +235,3 @@ class Run(utils.Branch):
 
     def _get_path(self,*args):
         return os.path.join(self.workdir,"/".join(args))
-            

@@ -5,7 +5,7 @@ A demo on how to read a GREAT3 input catalog
 import megalut
 import megalut.great3
 
-# Optional: set the logging level. If ommited, only warnings (and worse) will be shown.
+# Optional: set the logging level. If omitted, only warnings (and worse) will be shown.
 import logging
 logging.basicConfig(level=logging.INFO)
 
