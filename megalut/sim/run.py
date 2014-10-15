@@ -56,7 +56,7 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	
 	As an illustration, this is the directory structure I produce (ncat=2, nrea = 2)::
 	
-		% ls * simdir/name_of_params/*
+		% ls simdir/name_of_params/*
 		
 		simdir/name_of_params/20141014T195755_Ggqnz4_cat.pkl
 		simdir/name_of_params/20141014T195755_Pw2mjp_cat.pkl
@@ -111,7 +111,7 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	
 	catindexes = range(ncat)
 	reaindexes = range(nrea)
-	catreatuples = [(catalogs[catindex], reaindex,mydrawimgkwargs) for catindex in catindexes for reaindex in reaindexes]
+	catreatuples = [(catalogs[catindex], reaindex, mydrawimgkwargs) for catindex in catindexes for reaindex in reaindexes]
 
 	assert len(catreatuples) == ncat * nrea
 	
