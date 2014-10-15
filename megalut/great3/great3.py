@@ -94,15 +94,15 @@ class Run(utils.Branch):
             meas_cat.write(cat_fname,format="fits") 
             # TODO: pkl or fits ? let's try it with fits
             
-    def sim(self, simparams, n, overwrite=False, psf_selection=[4,5]):
+    def sim(self, simparams, n, overwrite=False, psf_selection=[4]):
         """
         Does the simulation
         
         :param simparams: an (overloaded if needed) megalut.sim.params.Params instance
         :param n: square root of the number of simulation
         :param overwrite: if `True` and the simulation exist they are deleted and simulated.
-        :param psf_selection: Which PSF(s) to use in the catalogue ? Default: the center
-        (ie 4th) PSF.
+        :param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
+        into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
         
         .. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
         """
@@ -135,7 +135,7 @@ class Run(utils.Branch):
             # TODO: pkl or fits ? let's try it with fits
             
             ####
-            psf_selection=np.random.randint(low=psf_selection[0], high=psf_selection[1], size=n*n)
+            psf_selection=np.random.choice(psf_selection,n*n)
             matched_psfcat = matched_psfcat[psf_selection]
             matched_psfcat.meta["stampsize"]=self.stampsize()
             
