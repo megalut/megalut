@@ -5,7 +5,7 @@ A demo on how to read a GREAT3 input catalog
 import megalut
 import megalut.great3
 
-# Optional: set the logging level. If ommited, only warnings (and worse) will be shown.
+# Optional: set the logging level. If omitted, only warnings (and worse) will be shown.
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 #branch = megalut.great3.utils.Branch("control", "ground", "constant",
 #	datadir="/Users/mtewes/Desktop/fake_GREAT3")
 branch = megalut.great3.utils.Branch("control", "ground", "variable",
-	datadir="/vol/fohlen11/fohlen11_1/mtewes/GREAT3")
+	datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part")
 
 
 print branch
@@ -24,7 +24,7 @@ print branch.psfimgfilepath(subfield=0)
 
 
 # We read a galaxy catalog, that will be served as an astropy table.
-cat = megalut.great3.io.readgalcat(branch, subfield=0)
+cat = megalut.great3.io.readgalcat(branch, subfield=5)
 
 print cat[:5] # Cool !
 print cat.colnames
@@ -32,7 +32,7 @@ print len(cat)
 print cat.meta["branch"] # The actual branch object is saved
 print cat.meta["subfield"]# This as well...
 
-megalut.utils.writepickle(cat, "cat.pkl")
+megalut.tools.io.writepickle(cat, "cat.pkl")
 
 
 # Mini demo of astropy tables:

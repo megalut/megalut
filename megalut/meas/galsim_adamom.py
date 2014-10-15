@@ -117,7 +117,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		# If we made it so far, we check that the centroid is roughly ok:
 		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 			gal[prefix + "flag"] = 2
-		
 		# Now we estimate the sky noise and other stats of this stamp
 		if measuresky:
 			out = skystats(gps)
@@ -125,9 +124,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 			gal[prefix + "skymad"] = out["mad"]
 			gal[prefix + "skymean"] = out["mean"]
 			gal[prefix + "skymed"] = out["med"]
-			
 
-			
 	endtime = datetime.now()	
 	logger.info("All done")
 
@@ -260,3 +257,4 @@ def pngstampgrid(pngfilepath, img, catalog, xname="x", yname="y", stampsize=100,
 	
 	
 	
+

@@ -45,10 +45,12 @@ def getstamp(x, y, img, stampsize, getfrom=None):
     """
     if getfrom==None:
         if type(img)==galsim.image.Image:
-            logger.debug("Found image type galsim")
+            #logger.debug("Found image type galsim")
+            # Nice but way too verbatim
             getfrom="gs"
         elif type(img)==np.ndarray:
-            logger.debug("Found image type numpy")
+            #logger.debug("Found image type numpy")
+            # Nice but way too verbatim
             getfrom="np"
         else:
             raise TypeError("Image type not understood.")

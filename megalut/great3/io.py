@@ -7,7 +7,6 @@ import numpy as np
 import os
 
 import astropy.table
-#from .. import catalog
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +30,8 @@ def readgalcat(branch, subfield):
 	assert data.shape[1] == 3
 	
 	ids = [int(line[2]) for line in data]
-	xs = data[:,0]
-	ys = data[:,1]
+	xs = data[:,0]+1.5 # To get the same pixel convention as MegaLUT
+	ys = data[:,1]+1.5 # idem
 	
 	cat = astropy.table.Table([ids, xs, ys],
 		names=('ID', 'x', 'y'),
