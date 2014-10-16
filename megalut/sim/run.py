@@ -28,8 +28,8 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	I use stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
 	and several (nrea) "image realizations" per catalog.
 	
-	I support multiprocessing (ncpu), and furthermore I add my simulations to any
-	existing set generated previously.
+	I support multiprocessing (ncpu), and furthermore I **add** my simulations to any
+	existing set generated previously (instead of overwriting).
 	To do so,  I take care of generating unique filenames (avoiding "race hazard") using ``tempfile``.
 	So you could perfectly have multiple processes running this function in parallel, writing
 	simulations using the same params in the same directory. Note that I also put a timestamp
@@ -57,26 +57,29 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 		If this directory already exists, even for the same params,
 		I will **add** my simulations to it, instead of overwriting anything.
 	
-	As an illustration, an example of the directory structure I produce (ncat=2, nrea = 2)::
+	As an illustration, an example of the directory structure I produce (ncat=2, nrea=2)::
 	
 		% ls -1 simdir/name_of_params/*
-				
-		simdir/name_of_params/20141015T144705_QBHeS2_cat.pkl
-		simdir/name_of_params/20141015T144705_Yppgi__cat.pkl
 		
-		simdir/name_of_params/20141015T144705_QBHeS2_img:
-		0_galimg.fits
-		0_trugalimg.fits
-		1_galimg.fits
-		1_trugalimg.fits
-		
-		simdir/name_of_params/20141015T144705_Yppgi__img:
-		0_galimg.fits
-		0_trugalimg.fits
-		1_galimg.fits
-		1_trugalimg.fits
+		simdir/name_of_params/20141016T170441_1ZBNwd_cat.pkl
+		simdir/name_of_params/20141016T170441_BJjhps_cat.pkl
+
+		simdir/name_of_params/20141016T170441_1ZBNwd_img:
+		20141016T170441_1ZBNwd_0_galimg.fits
+		20141016T170441_1ZBNwd_0_trugalimg.fits
+		20141016T170441_1ZBNwd_1_galimg.fits
+		20141016T170441_1ZBNwd_1_trugalimg.fits
+
+		simdir/name_of_params/20141016T170441_BJjhps_img:
+		20141016T170441_BJjhps_0_galimg.fits
+		20141016T170441_BJjhps_0_trugalimg.fits
+		20141016T170441_BJjhps_1_galimg.fits
+		20141016T170441_BJjhps_1_trugalimg.fits
 
 	
+	Note that the unique filename of a catalog is repeated in the filename of every single
+	realization image. This is intended, so that you can collect things that are based on
+	realization image filenames made from a single params.name into one directory.
 	
 	"""
 	
@@ -106,24 +109,26 @@ def multi(params, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, simdir="
 	
 	for catalog in catalogs:
 		catfile = tempfile.NamedTemporaryFile(mode='wb', prefix=prefix, suffix="_cat.pkl", dir=workdir, delete=False)
-		catalog.meta["catfilename"] = str(catfile.name)
-		catalog.meta["imgdirname"] = str(catfile.name)[:-8] + "_img"
+		catalog.meta["catname"] = os.path.basename(str(catfile.name))[:-8] # Removing the suffix "_cat.pkl"
+		catalog.meta["paramsname"] = params.name
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
-		logger.info("Wrote catalog into '%s'" % catalog.meta["catfilename"])
-		os.mkdir(os.path.join(workdir, catalog.meta["imgdirname"]))
+		logger.info("Wrote catalog '%s'" % catalog.meta["catname"])
+		os.mkdir(os.path.join(workdir, catalog.meta["catname"] + "_img"))
 		
 	
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
-	# We have to make a multiprocessing loop over both catalogs and realizations,
+	# We make a multiprocessing loop over all combinations of catalogs and realizations,
 	# as we want this to be efficient for both (1 cat, 20 rea), and (20 cat, 1 rea)
 	
 	catindexes = range(ncat)
 	reaindexes = range(nrea)
-	catreatuples = [(catalogs[catindex], reaindex, drawimgkwargs) for catindex in catindexes for reaindex in reaindexes]
+	catreatuples = [(catalogs[catindex], reaindex, drawimgkwargs, workdir) for catindex in catindexes for reaindex in reaindexes]
 	# This is not that great, as the catalogs could be heavy.
 	# It would be better to just have the catindex in this tuple.
+	# However it seems that accessing shared memory from a multiprocessing.Pool is not trivial.
+	# So until we need something better, we leave it like this.
 
 	assert len(catreatuples) == ncat * nrea
 	
@@ -155,17 +160,24 @@ def _drawcatrea(catreatuple):
 	"""
 	Worker function that the processes will execute.
 	"""		
-	cat = catreatuple[0]#catalogs[catreatuple[0]]
+	cat = catreatuple[0]
 	reaindex = catreatuple[1]
 	drawimgkwargs = catreatuple[2]
+	workdir = catreatuple[3]
+
+	catname = cat.meta["catname"]
+	catimgdirpath = os.path.join(workdir, catname + "_img") # This dir already exists
 	
-	# We simply overwrite any conflicting settings in drawimgkwargs:
+	
+	# We simply overwrite any specified image filepath:
 	drawimgkwargs["simgalimgfilepath"] =\
-		os.path.join(cat.meta["imgdirname"], "%i_galimg.fits" % (reaindex))	
+		os.path.join(catimgdirpath, "%s_%i_galimg.fits" % (catname, reaindex))
+		
+	# If the user asks for a trugalimg and a psfimg, we also overwrite those filepaths:
 	if drawimgkwargs.get("simtrugalimgfilepath", None) is not None:
-		drawimgkwargs["simtrugalimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i_trugalimg.fits" % (reaindex))
+		drawimgkwargs["simtrugalimgfilepath"] = os.path.join(catimgdirpath, "%s_%i_trugalimg.fits" % (catname, reaindex))
 	if drawimgkwargs.get("simpsfimgfilepath", None) is not None:
-		drawimgkwargs["simpsfimgfilepath"] = os.path.join(cat.meta["imgdirname"], "%i_psfimg.fits" % (reaindex))
+		drawimgkwargs["simpsfimgfilepath"] = os.path.join(catimgdirpath, "%s_%i_psfimg.fits" % (catname, reaindex))
 	
 	p = multiprocessing.current_process()
 	logger.info("%s is starting to draw with PID %s" % (p.name, p.pid))
