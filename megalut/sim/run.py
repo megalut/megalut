@@ -102,6 +102,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		logger.info("I'm adding new simulations to the existing set '%s'" % (simparams.name))
 
 	logger.info("I will draw %i catalogs, and %i image realizations per catalog" % (ncat, nrea))
+	logger.info("All files are written into '%s'" % (workdir))
+	
 
 	# We create the catalogs, there is probably no need to parallelize this: 
 	catalogs = [stampgrid.drawcat(simparams, **drawcatkwargs) for i in range(ncat)]
@@ -179,7 +181,7 @@ class _WorkerSettings():
 	
 	def __init__(self, catalog, reaindex, drawimgkwargs, workdir):
 		"""
-		the catalog's catname, reaindex, and workdir define the filepaths in which the image(s)
+		The catalog's catname, reaindex, and workdir define the filepaths in which the image(s)
 		drawn with the drawimgkwargs will be written.
 		"""
 		
