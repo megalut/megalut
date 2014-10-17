@@ -84,6 +84,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	realization image filenames made from a single name_of_simparams into one directory.
 	And also it just makes things safer.
 	"""
+	logger.critical("todo: write all settings for a call to a log file")
 	
 	if ncat < 1 or nrea < 1:
 		raise RuntimeError("ncat and nrea must be above 0")
@@ -127,8 +128,6 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		
 		os.mkdir(os.path.join(workdir, catalog.meta["catname"] + "_img"))
 	
-	
-	print "Write all settings to a log file !"
 	
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
