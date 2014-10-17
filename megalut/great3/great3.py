@@ -1,10 +1,8 @@
 """
 Helper class for GREAT3 that does the trivial tasks for the user.
 
-.. todo::
-
- (most pressing at the top)
-
+Todo list
+---------
 * make this inherit a generic run class
 
 """
@@ -102,7 +100,7 @@ class Run(utils.Branch):
         :param n: square root of the number of simulation
         :param overwrite: if `True` and the simulation exist they are deleted and simulated.
         :param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
-        into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
+            into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
         
         .. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
         """
@@ -160,8 +158,8 @@ class Run(utils.Branch):
         :param method_prefix: the prefix of the features
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
         
-        Example usage
-        -------------
+        
+        Example usage::
         
             >>> learnparams = megalut.learn.MLParams(
                     name = "demo",
@@ -266,11 +264,11 @@ class Run(utils.Branch):
     def presubmit(self, corr2path=".", use_weights=False):
         """
         :param corr2path: The directory containing the Michael Jarvis's corr2 code, 
-        which can be downloaded from http://code.google.com/p/mjarvis/ .
+                which can be downloaded from http://code.google.com/p/mjarvis/.
         :param use_weights: is the shear catalogue using weights?
         
-        .. requires: presubmission files in the megalut/great3/presubmission_script directory.
-        Those files can be downloaded from https://github.com/barnabytprowe/great3-public.
+        :requires: presubmission files in the megalut/great3/presubmission_script directory.
+                Those files can be downloaded from https://github.com/barnabytprowe/great3-public.
         """
         presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
         presubscriptpath = os.path.join(presubdir, "presubmission.py")
@@ -293,10 +291,9 @@ class Run(utils.Branch):
         """
         A helper function that returns the filepath
         
-        :param *args: must be in order of the filepath, similar to os.path.join
+        :param args: must be in order of the filepath, similar to os.path.join()
         
-        Example usage
-        -------------
+        Example usage::
         
             >>> self._get_path("obs","catalogue_000.fits")
             
