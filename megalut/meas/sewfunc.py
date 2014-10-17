@@ -19,6 +19,13 @@ def measure(img, catalog, xname="x", yname="y", params=None, config=None, workdi
 	
 	:param params: sewpy params. If ``None``, I'll use a default set with many WIN parameters.
 	:param config: sewpy config. If ``None``, I'll use a reasonable (?) default.
+	:param workdir: path to where I'll keep all my SExtractor files, settings, and **logs**.
+	
+	When passing me to megalut.meas.run, a good idea for the workdir is to use for instance::
+	
+		os.path.join(measdir, "sewpy")
+	
+	This way all my files will be kept together in the measdir, close to the catalogs.
 	
 	"""
 	
