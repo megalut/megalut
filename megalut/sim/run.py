@@ -118,7 +118,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	
 	for catalog in catalogs:
 		catfile = tempfile.NamedTemporaryFile(mode='wb', prefix=prefix, suffix="_cat.pkl", dir=workdir, delete=False)
-		catalog.meta["catname"] = os.path.basename(str(catfile.name))[:-8] # Removing the suffix "_cat.pkl"
+		catalog.meta["catname"] = os.path.basename(str(catfile.name)).replace("_cat.pkl","")
 		catalog.meta["simparamsname"] = simparams.name
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
