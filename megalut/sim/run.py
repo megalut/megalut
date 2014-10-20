@@ -110,8 +110,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	# We create the catalogs, there is probably no need to parallelize this: 
 	catalogs = [stampgrid.drawcat(simparams, **drawcatkwargs) for i in range(ncat)]
 
-	# Now we save them usign single filenames.
-	# This is not done with a timestamp ! The timestamp is only here to help humans.
+	# Now we save them using single filenames.
+	# This is not done with a timestamp!  The timestamp is only here to help humans.
 	# The module tempfile takes care of making the filename unique.
 	
 	prefix = datetime.datetime.now().strftime("%Y%m%dT%H%M%S_")
@@ -143,7 +143,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	assert len(wslist) == ncat * nrea
 	
 	
-	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list !
+	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list!
 	# Still, it would seem better to just have the catindex in this tuple.
 	# However it seems that accessing shared memory from a multiprocessing.Pool is not trivial.
 	# So until we need something better, we leave it like this.
@@ -152,10 +152,10 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		try:
 			ncpu = multiprocessing.cpu_count()
 		except:
-			logger.warning("multiprocessing.cpu_count() is not implemented !")
+			logger.warning("multiprocessing.cpu_count() is not implemented!")
 			ncpu = 1
 			
-	logger.info("I now start drawing %i images using %i CPUs" % (len(wslist), ncpu))
+	logger.info("Start drawing %i images using %i CPUs" % (len(wslist), ncpu))
 	
 	# The single-processing version would be:
 	#map(_worker, wslist)
