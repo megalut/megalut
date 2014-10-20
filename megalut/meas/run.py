@@ -74,7 +74,7 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 	genimgnames = []
 	
 	for incatfilepath in incatfilepaths:
-		catname = os.path.basename(incatfilepath)[:-8]
+		catname = os.path.basename(incatfilepath).replace("_cat.pkl","")
 		imgdir = os.path.join(simworkdir, catname + "_img")
 		if not os.path.exists(imgdir):
 			logger.warning("Could not find the image directory for '%s' (skipping this one)" % (inputcat))
