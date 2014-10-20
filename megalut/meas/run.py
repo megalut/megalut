@@ -143,13 +143,13 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 		if len(imgfilepaths) != len(imgnames):
 			raise RuntimeError("The lists imgfilepaths and imgnames must have the same length")
 		# And we check that the user-provided imgnames are indeed unique:
-		if len(list(set(imgnames))) != len(imgnames):
+		if len(set(imgnames)) != len(imgnames):
 			raise RuntimeError("Give me a unique imgname for every image.")
 		
 	else:
 		# We build our own imgnames
 		imgnames = [os.path.splitext(os.path.basename(imgfilepath))[0] for imgfilepath in imgfilepaths]
-		if len(list(set(imgnames))) != len(imgnames):
+		if len(set(imgnames)) != len(imgnames):
 			raise RuntimeError("Some of your images have the same filename. Give me imgnames to differentiate them.")
 		
 		
