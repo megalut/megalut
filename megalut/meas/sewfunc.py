@@ -14,18 +14,18 @@ import os
 def measure(img, catalog, xname="x", yname="y", params=None, config=None, workdir=None,
 	sexpath="sex", prefix="sewpy_"):
 	"""
-	Looking at my API, I am very similar to galsim_adamom.measure().
-	I return a copy of your catalog with new columns appended.
+	This is similar (in terms of API) to galsim_adamom.measure().
+	Returns a copy of the given catalog, with new columns appended.
 	
-	:param params: sewpy params. If ``None``, I'll use a default set with many WIN parameters.
-	:param config: sewpy config. If ``None``, I'll use a reasonable (?) default.
-	:param workdir: path to where I'll keep all my SExtractor files, settings, and **logs**.
+	:param params: sewpy params. If ``None``, a default set, with many WIN parameters, is used.
+	:param config: sewpy config. If ``None``, a reasonable (?) default is used.
+	:param workdir: path where all SExtractor files, settings, and **logs** are kept.
 	
-	When passing me to megalut.meas.run, a good idea for the workdir is to use for instance::
+	When this function is passed to megalut.meas.run(), the suggested workdir location is, e.g.,::
 	
 		os.path.join(measdir, "sewpy")
 	
-	This way all my files will be kept together in the measdir, close to the catalogs.
+	This way all relevant files will be kept together in the measdir, close to the catalogs.
 	
 	"""
 	
