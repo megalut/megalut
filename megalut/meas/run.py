@@ -170,7 +170,7 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 					measfct, measfctkwargs, skipdone)
 			wslist.append(ws)
 	
-	logger.info("I'm ready to run measurents on %i images." % (len(wslist)))
+	logger.info("Ready to run measurents on %i images." % (len(wslist)))
 			
 	# And we run a pool of workers on this wslist.
 	_run(wslist, ncpu)
@@ -240,7 +240,7 @@ def _run(wslist, ncpu):
 		try:
 			ncpu = multiprocessing.cpu_count()
 		except:
-			logger.warning("multiprocessing.cpu_count() is not implemented !")
+			logger.warning("multiprocessing.cpu_count() is not implemented!")
 			ncpu = 1
 	
 	starttime = datetime.datetime.now()
