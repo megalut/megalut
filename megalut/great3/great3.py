@@ -72,6 +72,12 @@ class Run(utils.Branch):
 
         img_fnames=[]
         incat_fnames=[]
+
+        # Making sure the stamp size is correct
+        measfctkwargs["stampsize"]=self.stampsize()
+            
+        skipdone=not overwrite
+        
         for subfield in self.subfields:
             if imgtype=="obs":
                 img_fname=self.galimgfilepath(subfield)
@@ -85,8 +91,10 @@ class Run(utils.Branch):
                 incat_fnames.append(incat_fname)
             elif imgtype=="sim":
                 img_fname=self.simgalimgfilepath(subfield)
-                #input_cat = self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
-                #input_cat =  Table.read(input_cat)
+
+
+                meas.run.onsims(self._get_path(imgtype,"subfield_%03d" % subfield), simparams, 
+                                self._get_path(imgtype), measfct, measfctkwargs, ncpu, skipdone)
             else: raise ValueError("Unknown image type")
             
             cat_fname=self.galfilepath(subfield,imgtype,method_prefix)  
@@ -101,22 +109,12 @@ class Run(utils.Branch):
                     logger.info("Analysis of %s (subfield %d) prefix %s already exists, skipping..."
                                  % (imgtype,subfield,method_prefix))
                     continue
-            
-
-        measdir=self._get_path(imgtype)
-
-        # Making sure the stamp size is correct
-        measfctkwargs["stampsize"]=self.stampsize()
-            
-        skipdone=not overwrite
 
         if imgtype=="obs":
             meas.run.general(img_fnames, incat_fnames, 
-                             measdir, measfct, measfctkwargs,  
+                             self._get_path(imgtype), measfct, measfctkwargs,  
                              ncpu=ncpu, skipdone=skipdone)
-        else:
-            meas.run.onsims(self._get_path("sim"), simparams, measdir, 
-                            measfct, measfctkwargs, ncpu, skipdone)
+
             
     def sim(self, simparams, n, overwrite=False, psf_selection=[4],ncat=1,nrea=1,ncpu=1):
         """
@@ -170,8 +168,8 @@ class Run(utils.Branch):
             drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
                              "psfxname":"col1", "psfyname":"col2"}
 
-            sim.run.multi(self._get_path("sim"), simparams, drawcatkwargs, 
-                          drawimgkwargs, ncat, nrea, ncpu)
+            sim.run.multi(self._get_path("sim","subfield_%03d" % subfield), simparams,
+                          drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
             
     def learn(self, learnparams, mlparams, method_prefix="", overwrite=False):
         """
