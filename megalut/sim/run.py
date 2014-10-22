@@ -4,7 +4,7 @@ High-level functions to create a whole set of simulations.
 These functions write their results to disk, and therefore **define a directory and
 filename structure**, containing the different realizations, catalogs, etc.
 This is very different from the lower-level functions such as those in stampgrid,
-which do not relate to any directory and filename structure.
+which do not specify any directory or filename structure.
 """
 
 import os
@@ -24,35 +24,36 @@ logger = logging.getLogger(__name__)
 
 def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, savetrugalimg=False, savepsfimg=False):
 	"""
-	I use stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
+	Uses stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
 	and several (nrea) "image realizations" per catalog.
 	
-	I support multiprocessing (ncpu), and furthermore I **add** my simulations to any
-	existing set generated previously (instead of overwriting).
-	To do so,  I take care of generating unique filenames (avoiding "race hazard") using ``tempfile``.
-	So you could perfectly have **multiple processes running this function in parallel**, writing
-	simulations using the same simparams in the same directory. Note that I also put a timestamp
-	in my filenames, but this is just to help humans. I don't rely on it for uniqueness.
-	
-	:param simdir: Path to a directory where I should write the simulations.
-		This directory has **not** to be unique for every call of this function!
-		I will make subdirectories reflecting the name of your simparams inside.
-		If this directory already exists, even for the same simparams,
-		I will **add** my simulations to it, instead of overwriting anything.
-	:param simparams: a sim.simparams instance that defines the distributions of parameters
-	:param drawcatkwargs: Keyword arguments which I will directly pass to stampgrid.drawcat
+	Supports multiprocessing (ncpu), and furthermore **generates additional simulations ** to any
+	existing image set previously generated (instead of overwriting).
+	To do so, unique filenames are generated (avoiding "race hazard") using ``tempfile``.
+	So one could have **multiple processes running this function in parallel**, writing
+	simulations using the same simparams in the same directory. Note that a timestamp is included
+	in the filenames, but this is just to help human readability, not for uniqueness.
+
+	:param simdir: Path to a directory where the simulations are written to.
+		This directory does **not** have to be unique for every call of this function!
+		Subdirectories reflecting the name of each simparams are made under the simdir.
+		If the simparams directory already exists, simulations will be
+		**added** to it, instead of overwriting any existing file.
+	:param simparams: A sim.simparams instance that defines the distributions of parameters
+	:param drawcatkwargs: Keyword arguments which will be directly passed to stampgrid.drawcat
 	:type drawcatkwargs: dict
-	:param drawimgkwargs: Idem for stampgrid.drawimg. However I will not respect filenames that
-		you set, as I will use my own ones. If you specify anything but None as path for the
-		simtrugalimgfilepath or the simpsfimgfilepath, I will save these, using my own filenames.
-		Otherwise the true galaxy images and the PSF stamp images are not saved.
+	:param drawimgkwargs: Idem for stampgrid.drawimg.  However any specified filenames will be
+		ignored (the filenames will be automatically generated).  If anything but None
+		is specified as path for the simtrugalimgfilepath or the simpsfimgfilepath, the
+		files will be saved with the auto-generated filenames (otherwise the true galaxy
+		images and the PSF stamp images are not saved).
 	:type drawimgkwargs: dict
-	:param ncat: The number of catalogs I should draw
+	:param ncat: The number of catalogs to be generated.
 	:type ncat: int
-	:param nrea: The number of realizations per catalog I should draw.
+	:param nrea: The number of realizations per catalog to be generated.
 	:type nrea: int
-	:param ncpu: Maximum number of processes I should use. Default is 1.
-		Set to 0 if I should count them myself.
+	:param ncpu: Maximum number of processes to be used. Default is 1.
+		Set to 0 for maximum number of available CPUs.
 	:type ncpu: int
 	:param savetrugalimg: if True, I will also save the true (unconvolved) galaxy images.
 	:param savepsfimg: if True, I will also save the PSF stamps.
@@ -82,9 +83,9 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	handy if you want to delete all files from a particular call.
 	
 	Note that the unique filename of a catalog is repeated in the filename of every single
-	realization image. This is intended, so that you can collect things that are based on
+	realization image.  This is intended, so that you can collect things that are based on
 	realization image filenames made from a single name_of_simparams into one directory.
-	And also it just makes things safer.
+	It also makes things safer.
 	"""
 	logger.critical("todo: write all settings for a call to a log file")
 	
@@ -102,24 +103,24 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		os.makedirs(workdir)
 		logger.info("Creating a new set of simulations named '%s'" % (simparams.name))
 	else:
-		logger.info("I'm adding new simulations to the existing set '%s'" % (simparams.name))
+		logger.info("Adding new simulations to the existing set '%s'" % (simparams.name))
 
-	logger.info("I will draw %i catalogs, and %i image realizations per catalog" % (ncat, nrea))
-	logger.info("All files are written into '%s'" % (workdir))
+	logger.info("Drawing %i catalogs, and %i image realizations per catalog" % (ncat, nrea))
+	logger.info("All files written into '%s'" % (workdir))
 	
 
 	# We create the catalogs, there is probably no need to parallelize this: 
 	catalogs = [stampgrid.drawcat(simparams, **drawcatkwargs) for i in range(ncat)]
 
-	# Now we save them usign single filenames.
-	# This is not done with a timestamp ! The timestamp is only here to help humans.
+	# Now we save them using single filenames.
+	# This is not done with a timestamp!  The timestamp is only here to help humans.
 	# The module tempfile takes care of making the filename unique.
 	
 	prefix = datetime.datetime.now().strftime("%Y%m%dT%H%M%S_")
 	
 	for catalog in catalogs:
 		catfile = tempfile.NamedTemporaryFile(mode='wb', prefix=prefix, suffix="_cat.pkl", dir=workdir, delete=False)
-		catalog.meta["catname"] = os.path.basename(str(catfile.name))[:-8] # Removing the suffix "_cat.pkl"
+		catalog.meta["catname"] = os.path.basename(str(catfile.name)).replace("_cat.pkl","")
 		catalog.meta["simparamsname"] = simparams.name
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
@@ -170,7 +171,9 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	assert len(wslist) == ncat * nrea
 	
 	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list !
-	# Still, it would seem better to just have thinks like "indexes" in the settings.
+	# Still, it would seem better to just have small thinks like "indexes" in the settings.
+	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list!
+	# Still, it would seem better to just have the catindex in this tuple.
 	# However it seems that accessing shared memory from a multiprocessing.Pool is not trivial.
 	# So until we need something better, we leave it like this.
 	# Note for the future: instead of thinking about how to share memory to optimize this, the workers could well
@@ -180,10 +183,10 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		try:
 			ncpu = multiprocessing.cpu_count()
 		except:
-			logger.warning("multiprocessing.cpu_count() is not implemented !")
+			logger.warning("multiprocessing.cpu_count() is not implemented!")
 			ncpu = 1
 			
-	logger.info("I now start drawing %i images using %i CPUs" % (len(wslist), ncpu))
+	logger.info("Start drawing %i images using %i CPUs" % (len(wslist), ncpu))
 	
 	# The single-processing version would be:
 	#map(_worker, wslist)

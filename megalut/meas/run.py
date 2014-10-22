@@ -33,20 +33,20 @@ logger = logging.getLogger(__name__)
 
 def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=True):
 	"""
-	I run the given measfct on sims created by sim.run.multi() for this simdir and simparams.
-	For this I explore the simdir for potential images, an pass them to general().
+	Run the given measfct on sims created by sim.run.multi() for this simdir and simparams.
+	This explores the simdir for potential images, and passes them to general().
 	
 	:param simdir: the simdir that you gave to sim.run.multi()
 	:param simparams: the sim.params.Params that you gave to sim.run.multi()
-		(I need this get the simparams.name)
-	:param measdir: Path to a directory where I should write the catalogs.
+		(Needed to get the simparams.name)
+	:param measdir: Path to a directory where the catalogs should be written.
 		As for the simdir, you can keep the same measdir for different simparams,
-		as I will store my results in subdirectories using simparams.name.
-		But you **should change the measdir if you change anything to the measfct**.
+		as the results will be stored in subdirectories using simparams.name.
+		But **the measdir should be changed if anything is changed on the measfct**.
 
-	See general() for the doc of the other parameters.
+	See the doc for general() for the explanation of the other parameters.
 	
-	As an illustration, the file structure I write looks like::
+	As an illustration, the file structure looks like::
 	
 		$ ls -1 measdir/name_of_simparams/
 		20141017T185236_Cx9D5b_0_galimg_meascat.pkl
@@ -74,16 +74,16 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 	genimgnames = []
 	
 	for incatfilepath in incatfilepaths:
-		catname = os.path.basename(incatfilepath)[:-8]
+		catname = os.path.basename(incatfilepath).replace("_cat.pkl","")
 		imgdir = os.path.join(simworkdir, catname + "_img")
 		if not os.path.exists(imgdir):
-			logger.warning("I could not find the image directory for '%s' (skipping this one)" % (catname))
+			logger.warning("Could not find the image directory for '%s' (skipping this one)" % (inputcat))
 			continue
 			
 		imgfilepaths = sorted(glob.glob(os.path.join(imgdir, "*_galimg.fits")))
 		
 		if len(imgfilepaths) == 0:
-			logger.warning("I could not find any images for '%s' (skipping this one)" % (catname))
+			logger.warning("Could not find any images for '%s' (skipping this one)" % (inputcat))
 			continue
 			
 		for imgfilepath in imgfilepaths:
@@ -107,33 +107,33 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 
 def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgnames=None, ncpu=1, skipdone=True):
 	"""
-	I run your shape measurement (measfct) on your images using multiprocessing (ncpu).
-	As input, you give me all the paths I need. This is the general case.
-	If you want to run on MegaLUT simulations, see the function onsims() above (which calls me).
+	Run the given shape measurement (measfct) on your images using multiprocessing (ncpu).
+	The input should give all the necessary paths.  This is the general case.
+	If you want to run on MegaLUT simulations, see the function onsims() above (which calls this function).
 	
 	:param imgfilepaths: list of paths to the FITS image files
 	:param incatfilepaths: list of paths to the **corresponding** pickled input catalogs
-	:param measdir: path to a directory in which I should write my catalogs
-		You will want to **change the measdir if you change anything to the measfct or its kwargs**.
+	:param measdir: path to a directory in which the catalogs should be written.
+		**Change the measdir if you change anything to the measfct or its kwargs**.
 	:param measfct: The function that measures the shapes. It must take two positional arguments
 		(an image, an input catalog), and return an output catalog.
 	:param measfctkwargs: keyword arguments controlling the behavior of the measfct
 	:type measfctkwargs: dict
-	:param imgnames: list of names for of the FITS images. If None (default) I'll use the FITS
+	:param imgnames: list of names of the FITS images. If None (default), use the FITS
 		image filenames to build a name for the output catalogs.
-		Specifying imgnames is required if some of your images happen to have the same filenames,
-		or if you don't want me to use the filenames.
-	:param ncpu: Maximum number of processes I should use. Default is 1.
-		Set to 0 if I should count them myself.
+		Specifying imgnames is required if some of the images happen to have the same filenames,
+		or if you don't want the filenames to be used.
+	:param ncpu: Maximum number of processes that should be used. Default is 1.
+		Set to 0 for maximum number of available CPUs.
 	:type ncpu: int
-	:type skipdone: If you set me to False, I run on everything I can find, overwriting previous catalogs.
-		
+	:type skipdone: If set to False, run on every file found, overwriting previous catalogs.
 
-	.. warning:: If you call me "in parallel" (e.g., from several python scripts launched at about the same time),
-		I might (in the worst case) do all the work in every script.
-		Not a safety issue (hence currently no fix for this). We can see if we want a fix for that.
+
+	.. warning:: If called "in parallel" (e.g., from several python scripts launched at about the same time),
+		(in the worst case) all the work in every script might be run.
+		Not a safety issue (hence currently no fix for this).  We can see if we want a fix for that.
 		(can be done e.g. with temporary files written/detected and deleted by the workers)
-		
+
 	"""
 		
 	if len(imgfilepaths) != len(incatfilepaths):
@@ -143,13 +143,13 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 		if len(imgfilepaths) != len(imgnames):
 			raise RuntimeError("The lists imgfilepaths and imgnames must have the same length")
 		# And we check that the user-provided imgnames are indeed unique:
-		if len(list(set(imgnames))) != len(imgnames):
+		if len(set(imgnames)) != len(imgnames):
 			raise RuntimeError("Give me a unique imgname for every image.")
 		
 	else:
 		# We build our own imgnames
 		imgnames = [os.path.splitext(os.path.basename(imgfilepath))[0] for imgfilepath in imgfilepaths]
-		if len(list(set(imgnames))) != len(imgnames):
+		if len(set(imgnames)) != len(imgnames):
 			raise RuntimeError("Some of your images have the same filename. Give me imgnames to differentiate them.")
 		
 		
@@ -170,7 +170,7 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 					measfct, measfctkwargs, skipdone)
 			wslist.append(ws)
 	
-	logger.info("I'm ready to run measurents on %i images." % (len(wslist)))
+	logger.info("Ready to run measurents on %i images." % (len(wslist)))
 			
 	# And we run a pool of workers on this wslist.
 	_run(wslist, ncpu)
@@ -240,7 +240,7 @@ def _run(wslist, ncpu):
 		try:
 			ncpu = multiprocessing.cpu_count()
 		except:
-			logger.warning("multiprocessing.cpu_count() is not implemented !")
+			logger.warning("multiprocessing.cpu_count() is not implemented!")
 			ncpu = 1
 	
 	starttime = datetime.datetime.now()
