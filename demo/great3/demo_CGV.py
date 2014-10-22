@@ -56,7 +56,7 @@ fannparams=megalut.learn.fannwrapper.FANNParams(
 	)
 ###################################################################################################
 # Start of the code
-
+print "just a test"
 # Create an instance of the GREAT3 class
 cgv=megalut.great3.great3.Run("control", "ground", "variable",
 	datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part",
