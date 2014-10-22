@@ -4,7 +4,7 @@ import megalut.sim
 import megalut.meas
 
 import logging
-logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
+logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
 
 basedir = "/vol/fohlen11/fohlen11_1/mtewes/foo"
 
@@ -15,7 +15,7 @@ simdir = os.path.join(basedir, "simdir")
 
 class Flux500(megalut.sim.params.Params):
 	def get_flux(self):
-		return 500.0
+		return 80.0
 
 simparams = Flux500()
 
@@ -51,4 +51,24 @@ measfctkwargs = {
 
 # Step 3, summarizing measurements accross simulations
 
-megalut.meas.avg.onmeas(measdir, simparams)
+colstogroup = [
+	"adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
+	"adamom_sigma", "adamom_rho4",
+	"adamom_skystd", "adamom_skymad", "adamom_skymean", "adamom_skymed", "adamom_flag"
+	]
+	
+mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
+	colstogroup=colstogroup,
+	colstoremove=[],
+	removereas = False
+	)
+
+print mybigmeascat.colnames
+print mybigmeascat.meta
+print len(mybigmeascat)
+
+print mybigmeascat
+
+
+
+

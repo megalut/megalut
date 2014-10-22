@@ -72,12 +72,12 @@ def simmeasdict(measdir, simparams):
 
 
 
-def group(incats, colstogroup=None, colstoremove=None, removereas=True):
+def groupstats(incats, colstogroup=None, colstoremove=None, removereas=True):
 	"""
 	This function "horizontally" merges some columns of input catalogs having the same columns by "hstacking" them.
 	Then, for each colname in colstogroup, the function computes new "colname_mean" and "colname_std" columns.
 	 
-	:param incats: list of catalogs (astropy tables) that all have identical order and columns (will check this).
+	:param incats: list of catalogs (astropy tables) that all have identical order and columns (this will be checked)
 	:param colstogroup: the column names I should group, that is the columns that differ from incat to incat.
 	:param colstoremove: any column names I should simply discard
 	:param removereas: if True, I will not keep the individual realization columns in the output table. 
@@ -112,7 +112,7 @@ def group(incats, colstogroup=None, colstoremove=None, removereas=True):
 	# We test that the columns of these fixedcolnames are the same for the different incats !
 	for incat in incats:
 		if not np.all(incat[fixedcolnames] == outcat):
-			raise RuntimeError("Something is fishy, some columns are not identical among %s. Add them to colstoremove." % outcat.colnames)
+			raise RuntimeError("Fishy: some columns are not identical among %s. Add them to colstoremove." % outcat.colnames)
 	
 	
 	# Now we prepare tables containing *only* the colstogroup:
@@ -132,6 +132,10 @@ def group(incats, colstogroup=None, colstoremove=None, removereas=True):
 		suffixedcolnames = ["%s_%s" % (coltogroup, incat_name) for incat_name in incat_names]
 		
 		# It seems that we have to build the numpy array column by column
+		subcat = togroupoutcat[suffixedcolnames]
+		ismasked = subcat.masked
+		print ismasked
+		
 		numpycolumns = [np.array(togroupoutcat[suffixedcolname]) for suffixedcolname in suffixedcolnames]
 		array = np.array(numpycolumns)
 		
@@ -141,11 +145,20 @@ def group(incats, colstogroup=None, colstoremove=None, removereas=True):
 		stdcolname = "%s_%s" % (coltogroup, "std")	
 		togroupoutcat[stdcolname] = np.std(array, axis=0)
 		
+		#print array.masked
+		
+		#print np.sum(array.mask, axis=0)
+		
+		
 		if removereas:
 			togroupoutcat.remove_columns(suffixedcolnames)
 		
 	
-	return togroupoutcat
+	# Finally, we add the fixedcolname-columns to the table:
+	outputcat = astropy.table.hstack([outcat, togroupoutcat], join_type="exact",
+		table_names=["SHOULD_NOT_BE_SEEN", "SHOULD_NEVER_BE_SEEN"], uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
+	
+	return outputcat
 
 
 
@@ -153,32 +166,43 @@ def onsims(measdir, simparams, **kwargs):
 	"""
 	Top-level function to average measurements obtained with :func:`megalut.meas.run.onsims`
 	
-	I explore the files in your measdir, and will work on one catalog after the other.
+	This function first explores the files in your measdir.
+	It uses :func:`megalut.meas.avg.onsims` to "combine" the different realizations catalog by catalog,
+	and then it "vstacks" all these catalogs to return a single output catalog.
+	
+	
+	
 	"""
 	
+	logger.info("Harvesting measurements of the simulations '%s' from %s" % (simparams, measdir))
 	# We use the above function to find what we have:
 	catdict = simmeasdict(measdir, simparams)
 	
 	# We iterate over one simulated catalog after the other.
+	outputcats = []
 	for (catname, meascatfilepaths) in catdict.items():
 		
-		logger.debug("Reading all meascats for catalog %s" % (catname))
-		
+		logger.info("Reading all measurments for catalog '%s'..." % (catname))
 		meascats = [tools.io.readpickle(os.path.join(measdir, simparams.name, meascatfilepath)) for meascatfilepath in meascatfilepaths]
 		
-		#print meascats[0].colnames
+		#for meascat in meascats:
+		#	print meascat.masked
 		
-		#meascats[0].remove_column("adamom_flux")
+		logger.info("Grouping columns and computing averages for catalog '%s'..." % (catname))
+		grouped = groupstats(meascats, **kwargs)
+		outputcats.append(grouped)
 		
-		grouped = group(meascats, **kwargs)
+	# And finally we stack all these catalogs "vertically", to get a single one.
 	
-		print grouped.colnames
+	# We have to remove some of the meta, to avoid conflicts
+	for outputcat in outputcats:
+		outputcat.meta.pop("catname", None) # Now that we merge them, this has no meaning anymore
 	
-		exit()
-		
-	# And finally we stack all these catalogs "vertically", to get a single one
+	logger.info("Concatenating catalogs...")
+	outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
+	logger.info("Done, collected results for %i simulated galaxies" % (len(outputcat)))
 	
-	
+	return outputcat
 
 
 
