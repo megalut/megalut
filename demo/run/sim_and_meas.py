@@ -16,7 +16,7 @@ simparams = megalut.sim.params.Params("name_of_simparams")
 drawcatkwargs = {"n":30, "stampsize":64}
 drawimgkwargs = {}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=3, ncpu=6)
+#megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=3, ncpu=6)
 
 
 # Step 2, measuring
@@ -25,7 +25,8 @@ measdir = os.path.join(basedir, "measdir")
 measfct = megalut.meas.galsim_adamom.measure
 measfctkwargs = {"stampsize":64}
 
-megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=6)
+#megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=6)
+
 
 
 # If you have installed sewpy, you can try out this :
@@ -40,3 +41,8 @@ measfctkwargs = {
 	}
 """
 
+
+
+# Step 3, summarizing measurements accross simulations
+
+megalut.meas.avg.onmeas(measdir, simparams)
