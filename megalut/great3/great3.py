@@ -113,14 +113,13 @@ class Run(utils.Branch):
                              measdir, measfct, measfctkwargs,  
                              ncpu=ncpu, skipdone=skipdone)
             
-    def sim(self, simparams, n, psf_selection=[4],ncat=1,nrea=1,ncpu=1, overwrite=False):
+    def sim(self, simparams, n, overwrite=False, psf_selection=[4],ncat=1,nrea=1,ncpu=1):
         """
         Does the simulation
         
         :param simparams: an (overloaded if needed) megalut.sim.params.Params instance
         :param n: square root of the number of simulation
-        :param overwrite: DEPRECATED / 
-            if `True` and the simulation exist they are deleted and simulated.
+        :param overwrite: DEPREACTED / if `True` and the simulation exist they are deleted and simulated.
         :param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
             into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
         :param ncat: The number of catalogs to be generated.
@@ -156,9 +155,15 @@ class Run(utils.Branch):
                 os.remove(img_fname)
                 logger.warning("image (subfield %d) only was found, removing it" % (subfield))
                 
+            psf_selection=np.random.choice(psf_selection,n*n)
+            matched_psfcat = matched_psfcat[psf_selection]
+            matched_psfcat.meta["stampsize"]=self.stampsize()
+            
+            psfimg=tools.image.loadimg(self.psfimgfilepath(subfield))
                 
-            drawcatkwargs = {"n":30, "stampsize":64}
-            drawimgkwargs = {}
+            drawcatkwargs = {"n":n, "stampsize":self.stampsize()}
+            drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
+                             "psfxname":"col1", "psfyname":"col2"}
 
             sim.run.multi(self._get_path("sim"), simparams, drawcatkwargs, 
                           drawimgkwargs, ncat, nrea, ncpu)

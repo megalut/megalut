@@ -64,7 +64,7 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-cgv.sim(CGV_simparams("cgv_test_1"),n=10)
+cgv.sim(CGV_simparams("cgv_test_1"),n=10,ncpu=0)
 
 # Measure the observations with the same methods than the observation
 cgv.meas("sim",measfct,measfctkwargs,ncpu=0)
