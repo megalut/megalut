@@ -17,6 +17,7 @@ import copy
 import multiprocessing
 
 import stampgrid
+import inspect
 
 import logging
 logger = logging.getLogger(__name__)
@@ -66,6 +67,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_cat.pkl
 		simdir/name_of_simparams/20141016T170441_BJjhps_cat.pkl
 
+		simdir/name_of_simparams/20141016T170441_log.txt
+
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_img:
 		20141016T170441_1ZBNwd_0_galimg.fits
 		20141016T170441_1ZBNwd_0_trugalimg.fits
@@ -87,7 +90,6 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	realization image filenames made from a single name_of_simparams into one directory.
 	It also makes things safer.
 	"""
-	logger.critical("todo: write all settings for a call to a log file")
 	
 	if ncat < 1 or nrea < 1:
 		raise RuntimeError("ncat and nrea must be above 0")
@@ -125,6 +127,20 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
 		logger.info("Wrote catalog '%s'" % catalog.meta["catname"])
+	
+	
+	# The catalogs are drawn, we save a log file about this
+	logfilepath = os.path.join(workdir, prefix + "log.txt")
+	logfile = open(logfilepath, "w")
+	logfile.write("Logfile of megalut.sim.run.multi, written to %s\n\n" % (logfilepath))
+	logfile.write(str(simparams) + "\n")
+	logfile.write("drawcatkwargs: " + repr(drawcatkwargs) + "\n")
+	logfile.write("drawimgkwargs: " + repr(drawimgkwargs) + "\n")
+	# I did not manage to save the code of simparams, here is my attempt:
+	#logfile.write("\n")
+	#logfile.write(str(simparams) + ":\n")
+	#logfile.write(inspect.getsourcelines(type(simparams)))
+	logfile.close()
 	
 	
 	# Before drawing the images, some warnings
