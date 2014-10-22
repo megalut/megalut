@@ -21,7 +21,7 @@ drawimgkwargs = {}
 
 # Step 2, measuring
 
-measdir = os.path.join(basedir, "measdir")
+measdir = os.path.join(basedir, "measdir_adamom")
 measfct = megalut.meas.galsim_adamom.measure
 measfctkwargs = {"stampsize":64}
 
