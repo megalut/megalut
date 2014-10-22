@@ -65,10 +65,10 @@ cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
 cgv.sim(CGV_simparams("cgv_test_1"),n=10)
-exit()
-# Measure the observations with the same methods than the observation
-cgv.meas("sim",measfct,measfctkwargs,method_prefix="gs_")
 
+# Measure the observations with the same methods than the observation
+cgv.meas("sim",measfct,measfctkwargs,ncpu=0)
+exit()
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
 

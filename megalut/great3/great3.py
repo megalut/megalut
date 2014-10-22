@@ -113,15 +113,23 @@ class Run(utils.Branch):
                              measdir, measfct, measfctkwargs,  
                              ncpu=ncpu, skipdone=skipdone)
             
-    def sim(self, simparams, n, overwrite=False, psf_selection=[4]):
+    def sim(self, simparams, n, psf_selection=[4],ncat=1,nrea=1,ncpu=1, overwrite=False):
         """
         Does the simulation
         
         :param simparams: an (overloaded if needed) megalut.sim.params.Params instance
         :param n: square root of the number of simulation
-        :param overwrite: if `True` and the simulation exist they are deleted and simulated.
+        :param overwrite: DEPRECATED / 
+            if `True` and the simulation exist they are deleted and simulated.
         :param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
             into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
+        :param ncat: The number of catalogs to be generated.
+        :type ncat: int
+        :param nrea: The number of realizations per catalog to be generated.
+        :type nrea: int
+        :param ncpu: Maximum number of processes that should be used. Default is 1.
+            Set to 0 for maximum number of available CPUs.
+        :type ncpu: int
         
         .. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
         """
@@ -152,30 +160,8 @@ class Run(utils.Branch):
             drawcatkwargs = {"n":30, "stampsize":64}
             drawimgkwargs = {}
 
-            sim.run.multi(self._get_path("sim"), simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=3, ncpu=0)
-            exit()
-    
-            sim_cat = sim.stampgrid.drawcat(simparams, n=n, stampsize=self.stampsize())
-            
-            sim_cat.write(cat_fname, format="fits") 
-            # TODO: pkl or fits ? let's try it with fits
-            
-            ####
-            psf_selection=np.random.choice(psf_selection,n*n)
-            matched_psfcat = matched_psfcat[psf_selection]
-            matched_psfcat.meta["stampsize"]=self.stampsize()
-            
-            psfimg=tools.image.loadimg(self.psfimgfilepath(subfield))
-            
-            sim.stampgrid.drawimg(sim_cat, psfcat=matched_psfcat, 
-                    psfxname="col1", psfyname="col2",
-                    psfimg=psfimg,
-                    simgalimgfilepath=img_fname,
-                    simtrugalimgfilepath=self._get_path("sim","simtrugalimg-%03d.fits" 
-                                                      % subfield),
-                    simpsfimgfilepath=self._get_path("sim","simtrugalimg-%03d.fits" 
-                                                   % subfield)
-                )
+            sim.run.multi(self._get_path("sim"), simparams, drawcatkwargs, 
+                          drawimgkwargs, ncat, nrea, ncpu)
             
     def learn(self, learnparams, mlparams, method_prefix="", overwrite=False):
         """
