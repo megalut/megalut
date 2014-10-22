@@ -127,8 +127,18 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		logger.info("Wrote catalog '%s'" % catalog.meta["catname"])
 	
 	
+	# Before drawing the images, some warnings
 	
-	
+	if "simgalimgfilepath" in drawimgkwargs:
+		logger.warning("You specified a simgalimgfilepath in your drawimgkwargs, but I will not respect it")
+		drawimgkwargs.pop("simgalimgfilepath")
+	if "simtrugalimgfilepath" in drawimgkwargs:
+		logger.warning("You specified a simtrugalimgfilepath in your drawimgkwargs, but I will not respect it")
+		drawimgkwargs.pop("simtrugalimgfilepath")
+	if "simpsfimgfilepath" in drawimgkwargs:
+		logger.warning("You specified a simpsfimgfilepath in your drawimgkwargs, but I will not respect it")
+		drawimgkwargs.pop("simpsfimgfilepath")
+		
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
 	# We make a multiprocessing loop over all combinations of catalogs and realizations,
@@ -172,8 +182,6 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	
 	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list !
 	# Still, it would seem better to just have small thinks like "indexes" in the settings.
-	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list!
-	# Still, it would seem better to just have the catindex in this tuple.
 	# However it seems that accessing shared memory from a multiprocessing.Pool is not trivial.
 	# So until we need something better, we leave it like this.
 	# Note for the future: instead of thinking about how to share memory to optimize this, the workers could well
