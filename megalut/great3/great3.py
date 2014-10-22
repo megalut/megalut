@@ -50,7 +50,7 @@ class Run(utils.Branch):
             tools.dirs.mkdir(self._get_path(subfolder))
 
         
-    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", overwrite=False,ncpu=1):
+    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", simparams="",overwrite=False,ncpu=1):
         """
         :param imgtype: Measure on observation or sim
         :type params: `obs` or `sim`
@@ -76,14 +76,20 @@ class Run(utils.Branch):
             if imgtype=="obs":
                 img_fname=self.galimgfilepath(subfield)
                 input_cat = io.readgalcat(self, subfield)
+                
+                # Prep the catalog
+                incat_fname=self.galinfilepath(subfield,imgtype)  
+                tools.io.writepickle(input_cat, incat_fname)
+                
+                img_fnames.append(img_fname)
+                incat_fnames.append(incat_fname)
             elif imgtype=="sim":
                 img_fname=self.simgalimgfilepath(subfield)
-                input_cat = self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
-                input_cat =  Table.read(input_cat)
+                #input_cat = self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
+                #input_cat =  Table.read(input_cat)
             else: raise ValueError("Unknown image type")
             
             cat_fname=self.galfilepath(subfield,imgtype,method_prefix)  
-            incat_fname=self.galinfilepath(subfield,imgtype)  
             
             # figure out if we need to overwrite (if applicable)
             if os.path.exists(cat_fname):
@@ -96,11 +102,6 @@ class Run(utils.Branch):
                                  % (imgtype,subfield,method_prefix))
                     continue
             
-            # Prep the catalog
-            tools.io.writepickle(input_cat, incat_fname)
-            
-            img_fnames.append(img_fname)
-            incat_fnames.append(incat_fname)
 
         measdir=self._get_path(imgtype)
 
@@ -109,9 +110,13 @@ class Run(utils.Branch):
             
         skipdone=not overwrite
 
-        meas.run.general(img_fnames, incat_fnames, 
+        if imgtype=="obs":
+            meas.run.general(img_fnames, incat_fnames, 
                              measdir, measfct, measfctkwargs,  
                              ncpu=ncpu, skipdone=skipdone)
+        else:
+            meas.run.onsims(self._get_path("sim"), simparams, measdir, 
+                            measfct, measfctkwargs, ncpu, skipdone)
             
     def sim(self, simparams, n, overwrite=False, psf_selection=[4],ncat=1,nrea=1,ncpu=1):
         """

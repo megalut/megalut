@@ -61,13 +61,13 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 	subfields=range(5,10))
 
 # Now run the measurements on input images
-cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
+#cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-cgv.sim(CGV_simparams("cgv_test_1"),n=10,ncpu=0)
+#cgv.sim(CGV_simparams("cgv_test_1"),n=10,ncpu=0)
 
 # Measure the observations with the same methods than the observation
-cgv.meas("sim",measfct,measfctkwargs,ncpu=0)
+cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=CGV_simparams("cgv_test_1"))
 exit()
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
