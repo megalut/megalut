@@ -18,6 +18,7 @@ import io
 from .. import sim
 from .. import tools
 from .. import learn
+from .. import meas
 
 import shutil
 
@@ -49,20 +50,28 @@ class Run(utils.Branch):
             tools.dirs.mkdir(self._get_path(subfolder))
 
         
-    def meas(self, imgtype, method, method_prefix="", overwrite=False):
+    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", overwrite=False,ncpu=1):
         """
         :param imgtype: Measure on observation or sim
         :type params: `obs` or `sim`
-        :param method: method to use, it must be a user-defined function. The signature of the
+        :param measfct: method to use, it must be a user-defined function. The signature of the
             function must be function(img_fname,input_cat,stampsize)
+        :param measfctkwargs: keyword arguments controlling the behavior of the measfct
+        :type measfctkwargs: dict
+        :param method_prefix: DEPRECATED
         :param overwrite: `True` all measurements and starts again, `False` (default)
             if exists, then perfect, skip it
+        :param ncpu: Maximum number of processes that should be used. Default is 1.
+            Set to 0 for maximum number of available CPUs.
+        :type ncpu: int
         
         .. note:: This typically should be inherited somehow.
         """
         # Assert imgtype is known:
         assert imgtype in ["obs","sim"]
 
+        img_fnames=[]
+        incat_fnames=[]
         for subfield in self.subfields:
             if imgtype=="obs":
                 img_fname=self.galimgfilepath(subfield)
@@ -74,6 +83,7 @@ class Run(utils.Branch):
             else: raise ValueError("Unknown image type")
             
             cat_fname=self.galfilepath(subfield,imgtype,method_prefix)  
+            incat_fname=self.galinfilepath(subfield,imgtype)  
             
             # figure out if we need to overwrite (if applicable)
             if os.path.exists(cat_fname):
@@ -86,11 +96,22 @@ class Run(utils.Branch):
                                  % (imgtype,subfield,method_prefix))
                     continue
             
-            meas_cat=method(img_fname,input_cat,self.stampsize(),prefix=method_prefix)
-              
-            # Save the meas cat
-            meas_cat.write(cat_fname,format="fits") 
-            # TODO: pkl or fits ? let's try it with fits
+            # Prep the catalog
+            tools.io.writepickle(input_cat, incat_fname)
+            
+            img_fnames.append(img_fname)
+            incat_fnames.append(incat_fname)
+
+        measdir=self._get_path(imgtype)
+
+        # Making sure the stamp size is correct
+        measfctkwargs["stampsize"]=self.stampsize()
+            
+        skipdone=not overwrite
+
+        meas.run.general(img_fnames, incat_fnames, 
+                             measdir, measfct, measfctkwargs,  
+                             ncpu=ncpu, skipdone=skipdone)
             
     def sim(self, simparams, n, overwrite=False, psf_selection=[4]):
         """
@@ -126,6 +147,13 @@ class Run(utils.Branch):
             elif os.path.exists(img_fname):
                 os.remove(img_fname)
                 logger.warning("image (subfield %d) only was found, removing it" % (subfield))
+                
+                
+            drawcatkwargs = {"n":30, "stampsize":64}
+            drawimgkwargs = {}
+
+            sim.run.multi(self._get_path("sim"), simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=3, ncpu=0)
+            exit()
     
             sim_cat = sim.stampgrid.drawcat(simparams, n=n, stampsize=self.stampsize())
             

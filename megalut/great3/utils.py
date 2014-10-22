@@ -87,6 +87,8 @@ class Branch:
 	def galfilepath(self, subfield, imgtype, prefix=""):  
 		return os.path.join(self.workdir, imgtype, "%sgalaxy_catalog-%03i.fits" % (prefix,subfield))
 	
+	def galinfilepath(self, subfield, imgtype, prefix=""):  
+		return os.path.join(self.workdir, imgtype, "%sinput_galaxy_catalog-%03i.fits" % (prefix,subfield))
 	# Stuff related to the simulations
 	
 		
