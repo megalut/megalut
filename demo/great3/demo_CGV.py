@@ -19,10 +19,8 @@ import numpy as np
 
 ###################################################################################################
 # User-defined functions and classes needed for GREAT3
-def measure(img_fname,input_cat,stampsize,prefix):
-	img = megalut.tools.image.loadimg(img_fname)
-	meas_cat = megalut.meas.galsim_adamom.measure(img, input_cat, stampsize=stampsize,prefix=prefix)
-	return meas_cat
+measfct = megalut.meas.galsim_adamom.measure
+measfctkwargs = {} # The stamp size is automatically replaced/added to right value
 
 class CGV_simparams(megalut.sim.params.Params):
 	def getrad(self):
@@ -56,20 +54,20 @@ fannparams=megalut.learn.fannwrapper.FANNParams(
 	)
 ###################################################################################################
 # Start of the code
-print "just a test"
+
 # Create an instance of the GREAT3 class
 cgv=megalut.great3.great3.Run("control", "ground", "variable",
 	datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part",
-	subfields=range(5,7))
+	subfields=range(5,10))
 
 # Now run the measurements on input images
-cgv.meas("obs",measure,method_prefix="gs_")
+cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-cgv.sim(CGV_simparams(),n=10)
-
+cgv.sim(CGV_simparams("cgv_test_1"),n=10)
+exit()
 # Measure the observations with the same methods than the observation
-cgv.meas("sim",measure,method_prefix="gs_")
+cgv.meas("sim",measfct,measfctkwargs,method_prefix="gs_")
 
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
