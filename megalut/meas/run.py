@@ -112,8 +112,10 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 	If you want to run on MegaLUT simulations, see the function onsims() above (which calls this function).
 	
 	:param imgfilepaths: list of paths to the FITS image files
-	:param incatfilepaths: list of paths to the **corresponding** pickled input catalogs
-	:param measdir: path to a directory in which the catalogs should be written.
+	:param incatfilepaths: list of paths to the **corresponding** pickled input catalogs.
+		These catalogs must contain the information required by measfct (and the measfctkwargs)
+		to run on the image files. So typically, the catalogs should contain at least some position.
+	:param measdir: path to a directory in which the output catalogs should be written.
 		**Change the measdir if you change anything to the measfct or its kwargs**.
 	:param measfct: The function that measures the shapes. It must take two positional arguments
 		(an image, an input catalog), and return an output catalog.
