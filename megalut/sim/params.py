@@ -9,28 +9,37 @@ class Params:
 	
 	The minimal methods implemented here are just examples.	Example how you could inherit and override this:
 	
-	>>> class MySimParams(megalut.sim.params.Params):
+	>>> class Flux120(megalut.sim.params.Params):
 	>>> 	def get_flux(self):
 	>>> 		return 120.0
 	>>> 	
-	>>> mysimparams = MySimParams("test1")
+	>>> simparams = Flux120()
 
 	
 	"""
 	
-	def __init__(self, name):
+	def __init__(self, name=None):
 		"""
 		:param name: a simple name for your Params object ("test1", "nonoise", "gdisk", ...).
 			This name might be used in filenames by pipelines, so keep it short and whitespace-free.
+			If None, I will use the name of the class. This is usually exactly what you want, when
+			you make your own class LowNoise()
+			
 		:type name: string
 		
 		"""
-		self.name = name
+		if name == None:
+			self.name = self.__class__.__name__
+		else:	
+			self.name = name
 	
 		self.sig = 1.0 
 		# The sky noise.
 		# If you do now overwrite get_sig, you will have to set this value at some point.
-			
+	
+	def __str__(self):
+		return "[sim.Params '%s']" % (self.name)
+		
 	def get_sig(self):
 		return self.sig
 	

@@ -17,12 +17,13 @@ import copy
 import multiprocessing
 
 import stampgrid
+import inspect
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1):
+def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=1, savetrugalimg=False, savepsfimg=False):
 	"""
 	Uses stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
 	and several (nrea) "image realizations" per catalog.
@@ -55,6 +56,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	:param ncpu: Maximum number of processes to be used. Default is 1.
 		Set to 0 for maximum number of available CPUs.
 	:type ncpu: int
+	:param savetrugalimg: if True, I will also save the true (unconvolved) galaxy images.
+	:param savepsfimg: if True, I will also save the PSF stamps.
 	
 	
 	As an illustration, an example of the directory structure I produce (ncat=2, nrea=2)::
@@ -63,6 +66,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_cat.pkl
 		simdir/name_of_simparams/20141016T170441_BJjhps_cat.pkl
+
+		simdir/name_of_simparams/20141016T170441_log.txt
 
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_img:
 		20141016T170441_1ZBNwd_0_galimg.fits
@@ -85,7 +90,6 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	realization image filenames made from a single name_of_simparams into one directory.
 	It also makes things safer.
 	"""
-	logger.critical("todo: write all settings for a call to a log file")
 	
 	if ncat < 1 or nrea < 1:
 		raise RuntimeError("ncat and nrea must be above 0")
@@ -123,13 +127,34 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
 		logger.info("Wrote catalog '%s'" % catalog.meta["catname"])
-		
-		# While in this simple loop over catalogs, we also make the dir that will contain the images.
-		# Indeed the worker loop iterates over this same dir for every realization.
-		
-		os.mkdir(os.path.join(workdir, catalog.meta["catname"] + "_img"))
 	
 	
+	# The catalogs are drawn, we save a log file about this
+	logfilepath = os.path.join(workdir, prefix + "log.txt")
+	logfile = open(logfilepath, "w")
+	logfile.write("Logfile of megalut.sim.run.multi, written to %s\n\n" % (logfilepath))
+	logfile.write(str(simparams) + "\n")
+	logfile.write("drawcatkwargs: " + repr(drawcatkwargs) + "\n")
+	logfile.write("drawimgkwargs: " + repr(drawimgkwargs) + "\n")
+	# I did not manage to save the code of simparams, here is my attempt:
+	#logfile.write("\n")
+	#logfile.write(str(simparams) + ":\n")
+	#logfile.write(inspect.getsourcelines(type(simparams)))
+	logfile.close()
+	
+	
+	# Before drawing the images, some warnings
+	
+	if "simgalimgfilepath" in drawimgkwargs:
+		logger.warning("You specified a simgalimgfilepath in your drawimgkwargs, but I will not respect it")
+		drawimgkwargs.pop("simgalimgfilepath")
+	if "simtrugalimgfilepath" in drawimgkwargs:
+		logger.warning("You specified a simtrugalimgfilepath in your drawimgkwargs, but I will not respect it")
+		drawimgkwargs.pop("simtrugalimgfilepath")
+	if "simpsfimgfilepath" in drawimgkwargs:
+		logger.warning("You specified a simpsfimgfilepath in your drawimgkwargs, but I will not respect it")
+		drawimgkwargs.pop("simpsfimgfilepath")
+		
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
 	# We make a multiprocessing loop over all combinations of catalogs and realizations,
@@ -137,16 +162,46 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	# For this, we prepare a flat list of _WorkerSettings objects for all (cat, rea) combinations,
 	# and run a pool of _worker functions on this list.
 	
-	catindexes = range(ncat)
-	reaindexes = range(nrea)
-	wslist = [_WorkerSettings(catalogs[catindex], reaindex, drawimgkwargs, workdir) for catindex in catindexes for reaindex in reaindexes]
+	wslist = []
+	for catalog in catalogs:	
+		for reaindex in range(nrea):
+			
+			# We have to customize the drawimgkwargs, and so we work on a copy
+			thisdrawimgkwargs = copy.deepcopy(drawimgkwargs)
+			
+			# Preparing the filepaths in which we will write the image(s)
+			# Note that we removed all these keys from the the drawimgkwargs before!
+			
+			catname = catalog.meta["catname"]
+			catimgdirpath = os.path.join(workdir, catname + "_img")
+				
+			thisdrawimgkwargs["simgalimgfilepath"] =\
+				os.path.join(catimgdirpath, "%s_%i_galimg.fits" % (catname, reaindex))
+		
+			# If the user asked for a trugalimg and a psfimg, we also prepare these filepaths.
+			if savetrugalimg:
+				thisdrawimgkwargs["simtrugalimgfilepath"] = os.path.join(catimgdirpath, "%s_%i_trugalimg.fits" % (catname, reaindex))
+			if savepsfimg:
+				thisdrawimgkwargs["simpsfimgfilepath"] = os.path.join(catimgdirpath, "%s_%i_psfimg.fits" % (catname, reaindex))
+	
+			ws = _WorkerSettings(catalog, reaindex, thisdrawimgkwargs, workdir)
+			
+			wslist.append(ws)
+		
+		# While in this simple loop over catalogs, we also make the dir that will contain the images.
+		# Indeed the worker loop iterates over this same dir for every realization.
+		
+		os.mkdir(os.path.join(workdir, catalog.meta["catname"] + "_img"))
+	
+				
 	assert len(wslist) == ncat * nrea
 	
-	
-	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list!
-	# Still, it would seem better to just have the catindex in this tuple.
+	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list !
+	# Still, it would seem better to just have small thinks like "indexes" in the settings.
 	# However it seems that accessing shared memory from a multiprocessing.Pool is not trivial.
 	# So until we need something better, we leave it like this.
+	# Note for the future: instead of thinking about how to share memory to optimize this, the workers could well
+	# read their data from disk, and stay embarassingly parallel. 
 
 	if ncpu == 0:
 		try:
@@ -191,27 +246,15 @@ class _WorkerSettings():
 		self.workdir = workdir # Stays the same for all workers !
 	
 		# And some setup work:
-		self.catname = self.catalog.meta["catname"]
-		self.catimgdirpath = os.path.join(workdir, self.catname + "_img") # Where I write my images
-		assert os.path.exists(self.catimgdirpath) == True # Indeed this should always be the case.
+		#self.catname = self.catalog.meta["catname"]
+		#self.catimgdirpath = os.path.join(workdir, self.catname + "_img") # Where I write my images
+		#assert os.path.exists(self.catimgdirpath) == True # Indeed this should always be the case.
 		
-		# And we prepare the filepaths in which we will write the image(s)
-		# For this we simply overwrite any specified image filepath in the drawimgkwargs:
-		self.drawimgkwargs["simgalimgfilepath"] =\
-			os.path.join(self.catimgdirpath, "%s_%i_galimg.fits" % (self.catname, self.reaindex))
-		
-		# If the user asked for a trugalimg and a psfimg, we also overwrite these filepaths:
-		if self.drawimgkwargs.get("simtrugalimgfilepath", None) is not None:
-			self.drawimgkwargs["simtrugalimgfilepath"] = os.path.join(self.catimgdirpath, "%s_%i_trugalimg.fits" % (self.catname, self.reaindex))
-		if self.drawimgkwargs.get("simpsfimgfilepath", None) is not None:
-			self.drawimgkwargs["simpsfimgfilepath"] = os.path.join(self.catimgdirpath, "%s_%i_psfimg.fits" % (self.catname, self.reaindex))
-	
-	
 	def __str__(self):
 		"""
 		A short string describing these settings
 		"""
-		return "[catalog '%s', realization %i]" % (self.catname, self.reaindex)
+		return "[catalog '%s', realization %i]" % (self.catalog.meta["catname"], self.reaindex)
 	
 	
 def _worker(ws):
