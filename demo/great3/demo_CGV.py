@@ -74,9 +74,9 @@ cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
           method_prefix="adamom_")
-exit()
+
 # Predict the output
-cgv.predict(method_prefix="gs_")
+cgv.predict()
 
 # Write the output catalog
 cgv.writeout("ML_FANN_demo_default")
