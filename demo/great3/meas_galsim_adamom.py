@@ -10,7 +10,7 @@ import megalut.great3
 import megalut.meas
 
 branch = megalut.great3.utils.Branch("control", "ground", "variable",
-	datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part")
+    datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part")
 
 subfield = 5
 
