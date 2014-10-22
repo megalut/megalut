@@ -21,7 +21,7 @@ megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, n
 
 # Step 2, measuring
 
-measdir = os.path.join(basedir, "measdir")
+measdir = os.path.join(basedir, "measdir_adamom")
 measfct = megalut.meas.galsim_adamom.measure
 measfctkwargs = {"stampsize":64}
 
