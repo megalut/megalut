@@ -30,7 +30,10 @@ class Params:
 		self.sig = 1.0 
 		# The sky noise.
 		# If you do now overwrite get_sig, you will have to set this value at some point.
-			
+	
+	def __str__(self):
+		return "[sim.Params '%s']" % (self.name)
+		
 	def get_sig(self):
 		return self.sig
 	
