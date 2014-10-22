@@ -79,7 +79,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		It contains the positions of the psf in psfimg to be used for each galaxy.
 		As for the galcat, the stampsize of the PSFs must be provided as psfcat.meta["stampsize"].
 		If psfcat is not specified, I just use Gaussians.
-	:param psfimg: (optinal) a list containing the Numpy array containing all of the PSFs, organised on a nxn grid and the psf stamp size
+	:param psfimg: image containing the PSFs to be used
 	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
 	:param psfyname: idem for y
 	:param simgalimgfilepath: where I write my output image
