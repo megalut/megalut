@@ -10,7 +10,6 @@ import megalut.great3
 import megalut.meas
 import megalut.sim
 import megalut.learn
-import megalut.tools
 
 # Optional: set the logging level. If omitted, only warnings (and worse) will be shown.
 import logging

@@ -32,6 +32,15 @@ class Run(utils.Branch):
 
         self._mkdir(workdir)
         self.subfields=subfields
+        
+        if self.sheartype == "constant":
+            self.simsubfields = subfields
+        elif self.sheartype == "variable":
+            self.simsubfields = np.asarray(subfields)/20.
+            self.simsubfields=self.simsubfields.astype(np.int)
+            self.simsubfields *= 20
+            self.simsubfields = np.unique(self.simsubfields)
+
         logger.info("Starting new GREAT3 branch %s-%s-%s" % (experiment, obstype, sheartype))
         
     def _mkdir(self, workdir):
@@ -78,43 +87,30 @@ class Run(utils.Branch):
         measfctkwargs["stampsize"]=self.stampsize()
             
         skipdone=not overwrite
+        if imgtype=="obs":
         
-        for subfield in self.subfields:
-            if imgtype=="obs":
-                img_fname=self.galimgfilepath(subfield)
+            for subfield in self.subfields:
                 input_cat = io.readgalcat(self, subfield)
                 
                 # Prep the catalog
                 incat_fname=self.galinfilepath(subfield,imgtype)  
                 tools.io.writepickle(input_cat, incat_fname)
                 
+                img_fname=self.galimgfilepath(subfield)
                 img_fnames.append(img_fname)
                 incat_fnames.append(incat_fname)
-            elif imgtype=="sim":
-                img_fname=self.simgalimgfilepath(subfield)
-                simdir=self._get_path(imgtype,"%03d" % subfield)
-
-                meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
-            else: raise ValueError("Unknown image type")
-            
-            cat_fname=self.galfilepath(subfield,imgtype,method_prefix)  
-            
-            # figure out if we need to overwrite (if applicable)
-            if os.path.exists(cat_fname):
-                if overwrite: 
-                    logger.info("Analysis of %s (subfield %d) prefix %s, I'm told to overwrite..."
-                                 % (imgtype,subfield,method_prefix))
-                    os.remove(cat_fname)
-                else: 
-                    logger.info("Analysis of %s (subfield %d) prefix %s already exists, skipping..."
-                                 % (imgtype,subfield,method_prefix))
-                    continue
-
-        if imgtype=="obs":
+                
             meas.run.general(img_fnames, incat_fnames, 
                              self._get_path(imgtype), measfct, measfctkwargs,  
                              ncpu=ncpu, skipdone=skipdone)
+        elif imgtype=="sim":
+            for simsubfield in self.simsubfields:
+                img_fname=self.simgalimgfilepath(simsubfield)
+                simdir=self._get_path(imgtype,"%03d" % simsubfield)
 
+                meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
+        else: raise ValueError("Unknown image type")
+        
             
     def sim(self, simparams, n, overwrite=False, psf_selection=[4],ncat=1,nrea=1,ncpu=1):
         """
@@ -136,35 +132,35 @@ class Run(utils.Branch):
         .. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
         """
         
-        for subfield in self.subfields:
+        for simsubfield in self.simsubfields:
+            # TODO: the +5 is only to make the code work in the presence of images 5--9
+            matched_psfcat=Table.read(self.starcatpath(simsubfield+5), format="ascii")
             
-            matched_psfcat=Table.read(self.starcatpath(subfield), format="ascii")
+            cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % simsubfield)
+            img_fname=self.simgalimgfilepath(simsubfield)
             
-            cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
-            img_fname=self.simgalimgfilepath(subfield)
-            
-            simdir=self._get_path("sim","%03d" % subfield)
+            simdir=self._get_path("sim","%03d" % simsubfield)
             
             # figure out if we need to overwrite (if applicable)
             if os.path.exists(cat_fname) and os.path.exists(img_fname):
                 if overwrite: 
-                    logger.info("Sim of subfield %d, I'm told to overwrite..." % (subfield))
+                    logger.info("Sim of subfield %d, I'm told to overwrite..." % (simsubfield))
                     os.remove(cat_fname)
                 else: 
-                    logger.info("Sim of subfield %d already exists, skipping..." % (subfield))
+                    logger.info("Sim of subfield %d already exists, skipping..." % (simsubfield))
                     continue
             elif os.path.exists(cat_fname):
                 os.remove(cat_fname)
-                logger.warning("catalog (subfield %d) only was found, removing it" % (subfield))
+                logger.warning("catalog (subfield %d) only was found, removing it" % (simsubfield))
             elif os.path.exists(img_fname):
                 os.remove(img_fname)
-                logger.warning("image (subfield %d) only was found, removing it" % (subfield))
+                logger.warning("image (subfield %d) only was found, removing it" % (simsubfield))
                 
             psf_selection=np.random.choice(psf_selection,n*n)
             matched_psfcat = matched_psfcat[psf_selection]
             matched_psfcat.meta["stampsize"]=self.stampsize()
             
-            psfimg=tools.image.loadimg(self.psfimgfilepath(subfield))
+            psfimg=tools.image.loadimg(self.psfimgfilepath(simsubfield+5))
                 
             drawcatkwargs = {"n":n, "stampsize":self.stampsize()}
             drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
@@ -172,7 +168,7 @@ class Run(utils.Branch):
 
             sim.run.multi(simdir, simparams,
                           drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
-            
+
     def learn(self, learnparams, mlparams, simparam_name, method_prefix="", overwrite=False):
         """
         A method that train any given algorithm.
@@ -201,9 +197,9 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
         """
         # TODO: how to merge different measurements together ?
-        for subfield in self.subfields:            
+        for simsubfield in self.simsubfields:        
             ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir,
-                                                                         "ml","%03d" % subfield))
+                                                                         "ml","%03d" % simsubfield))
                         
             ml_dir=ml.get_workdir()
             exists=True
@@ -211,18 +207,18 @@ class Run(utils.Branch):
                 exists=False
 
             if exists and not overwrite:
-                logger.info("Learn of subfield %d already exists, skipping..." % (subfield))
+                logger.info("Learn of simsubfield %d already exists, skipping..." % (simsubfield))
                 continue
             elif overwrite and exists:
-                logger.info("Learn of subfield %d, I'm told to overwrite..." % (subfield))
+                logger.info("Learn of simsubfield %d, I'm told to overwrite..." % (simsubfield))
                 shutil.rmtree(ml_dir)
 
             # This is a quick fix, only working with one catalog!
-            seapat=self._get_path("sim","%03d" % subfield,
+            seapat=self._get_path("sim","%03d" % simsubfield,
                                   "%s" % simparam_name,"*_meascat.pkl")
             cats = glob.glob(seapat)
             if len(cats)==0:
-                raise ValueError("No catalog found for subfield %d" % subfield)
+                raise ValueError("No catalog found for subfield %d" % simsubfield)
             elif len(cats)>1:
                 raise NotImplemented("I'm not foreseen to be that smart, calm down")
             
@@ -244,13 +240,21 @@ class Run(utils.Branch):
         :param method_prefix: *deprecated* the prefix of the features
         :param overwrite: if `True` and the predictions exist they are deleted and re-predicted.
         """
-        
-        for subfield in self.subfields:    
-            for root, dirs, files in os.walk(os.path.join(self.workdir,"ml","%03d" % subfield)):
-                if not "ML.pkl" in files: continue
+
+                    
+        for subfield in self.subfields:   
+            if self.sheartype == "constant":
+                simsubfield = subfield
+            elif self.sheartype == "variable":
+                simsubfield = int(subfield/20)*20
+            fpath =  os.path.join(self.workdir,"ml","%03d" % simsubfield)
+            for root, dirs, files in os.walk(fpath):
+                if not "ML.pkl" in files: 
+                    logger.info("Nothing found in %s" % fpath)
+                    continue
                 ml_name = root.split("/")[-1]
-                cat_fname=self._get_path("pred","%s-%03d.fits" % (ml_name,subfield))
                 
+                cat_fname=self._get_path("pred","%s-%03d.fits" % (ml_name,subfield))
                 if os.path.exists(cat_fname) and overwrite:
                     logger.info("Pred of subfield %d, I'm told to overwrite..." % (subfield))
                     os.remove(cat_fname)
@@ -258,7 +262,7 @@ class Run(utils.Branch):
                     logger.info("Pred of subfield %d already exists, skipping..." % (subfield))
                     continue
                 
-                logger.info("Using %s to predict on subfield %03d" % (ml_name,subfield))
+                logger.info("Using %s to predict on subfield %03d" % (ml_name,simsubfield))
 
                 ml=tools.io.readpickle(os.path.join(root,"ML.pkl"))
                 
