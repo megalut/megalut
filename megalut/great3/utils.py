@@ -85,10 +85,10 @@ class Branch:
 		return os.path.join(self.branchdir(), 'star_catalog-%03i.txt' % subfield) # This is set by GREAT3
 	
 	def galfilepath(self, subfield, imgtype, prefix=""):  
-		return os.path.join(self.workdir, imgtype, "%sgalaxy_catalog-%03i.fits" % (prefix,subfield))
+		return os.path.join(self.workdir, imgtype, "%simage-%03i-0_meascat.pkl" % (prefix,subfield))
 	
 	def galinfilepath(self, subfield, imgtype, prefix=""):  
-		return os.path.join(self.workdir, imgtype, "%sinput_galaxy_catalog-%03i.fits" % (prefix,subfield))
+		return os.path.join(self.workdir, imgtype, "%sinput_image-%03i-0_meascat.pkl" % (prefix,subfield))
 	# Stuff related to the simulations
 	
 		

@@ -59,7 +59,7 @@ class Run(utils.Branch):
             function must be function(img_fname,input_cat,stampsize)
         :param measfctkwargs: keyword arguments controlling the behavior of the measfct
         :type measfctkwargs: dict
-        :param method_prefix: DEPRECATED
+        :param method_prefix: *deprecated*
         :param overwrite: `True` all measurements and starts again, `False` (default)
             if exists, then perfect, skip it
         :param ncpu: Maximum number of processes that should be used. Default is 1.
@@ -122,7 +122,7 @@ class Run(utils.Branch):
         
         :param simparams: an (overloaded if needed) megalut.sim.params.Params instance
         :param n: square root of the number of simulation
-        :param overwrite: DEPREACTED / if `True` and the simulation exist they are deleted and simulated.
+        :param overwrite: *deprecated* if `True` and the simulation exist they are deleted and simulated.
         :param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
             into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
         :param ncat: The number of catalogs to be generated.
@@ -179,7 +179,7 @@ class Run(utils.Branch):
         
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
-        :param method_prefix: DEPRECATED the prefix of the features
+        :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
         
@@ -228,7 +228,7 @@ class Run(utils.Branch):
             
             input_cat = tools.io.readpickle(cats[0])            
             # Important: we don't want to train on badly measured data!
-            # This line is bad, because method_prefix will disappear!
+            #TODO: This line is bad, because method_prefix will disappear!
             input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
 
             ml.train(input_cat)
@@ -236,12 +236,12 @@ class Run(utils.Branch):
             # export the ML object:
             tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
             
-    def predict(self,method_prefix,overwrite=False):
+    def predict(self,method_prefix="adamom_",overwrite=False):
         """
         Predicts values according to the configuration of the ML pickles. 
         Predicts on all ML available.
         
-        :param method_prefix: the prefix of the features
+        :param method_prefix: *deprecated* the prefix of the features
         :param overwrite: if `True` and the predictions exist they are deleted and re-predicted.
         """
         
@@ -262,12 +262,12 @@ class Run(utils.Branch):
 
                 ml=tools.io.readpickle(os.path.join(root,"ML.pkl"))
                 
-                input_cat=self.galfilepath(subfield,"obs",method_prefix)
-                input_cat=Table.read(input_cat)
+                input_cat=self.galfilepath(subfield,"obs")
+                input_cat=tools.io.readpickle(input_cat)
                 
                 # We predict everything, we will remove flags later
                 predicted=ml.predict(input_cat)
-                
+                #TODO: This line is bad, because method_prefix will disappear!
                 failed=predicted[method_prefix+"flag"]>0
                 count_failed=0
                 for p in predicted[failed]:
