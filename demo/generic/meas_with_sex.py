@@ -1,5 +1,7 @@
 """
-Standalone demo illustrating the use of the sextractor wrapper.
+Standalone demo illustrating the use of the sextractor wrapper
+
+THIS IS OUTDATED, the SExctractor wrapper is now outsourced to sewpy
 """
 import logging
 logging.basicConfig(level=logging.INFO)
