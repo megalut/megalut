@@ -29,7 +29,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	* 2: galsim centroid failed (distance > 10 pixels...)
 	* 3: galsim failed
 	
-	:param img: galsim image
+	:param img: either the path to a FITS image, or a galsim image object
 	:param catalog: astropy table of objects that I should measure
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
@@ -42,8 +42,19 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	
 	"""
 	
-	assert int(stampsize)%2 == 0 # checking that it's even
+	if type(img) is str:
+		logger.debug("You gave me a filepath, and I'm now loading the image...")
+		img = tools.image.loadimg(img)
 	
+	if "stampsize" in catalog.meta:
+		if stampsize != catalog.meta["stampsize"]:
+			logger.warning("Measuring with stampsize=%i, but stamps have been generated with stampsize=%i" %\
+				(stampsize, catalog.meta["stampsize"]))
+			
+
+	if int(stampsize)%2 != 0:
+		raise RuntimeError("stampsize should be even!")
+
 	starttime = datetime.now()
 	logger.info("Starting shape measurements on %ix%i stamps" % (stampsize, stampsize))
 	
