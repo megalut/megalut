@@ -77,13 +77,13 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 		catname = os.path.basename(incatfilepath)[:-8]
 		imgdir = os.path.join(simworkdir, catname + "_img")
 		if not os.path.exists(imgdir):
-			logger.warning("I could not find the image directory for '%s' (skipping this one)" % (inputcat))
+			logger.warning("I could not find the image directory for '%s' (skipping this one)" % (catname))
 			continue
 			
 		imgfilepaths = sorted(glob.glob(os.path.join(imgdir, "*_galimg.fits")))
 		
 		if len(imgfilepaths) == 0:
-			logger.warning("I could not find any images for '%s' (skipping this one)" % (inputcat))
+			logger.warning("I could not find any images for '%s' (skipping this one)" % (catname))
 			continue
 			
 		for imgfilepath in imgfilepaths:
