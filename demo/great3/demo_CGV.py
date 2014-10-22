@@ -43,7 +43,7 @@ class CGV_simparams(megalut.sim.params.Params):
 
 learnparams = megalut.learn.MLParams(
         name = "demo",
-        features = ["gs_g1", "gs_g2", "gs_flux"],
+        features = ["adamom_g1", "adamom_g2", "adamom_flux"],
         labels = ["tru_g1","tru_g2"],
         predlabels = ["pre_g1","pre_g2"],
         )
@@ -52,9 +52,11 @@ fannparams=megalut.learn.fannwrapper.FANNParams(
         hidden_nodes = [20, 20],
         max_iterations = 500,
     )
+simparam_name="cgv_test_1"
+cgv_simparm=CGV_simparams(simparam_name)
 ###################################################################################################
 # Start of the code
-# hi
+
 # Create an instance of the GREAT3 class
 cgv=megalut.great3.great3.Run("control", "ground", "variable",
     datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part",
@@ -64,14 +66,15 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-cgv.sim(CGV_simparams("cgv_test_1"),n=10,ncpu=0)
+cgv.sim(cgv_simparm,n=10,ncpu=0)
 
 # Measure the observations with the same methods than the observation
-cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=CGV_simparams("cgv_test_1"))
-exit()
-# Train the ML
-cgv.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
+cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
 
+# Train the ML
+cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
+          method_prefix="adamom_")
+exit()
 # Predict the output
 cgv.predict(method_prefix="gs_")
 

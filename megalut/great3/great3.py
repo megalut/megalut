@@ -20,6 +20,7 @@ from .. import tools
 from .. import learn
 from .. import meas
 
+import glob
 import shutil
 
 class Run(utils.Branch):
@@ -91,10 +92,9 @@ class Run(utils.Branch):
                 incat_fnames.append(incat_fname)
             elif imgtype=="sim":
                 img_fname=self.simgalimgfilepath(subfield)
+                simdir=self._get_path(imgtype,"%03d" % subfield)
 
-
-                meas.run.onsims(self._get_path(imgtype,"subfield_%03d" % subfield), simparams, 
-                                self._get_path(imgtype), measfct, measfctkwargs, ncpu, skipdone)
+                meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
             else: raise ValueError("Unknown image type")
             
             cat_fname=self.galfilepath(subfield,imgtype,method_prefix)  
@@ -143,6 +143,8 @@ class Run(utils.Branch):
             cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % subfield)
             img_fname=self.simgalimgfilepath(subfield)
             
+            simdir=self._get_path("sim","%03d" % subfield)
+            
             # figure out if we need to overwrite (if applicable)
             if os.path.exists(cat_fname) and os.path.exists(img_fname):
                 if overwrite: 
@@ -168,16 +170,17 @@ class Run(utils.Branch):
             drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
                              "psfxname":"col1", "psfyname":"col2"}
 
-            sim.run.multi(self._get_path("sim","subfield_%03d" % subfield), simparams,
+            sim.run.multi(simdir, simparams,
                           drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
             
-    def learn(self, learnparams, mlparams, method_prefix="", overwrite=False):
+    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", overwrite=False):
         """
         A method that train any given algorithm.
         
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
-        :param method_prefix: the prefix of the features
+        :param method_prefix: DEPRECATED the prefix of the features
+        :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
         
         
@@ -199,8 +202,8 @@ class Run(utils.Branch):
         """
         # TODO: how to merge different measurements together ?
         for subfield in self.subfields:            
-            ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir
-                                                                         ,"ml","%03d" % subfield))
+            ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir,
+                                                                         "ml","%03d" % subfield))
                         
             ml_dir=ml.get_workdir()
             exists=True
@@ -214,10 +217,18 @@ class Run(utils.Branch):
                 logger.info("Learn of subfield %d, I'm told to overwrite..." % (subfield))
                 shutil.rmtree(ml_dir)
 
-            input_cat=self.galfilepath(subfield,"sim",method_prefix)
-            input_cat=Table.read(input_cat)
+            # This is a quick fix, only working with one catalog!
+            seapat=self._get_path("sim","%03d" % subfield,
+                                  "%s" % simparam_name,"*_meascat.pkl")
+            cats = glob.glob(seapat)
+            if len(cats)==0:
+                raise ValueError("No catalog found for subfield %d" % subfield)
+            elif len(cats)>1:
+                raise NotImplemented("I'm not foreseen to be that smart, calm down")
             
+            input_cat = tools.io.readpickle(cats[0])            
             # Important: we don't want to train on badly measured data!
+            # This line is bad, because method_prefix will disappear!
             input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
 
             ml.train(input_cat)
