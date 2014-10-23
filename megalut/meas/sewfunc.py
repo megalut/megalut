@@ -29,9 +29,14 @@ def measure(img, catalog, xname="x", yname="y", params=None, config=None, workdi
 	
 	"""
 	
-	# We make the workdir, to avoid race hazard:
-	if not os.path.exists(workdir):
+	# We make the workdir.
+	# Indeed, if we leave this to sewpy, there is a race hazard.
+	# We cannot use the normal "if exists: os.makedirs()" !
+	try:
 		os.makedirs(workdir)
+	except OSError:
+		pass
+	
 	
 	if params == None:
 		params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
