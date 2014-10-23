@@ -128,10 +128,10 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	This function "horizontally" merges input catalogs having the same columns by "hstacking" some of them (groupcols).
 	Then, for each colname in groupcols, the function computes new statistics columns:
 	
-	- **colname_mean** the average of colname from the different incats (skipping masked measurements)
-	- **colname_med** the median
-	- **colname_std** the sample standard deviation
-	- **colname_n** the number of available (that is, unmasked) measurements
+	- **colname_mean**: the average of colname from the different incats (skipping masked measurements)
+	- **colname_med**: the median
+	- **colname_std**: the sample standard deviation
+	- **colname_n**: the number of available (that is, unmasked) measurements
 		From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
 		or the success fraction of the measurement (``n/output.meta["ngroupstats"]``).
 	
