@@ -128,9 +128,10 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	This function "horizontally" merges input catalogs having the same columns by "hstacking" some of them (groupcols).
 	Then, for each colname in groupcols, the function computes new statistics columns:
 	
-	- **colname_mean** contains the average
-	- **colname_std** contains the sample standard deviation
-	- **colname_n** contains the number of available unmasked measurements
+	- **colname_mean** the average of colname from the different incats (skipping masked measurements)
+	- **colname_med** the median
+	- **colname_std** the sample standard deviation
+	- **colname_n** the number of available (that is, unmasked) measurements
 		From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
 		or the success fraction of the measurement (``n/output.meta["ngroupstats"]``).
 	
@@ -203,7 +204,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 		array = np.ma.array(numpycolumns)
 		
 		# And compute the stats:
-		togroupoutcat["%s_mean" % (groupcol)] = np.mean(array, axis=0)	
+		togroupoutcat["%s_mean" % (groupcol)] = np.mean(array, axis=0)
+		togroupoutcat["%s_med" % (groupcol)] = np.median(array, axis=0)
 		togroupoutcat["%s_std" % (groupcol)] = np.std(array, axis=0)
 		togroupoutcat["%s_n" % (groupcol)] = np.ma.count(array, axis=0)
 		

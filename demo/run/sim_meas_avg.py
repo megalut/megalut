@@ -51,7 +51,7 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 	removereas = True
 	)
 
-print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_std", "adamom_flux_n"]
+print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_med", "adamom_flux_std", "adamom_flux_n"]
 
 
 
