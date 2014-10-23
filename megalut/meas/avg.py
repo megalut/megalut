@@ -128,10 +128,10 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	This function "horizontally" merges input catalogs having the same columns by "hstacking" some of them (groupcols).
 	Then, for each colname in groupcols, the function computes new statistics columns:
 	
-	 * **colname_mean** contains the average
-	 * **colname_std** contains the sample standard deviation
-	 * **colname_n** contains the number of available unmasked measurements
-	 	From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
+	- **colname_mean** contains the average
+	- **colname_std** contains the sample standard deviation
+	- **colname_n** contains the number of available unmasked measurements
+		From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
 		or the success fraction of the measurement (``n/output.meta["ngroupstats"]``).
 	
 	:param incats: list of input catalogs (astropy tables, usually masked).
