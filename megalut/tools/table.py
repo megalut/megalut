@@ -19,7 +19,7 @@ def hjoin(table1, table2, idcol):
 
 	Instead of a simple hstack (which would rely on the order of rows), here we use 
 	join to identify the rows, using the idcol (i.e., "ID") column.
-	We garantee that the ouput table will have the same number of 
+	We guarantee that the ouput table will have the same number of
 	rows as the input tables.
 	
 	This function could be made more general/powerful (as join is much more general),
@@ -27,16 +27,18 @@ def hjoin(table1, table2, idcol):
 	
 	:param table1: an astropy table
 	:param table2: an astropy table
-	:param idcol: a column name, to be used as key for the identification
+	:param idcol: a column label, to be used as key for the identification
+	              (must exist in both tables)
 	
-	Columns that have the same name in table1 and table2 will be taken from table1.
+	If there are columns that have the same label in both table1 and table2, the column values
+	will be taken from table1, so as to avoid duplicated columns in the resulting AstroPy table.
 	
 	"""
 
 	logger.debug("Starting some security checks (%i rows)..." % len(table1))
 	
 	if len(table1) != len(table2):
-		raise RuntimeError("Your tables do not have the same lenghts!")
+		raise RuntimeError("Your tables do not have the same row counts!")
 	
 	
 	if idcol not in table1.colnames:
