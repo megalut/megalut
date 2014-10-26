@@ -18,7 +18,7 @@ def hjoin(table1, table2, idcol):
 	frequently required when running MegaLUT.
 
 	Instead of a simple hstack (which would rely on the order of rows), here we use 
-	join to identify the rows, using the idcol (i.e., "ID") column.
+	join to match the rows, using the idcol (i.e., "ID") column.
 	We guarantee that the ouput table will have the same number of
 	rows as the input tables.
 	
