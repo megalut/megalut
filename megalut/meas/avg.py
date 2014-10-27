@@ -26,7 +26,7 @@ def onsims(measdir, simparams, **kwargs):
 	:param simparams: idem
 	:param kwargs: any further keyword arguments are passed to :func:`groupstats`
 	
-	To learn about my output, see :func:`groupstats`.
+	To learn about the output, see :func:`groupstats`.
 	
 	"""
 	
@@ -52,7 +52,7 @@ def onsims(measdir, simparams, **kwargs):
 	
 	# We have to remove some of the meta, to avoid conflicts
 	for outputcat in outputcats:
-		outputcat.meta.pop("catname", None) # Now that we merge them, this has no meaning anymore
+		outputcat.meta.pop("catname", None) # Now that we merge them, catname has no meaning anymore
 	
 	logger.info("Concatenating catalogs...")
 	outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
@@ -72,11 +72,11 @@ def simmeasdict(measdir, simparams):
 	:param measdir: See :func:`megalut.meas.run.onsims`
 	:param simparams: idem
 	
-	For this I use a regular expression, to avoid making optimistic assumptions about these filenames.
-	I return a dict whose keys are the simulated catalog names, and the corresponding entries
+	Regular expressions are used for this to avoid making optimistic assumptions about these filenames.
+	A dict is returned whose keys are the simulated catalog names, and the corresponding entries
 	are lists of filenames of the pkls with the measurements on the different realizations for each catalog. 
 	
-	An example should clarify... here is the dict that I return::
+	An example of a dict that is returned::
 		
 		{'20141020T141239_E8gh8u':
 			['20141020T141239_E8gh8u_0_galimg_meascat.pkl',
@@ -90,11 +90,11 @@ def simmeasdict(measdir, simparams):
 
 	"""
 	
-	incatfilepaths = sorted(glob.glob(os.path.join(measdir, simparams.name, "*_meascat.pkl")))
+	incatfilepaths = sorted(glob.glob(os.path.join(measdir, simparams.name, "*_galimg_meascat.pkl")))
 	basenames = map(os.path.basename, incatfilepaths)
 	
 	if len(incatfilepaths) == 0:
-		raise RuntimeError("I could not find any meascat in %s" % (os.path.join(measdir, simparams.name)))
+		raise RuntimeError("No meascat found in %s" % (os.path.join(measdir, simparams.name)))
 	
 	# Here is how they look: 20141020T141239_9UhtkX_0_galimg_meascat.pkl
 	# We get a unique list of the catalog names, using regular expressions
@@ -103,7 +103,7 @@ def simmeasdict(measdir, simparams):
 	
 	matches = [p.match(basename) for basename in basenames]
 	if None in matches:
-		raise RuntimeError("There are unexpected files in '%s'" % (measdir))
+		raise RuntimeError("Some files in '%s' have unexpected filenames, something is wrong!" % (measdir))
 		
 		
 	namereatuples = [(match.group(0), match.group(1), match.group(2)) for match in matches]
@@ -139,14 +139,14 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 		They must all have identical order and columns (this will be checked).
 	:param groupcols: list of column names that should be grouped, that is the columns that differ from incat to incat.
 	:param removecols: list of column names that should be discarded
-	:param removereas: if True, I will not keep the individual realization columns in the output table.
+	:param removereas: if True, the individual realization columns in the output table will not be kept.
 	
 	The function tests that **any column which is not in groupcols or removecols is indeed IDENTICAL among the incats**.
 	It could be that this leads to perfomance issues one day, but in the meantime it should make things safe.
 	"""
-	if groupcols == None:
+	if groupcols is None:
 		groupcols = []
-	if removecols == None:
+	if removecols is None:
 		removecols = [] 
 
 	# First, some checks on the incats:
@@ -157,13 +157,13 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 				% (incat.colnames, colnames))
 		
 		if incat.masked is False:
-			logger.critical("Your gave me unmasked incats (fine for me, but surprising)")
+			logger.critical("Unmasked incats given (OK, but unexpected)")
 
 	for groupcol in groupcols:
 		if groupcol not in colnames:
-			raise RuntimeError("The column '%s' which I should group is not present in the catalog. I have %s" % (groupcol, colnames))
+			raise RuntimeError("The column '%s' which should be grouped is not present in the catalog. The availble column names are %s" % (groupcol, colnames))
 		if groupcol in removecols:
-			raise RuntimeError("I cannot both group and remove column '%s' " % groupcol)
+			raise RuntimeError("Cannot both group and remove column '%s' " % groupcol)
 
 
 	# We make a list of the column names that should stay unaffected:
@@ -176,7 +176,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	# We test that the columns of these fixedcolnames are the same for all the different incats
 	for incat in incats:
 		if not np.all(incat[fixedcolnames] == outcat):
-			raise RuntimeError("Fishy: some columns are not identical among %s. Add them to groupcols or removecols." % outcat.colnames)
+			raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % outcat.colnames)
 	
 	
 	# Now we prepare subtables containing *only* the groupcols:

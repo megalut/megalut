@@ -6,8 +6,8 @@ import megalut.meas
 import logging
 logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
 
-basedir = "/vol/fohlen11/fohlen11_1/mtewes/foo"
-
+#basedir = "/vol/fohlen11/fohlen11_1/mtewes/foo"
+basedir = '/tmp/MegaLUT_demo/'
 
 print "Step 1: drawing the sims"
 
