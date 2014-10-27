@@ -2,6 +2,7 @@
 Helpers for astropy.table arrays
 """
 
+import numpy as np
 import astropy.table
 
 import logging
@@ -82,4 +83,19 @@ def hjoin(table1, table2, idcol):
 	return output
 	
 
+def shuffle(table):
+	"""
+	Return a copy of the input table with randomly shuffled rows.
+	Easy function, but it demonstrates one way of how this can be done.
+	"""
+	
+	indexes = np.arange(len(table))
+	np.random.shuffle(indexes)
+	return table[indexes] # This is a copy
+	
+	
+	
+	
+	
+	
 	
