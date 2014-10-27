@@ -90,7 +90,7 @@ def simmeasdict(measdir, simparams):
 
 	"""
 	
-	incatfilepaths = sorted(glob.glob(os.path.join(measdir, simparams.name, "*_meascat.pkl")))
+	incatfilepaths = sorted(glob.glob(os.path.join(measdir, simparams.name, "*_galimg_meascat.pkl")))
 	basenames = map(os.path.basename, incatfilepaths)
 	
 	if len(incatfilepaths) == 0:
@@ -103,7 +103,7 @@ def simmeasdict(measdir, simparams):
 	
 	matches = [p.match(basename) for basename in basenames]
 	if None in matches:
-		raise RuntimeError("Cannot find expected files in '%s'" % (measdir))
+		raise RuntimeError("Some files in '%s' have unexpected filenames, something is wrong!" % (measdir))
 		
 		
 	namereatuples = [(match.group(0), match.group(1), match.group(2)) for match in matches]
