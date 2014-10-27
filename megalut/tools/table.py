@@ -60,7 +60,7 @@ def hjoin(table1, table2, idcol):
 	
 	commoncols = [col for col in table1.colnames if col in table2.colnames]
 	if len(commoncols) > 1: # Otherwise it's just the idcol...
-		logger.info("The columns %s are common, I will keep those from table1." % (str(commoncols)))
+		logger.info("The column labels %s are common, values from table1 will be kept." % (str(commoncols)))
 	table2colstokeep = [col for col in table2.colnames if col not in commoncols]
 	table2colstokeep.append(idcol)
 	
