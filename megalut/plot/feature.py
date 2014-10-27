@@ -1,8 +1,7 @@
 class Feature():
 	"""
-	A feature is essentially a column name together with an interval to show 
+	A feature is essentially a column name together with an interval to nicely show 
 	this column on plots.
-	Not sure if we will use this for plots other than those in scatter, but maybe !
 	"""
 	def __init__(self, colname, low=None, high=None, nicename=None, ):
 		"""
