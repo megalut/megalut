@@ -3,7 +3,8 @@ General utility stuff for GREAT3
 """
 
 import os
-
+import astropy.io.fits
+import numpy as np
 
 class Branch:
 	"""
@@ -56,6 +57,18 @@ class Branch:
 			return 48
 		elif self.obstype == "space":
 			return 96
+		
+	def pixelscale(self):
+		"""
+		The pixel scale of this branch, in pixels
+		"""
+		if self.obstype == "ground":
+			return 0.2
+		elif self.obstype == "space":
+			if self.experiment=="multiepoch":
+				return 0.1
+			else:
+				return 0.05
 
 	
 	def branchdir(self):
@@ -205,4 +218,3 @@ class Branch:
 # 		return os.path.join(self.simdir(), "sim-%03i-%02i-psfimg.fits" % (subfield,nimg))
 # 	
 # 	
-
