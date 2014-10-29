@@ -86,28 +86,42 @@ class Branch:
 
 	# For now we online define here the "input" stuff, set by GREAT3.
 	# The MegaLUT output could be rethought, and is commented out.
+	
+	def get_ftiles(self, xt, yt):
+		if not (xt is None or yt is None):
+			return "-%02d-%02d" % (xt,yt)
+		else:
+			return ""
 
-	def galimgfilepath(self, subfield, folder=None,epoch=0):
+	def galimgfilepath(self, subfield, xt=None, yt=None,epoch=0, folder=None):
 		if folder==None:
 			folder=self.branchdir()
-		return os.path.join(folder, "image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
+		return os.path.join(folder, "image-%03i-%i%s.fits" % (subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
-	def psfimgfilepath(self, subfield, epoch=0):
-		return os.path.join(self.branchdir(), "starfield_image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
+	def psfimgfilepath(self, subfield, xt=None, yt=None, epoch=0):
+		return os.path.join(self.branchdir(), "starfield_image-%03i-%i%s.fits" % 
+						(subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
-	def galcatfilepath(self, subfield, folder=None):
+	def galcatfilepath(self, subfield, xt=None, yt=None, folder=None):
 		if folder==None:
 			folder=self.branchdir()
-		return os.path.join(folder, "galaxy_catalog-%03i.txt" % (subfield)) # This is set by GREAT3
+
+		fname="galaxy_catalog-%03i%s.txt" % (subfield,self.get_ftiles(xt,yt))
+		return os.path.join(folder, fname) # This is set by GREAT3
 		
-	def starcatpath(self, subfield):
-		return os.path.join(self.branchdir(), 'star_catalog-%03i.txt' % subfield) # This is set by GREAT3
+	def starcatpath(self, subfield, xt=None, yt=None, folder=None):
+		if folder==None:
+			folder=self.branchdir()
+		return os.path.join(folder, 'star_catalog-%03i%s.txt' % \
+						(subfield,self.get_ftiles(xt,yt))) # This is set by GREAT3
 	
-	def galfilepath(self, subfield, imgtype, prefix=""):  
-		return os.path.join(self.workdir, imgtype, "%simage-%03i-0_meascat.pkl" % (prefix,subfield))
+	def galfilepath(self, subfield, imgtype, prefix="", xt=None, yt=None):
+		return os.path.join(self.workdir, imgtype, "%simage-%03i-0%s_meascat.pkl" % \
+						(prefix,subfield,self.get_ftiles(xt,yt)))
 	
-	def galinfilepath(self, subfield, imgtype, prefix=""):  
-		return os.path.join(self.workdir, imgtype, "%sinput_image-%03i-0_meascat.pkl" % (prefix,subfield))
+	def galinfilepath(self, subfield, imgtype, xt=None, yt=None, prefix=""): 
+		return os.path.join(self.workdir, imgtype, "%sinput_image-%03i-0%s_meascat.pkl" % \
+						(prefix,subfield,self.get_ftiles(xt,yt)))
 	# Stuff related to the simulations
 	
 		

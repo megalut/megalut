@@ -12,13 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 
-def readgalcat(branch, subfield):
+def readgalcat(branch, subfield, xt=None, yt=None):
 	"""
 	I read the galaxy catalog for a given branch and subfield.
 	:returns: An astropy.table 
 	"""
 	
-	filepath = branch.galcatfilepath(subfield)
+	filepath = branch.galcatfilepath(subfield, xt, yt)
 	
 	# There is probably a direct astropy way to read the data
 	#cat = astropy.table.Table.read(filepath, format="ascii")
@@ -27,7 +27,10 @@ def readgalcat(branch, subfield):
 	# But instead, let's try with numpy to illustrate maximum control:
 	data = np.loadtxt(filepath)
 	
-	assert data.shape[1] == 3
+	if xt is None and yt is None:
+		assert data.shape[1] == 3
+	else:
+		assert data.shape[1] == 5
 	
 	ids = [int(line[2]) for line in data]
 	xs = data[:,0]+1.5 # To get the same pixel convention as MegaLUT

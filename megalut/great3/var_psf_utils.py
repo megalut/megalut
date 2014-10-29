@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 def separate(experiment, obstype, sheartype, datadir, workdir,subfields):
     branch=Branch(experiment, obstype, sheartype, datadir, workdir)
+    workdir=os.path.join(workdir,"/".join(branch.branchtuple()))
     tools.dirs.mkdir(workdir)
     
     for subfield in subfields:
@@ -68,8 +69,9 @@ def _separate(imgtype,subfield,branch,workdir):
                 stamp = stamp[0].array
                 new_image.array[nx*branch.stampsize():(nx+1.)*branch.stampsize(),
                                 ny*branch.stampsize():(ny+1.)*branch.stampsize()]=stamp
-                xs.append((nx+0.5)*branch.stampsize()-1)
-                ys.append((ny+0.5)*branch.stampsize()-1)
+                # This is strange, but seems to work
+                xs.append((ny+0.5)*branch.stampsize()-1)
+                ys.append((nx+0.5)*branch.stampsize()-1)
                 if imgtype=="galaxy": ids.append(catalog_tile["ID"][ii])
                 posx.append(catalog_tile["tile_x_pos_deg"][ii])
                 posy.append(catalog_tile["tile_y_pos_deg"][ii])
@@ -86,8 +88,9 @@ def _separate(imgtype,subfield,branch,workdir):
                 data = Table([xs, ys, posx, posy], names=['x', 'y', "tile_x_pos_deg", "tile_y_pos_deg"])
                 note="starfield_"
                 
+            #TODO: add multiepoch handling 
             data.write(os.path.join(workdir, "%s_catalog-%03d-%02d-%02d.txt" % 
                                     (imgtype,subfield, xt, yt)),format="ascii.commented_header")
             
-            galsim.fits.write(new_image, "%simage-%03d-%d-%d.fits" % (note,subfield, xt, yt), 
+            galsim.fits.write(new_image, "%simage-%03d-0-%02d-%02d.fits" % (note,subfield, xt, yt), 
                               dir=workdir)

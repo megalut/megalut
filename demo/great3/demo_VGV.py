@@ -58,21 +58,20 @@ vgv_simparm=vgv_simparams(simparam_name)
 
 megalut.great3.var_psf_utils.separate("variable_psf", "ground", "variable",
                                       datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part", 
-                                      workdir="./vgv_tiled",subfields=range(5,7))
+                                      workdir="./vgv_data",subfields=range(5,7))
 
-exit()
 
 # Create an instance of the GREAT3 class
-vgv=megalut.great3.great3.Run("variable_psf", "ground", "variable",
-    datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part",
-    subfields=range(5,10))
+vgv=megalut.great3.great3_tiled.Run("variable_psf", "ground", "variable",
+    datadir="./vgv_data",
+    subfields=range(5,7))
 
 # Now run the measurements on input images
 vgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-vgv.sim(vgv_simparm,n=10,ncpu=0)
-
+vgv.sim(vgv_simparm,n=10,ncpu=0,overwrite=True)
+exit()
 # Measure the observations with the same methods than the observation
 vgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=vgv_simparm)
 

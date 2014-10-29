@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 import os
 from astropy.table import Table
+from astropy.io import ascii
 import numpy as np
 
 import utils
@@ -33,6 +34,9 @@ class Run(utils.Branch):
         self._mkdir(workdir)
         self.subfields=subfields
         
+        # This is because we have to treat each tile differently for full & variable psf
+        self.simsubfields = subfields
+        """
         if self.sheartype == "constant":
             self.simsubfields = subfields
         elif self.sheartype == "variable":
@@ -40,8 +44,9 @@ class Run(utils.Branch):
             self.simsubfields=self.simsubfields.astype(np.int)
             self.simsubfields *= 20
             self.simsubfields = np.unique(self.simsubfields)
+        """
 
-        logger.info("Starting new GREAT3 branch %s-%s-%s" % (experiment, obstype, sheartype))
+        logger.info("Starting new *tiled* GREAT3 branch %s-%s-%s" % (experiment, obstype, sheartype))
         
     def _mkdir(self, workdir):
         """
@@ -90,29 +95,33 @@ class Run(utils.Branch):
         if imgtype=="obs":
         
             for subfield in self.subfields:
-                input_cat = io.readgalcat(self, subfield)
+                for xt in range(self.ntiles()):
+                    for yt in range(self.ntiles()):
+                        input_cat = io.readgalcat(self, subfield,xt,yt)
                 
-                # Prep the catalog
-                incat_fname=self.galinfilepath(subfield,imgtype)  
-                tools.io.writepickle(input_cat, incat_fname)
+                        # Prep the catalog
+                        incat_fname=self.galinfilepath(subfield,imgtype,xt,yt) 
+                        tools.io.writepickle(input_cat, incat_fname)
                 
-                img_fname=self.galimgfilepath(subfield)
-                img_fnames.append(img_fname)
-                incat_fnames.append(incat_fname)
+                        img_fname=self.galimgfilepath(subfield,xt,yt)
+                        img_fnames.append(img_fname)
+                        incat_fnames.append(incat_fname)
                 
             meas.run.general(img_fnames, incat_fnames, 
                              self._get_path(imgtype), measfct, measfctkwargs,  
                              ncpu=ncpu, skipdone=skipdone)
         elif imgtype=="sim":
             for simsubfield in self.simsubfields:
-                img_fname=self.simgalimgfilepath(simsubfield)
-                simdir=self._get_path(imgtype,"%03d" % simsubfield)
+                for xt in range(self.ntiles()):
+                    for yt in range(self.ntiles()):
+                        img_fname=self.simgalimgfilepath(simsubfield,xt,yt)
+                        simdir=self._get_path(imgtype,"%03d%s" % (simsubfield,self.get_ftiles(xt,yt)))
 
-                meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
+                        meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
         else: raise ValueError("Unknown image type")
         
             
-    def sim(self, simparams, n, overwrite=False, psf_selection=[4],ncat=1,nrea=1,ncpu=1):
+    def sim(self, simparams, n, overwrite=False, psf_selection=None,ncat=1,nrea=1,ncpu=1):
         """
         Does the simulation
         
@@ -120,7 +129,7 @@ class Run(utils.Branch):
         :param n: square root of the number of simulation
         :param overwrite: *deprecated* if `True` and the simulation exist they are deleted and simulated.
         :param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
-            into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
+            into a eligible PSF catalogue.
         :param ncat: The number of catalogs to be generated.
         :type ncat: int
         :param nrea: The number of realizations per catalog to be generated.
@@ -131,44 +140,57 @@ class Run(utils.Branch):
         
         .. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
         """
-        
+
         for simsubfield in self.simsubfields:
-            # TODO: the +5 is only to make the code work in the presence of images 5--9
-            matched_psfcat=Table.read(self.starcatpath(simsubfield+5), format="ascii")
+            for xt in range(self.ntiles()):
+                for yt in range(self.ntiles()):
+
+                    matched_psfcat=Table.read(self.starcatpath(simsubfield,xt,yt), format="ascii")
             
-            cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % simsubfield)
-            img_fname=self.simgalimgfilepath(simsubfield)
+                    cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % simsubfield)
+                    img_fname=self.simgalimgfilepath(simsubfield)
             
-            simdir=self._get_path("sim","%03d" % simsubfield)
+                    simdir=self._get_path("sim","%03d" % simsubfield,"%02dx%02d" % (xt,yt))
+                    tools.dirs.mkdir(simdir, verbose=False)
             
-            # figure out if we need to overwrite (if applicable)
-            if os.path.exists(cat_fname) and os.path.exists(img_fname):
-                if overwrite: 
-                    logger.info("Sim of subfield %d, I'm told to overwrite..." % (simsubfield))
-                    os.remove(cat_fname)
-                else: 
-                    logger.info("Sim of subfield %d already exists, skipping..." % (simsubfield))
-                    continue
-            elif os.path.exists(cat_fname):
-                os.remove(cat_fname)
-                logger.warning("catalog (subfield %d) only was found, removing it" % (simsubfield))
-            elif os.path.exists(img_fname):
-                os.remove(img_fname)
-                logger.warning("image (subfield %d) only was found, removing it" % (simsubfield))
-                
-            psf_selected=np.random.choice(psf_selection,n*n)
-            matched_psfcat = matched_psfcat[psf_selected]
-            matched_psfcat.meta["stampsize"]=self.stampsize()
-            
-            psfimg=tools.image.loadimg(self.psfimgfilepath(simsubfield+5))
-                
-            drawcatkwargs = {"n":n, "stampsize":self.stampsize()}
-            drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
-                             "psfxname":"col1", "psfyname":"col2"}
-            matched_psfcat["col1"]+=1
-            matched_psfcat["col2"]+=1
-            sim.run.multi(simdir, simparams,
-                          drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
+                    # figure out if we need to overwrite (if applicable)
+                    if os.path.exists(cat_fname) and os.path.exists(img_fname):
+                        if overwrite: 
+                            logger.info("Sim of subfield %d, I'm told to overwrite..." % (simsubfield))
+                            os.remove(cat_fname)
+                        else: 
+                            logger.info("Sim of subfield %d already exists, skipping..." % (simsubfield))
+                            continue
+                    elif os.path.exists(cat_fname):
+                        os.remove(cat_fname)
+                        logger.warning("catalog (subfield %d) only was found, removing it" % (simsubfield))
+                    elif os.path.exists(img_fname):
+                        os.remove(img_fname)
+                        logger.warning("image (subfield %d) only was found, removing it" % (simsubfield))
+                    
+                    psfimg=tools.image.loadimg(self.psfimgfilepath(simsubfield,xt,yt))
+                    
+                    if psf_selection==None:
+                        psf_selected=np.arange(len(matched_psfcat))
+                    else:
+                        psf_selected=psf_selection
+                    psf_selected=np.random.choice(psf_selected,n*n)
+
+
+                    matched_psfcat = matched_psfcat[psf_selected]
+                    matched_psfcat.meta["stampsize"]=self.stampsize()
+
+                    fname=self.starcatpath(simsubfield,xt,yt,folder=simdir)
+                    matched_psfcat.write(fname,format="ascii.commented_header")                    
+                        
+                    drawcatkwargs = {"n":n, "stampsize":self.stampsize()}
+                    drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
+                                     "psfxname":"x", "psfyname":"y"}
+                    matched_psfcat["x"]+=1
+                    matched_psfcat["y"]+=1
+
+                    sim.run.multi(simdir, simparams,
+                                  drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
     def learn(self, learnparams, mlparams, simparam_name, method_prefix="", overwrite=False):
         """
