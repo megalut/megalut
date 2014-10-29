@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import os
-from astropy.table import Table
+from astropy.table import Table, hstack
 from astropy.io import ascii
 import numpy as np
 
@@ -192,7 +192,8 @@ class Run(utils.Branch):
                     sim.run.multi(simdir, simparams,
                                   drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
-    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", overwrite=False):
+    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", psf_features=[],
+               overwrite=False):
         """
         A method that train any given algorithm.
         
@@ -220,40 +221,55 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
         """
         # TODO: how to merge different measurements together ?
-        for simsubfield in self.simsubfields:        
-            ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir,
-                                                                         "ml","%03d" % simsubfield))
-                        
-            ml_dir=ml.get_workdir()
-            exists=True
-            if not os.path.exists(os.path.join(ml_dir,"ML.pkl")) :
-                exists=False
-
-            if exists and not overwrite:
-                logger.info("Learn of simsubfield %d already exists, skipping..." % (simsubfield))
-                continue
-            elif overwrite and exists:
-                logger.info("Learn of simsubfield %d, I'm told to overwrite..." % (simsubfield))
-                shutil.rmtree(ml_dir)
-
-            # This is a quick fix, only working with one catalog!
-            seapat=self._get_path("sim","%03d" % simsubfield,
-                                  "%s" % simparam_name,"*_meascat.pkl")
-            cats = glob.glob(seapat)
-            if len(cats)==0:
-                raise ValueError("No catalog found for subfield %d" % simsubfield)
-            elif len(cats)>1:
-                raise NotImplemented("I'm not foreseen to be that smart, calm down")
-            
-            input_cat = tools.io.readpickle(cats[0])            
-            # Important: we don't want to train on badly measured data!
-            #TODO: This line is bad, because method_prefix will disappear!
-            input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
-
-            ml.train(input_cat)
-            
-            # export the ML object:
-            tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
+        # Maybe this should be done at the ML level?
+        psfpsf_features=["psf_%s" % f for f in psf_features]
+        learnparams.features.extend(psfpsf_features)
+        for simsubfield in self.simsubfields:  
+            for xt in range(self.ntiles()):
+                for yt in range(self.ntiles()):  
+                    
+                    ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir, \
+                                            "ml","%03d" % simsubfield,"%02dx%02d" % (xt,yt)))
+                                
+                    ml_dir=ml.get_workdir()
+                    exists=True
+                    if not os.path.exists(os.path.join(ml_dir,"ML.pkl")) :
+                        exists=False
+        
+                    if exists and not overwrite:
+                        logger.info("Learn of simsubfield %d already exists, skipping..." % (simsubfield))
+                        continue
+                    elif overwrite and exists:
+                        logger.info("Learn of simsubfield %d, I'm told to overwrite..." % (simsubfield))
+                        shutil.rmtree(ml_dir)
+        
+                    # This is a quick fix, only working with one catalog!
+                    seapat=self._get_path("sim","%03d" % simsubfield, "%02dx%02d" % (xt,yt),
+                                          "%s" % simparam_name,"*_meascat.pkl")
+                    cats = glob.glob(seapat)
+                    if len(cats)==0:
+                        raise ValueError("No catalog found for subfield %d" % simsubfield)
+                    elif len(cats)>1:
+                        raise NotImplemented("I'm not foreseen to be that smart, calm down")
+                    
+                    input_cat = tools.io.readpickle(cats[0])
+                    simdir=self._get_path("sim","%03d" % simsubfield, "%02dx%02d" % (xt,yt))
+                    
+                    fname=self.starcatpath(simsubfield,xt,yt,folder=simdir)
+                    psf_cat=Table.read(fname,format="ascii.commented_header") 
+                    relevant_psf = psf_cat[psf_features]
+                    # This I guess is slow but we don't have a lot of elements
+                    for f in psf_features:
+                        relevant_psf[f].name="psf_%s" % f
+                    input_cat=hstack([input_cat, relevant_psf])       
+                    # Important: we don't want to train on badly measured data!
+                    #TODO: This line is bad, because method_prefix will disappear!
+                    input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
+        
+                    ml.train(input_cat)
+                    
+                    # export the ML object:
+                    tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
             
     def predict(self,method_prefix="adamom_",overwrite=False):
         """
