@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import os
-from astropy.table import Table, hstack
+from astropy.table import Table, hstack, join
 from astropy.io import ascii
 import numpy as np
 
@@ -221,9 +221,7 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
         """
         # TODO: how to merge different measurements together ?
-        # Maybe this should be done at the ML level?
-        psfpsf_features=["psf_%s" % f for f in psf_features]
-        learnparams.features.extend(psfpsf_features)
+        learnparams.features.extend(psf_features)
         for simsubfield in self.simsubfields:  
             for xt in range(self.ntiles()):
                 for yt in range(self.ntiles()):  
@@ -258,10 +256,9 @@ class Run(utils.Branch):
                     fname=self.starcatpath(simsubfield,xt,yt,folder=simdir)
                     psf_cat=Table.read(fname,format="ascii.commented_header") 
                     relevant_psf = psf_cat[psf_features]
-                    # This I guess is slow but we don't have a lot of elements
-                    for f in psf_features:
-                        relevant_psf[f].name="psf_%s" % f
-                    input_cat=hstack([input_cat, relevant_psf])       
+
+                    input_cat=hstack([input_cat, relevant_psf])
+                    
                     # Important: we don't want to train on badly measured data!
                     #TODO: This line is bad, because method_prefix will disappear!
                     input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
@@ -282,46 +279,53 @@ class Run(utils.Branch):
 
                     
         for subfield in self.subfields:   
-            if self.sheartype == "constant":
-                simsubfield = subfield
-            elif self.sheartype == "variable":
-                simsubfield = int(subfield/20)*20
-            fpath =  os.path.join(self.workdir,"ml","%03d" % simsubfield)
-            for root, dirs, files in os.walk(fpath):
-                if not "ML.pkl" in files: 
-                    logger.info("Nothing found in %s" % fpath)
-                    continue
-                ml_name = root.split("/")[-1]
-                
-                cat_fname=self._get_path("pred","%s-%03d.fits" % (ml_name,subfield))
-                if os.path.exists(cat_fname) and overwrite:
-                    logger.info("Pred of subfield %d, I'm told to overwrite..." % (subfield))
-                    os.remove(cat_fname)
-                elif os.path.exists(cat_fname):
-                    logger.info("Pred of subfield %d already exists, skipping..." % (subfield))
-                    continue
-                
-                logger.info("Using %s to predict on subfield %03d" % (ml_name,simsubfield))
-
-                ml=tools.io.readpickle(os.path.join(root,"ML.pkl"))
-                
-                input_cat=self.galfilepath(subfield,"obs")
-                input_cat=tools.io.readpickle(input_cat)
-                
-                # We predict everything, we will remove flags later
-                predicted=ml.predict(input_cat)
-                #TODO: This line is bad, because method_prefix will disappear!
-                failed=predicted[method_prefix+"flag"]>0
-                count_failed=0
-                for p in predicted[failed]:
-                    # TODO: Better and faster way to do this ?
-                    p["pre_g1"]=20.
-                    p["pre_g2"]=20.
-                    count_failed+=1
-                    
-                logger.info("Predicted on %d objects, %d failed" % (len(input_cat),count_failed))
-                
-                predicted.write(cat_fname,format="fits")
+            for xt in range(self.ntiles()):
+                for yt in range(self.ntiles()):  
+                    """if self.sheartype == "constant":
+                        simsubfield = subfield
+                    elif self.sheartype == "variable":
+                        simsubfield = int(subfield/20)*20"""
+                    fpath =  os.path.join(self.workdir,"ml","%03d" % subfield, "%02dx%02d" % (xt,yt))
+                    for root, dirs, files in os.walk(fpath):
+                        if not "ML.pkl" in files: 
+                            logger.warning("Nothing found in %s" % fpath)
+                            continue
+                        ml_name = root.split("/")[-1]
+                        
+                        cat_fname=self._get_path("pred","%s-%03d-%02dx%02d.fits" % (ml_name,subfield,xt,yt))
+                        if os.path.exists(cat_fname) and overwrite:
+                            logger.info("Pred of subfield %d, I'm told to overwrite..." % (subfield))
+                            os.remove(cat_fname)
+                        elif os.path.exists(cat_fname):
+                            logger.info("Pred of subfield %d already exists, skipping..." % (subfield))
+                            continue
+                        
+                        logger.info("Using %s to predict on subfield %03d - %02dx%02d" % (ml_name,subfield,xt,yt))
+        
+                        ml=tools.io.readpickle(os.path.join(root,"ML.pkl"))
+                        
+                        input_cat=self.galfilepath(subfield,"obs",xt=xt,yt=yt)
+                        input_cat=tools.io.readpickle(input_cat)
+                        
+                        # Join w/ initial input_cat
+                        ini_cat=io.readgalcat(self, subfield, xt, yt)
+                        print ini_cat
+                        exit()
+                        # We predict everything, we will remove flags later
+                        predicted=ml.predict(input_cat)
+                        
+                        #TODO: This line is bad, because method_prefix will disappear!
+                        failed=predicted[method_prefix+"flag"]>0
+                        count_failed=0
+                        for p in predicted[failed]:
+                            # TODO: Better and faster way to do this ?
+                            p["pre_g1"]=20.
+                            p["pre_g2"]=20.
+                            count_failed+=1
+                            
+                        logger.info("Predicted on %d objects, %d failed" % (len(input_cat),count_failed))
+                        
+                        predicted.write(cat_fname,format="fits")
                 
     def writeout(self, ml_name):
         """

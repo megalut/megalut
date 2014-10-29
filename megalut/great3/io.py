@@ -36,10 +36,17 @@ def readgalcat(branch, subfield, xt=None, yt=None):
 	xs = data[:,0]+1.5 # To get the same pixel convention as MegaLUT
 	ys = data[:,1]+1.5 # idem
 	
-	cat = astropy.table.Table([ids, xs, ys],
-		names=('ID', 'x', 'y'),
-		meta = {"branch":branch, "subfield":subfield, "filepath":filepath}
-		)
+	if xt is None and yt is None:
+		cat = astropy.table.Table([ids, xs, ys],
+				names=('ID', 'x', 'y'),
+				meta = {"branch":branch, "subfield":subfield, "filepath":filepath}
+				)
+	else:
+		cat = astropy.table.Table([ids, xs, ys, data[:,2], data[:,3]],
+				names=('ID', 'x', 'y', 'tile_x_pos_deg', 'tile_y_pos_deg'),
+				meta = {"branch":branch, "subfield":subfield, 
+					"filepath":filepath, "xt":xt, 'yt':yt}
+				)
 		
 	logger.info("Read %i sources from %s" % (len(cat), filepath))
 
