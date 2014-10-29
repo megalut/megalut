@@ -48,18 +48,26 @@ def onsims(measdir, simparams, **kwargs):
 		grouped = groupstats(meascats, **kwargs)
 		outputcats.append(grouped)
 		
-	# And finally we stack all these catalogs "vertically", to get a single one.
+	# And finally, we stack all these catalogs "vertically", to get a single one.
+	# This is only to be done if we have several catalogs. In fact, vstack crashes if only 
+	# one catalog is present.
 	
-	# We have to remove some of the meta, to avoid conflicts
-	for outputcat in outputcats:
-		outputcat.meta.pop("catname", None) # Now that we merge them, catname has no meaning anymore
+	if len(outputcats) > 1:
 	
-	logger.info("Concatenating catalogs...")
-	outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
-	logger.info("Done, collected results for %i simulated galaxies" % (len(outputcat)))
+		# We have to remove some of the meta, to avoid conflicts
+		for outputcat in outputcats:
+			outputcat.meta.pop("catname", None) # Now that we merge them, catname has no meaning anymore
+	
+		logger.info("Concatenating catalogs...")
+		outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
+	
+	else:
+		logger.debug("Only one catalog, no need to call vstack")
+		outputcat = outputcats[0]
+	
+	logger.info("Done with collecting results for %i simulated galaxies" % (len(outputcat)))
 	
 	return outputcat
-
 
 
 
@@ -187,7 +195,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	# It's easier to just make a new integer range:
 	incat_names = ["%i" % (i) for i in range(len(subincats))]
 	
-	# We use join to collect all these columns in a single table, with the suffixes in their column names
+	# We use hstack to collect all these columns into a single table, adding these incat_names as suffixes to the column names.
 	togroupoutcat = astropy.table.hstack(subincats, join_type="exact",
 		table_names=incat_names, uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
 	
