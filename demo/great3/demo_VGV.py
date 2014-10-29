@@ -55,26 +55,26 @@ simparam_name="vgv_test_1"
 vgv_simparm=vgv_simparams(simparam_name)
 ###################################################################################################
 # Start of the code
-
+"""
 megalut.great3.var_psf_utils.separate("variable_psf", "ground", "variable",
                                       datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part", 
                                       workdir="./vgv_data",subfields=range(5,7))
 
-
+"""
 # Create an instance of the GREAT3 class
 vgv=megalut.great3.great3_tiled.Run("variable_psf", "ground", "variable",
     datadir="./vgv_data",
     subfields=range(5,7))
 
 # Now run the measurements on input images
-vgv.meas("obs",measfct,measfctkwargs,ncpu=0)
+#vgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-vgv.sim(vgv_simparm,n=10,ncpu=0,overwrite=True)
-exit()
+#vgv.sim(vgv_simparm,n=10,ncpu=0)
+
 # Measure the observations with the same methods than the observation
 vgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=vgv_simparm)
-
+exit()
 # Train the ML
 vgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
           method_prefix="adamom_")

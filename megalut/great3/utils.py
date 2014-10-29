@@ -131,9 +131,14 @@ class Branch:
 		else:
 			raise NotImplemented()
 		
-	def simgalimgfilepath(self, subfield, nimg=None):
+	def simgalimgfilepath(self, subfield, xt=None, yt=None, nimg=None):
+		if not (xt is None or yt is None):
+			note="/%02dx%02d" % (xt,yt)
+		else:
+			note=""
+		
 		if nimg == None:
-			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim"))
+			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim%s" % note))
 		else:
 			raise NotImplemented()
 

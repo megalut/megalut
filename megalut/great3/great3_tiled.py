@@ -115,7 +115,7 @@ class Run(utils.Branch):
                 for xt in range(self.ntiles()):
                     for yt in range(self.ntiles()):
                         img_fname=self.simgalimgfilepath(simsubfield,xt,yt)
-                        simdir=self._get_path(imgtype,"%03d%s" % (simsubfield,self.get_ftiles(xt,yt)))
+                        simdir=self._get_path(imgtype,"%03d" % (simsubfield),"%02dx%02d" % (xt,yt))
 
                         meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
         else: raise ValueError("Unknown image type")
