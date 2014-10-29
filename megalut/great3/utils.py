@@ -3,8 +3,6 @@ General utility stuff for GREAT3
 """
 
 import os
-import astropy.io.fits
-import numpy as np
 
 class Branch:
 	"""
@@ -57,6 +55,14 @@ class Branch:
 			return 48
 		elif self.obstype == "space":
 			return 96
+		
+	def ntiles(self):
+		if self.experiment in ['control', 'real_galaxy', 'multiepoch']:
+			return 1
+		if self.obstype == "ground":
+			return 5
+		elif self.obstype == "space":
+			return 20
 		
 	def pixelscale(self):
 		"""
