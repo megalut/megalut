@@ -130,6 +130,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	
 	
 	# The catalogs are drawn, we save a log file about this
+	logger.debug("Now writing logfile...")
 	logfilepath = os.path.join(workdir, prefix + "log.txt")
 	logfile = open(logfilepath, "w")
 	logfile.write("Logfile of megalut.sim.run.multi, written to %s\n\n" % (logfilepath))
@@ -141,7 +142,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	#logfile.write(str(simparams) + ":\n")
 	#logfile.write(inspect.getsourcelines(type(simparams)))
 	logfile.close()
-	
+	logger.debug("Done with writing logfile")
 	
 	# Before drawing the images, some warnings
 	
