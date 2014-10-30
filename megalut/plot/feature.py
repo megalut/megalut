@@ -1,9 +1,11 @@
+
 class Feature():
 	"""
-	A feature is essentially a column name together with an interval to nicely show 
-	this column on plots.
+	This class holds a column name together with an interval to nicely show 
+	this column values on plots.
+	It is not tied to a particular table.
 	"""
-	def __init__(self, colname, low=None, high=None, nicename=None, ):
+	def __init__(self, colname, low=None, high=None, nicename=None):
 		"""
 
 		:param colanme: name of a column 

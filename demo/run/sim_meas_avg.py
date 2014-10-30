@@ -22,7 +22,7 @@ simparams = Flux80()
 drawcatkwargs = {"n":10, "stampsize":64}
 drawimgkwargs = {}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=20, ncpu=5)
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=5, nrea=5, ncpu=3)
 
 
 print "Step 2, measuring"
@@ -31,7 +31,7 @@ measdir = os.path.join(basedir, "measdir_adamom")
 measfct = megalut.meas.galsim_adamom.measure
 measfctkwargs = {"stampsize":64}
 
-megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=5)
+megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
 
 
 
@@ -90,3 +90,6 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 print mybigmeascat["id", "tru_flux", "FLUX_WIN_mean", "FLUX_WIN_std", "FLUX_WIN_n"]
 
 """
+
+# We also save the catalog into a pickle file
+megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")
