@@ -42,7 +42,7 @@ def readgalcat(branch, subfield, xt=None, yt=None):
 				meta = {"branch":branch, "subfield":subfield, "filepath":filepath}
 				)
 	else:
-		cat = astropy.table.Table([ids, xs, ys, data[:,2], data[:,3]],
+		cat = astropy.table.Table([ids, xs, ys, data[:,3], data[:,4]],
 				names=('ID', 'x', 'y', 'tile_x_pos_deg', 'tile_y_pos_deg'),
 				meta = {"branch":branch, "subfield":subfield, 
 					"filepath":filepath, "xt":xt, 'yt':yt}

@@ -42,7 +42,7 @@ class vgv_simparams(megalut.sim.params.Params):
 
 learnparams = megalut.learn.MLParams(
         name = "demo",
-        features = ["adamom_g1", "adamom_g2", "adamom_flux"],
+        features = ["adamom_g1", "adamom_g2", "adamom_flux","adamom_sigma"],
         labels = ["tru_g1","tru_g2"],
         predlabels = ["pre_g1","pre_g2"],
         )
@@ -50,7 +50,7 @@ learnparams = megalut.learn.MLParams(
 psf_features=["tile_x_pos_deg","tile_y_pos_deg"]
 
 fannparams=megalut.learn.fannwrapper.FANNParams(
-        hidden_nodes = [20, 20],
+        hidden_nodes = [30, 30, 30],
         max_iterations = 500,
     )
 simparam_name="vgv_test_1"
@@ -66,23 +66,23 @@ megalut.great3.var_psf_utils.separate("variable_psf", "ground", "variable",
 # Create an instance of the GREAT3 class
 vgv=megalut.great3.great3_tiled.Run("variable_psf", "ground", "variable",
     datadir="./vgv_data",
-    subfields=range(5,7))
+    subfields=[5])
 
 # Now run the measurements on input images
 vgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-vgv.sim(vgv_simparm,n=10,ncpu=0)
+vgv.sim(vgv_simparm,n=20,ncpu=0)
 
 # Measure the observations with the same methods than the observation
 vgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=vgv_simparm)
 
 # Train the ML
 vgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
-          method_prefix="adamom_",psf_features=psf_features,overwrite=True)
+          method_prefix="adamom_",psf_features=psf_features,overwrite=False)
 
 # Predict the output
-vgv.predict()
+vgv.predict(overwrite=True)
 
 # Write the output catalog
 vgv.writeout("ML_FANN_demo_default")

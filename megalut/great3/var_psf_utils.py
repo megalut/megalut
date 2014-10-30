@@ -11,6 +11,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def generalise_catalogs(catalog):
+    catalog.meta['FILEPATH'] = catalog.meta['FILEPATH'][:-10]+"-**x**.fits"
+    del catalog.meta['XT']
+    del catalog.meta['YT']
+    return catalog
+
 def separate(experiment, obstype, sheartype, datadir, workdir,subfields):
     branch=Branch(experiment, obstype, sheartype, datadir, workdir)
     workdir=os.path.join(workdir,"/".join(branch.branchtuple()))

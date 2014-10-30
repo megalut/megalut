@@ -10,12 +10,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 import os
-from astropy.table import Table, hstack, join
+from astropy.table import Table, hstack, vstack
 from astropy.io import ascii
 import numpy as np
 
 import utils
 import io
+import var_psf_utils
 from .. import sim
 from .. import tools
 from .. import learn
@@ -192,7 +193,7 @@ class Run(utils.Branch):
                     sim.run.multi(simdir, simparams,
                                   drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
-    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", psf_features=[],
+    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", psf_features=None,
                overwrite=False):
         """
         A method that train any given algorithm.
@@ -221,7 +222,8 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
         """
         # TODO: how to merge different measurements together ?
-        learnparams.features.extend(psf_features)
+        if psf_features is not None:
+            learnparams.features.extend(psf_features)
         for simsubfield in self.simsubfields:  
             for xt in range(self.ntiles()):
                 for yt in range(self.ntiles()):  
@@ -253,16 +255,23 @@ class Run(utils.Branch):
                     input_cat = tools.io.readpickle(cats[0])
                     simdir=self._get_path("sim","%03d" % simsubfield, "%02dx%02d" % (xt,yt))
                     
-                    fname=self.starcatpath(simsubfield,xt,yt,folder=simdir)
-                    psf_cat=Table.read(fname,format="ascii.commented_header") 
-                    relevant_psf = psf_cat[psf_features]
-
-                    input_cat=hstack([input_cat, relevant_psf])
+                    if psf_features is not None:
+                        fname=self.starcatpath(simsubfield,xt,yt,folder=simdir)
+                        psf_cat=Table.read(fname,format="ascii.commented_header") 
+                        relevant_psf = psf_cat[psf_features]
+                        
+                        """
+                        if 'tile_x_pos_deg' in psf_features and 'tile_y_pos_deg' in psf_features:
+                            # Normalize position
+                            relevant_psf['tile_x_pos_deg']/=(10./self.ntiles())
+                            relevant_psf['tile_y_pos_deg']/=(10./self.ntiles())
+                        """
+                        input_cat=hstack([input_cat, relevant_psf])
                     
                     # Important: we don't want to train on badly measured data!
                     #TODO: This line is bad, because method_prefix will disappear!
                     input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
-        
+                    #print input_cat.colnames; exit()
                     ml.train(input_cat)
                     
                     # export the ML object:
@@ -306,13 +315,15 @@ class Run(utils.Branch):
                         
                         input_cat=self.galfilepath(subfield,"obs",xt=xt,yt=yt)
                         input_cat=tools.io.readpickle(input_cat)
-                        
-                        # Join w/ initial input_cat
-                        ini_cat=io.readgalcat(self, subfield, xt, yt)
-                        print ini_cat
-                        exit()
+                        """
+                        # Normalize position
+                        input_cat['tile_x_pos_deg']/=(10./self.ntiles())
+                        input_cat['tile_y_pos_deg']/=(10./self.ntiles())
+                        """
+
                         # We predict everything, we will remove flags later
                         predicted=ml.predict(input_cat)
+
                         
                         #TODO: This line is bad, because method_prefix will disappear!
                         failed=predicted[method_prefix+"flag"]>0
@@ -324,7 +335,7 @@ class Run(utils.Branch):
                             count_failed+=1
                             
                         logger.info("Predicted on %d objects, %d failed" % (len(input_cat),count_failed))
-                        
+
                         predicted.write(cat_fname,format="fits")
                 
     def writeout(self, ml_name):
@@ -334,9 +345,17 @@ class Run(utils.Branch):
         :param ml_name: the name of the ML to use (from train & predict)
         """
         for subfield in self.subfields:  
-            input_cat = Table.read(self._get_path("pred","%s-%03d.fits" % (ml_name,subfield)))
-            
-            input_cat=input_cat["ID","pre_g1","pre_g2"]
+            for xt in range(self.ntiles()):
+                for yt in range(self.ntiles()):
+                    cat = Table.read(self._get_path("pred","%s-%03d-%02dx%02d.fits" % (ml_name,subfield,xt,yt))) 
+                    if xt == 0 and yt == 0:
+                        input_cat=cat["ID","pre_g1","pre_g2"]
+                        var_psf_utils.generalise_catalogs(input_cat)
+                    else:
+                        var_psf_utils.generalise_catalogs(cat)
+                        input_cat=vstack([input_cat, cat["ID","pre_g1","pre_g2"]])
+                    
+                    
             input_cat.write(self._get_path("out","%03d.cat" % subfield),
                             format="ascii.commented_header")
             logger.info("Wrote shear cat for subfield %03d" % subfield)
