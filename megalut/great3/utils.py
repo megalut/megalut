@@ -88,6 +88,9 @@ class Branch:
 	# The MegaLUT output could be rethought, and is commented out.
 	
 	def get_ftiles(self, xt, yt):
+		"""
+		A little helper for the name of the files generator functions below. It handles the tile id
+		"""
 		if not (xt is None or yt is None):
 			return "-%02d-%02d" % (xt,yt)
 		else:

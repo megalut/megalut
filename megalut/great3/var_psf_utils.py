@@ -1,3 +1,7 @@
+"""
+General utility stuff for GREAT3, branches where the PSF is variable
+"""
+
 from utils import Branch
 from .. import tools
 
