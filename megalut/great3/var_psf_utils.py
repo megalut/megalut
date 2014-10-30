@@ -12,12 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 def generalise_catalogs(catalog):
+    """
+    Removes metadata to merge catalogs from different tiles without astropy complaining
+    """
     catalog.meta['FILEPATH'] = catalog.meta['FILEPATH'][:-10]+"-**x**.fits"
     del catalog.meta['XT']
     del catalog.meta['YT']
     return catalog
 
 def separate(experiment, obstype, sheartype, datadir, workdir,subfields):
+    """
+    Top-level function that will take the stamps of the tiles and put them into one single image
+    """
     branch=Branch(experiment, obstype, sheartype, datadir, workdir)
     workdir=os.path.join(workdir,"/".join(branch.branchtuple()))
     tools.dirs.mkdir(workdir)
@@ -27,6 +33,9 @@ def separate(experiment, obstype, sheartype, datadir, workdir,subfields):
         _separate("star",subfield,branch,workdir)
 
 def _separate(imgtype,subfield,branch,workdir):
+    """
+    Does the heavy lifting for :func separate:
+    """
     logger.info("Starting %s image separation on %s, subfield %03d" % (imgtype, branch.get_branchacronym(), subfield))
     if imgtype=="galaxy":
         fname=branch.galcatfilepath(subfield)

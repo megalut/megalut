@@ -1,9 +1,9 @@
 """
 Helper class for GREAT3 that does the trivial tasks for the user.
 
-Todo list
----------
-* make this inherit a generic run class
+This is only for the branches for which the PSF is variable.
+
+It is very much inspired by great3.py
 
 """
 import logging
@@ -200,6 +200,7 @@ class Run(utils.Branch):
         
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
+        :param psf_features: optional features that will be used to remove the variability of the PSF
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
