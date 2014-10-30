@@ -10,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 import megalut
 import megalut.learn
 
-inputcat = megalut.utils.readpickle("meascat.pkl")
+inputcat = megalut.tools.io.readpickle("meascat.pkl")
 
 # Important: we don't want to train on badly measured data!
 
@@ -41,11 +41,26 @@ outputcat = myml.predict(inputcat)
 #print outputcat
 
 
-# A quick comparision between truth and predicted:
+# Now we show a quick comparision between truth and predicted.
+# The pure matplotlib way :
+"""
 import matplotlib.pyplot as plt
 plt.plot(outputcat["tru_g1"], outputcat["pre_g1"], "b.")
 plt.xlabel("tru_g1")
 plt.ylabel("pre_g1")
 plt.show()
+"""
 
+# Alternative to demonstrate the use of megalut.plot:
 
+import matplotlib.pyplot as plt
+import megalut.plot
+
+fig = plt.figure()
+ax = fig.add_subplot(111)
+
+tru_g1 = megalut.plot.feature.Feature("tru_g1", -0.6, 0.6, "Nice label for true g1")
+pre_g1 = megalut.plot.feature.Feature("pre_g1") # Minimal call, just to highlight the default behavior.
+
+megalut.plot.scatter.scatter(ax, outputcat, tru_g1, pre_g1, color="green")
+plt.show()

@@ -15,14 +15,14 @@ import astropy.table
 import galsim
 from datetime import datetime
 
-from .. import gsutils
+from .. import tools
 
 
 def drawcat(params, n=10, stampsize=64, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
-	:param params: a sim.Params instance that controls all the random distributions of parameters
+	:param params: a sim.Params instance that defines the distributions of parameters
 	:param n: sqrt(number): I will generate n x n galaxies, on a grid !
 	:type n: int	
 	:param stampsize: width = height of desired stamps, in pixels
@@ -32,7 +32,8 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	:returns: A catalog (astropy table). The stampsize is stored in meta.
 	
 	"""
-	assert int(stampsize)%2 == 0 # checking that it's even
+	if int(stampsize)%2 != 0:
+		raise RuntimeError("stampsize should be even!")
 
 	logger.info("Drawing a catalog of %i x %i galaxies..." % (n, n))
 		
@@ -41,7 +42,9 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	for iy in range(n):
 		for ix in range(n):
 		
-			gal = params.get(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy, including `ix` and `iy`.
+			gal = params.get(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy
+			gal["ix"] = ix
+			gal["iy"] = iy
 			gal["id"] = idprefix + str(ix + n*iy)
 			gal["x"] = ix*stampsize + stampsize/2.0 + 0.5 # I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
 			gal["y"] = iy*stampsize + stampsize/2.0 + 0.5
@@ -76,7 +79,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		It contains the positions of the psf in psfimg to be used for each galaxy.
 		As for the galcat, the stampsize of the PSFs must be provided as psfcat.meta["stampsize"].
 		If psfcat is not specified, I just use Gaussians.
-	:param psfimg: (optinal) a list containing the Numpy array containing all of the PSFs, organised on a nxn grid and the psf stamp size
+	:param psfimg: image containing the PSFs to be used
 	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
 	:param psfyname: idem for y
 	:param simgalimgfilepath: where I write my output image
@@ -106,9 +109,12 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
 	if psfcat is not None: # If the user provided some PSFs:
-		assert len(galcat) == len(psfcat)
-		assert "stampsize" in psfcat.meta
-		assert psfimg is not None
+		if len(galcat) != len(psfcat):
+			raise RuntimeError("Length of the galcat must match length of psfcat!")
+		if "stampsize" not in psfcat.meta:
+			raise RuntimeError("I need to have 'stampsize' in psfcat.meta!")
+		if psfimg is None:
+			raise RuntimeError("You gave me a psfcat but no psfimg!")
 		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
 		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
 	else:
@@ -161,7 +167,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		# We get the PSF stamp, if provided
 		if psfimg is not None:
 			assert psfxname in psfcat.colnames and psfyname in psfcat.colnames
-			(inputpsfstamp, flag) = gsutils.getstamp(psfrow[psfxname], psfrow[psfyname], psfimg, psfstampsize)
+			(inputpsfstamp, flag) = tools.image.getstamp(psfrow[psfxname], psfrow[psfyname], psfimg, psfstampsize)
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 					

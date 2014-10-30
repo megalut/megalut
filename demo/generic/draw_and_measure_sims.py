@@ -32,14 +32,14 @@ megalut.sim.stampgrid.drawimg(simcat,
 
 # We can directly proceed by measuring the images
 
-gridimg = megalut.gsutils.loadimg("simgalimg.fits")
-meascat = megalut.meas.galsim_adamom.measure(gridimg, simcat, stampsize=48, prefix="mes")
+gridimg = megalut.tools.image.loadimg("simgalimg.fits")
+meascat = megalut.meas.galsim_adamom.measure(gridimg, simcat, stampsize=48, prefix="mes_")
 
 # meascat is the output catalog, it contains the measured features:
 print meascat[:5]
 
 # We save it into a pickle
-megalut.utils.writepickle(meascat, "meascat.pkl")
+megalut.tools.io.writepickle(meascat, "meascat.pkl")
 
 # Let's make a simple comparision plot:
 import matplotlib.pyplot as plt
