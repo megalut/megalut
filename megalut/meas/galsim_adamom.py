@@ -21,8 +21,8 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	"""
 	I use the pixel positions provided via the input table to extract postage stamps
 	from the image and measure their shape parameters.
-	I return a copy of your input catalog with the new columns appended.
-	One of these colums is the flag:
+	I return a copy of your input catalog with the new (masked) columns appended.
+	One of these colums (the only one that is not masked) is the flag:
 	
 	* 0: OK
 	* 1: stamp is not fully within image
@@ -38,7 +38,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	:param measuresky: set this to False if you don't want me to measure the sky (edge of stamps)
 	:param prefix: a string to prefix the field names that I'll write
 		
-	:returns: astropy table
+	:returns: masked astropy table
 	
 	"""
 	
@@ -59,27 +59,34 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	logger.info("Starting shape measurements on %ix%i stamps" % (stampsize, stampsize))
 	
 	# We prepare an output table with all the required columns
-	output = copy.deepcopy(catalog)
-	output.add_columns([
-		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
-		astropy.table.Column(name=prefix+"flux", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"x", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"y", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"sigma", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"rho4", dtype=float, length=len(output))
-	])
-	if measuresky:
-		output.add_column(astropy.table.Column(name=prefix+"skystd", data=np.zeros(len(output), dtype=float)))
-		output.add_column(astropy.table.Column(name=prefix+"skymad", data=np.zeros(len(output), dtype=float)))
-		output.add_column(astropy.table.Column(name=prefix+"skymean", data=np.zeros(len(output), dtype=float)))
-		output.add_column(astropy.table.Column(name=prefix+"skymed", data=np.zeros(len(output), dtype=float)))
+	output = astropy.table.Table(copy.deepcopy(catalog), masked=True) # Convert the table to a masked table
+	# A bit stange: reading the doc I feel that this conversion is not needed.
+	# But without it, it just doesn't result in a masked table once the masked columns are appended.
 	
-	# We could have boolean columns:
-	#astropy.table.Column(name=prefix+"ok", data=np.zeros(len(output), dtype=bool))
-	# One could use MaskedColumn here !
-	#astropy.table.MaskedColumn(name="mes_adamom_flux", dtype=float, length=len(output), fill_value=-1)
+	output.add_columns([
+		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)), # We will always have a flag
+		astropy.table.MaskedColumn(name=prefix+"flux", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"x", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"y", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"g1", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"g2", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"sigma", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output))
+	])
+	# By default, all these entries are masked:
+	for col in ["flux", "x", "y", "g1", "g2", "sigma", "rho4"]:
+		output[prefix+col].mask = [True] * len(output)
+	
+	# Similarly, we prepare columns for the sky stats:
+	if measuresky:
+		output.add_columns([
+			astropy.table.MaskedColumn(name=prefix+"skystd", dtype=float, length=len(output)),
+			astropy.table.MaskedColumn(name=prefix+"skymad", dtype=float, length=len(output)),
+			astropy.table.MaskedColumn(name=prefix+"skymean", dtype=float, length=len(output)),
+			astropy.table.MaskedColumn(name=prefix+"skymed", dtype=float, length=len(output))
+		])
+		for col in ["skystd", "skymad", "skymean", "skymed"]:
+			output[prefix+col].mask = [True] * len(output)
 	
 	# Let's save something useful to the meta dict
 	output.meta[prefix + "xname"] = xname
@@ -100,12 +107,24 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		(x, y) = (gal[xname], gal[yname])
 		(gps, flag) = tools.image.getstamp(x, y, img, stampsize)
 		
+		
 		if flag != 0:
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
 			gal[prefix+"flag"] = flag
+			# We can't do anything, and we just skip this galaxy.
 			continue
 		
-		# We measure the moments... galsim may fail from time to time, hence the try:
+		
+		# If the getting the stamp worked fine, we can for sure 
+		# estimate the sky noise and other stats:
+		if measuresky:
+			out = skystats(gps)
+			gal[prefix + "skystd"] = out["std"]
+			gal[prefix + "skymad"] = out["mad"]
+			gal[prefix + "skymean"] = out["mean"]
+			gal[prefix + "skymed"] = out["med"]
+		
+		# And now we measure the moments... galsim may fail from time to time, hence the try:
 		try:
 			res = galsim.hsm.FindAdaptiveMom(gps)
 			
@@ -128,13 +147,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		# If we made it so far, we check that the centroid is roughly ok:
 		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 			gal[prefix + "flag"] = 2
-		# Now we estimate the sky noise and other stats of this stamp
-		if measuresky:
-			out = skystats(gps)
-			gal[prefix + "skystd"] = out["std"]
-			gal[prefix + "skymad"] = out["mad"]
-			gal[prefix + "skymean"] = out["mean"]
-			gal[prefix + "skymed"] = out["med"]
+		
 
 	endtime = datetime.now()	
 	logger.info("All done")

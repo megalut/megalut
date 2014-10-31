@@ -38,7 +38,10 @@ class Params:
 		# If you do now overwrite get_sig, you will have to set this value at some point.
 	
 	def __str__(self):
-		return "[sim.Params '%s']" % (self.name)
+		"""
+		The string representation is in fact the name:
+		"""
+		return "%s" % (self.name)
 		
 	def get_sig(self):
 		return self.sig
