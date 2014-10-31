@@ -2,6 +2,7 @@
 Helper functions to create scatter-like plots from an astropy table and Feature objects.
 """
 
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showdiag=False, sidehists=False, sidehistkwargs=None, **kwargs):
+def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=False, sidehists=False, sidehistkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 
@@ -28,7 +29,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showdiag=
 	:param cmap: the color bar to use
 	:param title: the title to place on top of the axis.
 		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
-	:param showdiag: draws an "identity" line
+	:param showid: draws an "identity" diagonal line
 	:param sidehists: adds projection histograms on the top and the left (probably not compatible with the colorbar)
 	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms
 	
@@ -120,15 +121,31 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showdiag=
 		if title:
 			ax.set_title(title)
 	
-	
+	if showid:
+		# It would be nice to get something similar working without hardcodign the values,
+		# (usign get_lims and axes transforms, for instance)
+		# But in the meantime this seems to work fine.
+		# It has to be so complicated to keep the automatic ranges working if low and high are None !
+		
+		# For "low":
+		if featx.low is None or featy.low is None: # We use the data...
+			minid = max(np.min(xdata), np.min(ydata))
+		else:
+			minid = max(featx.low, featy.low)
+		# Same for "high":
+		if featx.high is None or featy.high is None: # We use the data...
+			maxid = min(np.max(xdata), np.max(ydata))
+		else:
+			maxid = min(featx.high, featy.high)
+		# And we plot the line:
+		ax.plot((minid, maxid), (minid, maxid), ls="--", color="gray", lw=1)
+
+
 	ax.set_xlim(featx.low, featx.high)
 	ax.set_ylim(featy.low, featy.high)
 	ax.set_xlabel(featx.nicename)
 	ax.set_ylabel(featy.nicename)
 
-	# Once the limits are set, we can draw the diagonal:
-	if showdiag:
-		ax.plot(ax.get_xlim(), ax.get_ylim(), ls="--", color="gray", lw=1)
 
 
 
