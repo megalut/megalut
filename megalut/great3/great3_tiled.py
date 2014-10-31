@@ -152,7 +152,7 @@ class Run(utils.Branch):
                     img_fname=self.simgalimgfilepath(simsubfield)
             
                     simdir=self._get_path("sim","%03d" % simsubfield,"%02dx%02d" % (xt,yt))
-                    tools.dirs.mkdir(simdir, verbose=False)
+                    tools.dirs.mkdir(simdir)
             
                     # figure out if we need to overwrite (if applicable)
                     if os.path.exists(cat_fname) and os.path.exists(img_fname):
