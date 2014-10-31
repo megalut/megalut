@@ -119,8 +119,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
 		
 		if not(psfxname in psfcat.colnames and psfyname in psfcat.colnames):
-			logger.critical("psfxname (%s) and psfyname (%s) must be in colnames!" % (psfxname,psfyname))
-			raise RuntimeError()
+			raise RuntimeError("psfxname (%s) and psfyname (%s) must be in colnames!" % (psfxname,psfyname))
 	else:
 		psfcat = [None] * len(galcat)
 		logger.info("No PSFs given: I will use plain Gaussians!")
