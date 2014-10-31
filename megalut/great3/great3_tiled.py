@@ -37,15 +37,6 @@ class Run(utils.Branch):
         
         # This is because we have to treat each tile differently for full & variable psf
         self.simsubfields = subfields
-        """
-        if self.sheartype == "constant":
-            self.simsubfields = subfields
-        elif self.sheartype == "variable":
-            self.simsubfields = np.asarray(subfields)/20.
-            self.simsubfields=self.simsubfields.astype(np.int)
-            self.simsubfields *= 20
-            self.simsubfields = np.unique(self.simsubfields)
-        """
 
         logger.info("Starting new *tiled* GREAT3 branch %s-%s-%s" % (experiment, obstype, sheartype))
         
