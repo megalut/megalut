@@ -4,7 +4,6 @@ General utility stuff for GREAT3
 
 import os
 
-
 class Branch:
 	"""
 	A class to define the file paths of the GREAT3 data and other branch-specific stuff.
@@ -56,6 +55,26 @@ class Branch:
 			return 48
 		elif self.obstype == "space":
 			return 96
+		
+	def ntiles(self):
+		if self.experiment in ['control', 'real_galaxy', 'multiepoch']:
+			return 1
+		if self.obstype == "ground":
+			return 5
+		elif self.obstype == "space":
+			return 20
+		
+	def pixelscale(self):
+		"""
+		The pixel scale of this branch, in pixels
+		"""
+		if self.obstype == "ground":
+			return 0.2
+		elif self.obstype == "space":
+			if self.experiment=="multiepoch":
+				return 0.1
+			else:
+				return 0.05
 
 	
 	def branchdir(self):
@@ -67,26 +86,45 @@ class Branch:
 
 	# For now we online define here the "input" stuff, set by GREAT3.
 	# The MegaLUT output could be rethought, and is commented out.
+	
+	def get_ftiles(self, xt, yt):
+		"""
+		A little helper for the name of the files generator functions below. It handles the tile id
+		"""
+		if not (xt is None or yt is None):
+			return "-%02d-%02d" % (xt,yt)
+		else:
+			return ""
 
-	def galimgfilepath(self, subfield, folder=None,epoch=0):
+	def galimgfilepath(self, subfield, xt=None, yt=None,epoch=0, folder=None):
 		if folder==None:
 			folder=self.branchdir()
-		return os.path.join(folder, "image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
+		return os.path.join(folder, "image-%03i-%i%s.fits" % (subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
-	def psfimgfilepath(self, subfield, epoch=0):
-		return os.path.join(self.branchdir(), "starfield_image-%03i-%i.fits" % (subfield, epoch)) # This is set by GREAT3
+	def psfimgfilepath(self, subfield, xt=None, yt=None, epoch=0):
+		return os.path.join(self.branchdir(), "starfield_image-%03i-%i%s.fits" % 
+						(subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
-	def galcatfilepath(self, subfield, folder=None):
+	def galcatfilepath(self, subfield, xt=None, yt=None, folder=None):
 		if folder==None:
 			folder=self.branchdir()
-		return os.path.join(folder, "galaxy_catalog-%03i.txt" % (subfield)) # This is set by GREAT3
+
+		fname="galaxy_catalog-%03i%s.txt" % (subfield,self.get_ftiles(xt,yt))
+		return os.path.join(folder, fname) # This is set by GREAT3
 		
-	def starcatpath(self, subfield):
-		return os.path.join(self.branchdir(), 'star_catalog-%03i.txt' % subfield) # This is set by GREAT3
+	def starcatpath(self, subfield, xt=None, yt=None, folder=None):
+		if folder==None:
+			folder=self.branchdir()
+		return os.path.join(folder, 'star_catalog-%03i%s.txt' % \
+						(subfield,self.get_ftiles(xt,yt))) # This is set by GREAT3
 	
-	def galfilepath(self, subfield, imgtype, prefix=""):  
-		return os.path.join(self.workdir, imgtype, "%sgalaxy_catalog-%03i.fits" % (prefix,subfield))
+	def galfilepath(self, subfield, imgtype, prefix="", xt=None, yt=None):
+		return os.path.join(self.workdir, imgtype, "%simage-%03i-0%s_meascat.pkl" % \
+						(prefix,subfield,self.get_ftiles(xt,yt)))
 	
+	def galinfilepath(self, subfield, imgtype, xt=None, yt=None, prefix=""): 
+		return os.path.join(self.workdir, imgtype, "%sinput_image-%03i-0%s_meascat.pkl" % \
+						(prefix,subfield,self.get_ftiles(xt,yt)))
 	# Stuff related to the simulations
 	
 		
@@ -96,9 +134,14 @@ class Branch:
 		else:
 			raise NotImplemented()
 		
-	def simgalimgfilepath(self, subfield, nimg=None):
+	def simgalimgfilepath(self, subfield, xt=None, yt=None, nimg=None):
+		if not (xt is None or yt is None):
+			note="/%02dx%02d" % (xt,yt)
+		else:
+			note=""
+		
 		if nimg == None:
-			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim"))
+			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim%s" % note))
 		else:
 			raise NotImplemented()
 
@@ -203,4 +246,3 @@ class Branch:
 # 		return os.path.join(self.simdir(), "sim-%03i-%02i-psfimg.fits" % (subfield,nimg))
 # 	
 # 	
-
