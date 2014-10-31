@@ -22,7 +22,7 @@ simparams = Flux80()
 drawcatkwargs = {"n":10, "stampsize":64}
 drawimgkwargs = {}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=5, nrea=5, ncpu=3)
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=3, nrea=5, ncpu=3)
 
 
 print "Step 2, measuring"
