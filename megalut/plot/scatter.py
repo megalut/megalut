@@ -20,12 +20,15 @@ logger = logging.getLogger(__name__)
 def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=False, sidehists=False, sidehistkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
+	
+	.. note:: If you specify this ``featc``, this function uses matplotlib's ``scatter()``. Otherwise, the function uses ``plot()``, as
+		plot is much faster for large numbers of points! The possible ``**kwargs`` change accordingly!
 
 	:param ax: a matplotlib.axes.Axes object
 	:param cat: an astropy table 
 	:param featx: a Feature object telling me what to draw on my x axis
 	:param featy: idem for y
-	:param featc: a Feature to use for the colorbar
+	:param featc: a Feature to use for the colorbar, decides if plot() or scatter() is used.
 	:param cmap: the color bar to use
 	:param title: the title to place on top of the axis.
 		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
@@ -33,8 +36,9 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 	:param sidehists: adds projection histograms on the top and the left (probably not compatible with the colorbar)
 	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms
 	
-	Any further kwargs are either passed to plot() (if no featc is given) or to scatter()
-	Some commonly used kwargs for plot() are
+	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
+	
+	Some commonly used kwargs for plot() are:
 	
 	* **marker**: default is ".", you can switch to single pixel (",") or anything else...
 	* **ms**: marker size in points
@@ -42,6 +46,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 	* **label**: for the legend
 
 	Some commonly used kwargs for scatter() are:
+	
 	* **s**: marker size
 	* **label**: for the legend
 
@@ -154,6 +159,9 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 def simobs(ax, simcat, obscat, featx, featy, **kwargs):
 	"""
 	A scatter plot overplotting simulations and observations in two different colors.
+	
+	.. warning::
+		To be developed, this will change...
 	
 	:param ax: a matplotlib Axes object
 	:param simcat: simulation catalog
