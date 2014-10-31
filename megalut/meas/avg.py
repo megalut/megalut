@@ -41,9 +41,6 @@ def onsims(measdir, simparams, **kwargs):
 		logger.info("Reading all measurements for catalog '%s' (%i realizations)..." % (catname, len(meascatfilepaths)))
 		meascats = [tools.io.readpickle(os.path.join(measdir, simparams.name, meascatfilepath)) for meascatfilepath in meascatfilepaths]
 		
-		#for meascat in meascats:
-		#	print meascat.masked
-		
 		logger.info("Grouping columns and computing averages for catalog '%s'..." % (catname))
 		grouped = groupstats(meascats, **kwargs)
 		outputcats.append(grouped)
@@ -57,7 +54,15 @@ def onsims(measdir, simparams, **kwargs):
 		# We have to remove some of the meta, to avoid conflicts
 		for outputcat in outputcats:
 			outputcat.meta.pop("catname", None) # Now that we merge them, catname has no meaning anymore
-	
+		
+		# We check some other meta for compatibility
+		# All catalogs should have the same ngroupstats (== number of realizations)
+		assert "ngroupstats" in outputcats[0].meta # was written by groupstats.
+		ngroupstats = outputcats[0].meta["ngroupstats"]
+		for outputcat in outputcats:
+			if outputcat.meta["ngroupstats"] != ngroupstats:
+				raise RuntimeError("Catalogs with different numbers of realizations should not be merged, clean your measdir accordingly!")
+			
 		logger.info("Concatenating catalogs...")
 		outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
 	
@@ -158,7 +163,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 		removecols = [] 
 
 	# First, some checks on the incats:
-	colnames = incats[0].colnames
+	colnames = incats[0].colnames # to check colnames
+	
 	for incat in incats:
 		if incat.colnames != colnames:
 			raise RuntimeError("Your input catalogs do not have the same columns: \n\n %s \n\n is not \n\n %s"
