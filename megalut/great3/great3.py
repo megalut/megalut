@@ -193,12 +193,14 @@ class Run(utils.Branch):
             sim.run.multi(simdir, simparams,
                           drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
-    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", overwrite=False):
+    def learn(self, learnparams, mlparams, simparam_name, avgtype="mean", 
+              method_prefix="", overwrite=False):
         """
         A method that train any given algorithm.
         
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
+        :param avgtype: what suffix of the measurements to take ? Default: mean
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
@@ -238,7 +240,7 @@ class Run(utils.Branch):
                 shutil.rmtree(ml_dir)
 
             # This is a quick fix, only working with one catalog!
-            seapat=self._get_path("sim","%03d" % simsubfield,
+            seapat=self._get_path("sim","%03d" % simsubfield, "meas",
                                   "%s" % simparam_name,"*_meascat.pkl")
             cats = glob.glob(seapat)
             if len(cats)==0:
@@ -246,7 +248,7 @@ class Run(utils.Branch):
             elif len(cats)>1:
                 raise NotImplemented("I'm not foreseen to be that smart, calm down")
             
-            input_cat = tools.io.readpickle(cats[0])            
+            input_cat = tools.io.readpickle(cats[0])
             # Important: we don't want to train on badly measured data!
             #TODO: This line is bad, because method_prefix will disappear!
             input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
