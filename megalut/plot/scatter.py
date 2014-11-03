@@ -78,7 +78,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 	else: # We will use plot()
 	
 		logger.debug("Preparing plain plot of %i points without colorbar" % (len(cat)))
-		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "mec":"None", "alpha":0.3}
+		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
