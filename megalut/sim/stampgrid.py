@@ -79,7 +79,10 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		It contains the positions of the psf in psfimg to be used for each galaxy.
 		As for the galcat, the stampsize of the PSFs must be provided as psfcat.meta["stampsize"].
 		If psfcat is not specified, I just use Gaussians.
-	:param psfimg: image containing the PSFs to be used
+	:param psfimg: filepath to a FITS image containing the PSFs to be used, or directly the GalSim image.
+		Depending on the size of this image, one or the other option might be better. If you use run.multi(),
+		ncat * nrea copies of this parameter will be done, and so better pass a filepath if the image is large.
+	:type psfimg: GalSim image or string
 	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
 	:param psfyname: idem for y
 	:param simgalimgfilepath: where I write my output image
@@ -115,6 +118,11 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 			raise RuntimeError("I need to have 'stampsize' in psfcat.meta!")
 		if psfimg is None:
 			raise RuntimeError("You gave me a psfcat but no psfimg!")
+		else:
+			if type(psfimg) is str:
+				logger.debug("You gave me a filepath, and I'm now loading the image...")
+				psfimg = tools.image.loadimg(psfimg)
+		
 		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
 		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
 		
