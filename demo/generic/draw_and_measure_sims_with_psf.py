@@ -4,7 +4,7 @@ This time we use PSFs provided in psfs/
 """
 
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 import megalut
 import megalut.sim
@@ -16,10 +16,10 @@ import astropy
 
 # As before, we first set the desired distributions of parameters:
 
-class MySimParams(megalut.sim.params.Params):
+class Flux600(megalut.sim.params.Params):
 	def get_flux(self):
 		return 600.0
-mysimparams = MySimParams()
+mysimparams = Flux600()
 
 # And we prepare a catalog of 20 x 20 simulated galaxies:
 
@@ -28,9 +28,12 @@ galcat = megalut.sim.stampgrid.drawcat(mysimparams, n=20, stampsize=48)
 print galcat[:5]
 
 
-# Now, we prepare the PSF stuff. In this case we'll use existing files:
+# Now, we prepare the PSF stuff. In this case we'll use existing files.
+# We need an image with PSF stamps, and a catalog of this image.
+# For the image, we can either specify a Galsim image, or a filepath.
 
-psfimg = megalut.tools.image.loadimg("psfs/psfgrid.fits")
+#psfimg = megalut.tools.image.loadimg("psfs/psfgrid.fits")
+psfimg = "psfs/psfgrid.fits"
 psfcat = megalut.tools.io.readpickle("psfs/cat_psfgrid.pkl")
 print psfcat[:5]
 
