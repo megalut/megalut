@@ -81,7 +81,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		If psfcat is not specified, I just use Gaussians.
 	:param psfimg: filepath to a FITS image containing the PSFs to be used, or directly the GalSim image.
 		Depending on the size of this image, one or the other option might be better. If you use run.multi(),
-		ncat * nrea copies of this parameter will be done, and so better pass a filepath if the image is large.
+		ncat * nrea copies of this parameter will be made, and so better pass a filepath if the image is large.
 	:type psfimg: GalSim image or string
 	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
 	:param psfyname: idem for y
