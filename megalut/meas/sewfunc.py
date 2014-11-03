@@ -6,8 +6,15 @@ You could also simply define such a function yourself, to control all parameters
 a most flexible way.
 """
 
+import logging
+logger = logging.getLogger(__name__)
 
-import sewpy
+try:
+	import sewpy
+except ImportError:
+	logger.warning("sewpy is not available, get it here: https://github.com/megalut/sewpy")
+	raise
+
 import os
 
 
