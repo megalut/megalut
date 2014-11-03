@@ -60,7 +60,8 @@ class Run(utils.Branch):
             tools.dirs.mkdir(self._get_path(subfolder))
 
         
-    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", simparams="",overwrite=False,ncpu=1):
+    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", simparams="",
+             groupcols=None, removecols=None,overwrite=False,ncpu=1):
         """
         :param imgtype: Measure on observation or sim
         :type params: `obs` or `sim`
@@ -74,6 +75,9 @@ class Run(utils.Branch):
         :param ncpu: Maximum number of processes that should be used. Default is 1.
             Set to 0 for maximum number of available CPUs.
         :type ncpu: int
+        :param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
+            if groupcols=None default = galsim features
+        :param removecols: Passed to :func:`megalut.meas.avg.onsims`
         
         .. note:: This typically should be inherited somehow.
         """
@@ -109,6 +113,25 @@ class Run(utils.Branch):
                 simdir=self._get_path(imgtype,"%03d" % simsubfield)
 
                 meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
+                
+                if groupcols==None:
+                    groupcols = [
+                    "adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
+                    "adamom_sigma", "adamom_rho4",
+                    "adamom_skystd", "adamom_skymad", "adamom_skymean", "adamom_skymed", "adamom_flag"
+                    ]
+
+                if removecols==None:
+                    removecols=[]
+                
+                avgcat = meas.avg.onsims(simdir, simparams,
+                                groupcols=groupcols,removecols=removecols,removereas=True)
+                for simd in meas.avg.simmeasdict(simdir, simparams):
+                    fname = '%s_avg_galimg_meascat.pkl' % simd
+                    tools.dirs.mkdir(os.path.join(simdir,"meas",simparams.name))
+                    fname=os.path.join(simdir,"meas",simparams.name,fname)
+                    tools.io.writepickle(avgcat,fname)
+
         else: raise ValueError("Unknown image type")
         
             
