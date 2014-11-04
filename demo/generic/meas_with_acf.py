@@ -30,6 +30,10 @@ megalut.sim.stampgrid.drawimg(simcat,
 out=run("simgalimg.fits",simcat,stampsize=32)
 
 # Just plotting the raw results
+
+print out
+
+
 plt.figure()
 plt.plot(out["mes_acf_g1"],out["mes_acf_g2"],'.')
 for i in range(2):        
@@ -41,7 +45,4 @@ for i in range(2):
     plt.ylabel('g%d_mes - g%d_tru' % (i+1,i+1))
     legend=plt.legend(loc='best')
 plt.show()
-
-print out
-
 

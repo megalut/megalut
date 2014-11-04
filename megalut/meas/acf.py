@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 ###################################################################################################
 
-def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian", 
+def run(imgfilepath, catalog, stampsize, method=None, acf_weight="gaussian", 
         prefix="mes_acf_", find_with='gs', show=False):
     """
     Shape measurement with AutoCorrelation Function.
@@ -17,7 +17,7 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
     This function runs acf on a image and returns a catalog.
     
     :param imgfilepath: The filepath of the image
-    :param gal_catalog: The catalog of the galaxy with an entry for : id, x, y
+    :param catalog: The catalog of the galaxy with an entry for : id, x, y
     :param stampsize: the stamp size to use for the measurement.
     :param method: which method to use ? Choice : "AdaptiveMoments", "EllipticityGradients",
         "QuadrupoleMoments". Default: AdaptiveMoments
@@ -28,7 +28,7 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
         Default: gs
     :param show: if True, then prints an image of the data and the ACF.
     
-    :returns: astropy table
+    :returns: masked astropy table
     
     Possible flags:
     
@@ -51,37 +51,44 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
     elif not method in ["AdaptiveMoments","EllipticityGradients","QuadrupoleMoments"]:
         raise ValueError("Unknown ACF shape measurement methods")
         
+    count_failed=0
     
-    logger.info("acf run on %s with method %s starting now" % (imgfilepath,method))
+    logger.info("ACF run on %s with method %s starting now" % (imgfilepath,method))
     evList = 'acf=%s()' % method
     acf=None # This line does actually nothing, it's do remove the errors in Eclipse...
     # here we create the acf instance according to the method chosen
     exec(evList)
     
-    output = copy.deepcopy(gal_catalog)
+    output = astropy.table.Table(copy.deepcopy(catalog), masked=True)
     if method == 'AdaptiveMoments':
         output.add_columns([
         astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
-        astropy.table.Column(name=prefix+"flux", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"x", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"y", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"sigma", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"rho4", dtype=float, length=len(output))
+        astropy.table.MaskedColumn(name=prefix+"flux", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"x", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"y", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"g1", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"g2", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"sigma", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output))
         ])
+        # By default, all these entries are masked:
+        for col in ["flux", "x", "y", "g1", "g2", "sigma", "rho4"]:
+            output[prefix+col].mask = [True] * len(output)
     else:
         output.add_columns([
         astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
-        astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
-        astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"g1", dtype=float, length=len(output)),
+        astropy.table.MaskedColumn(name=prefix+"g2", dtype=float, length=len(output)),
         ])
+        # By default, all these entries are masked:
+        for col in ["g1", "g2"]:
+            output[prefix+col].mask = [True] * len(output)
     
     starttime = datetime.now()
     
     rows=[]  
     
-    logger.info('Running acf measurements on %s. This could take a while...' % (imgfilepath))
+    logger.info('Running ACF measurements on %s. This could take a while...' % (imgfilepath))
     # Loading complete image
     whole_image = utils.fromfits(imgfilepath)
     for gal in output:
@@ -118,6 +125,16 @@ def run(imgfilepath, gal_catalog, stampsize, method=None, acf_weight="gaussian",
         
         # Clear all variable in the instance, get ready for next stamp
         acf.clear()
+        
+        if not flag==0: count_failed+=1
+        
+    nfailed = np.sum(output[prefix+"flag"] > 0)
+    n = np.shape(catalog)[0]
+    
+    endtime = datetime.now()
+    
+    logger.info("I failed on %i out of %i sources (%.1f percent)" % (nfailed, n, 100.0*float(nfailed)/float(n)))
+    logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
 
     return output
     
