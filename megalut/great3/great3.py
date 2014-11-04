@@ -20,6 +20,7 @@ from .. import tools
 from .. import learn
 from .. import meas
 
+import copy
 import glob
 import shutil
 
@@ -201,7 +202,6 @@ class Run(utils.Branch):
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of `func`:megalut.learn.fannwrapper.FANNParams:
         :param suffix: what suffix of the measurements to take ? Default: "_mean". 
-            This is saved to the ml pickle, into learnparams
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
@@ -227,9 +227,9 @@ class Run(utils.Branch):
         for simsubfield in self.simsubfields:      
             for i, f in enumerate(learnparams.features) :
                 learnparams.features[i]=f+suffix
-            learnparams.suffix=suffix
 
-            ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir,
+            lp=copy.deepcopy(learnparams)
+            ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir,
                                                                          "ml","%03d" % simsubfield))
                         
             ml_dir=ml.get_workdir()
@@ -261,6 +261,11 @@ class Run(utils.Branch):
                 input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
 
             ml.train(input_cat)
+            
+            # Removes the suffix from the ml params as we observe only once, and thus no average
+            for i, f in enumerate(ml.mlparams.features):
+                if not suffix in f: continue
+                ml.mlparams.features[i] = f[:-1*len(suffix)]
             
             # export the ML object:
             tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))

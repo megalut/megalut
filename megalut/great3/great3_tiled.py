@@ -24,6 +24,7 @@ from .. import meas
 
 import glob
 import shutil
+import copy
 
 class Run(utils.Branch):
     
@@ -215,7 +216,6 @@ class Run(utils.Branch):
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
         :param suffix: what suffix of the measurements to take ? Default: "_mean". 
-            This is saved to the ml pickle, into learnparams
         :param psf_features: optional features that will be used to remove the variability of the PSF
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
@@ -239,17 +239,18 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
         """
         # TODO: how to merge different measurements together ?
+        for i, f in enumerate(learnparams.features) :
+            learnparams.features[i]=f+suffix
+        
+        # The PSF features don't need suffix 
         if psf_features is not None:
             learnparams.features.extend(psf_features)
+            
         for simsubfield in self.simsubfields:  
             for xt in range(self.ntiles()):
                 for yt in range(self.ntiles()):
-                    
-                    for i, f in enumerate(learnparams.features) :
-                        learnparams.features[i]=f+suffix
-                    learnparams.suffix=suffix
-                    
-                    ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir, \
+                    lp=copy.deepcopy(learnparams)
+                    ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir, \
                                             "ml","%03d" % simsubfield,"%02dx%02d" % (xt,yt)))
                                 
                     ml_dir=ml.get_workdir()
@@ -265,14 +266,13 @@ class Run(utils.Branch):
                         shutil.rmtree(ml_dir)
         
                     # This is a quick fix, only working with one catalog!
-                    seapat=self._get_path("sim","%03d" % simsubfield, "%02dx%02d" % (xt,yt),
+                    seapat=self._get_path("sim","%03d" % simsubfield, "%02dx%02d" % (xt,yt),"meas",
                                           "%s" % simparam_name,"*_meascat.pkl")
                     cats = glob.glob(seapat)
                     if len(cats)==0:
                         raise ValueError("No catalog found for subfield %d" % simsubfield)
                     elif len(cats)>1:
                         raise NotImplemented("I'm not foreseen to be that smart, calm down")
-                    
                     input_cat = tools.io.readpickle(cats[0])
                     simdir=self._get_path("sim","%03d" % simsubfield, "%02dx%02d" % (xt,yt))
                     
@@ -296,6 +296,11 @@ class Run(utils.Branch):
                         input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
  
                     ml.train(input_cat)
+                    
+                    # Removes the suffix from the ml params as we observe only once, and thus no average
+                    for i, f in enumerate(ml.mlparams.features):
+                        if not suffix in f: continue
+                        ml.mlparams.features[i] = f[:-1*len(suffix)]
                     
                     # export the ML object:
                     tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))

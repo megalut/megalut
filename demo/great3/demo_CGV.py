@@ -60,7 +60,7 @@ cgv_simparm=CGV_simparams(simparam_name)
 cgv=megalut.great3.great3.Run("control", "ground", "variable",
     datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part",
     subfields=range(5,10))
-"""
+
 # Now run the measurements on input images
 cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
@@ -69,12 +69,11 @@ cgv.sim(cgv_simparm,n=10,ncpu=0,nrea=8)
 
 # Measure the observations with the same methods than the observation
 cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
-"""
 
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
           method_prefix="adamom_",suffix="_mean")
-exit()
+
 # Predict the output
 cgv.predict()
 
