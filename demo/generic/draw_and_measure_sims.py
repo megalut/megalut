@@ -36,7 +36,7 @@ meascat = megalut.meas.galsim_adamom.measure(gridimg, simcat, stampsize=48, pref
 
 # meascat is the output catalog, it contains the measured features
 # It's a masked table, here is part of it:
-print meascat["id", "x", "y", "tru_flux", "mes_flux", "mes_skymad", "mes_flag"][:20]
+print meascat#["id", "x", "y", "tru_flux", "mes_flux", "mes_skymad", "mes_flag"][:20]
 
 
 # We save it into a pickle

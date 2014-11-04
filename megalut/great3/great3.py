@@ -193,14 +193,15 @@ class Run(utils.Branch):
             sim.run.multi(simdir, simparams,
                           drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
-    def learn(self, learnparams, mlparams, simparam_name, avgtype="mean", 
+    def learn(self, learnparams, mlparams, simparam_name, suffix="_mean", 
               method_prefix="", overwrite=False):
         """
         A method that train any given algorithm.
         
         :param learnparams: an instance of megalut.learn.MLParams
-        :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
-        :param avgtype: what suffix of the measurements to take ? Default: mean
+        :param mlparams: an instance of `func`:megalut.learn.fannwrapper.FANNParams:
+        :param suffix: what suffix of the measurements to take ? Default: "_mean". 
+            This is saved to the ml pickle, into learnparams
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
@@ -220,10 +221,14 @@ class Run(utils.Branch):
                     max_iterations = 500,
                 )
                 
-            >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
+            >>> great3.learn(learnparams=learnparams, mlparams=fannparams)
         """
         # TODO: how to merge different measurements together ?
-        for simsubfield in self.simsubfields:        
+        for simsubfield in self.simsubfields:      
+            for i, f in enumerate(learnparams.features) :
+                learnparams.features[i]=f+suffix
+            learnparams.suffix=suffix
+
             ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir,
                                                                          "ml","%03d" % simsubfield))
                         
@@ -250,8 +255,10 @@ class Run(utils.Branch):
             
             input_cat = tools.io.readpickle(cats[0])
             # Important: we don't want to train on badly measured data!
+            # If we take a suffix, this means we took out the badly measured data already
             #TODO: This line is bad, because method_prefix will disappear!
-            input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
+            if suffix=="":
+                input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
 
             ml.train(input_cat)
             

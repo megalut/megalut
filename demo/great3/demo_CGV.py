@@ -73,7 +73,7 @@ cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
 
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
-          method_prefix="adamom_",avgtype="mean")
+          method_prefix="adamom_",suffix="_mean")
 exit()
 # Predict the output
 cgv.predict()

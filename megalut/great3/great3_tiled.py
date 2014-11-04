@@ -207,13 +207,15 @@ class Run(utils.Branch):
                     sim.run.multi(simdir, simparams,
                                   drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
-    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", psf_features=None,
-               overwrite=False):
+    def learn(self, learnparams, mlparams, simparam_name,suffix="_mean",
+               method_prefix="", psf_features=None, overwrite=False):
         """
         A method that train any given algorithm.
         
         :param learnparams: an instance of megalut.learn.MLParams
         :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
+        :param suffix: what suffix of the measurements to take ? Default: "_mean". 
+            This is saved to the ml pickle, into learnparams
         :param psf_features: optional features that will be used to remove the variability of the PSF
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
@@ -241,7 +243,11 @@ class Run(utils.Branch):
             learnparams.features.extend(psf_features)
         for simsubfield in self.simsubfields:  
             for xt in range(self.ntiles()):
-                for yt in range(self.ntiles()):  
+                for yt in range(self.ntiles()):
+                    
+                    for i, f in enumerate(learnparams.features) :
+                        learnparams.features[i]=f+suffix
+                    learnparams.suffix=suffix
                     
                     ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir, \
                                             "ml","%03d" % simsubfield,"%02dx%02d" % (xt,yt)))
@@ -285,8 +291,10 @@ class Run(utils.Branch):
                     
                     # Important: we don't want to train on badly measured data!
                     #TODO: This line is bad, because method_prefix will disappear!
-                    input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
-                    #print input_cat.colnames; exit()
+                    # If we take a suffix, this means we took out the badly measured data already
+                    if suffix=="":
+                        input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
+ 
                     ml.train(input_cat)
                     
                     # export the ML object:
