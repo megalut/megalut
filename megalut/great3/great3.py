@@ -200,7 +200,7 @@ class Run(utils.Branch):
         A method that train any given algorithm.
         
         :param learnparams: an instance of megalut.learn.MLParams
-        :param mlparams: an instance of `func`:megalut.learn.fannwrapper.FANNParams:
+        :param mlparams: an instance of :class:`megalut.learn.fannwrapper.FANNParams`
         :param suffix: what suffix of the measurements to take ? Default: "_mean". 
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
