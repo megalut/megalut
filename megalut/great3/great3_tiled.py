@@ -129,7 +129,7 @@ class Run(utils.Branch):
                         
                         avgcat = meas.avg.onsims(simdir, simparams,
                                         groupcols=groupcols,removecols=removecols,removereas=True)
-                        for simd in meas.avg.simmeasdict(simdir, simparams):
+                        for simd in meas.utils.simmeasdict(simdir, simparams):
                             fname = '%s_avg_galimg_meascat.pkl' % simd
                             tools.dirs.mkdir(os.path.join(simdir,"meas",simparams.name))
                             fname=os.path.join(simdir,"meas",simparams.name,fname)
