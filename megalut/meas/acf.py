@@ -1,6 +1,7 @@
 import numpy as np
 from datetime import datetime
-from .. import utils
+
+from .. import tools
 import logging
 import astropy.table
 import copy
@@ -90,11 +91,11 @@ def run(imgfilepath, catalog, stampsize, method=None, acf_weight="gaussian",
     
     logger.info('Running ACF measurements on %s. This could take a while...' % (imgfilepath))
     # Loading complete image
-    whole_image = utils.fromfits(imgfilepath)
+    whole_image = tools.io.fromfits(imgfilepath)
     for gal in output:
 
         x,y=gal["x"], gal["y"]
-        img,flag=utils.getstamp(x, y, whole_image, stampsize)
+        img,flag=tools.image.getstamp(x, y, whole_image, stampsize)
 
         if flag==0:
             acf.set_data(img.copy())
@@ -156,7 +157,7 @@ class _ACF(object):
             :param show: (optional) allows the system to show images.
         '''
         if not image==None:
-            if type(image)==str: self.data = utils.fromfits(image)
+            if type(image)==str: self.data = tools.io.fromfits(image)
             else: self.data = np.asarray(image)
         else: 
             self.data=None
@@ -195,7 +196,7 @@ class _ACF(object):
             acf = self.acf[x0:xf,y0:yf]
             acf[dx/2,dx/2]=0.
             acf[dx/2,dx/2]=np.amax(acf)
-            utils.tofits(acf, fname)
+            tools.io.tofits(acf, fname)
         logger.info('Wrote acf to %s' % fname)
         
     def compute_acf(self,weights=None, find_with="gs", clip=False, **kwargs):
