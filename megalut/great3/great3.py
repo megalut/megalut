@@ -77,7 +77,7 @@ class Run(utils.Branch):
             Set to 0 for maximum number of available CPUs.
         :type ncpu: int
         :param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
-            if groupcols=None default = galsim features
+            if groupcols=None default = adamom features
         :param removecols: Passed to :func:`megalut.meas.avg.onsims`
         
         .. note:: This typically should be inherited somehow.
@@ -224,14 +224,14 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams)
         """
         # TODO: how to merge different measurements together ?
-        for i, f in enumerate(learnparams.features) :
-            learnparams.features[i]=f+suffix
         
         for simsubfield in self.simsubfields:      
             
             # a deepcopy is made to make sure we don't use modified catalogs 
             # (see right after ml.train())
             lp=copy.deepcopy(learnparams)
+            lp.features = [feature + suffix for feature in lp.features]
+
             ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir,
                                                                          "ml","%03d" % simsubfield))
                         

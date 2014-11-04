@@ -239,17 +239,17 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
         """
         # TODO: how to merge different measurements together ?
-        for i, f in enumerate(learnparams.features) :
-            learnparams.features[i]=f+suffix
+        slp=copy.deepcopy(learnparams)
+        slp.features = [feature + suffix for feature in slp.features]
         
         # The PSF features don't need suffix 
         if psf_features is not None:
-            learnparams.features.extend(psf_features)
+            slp.features.extend(psf_features)
             
         for simsubfield in self.simsubfields:  
             for xt in range(self.ntiles()):
                 for yt in range(self.ntiles()):
-                    lp=copy.deepcopy(learnparams)
+                    lp=copy.deepcopy(slp)
                     ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir, \
                                             "ml","%03d" % simsubfield,"%02dx%02d" % (xt,yt)))
                                 
