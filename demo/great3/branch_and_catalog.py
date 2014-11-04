@@ -12,9 +12,9 @@ logging.basicConfig(level=logging.INFO)
 
 # We create a Branch object:
 #branch = megalut.great3.utils.Branch("control", "ground", "constant",
-#	datadir="/Users/mtewes/Desktop/fake_GREAT3")
+#    datadir="/Users/mtewes/Desktop/fake_GREAT3")
 branch = megalut.great3.utils.Branch("control", "ground", "variable",
-	datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part")
+    datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part")
 
 
 print branch
@@ -39,7 +39,7 @@ megalut.tools.io.writepickle(cat, "cat.pkl")
 
 # Yes, this works !
 for gal in cat[:5]:
-	gal["x"] *= -1
+    gal["x"] *= -1
 
 # Even cooler:
 cat[:5]["y"] = -5.0

@@ -43,11 +43,9 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	:param simparams: A sim.simparams instance that defines the distributions of parameters
 	:param drawcatkwargs: Keyword arguments which will be directly passed to stampgrid.drawcat
 	:type drawcatkwargs: dict
-	:param drawimgkwargs: Idem for stampgrid.drawimg.  However any specified filenames will be
-		ignored (the filenames will be automatically generated).  If anything but None
-		is specified as path for the simtrugalimgfilepath or the simpsfimgfilepath, the
-		files will be saved with the auto-generated filenames (otherwise the true galaxy
-		images and the PSF stamp images are not saved).
+	:param drawimgkwargs: Idem for stampgrid.drawimg. However the entries simgalimgfilepath,
+		simtrugalimgfilepath and simpsfimgfilepath will be ignored, as these 
+		files will be saved with auto-generated filenames, if asked for.
 	:type drawimgkwargs: dict
 	:param ncat: The number of catalogs to be generated.
 	:type ncat: int
@@ -130,6 +128,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	
 	
 	# The catalogs are drawn, we save a log file about this
+	logger.debug("Now writing logfile...")
 	logfilepath = os.path.join(workdir, prefix + "log.txt")
 	logfile = open(logfilepath, "w")
 	logfile.write("Logfile of megalut.sim.run.multi, written to %s\n\n" % (logfilepath))
@@ -141,7 +140,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=2, nrea=2, ncpu=
 	#logfile.write(str(simparams) + ":\n")
 	#logfile.write(inspect.getsourcelines(type(simparams)))
 	logfile.close()
-	
+	logger.debug("Done with writing logfile")
 	
 	# Before drawing the images, some warnings
 	
@@ -242,13 +241,9 @@ class _WorkerSettings():
 		
 		self.catalog = catalog # No copy needed, we won't change it!
 		self.reaindex = reaindex
-		self.drawimgkwargs = copy.deepcopy(drawimgkwargs) # A copy, as we will change this.
+		self.drawimgkwargs = drawimgkwargs # This is already a changed deep copy from the original argument to multi().
 		self.workdir = workdir # Stays the same for all workers !
 	
-		# And some setup work:
-		#self.catname = self.catalog.meta["catname"]
-		#self.catimgdirpath = os.path.join(workdir, self.catname + "_img") # Where I write my images
-		#assert os.path.exists(self.catimgdirpath) == True # Indeed this should always be the case.
 		
 	def __str__(self):
 		"""

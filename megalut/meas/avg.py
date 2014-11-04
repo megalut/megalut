@@ -4,12 +4,12 @@ Functions to group and summarize measurements accross multiple realizations of s
 """
 import os
 import sys
-import glob
-import re
+
 import astropy
 import numpy as np
 
 from .. import tools
+import utils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ def onsims(measdir, simparams, **kwargs):
 	
 	logger.info("Harvesting measurements of the simulations '%s' from %s" % (simparams, measdir))
 	# We use the above function to find what we have:
-	catdict = simmeasdict(measdir, simparams)
+	catdict = utils.simmeasdict(measdir, simparams)
 	
 	# We iterate over one simulated catalog after the other.
 	outputcats = []
@@ -40,9 +40,6 @@ def onsims(measdir, simparams, **kwargs):
 		
 		logger.info("Reading all measurements for catalog '%s' (%i realizations)..." % (catname, len(meascatfilepaths)))
 		meascats = [tools.io.readpickle(os.path.join(measdir, simparams.name, meascatfilepath)) for meascatfilepath in meascatfilepaths]
-		
-		#for meascat in meascats:
-		#	print meascat.masked
 		
 		logger.info("Grouping columns and computing averages for catalog '%s'..." % (catname))
 		grouped = groupstats(meascats, **kwargs)
@@ -57,7 +54,15 @@ def onsims(measdir, simparams, **kwargs):
 		# We have to remove some of the meta, to avoid conflicts
 		for outputcat in outputcats:
 			outputcat.meta.pop("catname", None) # Now that we merge them, catname has no meaning anymore
-	
+		
+		# We check some other meta for compatibility
+		# All catalogs should have the same ngroupstats (== number of realizations)
+		assert "ngroupstats" in outputcats[0].meta # was written by groupstats.
+		ngroupstats = outputcats[0].meta["ngroupstats"]
+		for outputcat in outputcats:
+			if outputcat.meta["ngroupstats"] != ngroupstats:
+				raise RuntimeError("Catalogs with different numbers of realizations should not be merged, clean your measdir accordingly!")
+			
 		logger.info("Concatenating catalogs...")
 		outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
 	
@@ -68,65 +73,6 @@ def onsims(measdir, simparams, **kwargs):
 	logger.info("Done with collecting results for %i simulated galaxies" % (len(outputcat)))
 	
 	return outputcat
-
-
-
-def simmeasdict(measdir, simparams):
-	"""
-	Function to help you explore available measurements of simulations obtained by :func:`megalut.meas.run.onsims`
-	for a given measdir and simparams.
-	So this function is here to "glob" the random file names for you.
-	
-	:param measdir: See :func:`megalut.meas.run.onsims`
-	:param simparams: idem
-	
-	Regular expressions are used for this to avoid making optimistic assumptions about these filenames.
-	A dict is returned whose keys are the simulated catalog names, and the corresponding entries
-	are lists of filenames of the pkls with the measurements on the different realizations for each catalog. 
-	
-	An example of a dict that is returned::
-		
-		{'20141020T141239_E8gh8u':
-			['20141020T141239_E8gh8u_0_galimg_meascat.pkl',
-			 '20141020T141239_E8gh8u_1_galimg_meascat.pkl',
-			 '20141020T141239_E8gh8u_2_galimg_meascat.pkl'],
-		 '20141020T141239_9UhtkX':
-		 	['20141020T141239_9UhtkX_0_galimg_meascat.pkl',
-			 '20141020T141239_9UhtkX_1_galimg_meascat.pkl',
-			 '20141020T141239_9UhtkX_2_galimg_meascat.pkl']
-		}
-
-	"""
-	
-	incatfilepaths = sorted(glob.glob(os.path.join(measdir, simparams.name, "*_galimg_meascat.pkl")))
-	basenames = map(os.path.basename, incatfilepaths)
-	
-	if len(incatfilepaths) == 0:
-		raise RuntimeError("No meascat found in %s" % (os.path.join(measdir, simparams.name)))
-	
-	# Here is how they look: 20141020T141239_9UhtkX_0_galimg_meascat.pkl
-	# We get a unique list of the catalog names, using regular expressions
-	
-	p = re.compile("(\w*_\w*)_(\d*)_galimg_meascat.pkl")
-	
-	matches = [p.match(basename) for basename in basenames]
-	if None in matches:
-		raise RuntimeError("Some files in '%s' have unexpected filenames, something is wrong!" % (measdir))
-		
-		
-	namereatuples = [(match.group(0), match.group(1), match.group(2)) for match in matches]
-	# This gives (full file name, catname, realization number)
-	
-	catnames = sorted(list(set([namereatuple[1] for namereatuple in namereatuples])))
-	
-	out = {}
-	for catname in catnames:
-		out[catname] = [namereatuple[0] for namereatuple in namereatuples if namereatuple[1] == catname]
-	
-	logger.info("Found %i catalogs, and %i realizations (%.1f per catalog, on average)" %
-		(len(catnames), len(namereatuples), float(len(namereatuples))/float(len(catnames))))
-	
-	return out
 
 
 
@@ -158,7 +104,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 		removecols = [] 
 
 	# First, some checks on the incats:
-	colnames = incats[0].colnames
+	colnames = incats[0].colnames # to check colnames
+	
 	for incat in incats:
 		if incat.colnames != colnames:
 			raise RuntimeError("Your input catalogs do not have the same columns: \n\n %s \n\n is not \n\n %s"

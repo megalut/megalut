@@ -1,10 +1,12 @@
 """
-This subpackage is for generic plotting code.
-Typically it defines functions that plot something on matplotlib axes passed as argument to these functions.
-These functions do not make any figures by themselves.
-But let's see how this evolves.
+Subpackage for generic plotting code.
+It typically defines functions that plot something on matplotlib axes passed as first argument,
+based on the content of astropy tables.
 """
 __all__ = []
 
-import scatter
 import feature
+import scatter
+import exp
+
+

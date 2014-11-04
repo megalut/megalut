@@ -1,7 +1,7 @@
 """
-A demo that runs on the CGV branch (fields 005-9)
+A demo that runs on the VGV branch (fields 005-9)
 
-.. note:: this demo is valid for branches C**, R**.
+.. note:: this demo is valid for branches V**.
 """
 
 ###################################################################################################
@@ -21,7 +21,7 @@ import numpy as np
 measfct = megalut.meas.galsim_adamom.measure
 measfctkwargs = {} # The stamp size is automatically replaced/added to right value
 
-class CGV_simparams(megalut.sim.params.Params):
+class vgv_simparams(megalut.sim.params.Params):
     def getrad(self):
         return np.random.uniform(0.7, 2.7)
     
@@ -42,44 +42,51 @@ class CGV_simparams(megalut.sim.params.Params):
 
 learnparams = megalut.learn.MLParams(
         name = "demo",
-        features = ["adamom_g1", "adamom_g2", "adamom_flux"],
+        features = ["adamom_g1", "adamom_g2", "adamom_flux","adamom_sigma"],
         labels = ["tru_g1","tru_g2"],
         predlabels = ["pre_g1","pre_g2"],
         )
 
+psf_features=["tile_x_pos_deg","tile_y_pos_deg"]
+
 fannparams=megalut.learn.fannwrapper.FANNParams(
-        hidden_nodes = [20, 20],
+        hidden_nodes = [30, 30, 30],
         max_iterations = 500,
     )
-simparam_name="cgv_test_1"
-cgv_simparm=CGV_simparams(simparam_name)
+simparam_name="vgv_test_1"
+vgv_simparm=vgv_simparams(simparam_name)
 ###################################################################################################
 # Start of the code
 
+megalut.great3.var_psf_utils.separate("variable_psf", "ground", "variable",
+                                      datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part", 
+                                      workdir="./vgv_data",subfields=range(5,7))
+
+
 # Create an instance of the GREAT3 class
-cgv=megalut.great3.great3.Run("control", "ground", "variable",
-    datadir="/home/kuntzer/workspace/MegaLUT/great3_data_part",
-    subfields=range(5,10))
+vgv=megalut.great3.great3_tiled.Run("variable_psf", "ground", "variable",
+    datadir="./vgv_data",
+    subfields=[5])
 
 # Now run the measurements on input images
-cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
+vgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-cgv.sim(cgv_simparm,n=10,ncpu=0)
+vgv.sim(vgv_simparm,n=20,ncpu=0)
 
 # Measure the observations with the same methods than the observation
-cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
+vgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=vgv_simparm)
 
 # Train the ML
-cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
-          method_prefix="adamom_")
+vgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
+          method_prefix="adamom_",psf_features=psf_features,overwrite=False)
 
 # Predict the output
-cgv.predict()
+vgv.predict(overwrite=True)
 
 # Write the output catalog
-cgv.writeout("ML_FANN_demo_default")
+vgv.writeout("ML_FANN_demo_default")
 
 # Prepare the presubmission file
 # (This will fail as we work only on a subset of the data)
-cgv.presubmit()
+vgv.presubmit()
