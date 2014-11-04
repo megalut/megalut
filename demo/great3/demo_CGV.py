@@ -65,14 +65,14 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
 cgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-cgv.sim(cgv_simparm,n=10,ncpu=0)
+cgv.sim(cgv_simparm,n=10,ncpu=0,nrea=8)
 
 # Measure the observations with the same methods than the observation
 cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
 
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
-          method_prefix="adamom_")
+          method_prefix="adamom_",suffix="_mean")
 
 # Predict the output
 cgv.predict()

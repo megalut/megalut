@@ -72,7 +72,7 @@ vgv=megalut.great3.great3_tiled.Run("variable_psf", "ground", "variable",
 vgv.meas("obs",measfct,measfctkwargs,ncpu=0)
 
 # Make sim catalogs & images
-vgv.sim(vgv_simparm,n=20,ncpu=0)
+vgv.sim(vgv_simparm,n=20,ncpu=0,nrea=4)
 
 # Measure the observations with the same methods than the observation
 vgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=vgv_simparm)

@@ -20,6 +20,7 @@ from .. import tools
 from .. import learn
 from .. import meas
 
+import copy
 import glob
 import shutil
 
@@ -60,7 +61,8 @@ class Run(utils.Branch):
             tools.dirs.mkdir(self._get_path(subfolder))
 
         
-    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", simparams="",overwrite=False,ncpu=1):
+    def meas(self, imgtype, measfct, measfctkwargs, method_prefix="", simparams="",
+             groupcols=None, removecols=None,overwrite=False,ncpu=1):
         """
         :param imgtype: Measure on observation or sim
         :type params: `obs` or `sim`
@@ -74,6 +76,9 @@ class Run(utils.Branch):
         :param ncpu: Maximum number of processes that should be used. Default is 1.
             Set to 0 for maximum number of available CPUs.
         :type ncpu: int
+        :param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
+            if groupcols=None default = adamom features
+        :param removecols: Passed to :func:`megalut.meas.avg.onsims`
         
         .. note:: This typically should be inherited somehow.
         """
@@ -109,6 +114,25 @@ class Run(utils.Branch):
                 simdir=self._get_path(imgtype,"%03d" % simsubfield)
 
                 meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
+                
+                if groupcols==None:
+                    groupcols = [
+                    "adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
+                    "adamom_sigma", "adamom_rho4",
+                    "adamom_skystd", "adamom_skymad", "adamom_skymean", "adamom_skymed", "adamom_flag"
+                    ]
+
+                if removecols==None:
+                    removecols=[]
+                
+                avgcat = meas.avg.onsims(simdir, simparams,
+                                groupcols=groupcols,removecols=removecols,removereas=True)
+                for simd in meas.utils.simmeasdict(simdir, simparams):
+                    fname = '%s_avg_galimg_meascat.pkl' % simd
+                    tools.dirs.mkdir(os.path.join(simdir,"meas",simparams.name))
+                    fname=os.path.join(simdir,"meas",simparams.name,fname)
+                    tools.io.writepickle(avgcat,fname)
+
         else: raise ValueError("Unknown image type")
         
             
@@ -170,12 +194,14 @@ class Run(utils.Branch):
             sim.run.multi(simdir, simparams,
                           drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
 
-    def learn(self, learnparams, mlparams, simparam_name, method_prefix="", overwrite=False):
+    def learn(self, learnparams, mlparams, simparam_name, suffix="_mean", 
+              method_prefix="", overwrite=False):
         """
         A method that train any given algorithm.
         
         :param learnparams: an instance of megalut.learn.MLParams
-        :param mlparams: an instance of megalut.learn.fannwrapper.FANNParams
+        :param mlparams: an instance of :class:`megalut.learn.fannwrapper.FANNParams`
+        :param suffix: what suffix of the measurements to take ? Default: "_mean". 
         :param method_prefix: *deprecated* the prefix of the features
         :param simparam_name: the name of the simulation to use
         :param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
@@ -195,11 +221,18 @@ class Run(utils.Branch):
                     max_iterations = 500,
                 )
                 
-            >>> great3.learn(learnparams=learnparams, mlparams=fannparams, method_prefix="gs_")
+            >>> great3.learn(learnparams=learnparams, mlparams=fannparams)
         """
         # TODO: how to merge different measurements together ?
-        for simsubfield in self.simsubfields:        
-            ml = learn.ML(learnparams, mlparams,workbasedir=os.path.join(self.workdir,
+        
+        for simsubfield in self.simsubfields:      
+            
+            # a deepcopy is made to make sure we don't use modified catalogs 
+            # (see right after ml.train())
+            lp=copy.deepcopy(learnparams)
+            lp.features = [feature + suffix for feature in lp.features]
+
+            ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir,
                                                                          "ml","%03d" % simsubfield))
                         
             ml_dir=ml.get_workdir()
@@ -215,7 +248,7 @@ class Run(utils.Branch):
                 shutil.rmtree(ml_dir)
 
             # This is a quick fix, only working with one catalog!
-            seapat=self._get_path("sim","%03d" % simsubfield,
+            seapat=self._get_path("sim","%03d" % simsubfield, "meas",
                                   "%s" % simparam_name,"*_meascat.pkl")
             cats = glob.glob(seapat)
             if len(cats)==0:
@@ -223,12 +256,19 @@ class Run(utils.Branch):
             elif len(cats)>1:
                 raise NotImplemented("I'm not foreseen to be that smart, calm down")
             
-            input_cat = tools.io.readpickle(cats[0])            
+            input_cat = tools.io.readpickle(cats[0])
             # Important: we don't want to train on badly measured data!
+            # If we take a suffix, this means we took out the badly measured data already
             #TODO: This line is bad, because method_prefix will disappear!
-            input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
+            if suffix=="":
+                input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
 
             ml.train(input_cat)
+            
+            # Removes the suffix from the ml params as we observe only once, and thus no average
+            for i, f in enumerate(ml.mlparams.features):
+                if not suffix in f: continue
+                ml.mlparams.features[i] = f[:-1*len(suffix)]
             
             # export the ML object:
             tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
