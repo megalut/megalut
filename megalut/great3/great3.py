@@ -224,10 +224,13 @@ class Run(utils.Branch):
             >>> great3.learn(learnparams=learnparams, mlparams=fannparams)
         """
         # TODO: how to merge different measurements together ?
+        for i, f in enumerate(learnparams.features) :
+            learnparams.features[i]=f+suffix
+        
         for simsubfield in self.simsubfields:      
-            for i, f in enumerate(learnparams.features) :
-                learnparams.features[i]=f+suffix
-
+            
+            # a deepcopy is made to make sure we don't use modified catalogs 
+            # (see right after ml.train())
             lp=copy.deepcopy(learnparams)
             ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir,
                                                                          "ml","%03d" % simsubfield))
