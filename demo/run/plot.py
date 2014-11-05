@@ -36,13 +36,13 @@ def myplot(cat, filepath=None):
 	# Often not needed anymore (see tight_layout() below)
 	
 	ax1 = fig.add_subplot(121)	
-	megalut.plot.scatter.scatter(ax1, cat, sersicn, rho4, size, title="Hello", showid=True) # 5th argument is colorbar
+	megalut.plot.scatter.scatter(ax1, cat, sersicn, rho4, size, title="Hello", text="Auto text", showid=True) # 5th argument is colorbar
 	
 	ax2 = fig.add_subplot(122)	
 	megalut.plot.scatter.scatter(ax2, cat, g1, g2, sidehists=True, title="World!", showid=True)
 	
 	# Of course, one can still modify the axes afterwards !
-	ax2.text(0.1, 0.9, "Some text", transform=ax2.transAxes)
+	ax2.text(0.3, 0.3, "Some manually-placed text", transform=ax2.transAxes)
 	ax2.set_ylim(ax2.get_ylim()[::-1])
 	
 	plt.tight_layout()
