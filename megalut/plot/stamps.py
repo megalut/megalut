@@ -64,6 +64,20 @@ def pngstampgrid(img, cat, pngfilepath, xname="x", yname="y", stampsize=100, nco
 				]
 				f2nstamp.writeinfo(txt, colour=255)
 				
+				# Crosshair:
+				s = stampsize
+				f2nstamp.drawline(s/2, s/4, l=3, t=np.pi/2.0)	
+				f2nstamp.drawline(s/4, s/2, l=3, t=0.0)
+
+				# Just for reference, some other stuff from previous MegaLUT versions:				
+				#f2nstamp.drawrectangle(1, s-1, 1, s-1)	
+				#f2nstamp.drawrectangle(140, s-140, 140, s-140, colour=(0,255,255))	
+				# Showing the measured shape, in red
+				#e = np.hypot(galaxy.gal_e1, galaxy.gal_e2)
+				#t = 0.5*np.arctan2(galaxy.gal_e2, galaxy.gal_e1)
+				#f2nstamp.drawline(x = s/4, y=s/4 , l=150*e, t=t, width=3, colour=(255,0,0))
+
+
 			else: # No more galaxies, we just fill the splot with a grey empty stamp.
 				npstamp = np.zeros((stampsize, stampsize))
 				f2nstamp = f2n.f2nimage(numpyarray=npstamp, verbose=False)
