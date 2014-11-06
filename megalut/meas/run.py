@@ -171,6 +171,7 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 			ws = _WorkerSettings(imgfilepath, imgname, incatfilepath, outcatfilepath,
 					measfct, measfctkwargs, skipdone)
 			wslist.append(ws)
+			break ## DEBUG FOR fdntfunc.py, REMOVE LATER
 	
 	logger.info("Ready to run measurents on %i images." % (len(wslist)))
 			
