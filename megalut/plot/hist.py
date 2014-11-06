@@ -15,12 +15,13 @@ from matplotlib.ticker import AutoMinorLocator
 
 def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	"""
-	Adds a simple histogram to the axes and sets limits and label
-	This function can be called repeatedly on the same axes to overplot several catalogs.
+	Adds a simple histogram to the axes and sets limits and label.
+	This function can be called repeatedly on the same axes to overplot several catalogs,
+	or say different selections from a same catalog.
 	
 	:param ax: a matplotlib.axes.Axes object
 	:param cat: an astropy table 
-	:param feat: a Feature object in which I should bin
+	:param feat: a Feature object that I should bin
 	:param text: some text to be written in the figure (top left corner)
 		As we frequently want to do this, here is a simple way to do it.
 		For more complicated things, add the text yourself to the axes.
