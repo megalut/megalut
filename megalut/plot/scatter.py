@@ -203,7 +203,8 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		
 	"""
 	
-	# We warn the user in case it seems that the catalogs are inverted
+	# Could we warn the user in case it seems that the catalogs are inverted ?
+	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
 	# First we use plot() to get a scatter, directly on the axes:
 	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
