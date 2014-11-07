@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, showid=False, sidehists=False, sidehistkwargs=None, **kwargs):
+def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, sidehists=False, sidehistkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -35,7 +35,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	:param text: some text to be written in the figure (top left corner)
 		As we frequently want to do this, here is a simple way to do it.
 		For more complicated things, add the text yourself to the axes.
-	:param showid: draws an "identity" diagonal line
+	:param show_id_line: draws an "identity" diagonal line
 	:param sidehists: adds projection histograms on the top and the left (not nicely compatible with the colorbar)
 		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
 	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
@@ -149,7 +149,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		if title:
 			ax.set_title(title)
 	
-	if showid: # Show the "diagonal" identity line
+	if show_id_line: # Show the "diagonal" identity line
 	
 		# It would be nice to get this working with less code
 		# (usign get_lims and axes transforms, for instance)
