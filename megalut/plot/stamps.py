@@ -11,13 +11,13 @@ import numpy as np
 try:
 	import f2n
 except ImportError:
-	logger.debug("Could not import f2n, no problem if you don't use it. You can find it here: http://obswww.unige.ch/~tewes/f2n_dot_py/")
+	logger.warning("Could not import f2n, no problem if you don't use it. You can find it here: http://obswww.unige.ch/~tewes/f2n_dot_py/")
 
 
 def pngstampgrid(img, cat, pngfilepath, xname="x", yname="y", stampsize=100, ncols=5, upsample=4, z1="auto", z2="auto"):
 	"""
-	I write a grid of stamps corresponding to your catalog in a png image, so that you can visualize those galaxies...
-	For this I currently use the slightly outdated f2n module.
+	Writes a grid of stamps corresponding to the catalog into a png image, so that you can visualize those galaxies...
+	For this it uses the (slightly outdated) f2n.py module.
 	
 	:param img: either a galsim image or the filepath to a FITS image
 	:param cat: an astropy table
