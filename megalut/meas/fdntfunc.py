@@ -115,9 +115,11 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 
 	# Loop over each object
 	count = 0  ## DEBUG
+	mincount, maxcount = (10, 20)
 	for gal in output:
 		
 		count += 1  ## DEBUG
+		if count < mincount: continue  ## DEBUG
 		# Some simplistic progress indication:
 		if gal.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n),
@@ -171,7 +173,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 			logger.debug("GLMoments failed with %s:\n %s" % (m, str(gal)), exc_info=True)
 			#print "GLMoments failed on:\n %s" % (str(gal))
 			gal[prefix + "flag"] = -1
-			if count >= 3:  break   ## DEBUG
+			if count >= maxcount:  break   ## DEBUG
 			continue
 
 		gal[prefix + "flag"] = res.intrinsic_flags
@@ -197,7 +199,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		#	gal[prefix + "flag"] = 2
 		
 		## DEBUG BLOCK
-		if count >= 1:
+		if count >= maxcount:
 			print output[:2]
 			return output
 
