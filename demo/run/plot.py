@@ -27,7 +27,7 @@ def myplot(cat, filepath=None):
 
 	# Specifying the range is not mandatory:
 	sersicn = megalut.plot.feature.Feature("tru_sersicn", nicename = "True Sersic index")
-	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one.
+	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one of the two limits.
 	size = megalut.plot.feature.Feature("adamom_sigma_mean", 0.0, 6.0, nicename = "Measured size")
 
 
