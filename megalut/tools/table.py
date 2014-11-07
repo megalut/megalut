@@ -89,6 +89,8 @@ def shuffle(table):
 	Easy function, but it demonstrates one way of how this can be done.
 	"""
 	
+	logger.debug("Shuffling a table of %i rows..." % len(table))
+	
 	indexes = np.arange(len(table))
 	np.random.shuffle(indexes)
 	return table[indexes] # This is a copy
