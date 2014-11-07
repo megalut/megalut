@@ -16,17 +16,17 @@ except ImportError:
 
 def pngstampgrid(img, cat, pngfilepath, xname="x", yname="y", stampsize=100, ncols=5, upsample=4, z1="auto", z2="auto"):
 	"""
-	I write a grid of stamps corresponding to your catalog in a png image, so that you can visualize those galaxies...
-	For this I currently use the slightly outdated f2n module.
+	Write a grid of stamps corresponding to your catalog in a png image, to visually inspect those galaxies...
+	For this use the slightly outdated f2n module (for now).
 	
 	:param img: either a galsim image or the filepath to a FITS image
 	:param cat: an astropy table
-	:param pngfilepath: path to where I should write my png file
+	:param pngfilepath: the png file path to be written
 	:param xname: colname for the x position (in pixel)
 	:param yname: colname for y
-	:param stampsize: size in pixels of the stamps I should extract
-	:param ncols: how many columns ?
-	:param upsample: by how much should I upsample the stamps ?
+	:param stampsize: stamp size (in pixels) to be extracted
+	:param ncols: number of postage-stamp columns
+	:param upsample: postage-stamp upsample rate
 	:param z1: "z" scale low
 	:param z2: "z" scale high
 	
@@ -34,7 +34,7 @@ def pngstampgrid(img, cat, pngfilepath, xname="x", yname="y", stampsize=100, nco
 	
 	
 	if type(img) is str:
-		logger.debug("You gave me a filepath, and I'm now loading the image...")
+		logger.debug("Filepath given, loading the image...")
 		img = tools.image.loadimg(img)
 		
 	n = len(cat)
