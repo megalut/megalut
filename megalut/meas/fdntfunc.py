@@ -49,7 +49,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 	se_output = out["table"]
 
 	print 'after SExtractor:'   ## DEBUG
-	print se_output[:2]  ## DEBUG
+	print se_output[:5]  ## DEBUG
 
 	# OPEN ALL NECESSARY FILES
 	if type(img) is str:
@@ -66,6 +66,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 	# Prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(se_output), masked=True) # Convert the table to a masked table
 	output.add_columns([
+
 		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
 		astropy.table.Column(name=prefix+"flux", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"x", dtype=float, length=len(output)),
@@ -73,21 +74,31 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		astropy.table.Column(name=prefix+"g1", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"g2", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"sigma", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"rho4", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"b22", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"snratio", dtype=float, length=len(output)),
+
+		astropy.table.Column(name=prefix+"psf_flags", data=np.zeros(len(output), dtype=int)),
 		astropy.table.Column(name=prefix+"psf_g1", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"psf_g2", dtype=float, length=len(output)),
 		astropy.table.Column(name=prefix+"psf_sigma", dtype=float, length=len(output)),
-		astropy.table.Column(name=prefix+"psf_rho4", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"psf_order", data=np.zeros(len(output), dtype=int)),
+		astropy.table.Column(name=prefix+"psf_b00", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"psf_b00_var", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"psf_b22", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"psf_chisq", dtype=float, length=len(output)),
+		astropy.table.Column(name=prefix+"psf_DOF", data=np.zeros(len(output), dtype=int)),
 	])
 	# By default, all these entries are masked:
-	for col, col_fill in zip(["flux", "x", "y", "g1", "g2", "sigma", "rho4", "snratio",
-				  "psf_g1", "psf_g2", "psf_sigma", "psf_rho4"],
+	for col, col_fill in zip(["flux", "x", "y", "g1", "g2", "sigma", "b22", "snratio",
+				  "psf_flags", "psf_g1", "psf_g2", "psf_sigma", "psf_b22", "flag",
+				  "psf_order", "psf_b00", "psf_b00_var", "psf_chisq", "psf_DOF"],
 				 [   -1.,  0.,  0., -10., -10.,     -1.,    -1.,        0.,
-				      -10.,     -10.,         -1.,        -1.]):
+				            0,     -10.,     -10.,         -1.,        -1.,    -1,
+				           -1,        0.,             0.,         0.,        0]):
 		output[prefix+col].mask = [True] * len(output)
 		output[prefix+col].fill_value = col_fill
 
+	"""
 	# Similarly, we prepare columns for the sky stats:
 	if measuresky:
 		output.add_columns([
@@ -98,6 +109,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		])
 		for col in ["skystd", "skymad", "skymean", "skymed"]:
 			output[prefix+col].mask = [True] * len(output)
+	"""
 	
 	# Save something useful to the meta dict
 	output.meta[prefix + "xname"] = xname
@@ -115,7 +127,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 
 	# Loop over each object
 	count = 0  ## DEBUG
-	mincount, maxcount = (10, 20)
+	mincount, maxcount = (4, 4)
 	for gal in output:
 		
 		count += 1  ## DEBUG
@@ -145,7 +157,6 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
 		(psfstamp, flag) = tools.image.getstamp(x, y, psfimg, psfstampsize)
 		psfstamp = psfstamp.copy()   # if I want to move the pixel coords, then I need a copy for RunFDNT() to work
-		psfstamp.setOrigin(0,0)
 		print 'psf bounds:', psfstamp.getBounds()
 		if flag != 0:   # postage stamp extraction unsuccessful
 			continue
@@ -178,6 +189,19 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 
 		gal[prefix + "flag"] = res.intrinsic_flags
 		try:
+			# first PSF measurement info
+			gal[prefix+'psf_flags'] = res.psf_flags
+			gal[prefix+'psf_g1'] = res.psf_e1
+			gal[prefix+'psf_g2'] = res.psf_e2
+			gal[prefix+'psf_sigma'] = res.psf_sigma
+			gal[prefix+'psf_b22'] = res.psf_b22
+			gal[prefix+'psf_b00'] = res.psf_b00
+			gal[prefix+'psf_b00_var'] = res.psf_b00_var
+			gal[prefix+'psf_order'] = res.psf_order
+			gal[prefix+'psf_chisq'] = res.psf_chisq
+			gal[prefix+'psf_DOF'] = res.psf_DOF
+			# native (galaxy + psf) measurement info
+			# intrinsic galaxy info
 			s = galsim.Shear(e1=res.intrinsic_e1, e2=res.intrinsic_e2)
 			g1 = s.getG1()
 			g2 = s.getG2()
@@ -188,7 +212,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 			gal[prefix+"y"] = res.observed_centroid.y
 			gal[prefix+"sigma"] = res.intrinsic_sigma
 			# note: b_22 = rho4-4*rho2+2 = rho4-4*b_11+2*b_00;  b22 is a substitute
-			#gal[prefix+"rho4"] = res.intrinsic_b22
+			#gal[prefix+"b22"] = res.intrinsic_b22
 			gal[prefix + "snratio"] = res.observed_significance
 
 		except ValueError:
@@ -200,7 +224,12 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		
 		## DEBUG BLOCK
 		if count >= maxcount:
-			print output[:2]
+			print output[:maxcount]
+			print output[:maxcount][prefix+'g1', prefix+'g2', prefix+'flux', prefix+'x', prefix+'y',
+					 prefix+'sigma', prefix+'flag', prefix+'snratio',
+					 #prefix+'psf_g1', prefix+'psf_g2', prefix+'psf_flags',
+				         #prefix+'psf_sigma', prefix+'psf_order'
+					 ]
 			return output
 
 	endtime = datetime.now()	
