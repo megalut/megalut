@@ -121,7 +121,7 @@ class ML:
 		return "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name)
 	
 	
-	def set_workdir(self):
+	def _set_workdir(self):
 		self.workdir = os.path.join(self.workbasedir, str(self))
 	
 
