@@ -89,30 +89,47 @@ class ML:
 		
 		self.mlparams = mlparams
 		self.toolparams = toolparams
+		self.workbasedir = workbasedir
+		
+		self.toolname = None # gets set below
+		self.workdir = None # gets set below, depending on the tool to be used
 		
 		if isinstance(self.toolparams, fannwrapper.FANNParams):
 			self.toolname = "FANN"
-			self.workdir = os.path.join(workbasedir,
-						    "ML_%s_%s_%s" % (self.toolname,
-								     self.mlparams.name,
-								     self.toolparams.name))
+			self._set_workdir()
 			self.tool = fannwrapper.FANNWrapper(self.toolparams, workdir=self.workdir)
+		
 		elif isinstance(self.toolparams, skynetwrapper.SkyNetParams):
 			self.toolname = "SkyNet"
-			self.workdir = os.path.join(workbasedir,
-						    "ML_%s_%s_%s" % (self.toolname,
-								     self.mlparams.name,
-								     self.toolparams.name))
+			self._set_workdir()
 			self.tool = skynet.SkyNetWrapper(self.toolparams, workdir=self.workdir)
+		
 		else:
-			raise RuntimeError()
+			raise RuntimeError("toolparams not recognized")
 			# ["skynet", "ffnet", "pybrain", "fann", "minilut"]
 		
 		
 		if os.path.exists(self.workdir):
 			logger.warning("ML workdir %s already exists, I might overwrite stuff !" % \
-					       self.workdir)
+				self.workdir)
+	
+	
+	def __str__(self):
+		"""
+		A string describing an ML object, that will also be used as workdir.
+		"""
+		return "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name)
+	
+	
+	def set_workdir(self):
+		self.workdir = os.path.join(self.workbasedir, str(self))
+	
+
+	def get_workdir(self):
+		logger.warning("This will be removed: directly use ml.workdir")
+		return self.workdir
 		
+
 	def train(self, catalog):
 		"""
 		Runs the training, by extracting the numbers from the catalog and feeding them
@@ -191,7 +208,5 @@ class ML:
 							       data = preddata[:,i]))
 		return output
 	
-	def get_workdir(self):
-		return self.tool.workdir
 		
 
