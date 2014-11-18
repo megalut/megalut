@@ -27,23 +27,29 @@ def myplot(cat, filepath=None):
 
 	# Specifying the range is not mandatory:
 	sersicn = megalut.plot.feature.Feature("tru_sersicn", nicename = "True Sersic index")
-	size = megalut.plot.feature.Feature("adamom_sigma_mean", nicename = "Measured size")
-	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one.
+	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one of the two limits.
+	size = megalut.plot.feature.Feature("adamom_sigma_mean", 0.0, 6.0, nicename = "Measured size")
 
 
-	fig = plt.figure(figsize=(12, 6))
+	fig = plt.figure(figsize=(12, 10))
 	#fig.subplots_adjust(bottom=0.05, top=0.90, left=0.05, right=0.95, wspace=0.42)
 	# Often not needed anymore (see tight_layout() below)
 	
-	ax1 = fig.add_subplot(121)	
-	megalut.plot.scatter.scatter(ax1, cat, sersicn, rho4, size, title="Hello", showid=True) # 5th argument is colorbar
+	ax1 = fig.add_subplot(221)	
+	megalut.plot.scatter.scatter(ax1, cat, sersicn, rho4, size, title="Hello", text="Auto text", show_id_line=True) # 5th argument is colorbar
 	
-	ax2 = fig.add_subplot(122)	
-	megalut.plot.scatter.scatter(ax2, cat, g1, g2, sidehists=True, title="World!", showid=True)
+	ax2 = fig.add_subplot(222)	
+	megalut.plot.scatter.scatter(ax2, cat, g1, g2, sidehists=True, title="World!")
 	
 	# Of course, one can still modify the axes afterwards !
-	ax2.text(0.1, 0.9, "Some text", transform=ax2.transAxes)
+	ax2.text(0.1, 0.3, "Some manually-placed text:\nnote the inverted y axis!", transform=ax2.transAxes)
 	ax2.set_ylim(ax2.get_ylim()[::-1])
+	
+
+	ax3 = fig.add_subplot(223)
+	megalut.plot.hist.hist(ax3, cat[cat["adamom_flag_mean"] == 0], size, color="blue", label="average flag = 0", title="A title")
+	megalut.plot.hist.hist(ax3, cat[cat["adamom_flag_mean"] > 0], size, color="red", label="average flag > 0", text="Test")	
+	ax3.legend()
 	
 	plt.tight_layout()
 	if filepath:
@@ -51,7 +57,6 @@ def myplot(cat, filepath=None):
 	else:
 		plt.show()	
 	plt.close(fig) # Helps releasing memory when calling in large loops.
-
 
 
 # And we call the function

@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=False, sidehists=False, sidehistkwargs=None, **kwargs):
+def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, sidehists=False, sidehistkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -32,9 +32,14 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 	:param cmap: the color bar to use
 	:param title: the title to place on top of the axis.
 		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
-	:param showid: draws an "identity" diagonal line
-	:param sidehists: adds projection histograms on the top and the left (probably not compatible with the colorbar)
-	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms
+	:param text: some text to be written in the figure (top left corner)
+		As we frequently want to do this, here is a simple way to do it.
+		For more complicated things, add the text yourself to the axes.
+	:param show_id_line: draws an "identity" diagonal line
+	:param sidehists: adds projection histograms on the top and the left (not nicely compatible with the colorbar)
+		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
+	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
+		Add range=None to these if you want all bins to be computed.
 	
 	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
 	
@@ -92,19 +97,37 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 	ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 	
 	if sidehists:
-	
+		
+		# By default, we want to limit the "binning" of the actual histograms (not just their display) to the specified ranges.
+		# However, this needs some special treatment for the case when the "low" or "high" are set to None.
+		if featx.low is not None and featx.high is not None: 
+			histxrange = (featx.low, featx.high)
+		else:
+			histxrange = None
+		if featy.low is not None and featy.high is not None: 
+			histyrange = (featy.low, featy.high)
+		else:
+			histyrange = None
+		# If you do not like this behaviour, simply set the sidehistkwarg "range" to None !
+		
+		
 		# Same as for kwargs: we first define some defaults, and then update these defaults:
-		mysidehistkwargs = {"histtype":"stepfilled", "bins":100, "ec":"none", "color":"gray"}
 		if sidehistkwargs is None:
 			sidehistkwargs = {}
-		mysidehistkwargs.update(sidehistkwargs)
 		
+		mysidehistxkwargs = {"histtype":"stepfilled", "bins":100, "ec":"none", "color":"gray", "range":histxrange}
+		mysidehistxkwargs.update(sidehistkwargs)
+		mysidehistykwargs = {"histtype":"stepfilled", "bins":100, "ec":"none", "color":"gray", "range":histyrange}
+		mysidehistykwargs.update(sidehistkwargs)
+		
+		# We prepare the axes for the hists:
 		divider = make_axes_locatable(ax)
 		axhistx = divider.append_axes("top", 1.0, pad=0.1, sharex=ax)
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
-		axhistx.hist(xdata, **mysidehistkwargs)
-		axhisty.hist(ydata, orientation='horizontal', **mysidehistkwargs)
+		# And draw the histograms		
+		axhistx.hist(xdata, **mysidehistxkwargs)
+		axhisty.hist(ydata, orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -126,8 +149,9 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 		if title:
 			ax.set_title(title)
 	
-	if showid:
-		# It would be nice to get something similar working without hardcodign the values,
+	if show_id_line: # Show the "diagonal" identity line
+	
+		# It would be nice to get this working with less code
 		# (usign get_lims and axes transforms, for instance)
 		# But in the meantime this seems to work fine.
 		# It has to be so complicated to keep the automatic ranges working if low and high are None !
@@ -152,74 +176,106 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, showid=Fa
 	ax.set_ylabel(featy.nicename)
 
 
+	# Finally, we write the text:
+	if text:
+		ax.annotate(text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -8), textcoords='offset points', ha='left', va='top')
+	
+	
 
 
 
-
-def simobs(ax, simcat, obscat, featx, featy, **kwargs):
+def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, **kwargs):
 	"""
-	A scatter plot overplotting simulations and observations in two different colors.
-	
-	.. warning::
-		To be developed, this will change...
-	
+	A scatter plot overplotting simulations (in red) and observations (in green).
+			
 	:param ax: a matplotlib Axes object
 	:param simcat: simulation catalog
 	:param obscat: observation catalog
 	:param featx: a Feature object telling me what to draw on my x axis
 	:param featy: idem for y
+	:param sidehists: set this to False if you don't want side histograms
+	:param sidehistkwargs: keyword arguments passed to the side hists
+	:param title: the title to place on top of the axis.
+		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
+	:param legend: if True, it writes a self-styled non-invasive "legend" in the top right corner
 	
-	All further kwargs are directly passed to scatter().
-	
+	All further **kwargs** are passed to axes.plot() to make the scatter plot.
+		
 	"""
 	
-	print "To be developed, in a dedicated module..."
+	# Could we warn the user in case it seems that the catalogs are inverted ?
+	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
-	scatter(ax, simcat, featx, featy, color="red", label="Simulations", **kwargs)
-	scatter(ax, obscat, featx, featy, color="green", label="Observations", **kwargs)
-	ax.legend()
+	# First we use plot() to get a scatter, directly on the axes:
+	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
+	plotkwargs.update(kwargs)
+	ax.plot(simcat[featx.colname], simcat[featy.colname], color="red", **plotkwargs)
+	ax.plot(obscat[featx.colname], obscat[featy.colname], color="green", **plotkwargs)
+	
+	
+	# Now we build the sidehists:
+	if sidehists:
+	
+		# By default, we want to limit the "binning" of the actual histograms (not just their display) to the specified ranges.
+		# However, this fails when the "low" or "high" are set to None. Hence some explicit code:
+		if featx.low is not None and featx.high is not None: 
+			histxrange = (featx.low, featx.high)
+		else:
+			histxrange = None
+		if featy.low is not None and featy.high is not None: 
+			histyrange = (featy.low, featy.high)
+		else:
+			histyrange = None
+		# If you do not like this default behaviour, you can overwrite it using the sidehistkwarg "range=None" !
+	
+		# We now prepare the kwargs for calling hist:
+		if sidehistkwargs is None:
+			sidehistkwargs = {}
+		mysidehistxkwargs = {"histtype":"stepfilled", "normed":"True", "bins":100, "alpha":0.5, "range":histxrange} # for x
+		mysidehistxkwargs.update(sidehistkwargs)
+		mysidehistykwargs = {"histtype":"stepfilled", "normed":"True", "bins":100, "alpha":0.5, "range":histyrange} # for y
+		mysidehistykwargs.update(sidehistkwargs)
+	
+		divider = make_axes_locatable(ax)
+		axhistx = divider.append_axes("top", 1.0, pad=0.1, sharex=ax)
+		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
+		
+		axhistx.hist(simcat[featx.colname], color="red", ec="red", **mysidehistxkwargs)
+		axhistx.hist(obscat[featx.colname], color="green", ec="green", **mysidehistxkwargs)
+		axhisty.hist(simcat[featy.colname], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obscat[featy.colname], color="green", ec="green", orientation='horizontal', **mysidehistykwargs)
+		
+		# Hiding the ticklabels
+		for tl in axhistx.get_xticklabels():
+			tl.set_visible(False)
+		for tl in axhisty.get_yticklabels():
+			tl.set_visible(False)
 
+		# Hide the hist ticks
+		axhistx.yaxis.set_ticks([]) # or set_ticklabels([])
+		axhisty.xaxis.set_ticks([])
+	
+		if title:
+			axhistx.set_title(title)
+		
+	else:
+		if title:
+			ax.set_title(title)
 
-# The old one can probably be deleted:
-#
-#def scatter(ax, cat, featx, featy, **kwargs):
-#	"""
-#	Simple 2D scatter plot of one feature against another, for a single catalog.
-#	
-#	:param ax: a matplotlib.axes.Axes object
-#	:param cat: an astropy table 
-#	:param featx: a Feature object telling me what to draw on my x axis
-#	:param featy: idem for y
-#	
-#	Any further kwargs are passed to plot().
-#	Some commonly used kwargs:
-#	
-#	* **marker**: default is ".", you can switch to single pixel (",") or anything else...
-#	* **ms**: marker size in points
-#	* **color**: e.g. "red"
-#	* **label**: for the legend
-#	
-#	"""
-#	
-#	if cat.masked is True:
-#		logger.warning("Input catalog is masked, some points might not be shown !")
-#	
-#	xdata = cat[featx.colname].data
-#	ydata = cat[featy.colname].data
-#	
-#	assert len(xdata) == len(ydata)
-#	logger.info("%i datapoints to plot on (%s, %s)" % (len(xdata), featx.colname, featy.colname))
-#	
-#	plotkwargs = {"marker":".", "ms":5, "color":"red", "ls":"None", "mec":"None"}
-#	plotkwargs.update(kwargs)
-#	
-#	ax.plot(xdata, ydata, **plotkwargs)
-#	# The rendering of plot is much faster than the rendering of scatter.
-#	# So use plot if possible.
-#	
-#	ax.set_xlim(featx.low, featx.high)
-#	ax.set_ylim(featy.low, featy.high)
-#	ax.set_xlabel(featx.nicename)
-#	ax.set_ylabel(featy.nicename)
-#
-#
+	# We set the limits and labels:
+	ax.set_xlim(featx.low, featx.high)
+	ax.set_ylim(featy.low, featy.high)
+	ax.set_xlabel(featx.nicename)
+	ax.set_ylabel(featy.nicename)
+	
+	# We want minor ticks:
+	ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+	ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+	
+	if legend:
+		ax.annotate("Simulations", color="red", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -8), textcoords='offset points', ha='right', va='top')
+		ax.annotate("Observations", color="green", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
+	
+	
+	
+	
