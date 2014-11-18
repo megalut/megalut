@@ -119,7 +119,7 @@ class ML:
 		A string describing an ML object, that will also be used as workdir.
 		"""
 		return "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name)
-	
+		
 	
 	def _set_workdir(self):
 		self.workdir = os.path.join(self.workbasedir, str(self))
@@ -129,6 +129,21 @@ class ML:
 		logger.warning("This will be removed: directly use ml.workdir")
 		return self.workdir
 		
+	
+	def looks_same(self, other):
+		"""
+		Compares self to another ML object, and returns True if the objects seem to describe the same learning.
+		
+		In principle this method could be called __eq__ to overwrite the default equality comparion, but
+		it seems safer to just 
+		
+		"""
+		return self.mlparams.__dict__ == other.mlparams.__dict__ and \
+			self.toolparams.__dict__ == other.toolparams.__dict__ and \
+			self.workbasedir == other.workbasedir and \
+			self.toolname == other.toolname and \
+			self.workdir == other.workdir
+
 
 	def train(self, catalog):
 		"""
