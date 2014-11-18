@@ -12,6 +12,7 @@ import ml
 
 import multiprocessing
 import datetime
+import copy
 
 from .. import tools
 
@@ -110,16 +111,16 @@ def _worker(ws):
 def predict(cat, workbasedir, paramslist, mode="default"):
 	"""
 	A wrapper to make predictions from non-overlapping-label MLs, returning a single merged catalog. 
-	Unlike the above train(), this predict() is quite *smart* and can automatically preform sophisticated tasks.
+	Unlike the above train(), this predict() is quite *smart* and can automatically preform sophisticated tasks
+	related to the "_mean" averaging over realizations.
 	 
 	This function does require (and check) that all of the MLs specified in paramslist predict different labels. 
-	This allows the present function to return a single catalog containing the predictions from different MLs. 
+	This allows the present function to return a single catalog containing the predictions from different MLs.
 	 
 	 
 	:param cat: an astropy table, has to contain all the required features
 	:param paramslist: exactly the same as used in train()
-	:param mode: a switch for different behaviors.
-		
+	:param mode: a switch for different behaviors.		
 		* If mode is "default", it will predict following exactly the column names that the MLparams of the paramslist specify.
 		* If "single", it will drop any "_mean" in the feature column names.
 		  This is the mode which is meant to be useful when predicting real observations!
@@ -135,7 +136,34 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		
 	"""
 	
-	#for (mlparams, toolparams) in paramslist:
+	# We check that the MLs do not predict the same labels, as otherwise we can't merge the predictions into a single catalog.
+	predlabels = []
+	for (mlparams, toolparams) in paramslist:
+		predlabels.extend(mlparams.predlabels)
+	if len(predlabels) != len(set(predlabels)):
+		raise RuntimeError("Your predlabels are not unique.")
+
+
+	# And now we make the predictions one after the other, always reusing the same catalog.
+	
+	predcat = copy.deepcopy(cat)
+	
+	for (mlparams, toolparams) in paramslist:
+		
+		# We create a new ML object, just as a way to get the workdir that was used:
+		newmlobj = ml.ML(mlparams, toolparams, workbasedir=workbasedir)
+		
+		# We load the actual ML object that was used:
+		trainedmlobj = tools.io.readpickle(os.path.join(newmlobj.workdir, "ML.pkl"))
+		
+		# We now check that  newmlobj has the same params as the one used for training.
+		# This should be the case, we do not want to allow for any "hacking" here.
+		if not newmlobj.looks_same(trainedmlobj):
+			raise RuntimeError("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
+	
+		predcat = trainedmlobj.predict(predcat)
+		
+	return predcat
 
 
 
