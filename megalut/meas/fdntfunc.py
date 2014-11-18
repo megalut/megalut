@@ -126,12 +126,19 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 	print
 
 	# Loop over each object
-	count = 0  ## DEBUG
-	mincount, maxcount = (4, 4)
+
+	# DEBUG BLOCK
+	count = 0
+	mincount, maxcount = (5, 6)
+
 	for gal in output:
 		
+		"""
+		# DEBUG BLOCK
 		count += 1  ## DEBUG
 		if count < mincount: continue  ## DEBUG
+		"""
+
 		# Some simplistic progress indication:
 		if gal.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n),
@@ -142,31 +149,47 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		(a,b,theta) = (gal['AWIN_IMAGE'], gal['BWIN_IMAGE'], gal['THETAWIN_IMAGE'])
 		size = gal['tru_rad']/0.77741  # gal['tru_rad']/1.17741 is the "true" value;
 		                               # this converges better for size ~1 pixel
-		psf_size = 1.5  # (from stampgrid.py, default is round Gaussian PSF of size sigma~1.5)
-		psf_size *= 2.0  ## DEBUG TESTING 
-
-		print
-		print 'a,b,theta', (a,b,theta)
-		print 'g1g2', g1g2
-		print
+		psf_size = 3.5  # (from stampgrid.py, default is round Gaussian PSF of size sigma~3.5)
+		psf_size += 0.5  ## DEBUG TESTING (offset from true answer)
 
 		if gal['assoc_flag'] == False:   # not detected by SExtractor
+			print 'SExtractor failed on this object'
 			continue
 
 		# get the PSF postage stamp image
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
 		(psfstamp, flag) = tools.image.getstamp(x, y, psfimg, psfstampsize)
 		psfstamp = psfstamp.copy()   # if I want to move the pixel coords, then I need a copy for RunFDNT() to work
-		print 'psf bounds:', psfstamp.getBounds()
 		if flag != 0:   # postage stamp extraction unsuccessful
+			print 'psfstamp extraction failure'
 			continue
 
 		# get the galaxy postage stamp image (so much faster!)
 		(galstamp, flag) = tools.image.getstamp(x, y, img, psfstampsize)
 		galstamp = galstamp.copy()
-		print 'gal bounds:', galstamp.getBounds()
 		if flag != 0:   # postage stamp extraction unsuccessful
+			print 'galstamp extraction failure'
 			continue
+		#print "galstamp before padding", galstamp.bounds   # DEBUG
+
+		# add padding, 2x the stamp size, for FFT purposes
+		safe_pad_margin = 4
+		noise_pad_size = max(galstamp.array.shape) * 2.0 + safe_pad_margin
+		noise_pad_image = galsim.Image(noise_pad_size, noise_pad_size, dtype=galstamp.dtype)
+		rng = galsim.BaseDeviate()
+		noise = galsim.GaussianNoise(rng, sigma=gal["tru_sig"])
+		noise_pad_image.addNoise(noise)
+		galstamp = galstamp.view()
+		galstamp_center = galstamp.center()
+		galstamp.setCenter(0,0)
+		noise_pad_image.setCenter(0,0)
+		if noise_pad_image.bounds.includes(galstamp.bounds):
+			noise_pad_image[galstamp.bounds] = galstamp   # now the center has galaxy image
+		else:
+			noise_pad_image = galstamp
+		galstamp = noise_pad_image
+		galstamp.setCenter(galstamp_center)
+		#print "galstamp size after padding", galstamp.bounds  # DEBUG
 
 		# We measure the moments... GLMoment may fail from time to time, hence the try:
 		try:
@@ -222,6 +245,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		#if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 		#	gal[prefix + "flag"] = 2
 		
+		"""
 		## DEBUG BLOCK
 		if count >= maxcount:
 			print output[:maxcount]
@@ -231,6 +255,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 				         #prefix+'psf_sigma', prefix+'psf_order'
 					 ]
 			return output
+		"""
 
 	endtime = datetime.now()	
 	logger.info("All done")
@@ -242,8 +267,8 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 	logger.info("This measurement took %.3f ms per galaxy" % \
 			    (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
-	print output[:3]  ## DEBUG
-	print gal[prefix + "flag"] ## DEBUG
+	print output  ## DEBUG
+	#print gal[prefix + "flag"] ## DEBUG
 	return output
 
 
