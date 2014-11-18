@@ -308,6 +308,8 @@ if __name__ == "__main__":
 	A little demo and test !
 	"""
 	import matplotlib.pyplot as plt
+	import logging
+	logging.basicConfig(level=logging.DEBUG)
 
 	# Simple 1D case : we predict y(x) from noisy data points.
 	
