@@ -183,7 +183,8 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 					
 		else:
 			#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
-			psf = galsim.Gaussian(flux=1., sigma=1.5)
+			#psf = galsim.Gaussian(flux=1., sigma=1.5)
+			psf = galsim.Gaussian(flux=1., sigma=3.5)   ## DEBUG
 			psf.draw(psf_stamp)
 
 		# Convolution by the PSF
