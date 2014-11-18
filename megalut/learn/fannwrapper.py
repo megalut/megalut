@@ -188,8 +188,12 @@ class FANNWrapper:
 	
 	def train(self, features, labels):
 		
+		
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
+		else:
+			logger.warning("FANN workdir %s already exists, I will overwrite stuff !" % \
+				self.workdir)
 
 		starttime = datetime.now()
 		

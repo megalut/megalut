@@ -108,11 +108,6 @@ class ML:
 			raise RuntimeError("toolparams not recognized")
 			# ["skynet", "ffnet", "pybrain", "fann", "minilut"]
 		
-		
-		if os.path.exists(self.workdir):
-			logger.warning("ML workdir %s already exists, I might overwrite stuff !" % \
-				self.workdir)
-	
 	
 	def __str__(self):
 		"""
