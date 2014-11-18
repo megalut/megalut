@@ -132,11 +132,13 @@ class ML:
 	
 	def looks_same(self, other):
 		"""
-		Compares self to another ML object, and returns True if the objects seem to describe the same learning.
+		Compares self to another ML object, and returns True if the objects seem to describe the same machine learning,
+		otherwise False.
 		
-		In principle this method could be called __eq__ to overwrite the default equality comparion, but
-		it seems safer to just 
+		:param other: an other ML object to compare with
 		
+		In principle this method might be called __eq__ to overwrite the default equality comparion,
+		but given that it is not trivial it seems safer to just define it as a stand-alone function.
 		"""
 		return self.mlparams.__dict__ == other.mlparams.__dict__ and \
 			self.toolparams.__dict__ == other.toolparams.__dict__ and \
