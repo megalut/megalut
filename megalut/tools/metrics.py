@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def metrics(catalog, label, predlabel):
 	"""
-	Returns a dict with some simple standard metrics compared a label to the corresponding prediction.
+	Returns a dict with some simple standard metrics compareing a "label"-column (truth) to the corresponding predictions.
 	This function explicitly takes care of masked columns, only unmasked data will be used.
 	
 	:param catalog: an astropy table containing both label and predlabel. It can be masked.
@@ -20,9 +20,10 @@ def metrics(catalog, label, predlabel):
 	
 	:returns: a dict containing
 		
-		- **predfrac**: Fraction of predlabels / labels
+		- **predfrac**: Fraction of predlabels / labels.
+			For example, 0.5 means that only half of the rows having a label value also have a predlabel value.
 		- **rmsd**: the RMSD
-		- **m**: multiplicative bias
+		- **m**: multiplicative bias (slope minus one)
 		- **merr**: error on multiplicative bias
 		- **c**: additive bias
 		- **cerr**: error on additive bias
