@@ -120,8 +120,9 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 	 
 	:param cat: an astropy table, has to contain all the required features
 	:param paramslist: exactly the same as used in train()
-	:param mode: a switch for different behaviors.		
-		* If mode is "default", it will predict following exactly the column names that the MLparams of the paramslist specify.
+	:param mode: a switch for different behaviors:		
+	
+		* If mode is "default", it will predict using exactly the column names that the MLParams of the paramslist specify.
 		* If "single", it will drop any "_mean" in the feature column names.
 		  This is the mode which is meant to be useful when predicting real observations!
 		* If "first", it will replace any "_mean" by "_0", thus using only the first realization.
