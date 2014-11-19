@@ -29,7 +29,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	:param featx: a Feature object telling me what to draw on my x axis
 	:param featy: idem for y
 	:param featc: a Feature to use for the colorbar, decides if plot() or scatter() is used.
-	:param cmap: the color bar to use
+	:param cmap: the color bar to use. For a scatter plot one usually wants to see every point, avoid white!
 	:param title: the title to place on top of the axis.
 		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
 	:param text: some text to be written in the figure (top left corner)
@@ -186,7 +186,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 
 def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, **kwargs):
 	"""
-	A scatter plot overplotting simulations (in red) and observations (in green).
+	A scatter plot overplotting simulations (in red) and observations (in blue, like the sky).
+	Previously the observations were green (like nature), but blue is better for most colorblind people.
 			
 	:param ax: a matplotlib Axes object
 	:param simcat: simulation catalog
@@ -210,7 +211,7 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
 	plotkwargs.update(kwargs)
 	ax.plot(simcat[featx.colname], simcat[featy.colname], color="red", **plotkwargs)
-	ax.plot(obscat[featx.colname], obscat[featy.colname], color="green", **plotkwargs)
+	ax.plot(obscat[featx.colname], obscat[featy.colname], color="blue", **plotkwargs)
 	
 	
 	# Now we build the sidehists:
@@ -241,9 +242,9 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		axhistx.hist(simcat[featx.colname], color="red", ec="red", **mysidehistxkwargs)
-		axhistx.hist(obscat[featx.colname], color="green", ec="green", **mysidehistxkwargs)
+		axhistx.hist(obscat[featx.colname], color="blue", ec="blue", **mysidehistxkwargs)
 		axhisty.hist(simcat[featy.colname], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
-		axhisty.hist(obscat[featy.colname], color="green", ec="green", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obscat[featy.colname], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -274,7 +275,7 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	
 	if legend:
 		ax.annotate("Simulations", color="red", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -8), textcoords='offset points', ha='right', va='top')
-		ax.annotate("Observations", color="green", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
+		ax.annotate("Observations", color="blue", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
 	
 	
 	
