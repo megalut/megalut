@@ -31,7 +31,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	
 	:param img: either the path to a FITS image, or a galsim image object
 	:param catalog: astropy table of objects to be measured
-	:param psfimg, psfxname, psfyname: (unused)
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
