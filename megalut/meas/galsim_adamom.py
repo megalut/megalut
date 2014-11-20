@@ -17,8 +17,8 @@ from .. import tools
 
 
 
-def measure(img, catalog, psfimg=None, xname="x", yname="y", psf_xname=None, psf_yname=None,
-	    stampsize=100, measuresky=True, workdir=None, prefix="adamom_"):
+def measure(img, catalog, psfimg=None, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_", 
+	psfimg=None, psfxname=None, psfyname=None, psfstampsize=None, workdir=None):
 	"""
 	Use the pixel positions provided via the 'catalog' input table to extract
 	postage stamps from the image and measure their shape parameters.
@@ -40,7 +40,10 @@ def measure(img, catalog, psfimg=None, xname="x", yname="y", psf_xname=None, psf
 	:param measuresky: set this to False if you don't want me to measure the sky (edge of stamps)
 	:param workdir: path where any possible output files are kept.
 	:param prefix: a string to prefix the field names that I'll write
-		
+
+	This shape measurement does not use PSFs, therefore the psf* kwargs are not used.
+	The workdir kwarg is not used either. 
+	
 	:returns: masked astropy table
 	
 	"""
