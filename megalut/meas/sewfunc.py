@@ -19,16 +19,13 @@ import os
 
 
 def measure(img, catalog, xname="x", yname="y",
-	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_",
-		psfimg=None, psfxname=None, psfyname=None, psfstampsize=None
-		):
+	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_"):
 	"""
 	This is similar (in terms of API) to galsim_adamom.measure().
 	Returns a copy of the given catalog, with new columns appended.
 	
 	:param img: either the path to a FITS image, or a galsim image object
 	:param catalog: astropy table of objects to be measured
-	:param psfimg, psfxname, psfyname: (unused)
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
 	:param params: sewpy params. If ``None``, a default set, with many WIN parameters, is used.
