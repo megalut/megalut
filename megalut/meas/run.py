@@ -24,6 +24,7 @@ import sys
 import glob
 import datetime
 import multiprocessing
+import copy
 
 import megalut
 
@@ -222,14 +223,13 @@ class _WorkerSettings():
 	"""
 	
 	def __init__(self, imgfilepath, incatfilepath, outcatfilepath,
-				 measfct, measfctkwargs, skipdone):
+				 measfct, measfctkwargs):
 		
 		self.imgfilepath = imgfilepath
 		self.incatfilepath = incatfilepath
 		self.outcatfilepath = outcatfilepath
 		self.measfct = measfct
 		self.measfctkwargs = measfctkwargs
-		self.skipdone = skipdone
 	
 	def __str__(self):
 		return "[image '%s']" % (os.path.basename(self.imgfilepath))
