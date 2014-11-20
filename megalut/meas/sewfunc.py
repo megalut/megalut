@@ -18,8 +18,10 @@ except ImportError:
 import os
 
 
-def measure(img, catalog, psfimg=None, xname="x", yname="y", psfxname=None, psfyname=None,
-	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_"):
+def measure(img, catalog, xname="x", yname="y",
+	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_",
+		psfimg=None, psfxname=None, psfyname=None, psfstampsize=None
+		):
 	"""
 	This is similar (in terms of API) to galsim_adamom.measure().
 	Returns a copy of the given catalog, with new columns appended.
