@@ -244,6 +244,7 @@ def _worker(ws):
 	starttime = datetime.datetime.now()
 	p = multiprocessing.current_process()
 	logger.info("%s is starting to measure %s with PID %s" % (p.name, str(ws), p.pid))
+	logger.debug("%s gets processed with measfctkwargs %s" % (str(ws), str(ws.measfctkwargs)))
 	
 	# Read input catalog
 	incat = megalut.tools.io.readpickle(ws.incatfilepath)
