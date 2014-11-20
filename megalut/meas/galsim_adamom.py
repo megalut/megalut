@@ -17,11 +17,12 @@ from .. import tools
 
 
 
-def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
+def measure(img, catalog, psfimg=None, xname="x", yname="y", psf_xname=None, psf_yname=None,
+	    stampsize=100, measuresky=True, prefix="adamom_"):
 	"""
-	I use the pixel positions provided via the input table to extract postage stamps
-	from the image and measure their shape parameters.
-	I return a copy of your input catalog with the new (masked) columns appended.
+	Use the pixel positions provided via the 'catalog' input table to extract
+	postage stamps from the image and measure their shape parameters.
+	Returns a copy of your input catalog with the new (masked) columns appended.
 	One of these colums (the only one that is not masked) is the flag:
 	
 	* 0: OK
@@ -30,7 +31,8 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	* 3: galsim failed
 	
 	:param img: either the path to a FITS image, or a galsim image object
-	:param catalog: astropy table of objects that I should measure
+	:param catalog: astropy table of objects to be measured
+	:param psfimg, psfxname, psfyname: (unused)
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
