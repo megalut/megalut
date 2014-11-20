@@ -17,7 +17,7 @@ from .. import tools
 
 
 
-def measure(img, catalog, psfimg=None, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_", 
+def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_", 
 	psfimg=None, psfxname=None, psfyname=None, psfstampsize=None, workdir=None):
 	"""
 	Use the pixel positions provided via the 'catalog' input table to extract
