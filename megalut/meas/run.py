@@ -195,7 +195,7 @@ def general(imgfilepaths, incatfilepaths, outcatfilepaths, measfct, measfctkwarg
 	# Should we create them ?
 	#if not os.path.exists(workdir):
 	#	os.makedirs(workdir)
-	
+		
 	# Now we prepare the parallel processing.
 	
 	wslist = [] # The list to be filled with workersettings
@@ -206,7 +206,7 @@ def general(imgfilepaths, incatfilepaths, outcatfilepaths, measfct, measfctkwarg
 			logger.info("Output catalog %s already exists, skipping this one..." % (outcatfilepath))	
 			continue
 		
-		ws = _WorkerSettings(imgfilepath, incatfilepath, outcatfilepath, measfct, measfctkwargs)
+		ws = _WorkerSettings(imgfilepath, incatfilepath, outcatfilepath, measfct, measfctkwargsdict)
 		wslist.append(ws)
 	
 	logger.info("Ready to run measurents on %i images." % (len(wslist)))
@@ -232,7 +232,7 @@ class _WorkerSettings():
 		self.measfctkwargs = measfctkwargs
 	
 	def __str__(self):
-		return "[image '%s']" % (os.path.basename(self.imgfilepath))
+		return "%s" % (os.path.basename(self.imgfilepath))
 
 
 
@@ -244,7 +244,7 @@ def _worker(ws):
 	starttime = datetime.datetime.now()
 	p = multiprocessing.current_process()
 	logger.info("%s is starting to measure %s with PID %s" % (p.name, str(ws), p.pid))
-	logger.debug("%s gets processed with measfctkwargs %s" % (str(ws), str(ws.measfctkwargs)))
+	logger.debug("Image %s gets processed with measfctkwargs %s" % (str(ws), str(ws.measfctkwargs)))
 	
 	# Read input catalog
 	incat = megalut.tools.io.readpickle(ws.incatfilepath)
@@ -269,10 +269,14 @@ def _run(wslist, ncpu):
 		return
 
 	# We only want to see warnings or worse from the following low-level stuff:
+	# This solution is bad as it leaves the log handles muted afterwards !
+	# So I remove this for now, we need to find a better way.
+	"""
 	for modulename in ["megalut.meas.galsim_adamom", "megalut.meas.sewfunc",
 			"sewpy.sewpy", "megalut.tools.io", "megalut.tools.image"]:
 		lowlevellogger = logging.getLogger(modulename)
 		lowlevellogger.setLevel(logging.WARNING)
+	"""
 	
 	if ncpu == 0:
 		try:
@@ -285,11 +289,15 @@ def _run(wslist, ncpu):
 	
 	logger.info("Starting the measurement on %i images using %i CPUs" % (len(wslist), ncpu))
 	
+	# The single process way (MUCH MUCH EASIER TO DEBUG...)
+	#map(_worker, wslist)
+	
+	# The multiprocessing way:
 	pool = multiprocessing.Pool(processes=ncpu)
 	pool.map(_worker, wslist)
 	pool.close()
 	pool.join()
-
+	
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total measurement time was %s" % (str(endtime - starttime)))
 	
