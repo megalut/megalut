@@ -20,8 +20,8 @@ from megalut.meas import sewfunc
 import sewpy
 
 
-def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
-	    sewpy_workdir='sewpy', psf_catalog=None):
+def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", measuresky=True,
+	    sewpy_workdir='sewpy', psf_catalog=None, psf_img=None, psf_great3_type=None):
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
 	Return a copy of the given catalog, with new columns appended.
@@ -48,20 +48,32 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 	out = sew(img, assoc_cat=catalog, assoc_xname=xname, assoc_yname=yname, prefix='')
 	se_output = out["table"]
 
-	print 'after SExtractor:'   ## DEBUG
+	print 'DEBUG:: in fdntfunc.py, after SExtractor:'   ## DEBUG
 	print se_output[:5]  ## DEBUG
 
 	# OPEN ALL NECESSARY FILES
 	if type(img) is str:
 
-		psfimg = img.replace('_galimg','_psfimg')  # following the sim naming convention
-
 		logger.debug("Filepath given, loading the corresponding image...")
 		img = tools.image.loadimg(img)
 		img.setOrigin(0,0)     # for it to work with megalut.tools.image.getstamp()
 
-		psfimg = tools.image.loadimg(psfimg)
-		psfimg.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
+	if (psf_img is None) and (psf_catalog is None):
+
+		# TODO: fix psfimg input.
+		psf_img = img.replace('_galimg','_psfimg')  # following the sim naming convention
+
+		# TODO: fix psfimg input.
+		psf_img = tools.image.loadimg(psf_img)
+		psf_img.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
+
+	"""
+	# check if stampsize info is already in the catalog
+	if "stampsize" in catalog.meta:
+		if stampsize != catalog.meta["stampsize"]:
+			logger.warning("Measuring with stampsize=%i, but stamps have been generated with stampsize=%i" %\
+				(stampsize, catalog.meta["stampsize"]))
+	"""
 
 	# Prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(se_output), masked=True) # Convert the table to a masked table
@@ -117,13 +129,18 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 	
 	n = len(output)
 	
-	if psf_catalog is None:
-		psfstampsize = catalog.meta["stampsize"]
-	else:
-		psfstampsize = psf_catalog.meta["stampsize"]
-	print
-	print 'psfstampsize', psfstampsize
-	print
+	try:
+		if psf_catalog is None:
+			psfstampsize = catalog.meta["stampsize"]
+		else:
+			psfstampsize = psf_catalog.meta["stampsize"]
+		print
+		print 'psfstampsize', psfstampsize
+		print
+	except KeyError:  # catalog.meta does not contain "stampsize"
+		print
+		print "GET PROPER PSF INPUT!!!"   # TODO: implement PSF input
+		print
 
 	# Loop over each object
 
@@ -133,22 +150,30 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 
 	for gal in output:
 		
-		"""
 		# DEBUG BLOCK
 		count += 1  ## DEBUG
 		if count < mincount: continue  ## DEBUG
-		"""
 
 		# Some simplistic progress indication:
+		print "DEBUG: before gal.index"
 		if gal.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n),
 							       gal.index, n))
+
+		print "DEBUG: before collecting gal data"
+		print "DEBUG: colnames"
+		print output.colnames  ## DEBUG
+
 		# get centroid, size and shear estimates from catalog
 		(x, y) = (gal[xname], gal[yname])
-		g1g2 = (gal['tru_g1'], gal['tru_g2'])
+		#g1g2 = (gal['tru_g1'], gal['tru_g2'])
 		(a,b,theta) = (gal['AWIN_IMAGE'], gal['BWIN_IMAGE'], gal['THETAWIN_IMAGE'])
+		"""
 		size = gal['tru_rad']/0.77741  # gal['tru_rad']/1.17741 is the "true" value;
 		                               # this converges better for size ~1 pixel
+		"""
+		size = np.hypot(a,b)
+		# TODO: use SExtractor size for psf_size as well...
 		psf_size = 3.5  # (from stampgrid.py, default is round Gaussian PSF of size sigma~3.5)
 		psf_size += 0.5  ## DEBUG TESTING (offset from true answer)
 
@@ -156,21 +181,25 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 			print 'SExtractor failed on this object'
 			continue
 
+		print "DEBUG: before psf postage stamp"
+
 		# get the PSF postage stamp image
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
-		(psfstamp, flag) = tools.image.getstamp(x, y, psfimg, psfstampsize)
+		(psfstamp, flag) = tools.image.getstamp(x, y, psf_img, psfstampsize)
 		psfstamp = psfstamp.copy()   # if I want to move the pixel coords, then I need a copy for RunFDNT() to work
 		if flag != 0:   # postage stamp extraction unsuccessful
 			print 'psfstamp extraction failure'
 			continue
 
+		print "DEBUG: after psf postage stamp"
+
 		# get the galaxy postage stamp image (so much faster!)
-		(galstamp, flag) = tools.image.getstamp(x, y, img, psfstampsize)
+		(galstamp, flag) = tools.image.getstamp(x, y, img, stampsize)
 		galstamp = galstamp.copy()
 		if flag != 0:   # postage stamp extraction unsuccessful
 			print 'galstamp extraction failure'
 			continue
-		#print "galstamp before padding", galstamp.bounds   # DEBUG
+		print "galstamp before padding", galstamp.bounds   # DEBUG
 
 		# add padding, 2x the stamp size, for FFT purposes
 		safe_pad_margin = 4
@@ -189,7 +218,7 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 			noise_pad_image = galstamp
 		galstamp = noise_pad_image
 		galstamp.setCenter(galstamp_center)
-		#print "galstamp size after padding", galstamp.bounds  # DEBUG
+		print "galstamp size after padding", galstamp.bounds  # DEBUG
 
 		# We measure the moments... GLMoment may fail from time to time, hence the try:
 		try:
@@ -245,7 +274,6 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 		#if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 		#	gal[prefix + "flag"] = 2
 		
-		"""
 		## DEBUG BLOCK
 		if count >= maxcount:
 			print output[:maxcount]
@@ -255,7 +283,6 @@ def measure(img, catalog, xname="x", yname="y", prefix="fdnt_", measuresky=True,
 				         #prefix+'psf_sigma', prefix+'psf_order'
 					 ]
 			return output
-		"""
 
 	endtime = datetime.now()	
 	logger.info("All done")
