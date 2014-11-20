@@ -46,9 +46,7 @@ class Run(utils.Branch):
         
     def _mkdir(self, workdir):
         """
-        Creates the working directories. Outputs a warning if the directories already exist
-        
-         .. note:: This typically should be inherited somehow.
+        Creates the working directories. Outputs a warning if the directories already exist      
         """
 
         if workdir==None: workdir="./%s" % (self.get_branchacronym()) 
@@ -87,10 +85,13 @@ class Run(utils.Branch):
 
         img_fnames=[]
         incat_fnames=[]
+        outcat_fnames = []
+        
 
         # Making sure the stamp size is correct
         measfctkwargs["stampsize"]=self.stampsize()
-            
+        # Malte comment: NOT EXACTLY: this is silently overwriting a user setting, could be very painful
+		
         skipdone=not overwrite
         if imgtype=="obs":
         
@@ -101,18 +102,20 @@ class Run(utils.Branch):
                 incat_fname=self.galinfilepath(subfield,imgtype)  
                 tools.io.writepickle(input_cat, incat_fname)
                 
-                img_fname=self.galimgfilepath(subfield)
+                img_fname=self.galimgfilepath(subfield) # this is a filepath, not a filename :-(
                 img_fnames.append(img_fname)
                 incat_fnames.append(incat_fname)
+                outcat_fname = self._get_path(imgtype, os.path.splitext(os.path.basename(img_fname))[0] + "_meascat.pkl")
+                outcat_fnames.append(outcat_fname)
+               
                 
-            meas.run.general(img_fnames, incat_fnames, 
-                             self._get_path(imgtype), measfct, measfctkwargs,  
-                             ncpu=ncpu, skipdone=skipdone)
+            meas.run.general(img_fnames, incat_fnames, outcat_fnames, measfct, measfctkwargs, ncpu=ncpu, skipdone=skipdone)
+            
         elif imgtype=="sim":
             for simsubfield in self.simsubfields:
                 img_fname=self.simgalimgfilepath(simsubfield)
                 simdir=self._get_path(imgtype,"%03d" % simsubfield)
-
+            
                 meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
                 
                 if groupcols==None:
