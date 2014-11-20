@@ -59,73 +59,70 @@ class Run(utils.Branch):
 			tools.dirs.mkdir(self._get_path(subfolder))
 
 		
-	def meas_obs(self, imgtype, measfct, measfctkwargs, simparams="",
-			 groupcols=None, removecols=None,overwrite=False,ncpu=1):
+	def meas_obs(self, measfct, skipdone=True, ncpu=1):
 		"""
-		:param imgtype: Measure on observation or sim
-		:type imgtype: `obs` or `sim`
-		:param measfct: method to use, it must be a user-defined function. The signature of the
-			function must be function(img_fname,input_cat,stampsize)
-		:param measfctkwargs: keyword arguments controlling the behavior of the measfct
-		:type measfctkwargs: dict
-		:param overwrite: `True` all measurements and starts again, `False` (default)
-			if exists, then perfect, skip it
+		:param measfct: some user-defined shape measurement function
+		:param skipdone: set to False to make me overwrite previous measurements
 		:param ncpu: Maximum number of processes that should be used. Default is 1.
 			Set to 0 for maximum number of available CPUs.
 		:type ncpu: int
-		:param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
-			if groupcols=None default = adamom features
-		:param removecols: Passed to :func:`megalut.meas.avg.onsims`
 		
 		"""
 		
-		img_fnames=[]
-		incat_fnames=[]
-		
-		# 3 new arguments for meas.run.general():
+        # Lists that we will pass to meas.run.general():
+		img_fnames = []
+		incat_fnames = []
 		outcat_fnames = []
 		psfimgfilepaths = []
-		workdirs = None
+		workdirs = []
 		
-		# Making sure the stamp size is correct
-		measfctkwargs["stampsize"]=self.stampsize()
-		measfctkwargs["psfstampsize"]=self.stampsize()
-		# Malte comment: NOT EXACTLY: this is silently overwriting a user setting, could be very painful
+		# Setting the stampsize
+		measfctkwargs = {"stampsize":self.stampsize(), "psfstampsize":self.stampsize()}
 		
-		skipdone=not overwrite
-		if imgtype=="obs":
-		
-			for subfield in self.subfields:
-				
-				# The image filename
-				img_fname=self.galimgfilepath(subfield) # this is a filepath, not a filename... :-(
-				img_fnames.append(img_fname)
-				
-				# Prep the input catalog
-				input_cat = io.readgalcat(self, subfield)
-				input_cat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
-				input_cat["psfy"] = self.stampsize()/2.0 + 0.5
-				incat_fname=self.galinfilepath(subfield,imgtype)  
-				tools.io.writepickle(input_cat, incat_fname)
-				incat_fnames.append(incat_fname)
-				
-				# The output catalog:
-				outcat_fname = self._get_path(imgtype, os.path.splitext(os.path.basename(img_fname))[0] + "_meascat.pkl")
-				outcat_fnames.append(outcat_fname)
-				
-				# In general we also need the PSF image:
-				psfimgfilepaths.append(self.psfimgfilepath(subfield))
-				
-			meas.run.general(img_fnames, incat_fnames, outcat_fnames, measfct, measfctkwargs,
-							psfimgfilepaths=psfimgfilepaths, ncpu=ncpu, skipdone=skipdone)
+		for subfield in self.subfields:
+			
+			# The image filename
+			img_fname=self.galimgfilepath(subfield) # this is a filepath, not a filename :-( 
+			img_fnames.append(img_fname)
+			
+			# Prep the input catalog
+			input_cat = io.readgalcat(self, subfield)
+			input_cat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
+			input_cat["psfy"] = self.stampsize()/2.0 + 0.5
+			incat_fname=self.galinfilepath(subfield, "obs")  
+			tools.io.writepickle(input_cat, incat_fname)
+			incat_fnames.append(incat_fname)
+			
+			# The output catalog:
+			outcat_fname = self._get_path("obs", os.path.splitext(os.path.basename(img_fname))[0] + "_meascat.pkl")
+			outcat_fnames.append(outcat_fname)
+			
+			# The PSF image:
+			psfimgfilepaths.append(self.psfimgfilepath(subfield))
+			
+			# And a workdir
+			workdirs.append(self._get_path("obs", os.path.splitext(os.path.basename(img_fname))[0]))
+            
+		# And we run all this
+		meas.run.general(img_fnames, incat_fnames, outcat_fnames, measfct, measfctkwargs,
+			psfimgfilepaths=psfimgfilepaths, workdirs=workdirs, ncpu=ncpu, skipdone=skipdone)
 			
 	   
 	   
-   def meas_sim(self, imgtype, measfct, measfctkwargs, simparams="",
-			groupcols=None, removecols=None,overwrite=False,ncpu=1)
+	def meas_sim(self, imgtype, measfct, measfctkwargs, simparams="",
+		groupcols=None, removecols=None, overwrite=False, ncpu=1):
 		"""
         Made a new func for this, given the completely different signature.
-        Still has to be checked.
+        Still has to be finalized.
+        
+        simparams=""
+        :param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
+			if groupcols=None default = adamom features
+		:param removecols: Passed to :func:`megalut.meas.avg.onsims`
+		
+        
+        
+        
         """
 
 
