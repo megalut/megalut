@@ -80,36 +80,48 @@ class Run(utils.Branch):
         
         .. note:: This typically should be inherited somehow.
         """
-        # Assert imgtype is known:
+        # Assert imgtype is known: # Should not be an assertion, but a RuntimeError !
         assert imgtype in ["obs","sim"]
 
         img_fnames=[]
         incat_fnames=[]
-        outcat_fnames = []
         
-
+        # 3 new arguments for meas.run.general():
+        outcat_fnames = []
+        psfimgfilepaths = []
+        workdirs = None
+        
         # Making sure the stamp size is correct
         measfctkwargs["stampsize"]=self.stampsize()
+        measfctkwargs["psfstampsize"]=self.stampsize()
         # Malte comment: NOT EXACTLY: this is silently overwriting a user setting, could be very painful
 		
         skipdone=not overwrite
         if imgtype=="obs":
         
             for subfield in self.subfields:
-                input_cat = io.readgalcat(self, subfield)
                 
-                # Prep the catalog
+                # The image filename
+                img_fname=self.galimgfilepath(subfield) # this is a filepath, not a filename... :-(
+                img_fnames.append(img_fname)
+                
+                # Prep the input catalog
+                input_cat = io.readgalcat(self, subfield)
+                input_cat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
+                input_cat["psfy"] = self.stampsize()/2.0 + 0.5
                 incat_fname=self.galinfilepath(subfield,imgtype)  
                 tools.io.writepickle(input_cat, incat_fname)
-                
-                img_fname=self.galimgfilepath(subfield) # this is a filepath, not a filename :-(
-                img_fnames.append(img_fname)
                 incat_fnames.append(incat_fname)
+                
+                # The output catalog:
                 outcat_fname = self._get_path(imgtype, os.path.splitext(os.path.basename(img_fname))[0] + "_meascat.pkl")
                 outcat_fnames.append(outcat_fname)
-               
                 
-            meas.run.general(img_fnames, incat_fnames, outcat_fnames, measfct, measfctkwargs, ncpu=ncpu, skipdone=skipdone)
+                # In general we also need the PSF image:
+                psfimgfilepaths.append(self.psfimgfilepath(subfield))
+                
+            meas.run.general(img_fnames, incat_fnames, outcat_fnames, measfct, measfctkwargs,
+                            psfimgfilepaths=psfimgfilepaths, ncpu=ncpu, skipdone=skipdone)
             
         elif imgtype=="sim":
             for simsubfield in self.simsubfields:
