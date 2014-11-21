@@ -18,12 +18,16 @@ except ImportError:
 import os
 
 
-def measure(img, catalog, xname="x", yname="y", params=None, config=None, workdir=None,
-	sexpath="sex", prefix="sewpy_"):
+def measure(img, catalog, xname="x", yname="y",
+	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_"):
 	"""
 	This is similar (in terms of API) to galsim_adamom.measure().
 	Returns a copy of the given catalog, with new columns appended.
 	
+	:param img: either the path to a FITS image, or a galsim image object
+	:param catalog: astropy table of objects to be measured
+	:param xname: column name containing the x coordinates in pixels
+	:param yname: idem for y
 	:param params: sewpy params. If ``None``, a default set, with many WIN parameters, is used.
 	:param config: sewpy config. If ``None``, a reasonable (?) default is used.
 	:param workdir: path where all SExtractor files, settings, and **logs** are kept.
@@ -39,12 +43,14 @@ def measure(img, catalog, xname="x", yname="y", params=None, config=None, workdi
 	# We make the workdir.
 	# Indeed, if we leave this to sewpy, there is a race hazard.
 	# We cannot use the normal "if exists: os.makedirs()" !
-	try:
-		os.makedirs(workdir)
-	except OSError:
-		pass
 	
-	
+	if workdir != None:
+		try:
+			os.makedirs(workdir)
+			logger.debug("Made workdir %s" % (workdir))
+		except OSError:
+			pass
+
 	if params == None:
 		params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
 			"FLUX_WIN", "FLUXERR_WIN", "NITER_WIN", "FLAGS_WIN", "FLUX_AUTO", "FLUXERR_AUTO",

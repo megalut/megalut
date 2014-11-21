@@ -19,9 +19,9 @@ from .. import tools
 
 def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
 	"""
-	I use the pixel positions provided via the input table to extract postage stamps
-	from the image and measure their shape parameters.
-	I return a copy of your input catalog with the new (masked) columns appended.
+	Use the pixel positions provided via the 'catalog' input table to extract
+	postage stamps from the image and measure their shape parameters.
+	Returns a copy of your input catalog with the new (masked) columns appended.
 	One of these colums (the only one that is not masked) is the flag:
 	
 	* 0: OK
@@ -30,14 +30,15 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	* 3: galsim failed
 	
 	:param img: either the path to a FITS image, or a galsim image object
-	:param catalog: astropy table of objects that I should measure
+	:param catalog: astropy table of objects to be measured
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
 	:param measuresky: set this to False if you don't want me to measure the sky (edge of stamps)
+	:param workdir: path where any possible output files are kept.
 	:param prefix: a string to prefix the field names that I'll write
-		
+	
 	:returns: masked astropy table
 	
 	"""

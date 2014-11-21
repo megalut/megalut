@@ -24,6 +24,7 @@ import sys
 import glob
 import datetime
 import multiprocessing
+import copy
 
 import megalut
 
@@ -105,7 +106,7 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 		
 
 
-def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgnames=None, ncpu=1, skipdone=True):
+def general(imgfilepaths, incatfilepaths, outcatfilepaths, measfct, measfctkwargs, psfimgfilepaths=None, workdirs=None, ncpu=1, skipdone=True):
 	"""
 	Run the given shape measurement (measfct) on your images using multiprocessing (ncpu).
 	The input should give all the necessary paths.  This is the general case.
@@ -115,20 +116,26 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 	:param incatfilepaths: list of paths to the **corresponding** pickled input catalogs.
 		These catalogs must contain the information required by measfct (and the measfctkwargs)
 		to run on the image files. So typically, the catalogs should contain at least some position.
-	:param measdir: path to a directory in which the output catalogs should be written.
-		**Change the measdir if you change anything to the measfct or its kwargs**.
+	:param outcatfilepaths: list of paths where the corresponding output catalog pickles should be written.
 	:param measfct: The function that measures the shapes. It must take two positional arguments
 		(an image, an input catalog), and return an output catalog.
-	:param measfctkwargs: keyword arguments controlling the behavior of the measfct
-	:type measfctkwargs: dict
-	:param imgnames: list of names of the FITS images. If None (default), use the FITS
-		image filenames to build a name for the output catalogs.
-		Specifying imgnames is required if some of the images happen to have the same filenames,
-		or if you don't want the filenames to be used.
+	:param measfctkwargs: keyword arguments controlling the behavior of the measfct.
+		You can either pass a dict, or, if your kwargs change from img to img, pass a list of dicts
+		(one for every imgfile).
+		Note that if only psfimg and workdir change from image to image, those can more easily be
+		specified using the keywords psfimgfilepaths and workdirs documented below.
+	:type measfctkwargs: dict or list of dicts.
+	:param psfimgfilepaths: list of paths that will be passed as psfimg argument to the measfct, 
+		overwriting any psfimg specified in measfctkwargs.
+		If you want to use the same psfimgfilepath for all imgfiles, it's easier to specify it
+		in measfctkwargs!
+	:param workdirs: list of paths that will be passed as "workdir" argument to measfct,
+		overwriting any workdir specified in measfctkwargs. Many measfct do not require any workdirs,
+		just leave this to None in that case.
 	:param ncpu: Maximum number of processes that should be used. Default is 1.
 		Set to 0 for maximum number of available CPUs.
 	:type ncpu: int
-	:type skipdone: If set to False, run on every file found, overwriting previous catalogs.
+	:type skipdone: If set to False, run on every file found, overwriting any existing  catalogs.
 
 
 	.. warning:: If called "in parallel" (e.g., from several python scripts launched at about the same time),
@@ -137,41 +144,71 @@ def general(imgfilepaths, incatfilepaths, measdir, measfct, measfctkwargs, imgna
 		(can be done e.g. with temporary files written/detected and deleted by the workers)
 
 	"""
-		
-	if len(imgfilepaths) != len(incatfilepaths):
-		raise RuntimeError("The lists imgfilepaths and incatfilepaths must have the same length")
+	
+#	:param imgnames: list of names of the FITS images. If None (default), use the FITS
+#		image filenames to build a name for the output catalogs.
+#		Specifying imgnames is required if some of the images happen to have the same filenames,
+#		or if you don't want the filenames to be used.
+	
+	# Some trivial tests:
+	
+	nimg = len(imgfilepaths)
+	if len(incatfilepaths) != nimg or len(outcatfilepaths) != nimg:
+		raise RuntimeError("The input lists must have the same length")
 
-	if imgnames != None:
-		if len(imgfilepaths) != len(imgnames):
-			raise RuntimeError("The lists imgfilepaths and imgnames must have the same length")
-		# And we check that the user-provided imgnames are indeed unique:
-		if len(set(imgnames)) != len(imgnames):
-			raise RuntimeError("Give me a unique imgname for every image.")
-		
+	# If measfctkwargs is a simple dict, we make a list of identical dicts.
+	
+	if type(measfctkwargs) is dict:
+		measfctkwargslist = [copy.deepcopy(measfctkwargs) for i in range(nimg)]
 	else:
-		# We build our own imgnames
-		imgnames = [os.path.splitext(os.path.basename(imgfilepath))[0] for imgfilepath in imgfilepaths]
-		if len(set(imgnames)) != len(imgnames):
-			raise RuntimeError("Some of your images have the same filename. Give me imgnames to differentiate them.")
+		measfctkwargslist = measfctkwargs
+		if len(measfctkwargs) != nimg:
+			raise RuntimeError("Your list of measfctkwargs does not have the same length as imgfilepaths")
+			
+	# Now we look at the psfimgfilepaths, and update this measfctkwargs list accordingly.
+	
+	if psfimgfilepaths != None:
+		if len(psfimgfilepaths) != nimg:
+			raise RuntimeError("The lists imgfilepaths and psfimgfilepaths must have the same length")
+		for (measfctkwargsdict, psfimgfilepath) in zip(measfctkwargslist, psfimgfilepaths):
+			measfctkwargsdict["psfimg"] = psfimgfilepath
+			
+	# Same for the workdirs:
+	
+	if workdirs != None:
+		if len(workdirs) != nimg:
+			raise RuntimeError("The lists imgfilepaths and workdirs must have the same length")
+		for (measfctkwargsdict, workdir) in zip(measfctkwargslist, workdirs):
+			measfctkwargsdict["workdir"] = workdir
+	
+	# No matter how the user has specified the workdirs, we now check that they are all different.
+	# A priori it seems not necessery to enforce this, but it's a simple way to avoid race conditions
+	# at directory creation, or any unwanted file overwriting.
+	
+	check_unique_workdirs = []
+	for measfctkwargsdict in measfctkwargslist:
+		if measfctkwargsdict.get("workdir", None) is not None: # So if it's present and not None:
+			check_unique_workdirs.append(measfctkwargsdict["workdir"])
+	if len(check_unique_workdirs) is not len(set(check_unique_workdirs)):
+		raise RuntimeError("The workdirs must all be different")
 		
+	# Should we create them ?
+	#if not os.path.exists(workdir):
+	#	os.makedirs(workdir)
 		
-	if not os.path.exists(measdir):
-		os.makedirs(measdir)
+	# Now we prepare the parallel processing.
 	
 	wslist = [] # The list to be filled with workersettings
 	
-	for (imgfilepath, imgname, incatfilepath) in zip(imgfilepaths, imgnames, incatfilepaths):
-		
-		outcatfilepath = os.path.join(measdir, "%s_meascat.pkl" % (imgname))
+	for (imgfilepath, incatfilepath, outcatfilepath, measfctkwargsdict) in zip(imgfilepaths, incatfilepaths, outcatfilepaths, measfctkwargslist):
 			
 		if skipdone and os.path.exists(outcatfilepath):
-			logger.info("Image '%s' has already been measured for this measdir" % (imgname))	
+			logger.info("Output catalog %s already exists, skipping this one..." % (outcatfilepath))	
 			continue
-		else:
-			ws = _WorkerSettings(imgfilepath, imgname, incatfilepath, outcatfilepath,
-					measfct, measfctkwargs, skipdone)
-			wslist.append(ws)
-			break ## DEBUG FOR fdntfunc.py, REMOVE LATER
+
+		ws = _WorkerSettings(imgfilepath, incatfilepath, outcatfilepath, measfct, measfctkwargsdict)
+		wslist.append(ws)
+		break ## DEBUG FOR fdntfunc.py, REMOVE LATER
 	
 	logger.info("Ready to run measurents on %i images." % (len(wslist)))
 			
@@ -186,19 +223,17 @@ class _WorkerSettings():
 	A class that holds together all the settings for measuring an image.
 	"""
 	
-	def __init__(self, imgfilepath, imgname, incatfilepath, outcatfilepath,
-				 measfct, measfctkwargs, skipdone):
+	def __init__(self, imgfilepath, incatfilepath, outcatfilepath,
+				 measfct, measfctkwargs):
 		
 		self.imgfilepath = imgfilepath
-		self.imgname = imgname
 		self.incatfilepath = incatfilepath
 		self.outcatfilepath = outcatfilepath
 		self.measfct = measfct
 		self.measfctkwargs = measfctkwargs
-		self.skipdone = skipdone
 	
 	def __str__(self):
-		return "[image '%s']" % (os.path.basename(self.imgfilepath))
+		return "%s" % (os.path.basename(self.imgfilepath))
 
 
 
@@ -210,6 +245,7 @@ def _worker(ws):
 	starttime = datetime.datetime.now()
 	p = multiprocessing.current_process()
 	logger.info("%s is starting to measure %s with PID %s" % (p.name, str(ws), p.pid))
+	logger.debug("Image %s gets processed with measfctkwargs %s" % (str(ws), str(ws.measfctkwargs)))
 	
 	# Read input catalog
 	incat = megalut.tools.io.readpickle(ws.incatfilepath)
@@ -234,10 +270,14 @@ def _run(wslist, ncpu):
 		return
 
 	# We only want to see warnings or worse from the following low-level stuff:
+	# This solution is bad as it leaves the log handles muted afterwards !
+	# So I remove this for now, we need to find a better way.
+	"""
 	for modulename in ["megalut.meas.galsim_adamom", "megalut.meas.sewfunc",
 			"sewpy.sewpy", "megalut.tools.io", "megalut.tools.image"]:
 		lowlevellogger = logging.getLogger(modulename)
 		lowlevellogger.setLevel(logging.WARNING)
+	"""
 	
 	if ncpu == 0:
 		try:
@@ -250,11 +290,15 @@ def _run(wslist, ncpu):
 	
 	logger.info("Starting the measurement on %i images using %i CPUs" % (len(wslist), ncpu))
 	
+	# The single process way (MUCH MUCH EASIER TO DEBUG...)
+	#map(_worker, wslist)
+	
+	# The multiprocessing way:
 	pool = multiprocessing.Pool(processes=ncpu)
 	pool.map(_worker, wslist)
 	pool.close()
 	pool.join()
-
+	
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total measurement time was %s" % (str(endtime - starttime)))
 	
