@@ -90,8 +90,6 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_cat.pkl  <-- the catalogs
 		simdir/name_of_simparams/20141016T170441_BJjhps_cat.pkl  <-- (ncat different ones)
 
-		simdir/name_of_simparams/20141016T170441_log.txt         <-- a log file
-
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_img:     <-- for each cat...
 		20141016T170441_1ZBNwd_0_galimg.fits                     <-- ... the images 
 		20141016T170441_1ZBNwd_0_trugalimg.fits
