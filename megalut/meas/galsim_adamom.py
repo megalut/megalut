@@ -14,7 +14,7 @@ import astropy.table
 import galsim
 
 from .. import tools
-
+from megalut.meas import utils
 
 
 def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
@@ -119,7 +119,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		# If the getting the stamp worked fine, we can for sure 
 		# estimate the sky noise and other stats:
 		if measuresky:
-			out = skystats(gps)
+			out = utils.skystats(gps)
 			gal[prefix + "skystd"] = out["std"]
 			gal[prefix + "skymad"] = out["mad"]
 			gal[prefix + "skymean"] = out["mean"]
@@ -159,49 +159,3 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
 	return output
-
-
-
-def mad(nparray):
-	"""
-	The Median Absolute Deviation
-	http://en.wikipedia.org/wiki/Median_absolute_deviation
-	
-	Multiply this by 1.4826 to convert into an estimate of the Gaussian std.
-	"""
-
-	return np.median(np.fabs(nparray - np.median(nparray)))
-
-
-
-def skystats(stamp):
-	"""
-	I measure some statistics of the pixels along the edge of an image or stamp.
-	Useful to measure the sky noise, but also to check for problems. Use "mad"
-	directly as a robust estimate the sky std.
-	
-	:param stamp: a galsim image, usually a stamp
-	
-	:returns: a dict containing "std", "mad", "mean" and "med"
-		Note that "mad" is already rescaled by 1.4826 to be comparable with std.
-	
-	"""
-	
-	a = stamp.array
-	edgepixels = np.concatenate([
-		a[0,1:], # left
-		a[-1,1:], # right
-		a[:,0], # bottom
-		a[1:-1,-1] # top
-		])
-	assert len(edgepixels) == 2*(a.shape[0]-1) + 2*(a.shape[0]-1)
-	
-	
-	# And we convert the mad into an estimate of the Gaussian std:
-	return {
-		"std":np.std(edgepixels), "mad": 1.4826 * mad(edgepixels), 
-		"mean":np.mean(edgepixels), "med":np.median(edgepixels)
-		}
-	
-	
-	
