@@ -65,7 +65,7 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 
 
 
-def drawimg(catalog, psfimg = None, psfxname="psfx", psfyname="psfy",
+def drawimg(catalog, psfimg = None, psfstampsize=None, psfxname="psfx", psfyname="psfy",
 			simgalimgfilepath = "test.fits", simtrugalimgfilepath = None, simpsfimgfilepath = None):
 
 	"""
@@ -77,12 +77,12 @@ def drawimg(catalog, psfimg = None, psfxname="psfx", psfyname="psfy",
 	:param catalog: an input catalog of galaxy shape parameters, as returned by drawcat.
 		The corresponding stampsize must be provided as catalog.meta["stampsize"].
 		If you specify a psfimg, you'll also have to add the PSF coordinates for each galaxy to this catalog.
-		The stampsize of the PSFs must be provided as catalog.meta["psfstampsize"].
 	:param psfimg: filepath to a FITS image containing the PSFs to be used, or directly the GalSim image.
 		Depending on the size of this image, one or the other option might be better. If you use run.multi(),
 		ncat * nrea copies of this parameter will be made, and so better pass a filepath if the image is large.
 	:type psfimg: GalSim image or string
-	:param psfxname: column name of catalog containing the PSF x coordinate in pixels (not the index)
+	:param psfstampsize: the stampsize of the PSFs to be extracted
+	:param psfxname: column name of catalog containing the PSF x coordinate in pixels
 	:param psfyname: idem for y
 	:param simgalimgfilepath: where I write my output image
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
@@ -112,12 +112,11 @@ def drawimg(catalog, psfimg = None, psfxname="psfx", psfyname="psfy",
 	
 	if psfimg is not None: # If the user provided some PSFs:
 
-		if "psfstampsize" not in catalog.meta.keys():
-			raise RuntimeError("Given that you specified a psfimg, provide psfstampsize in the meta data of the input catalog to drawimg.")	
-		psfstampsize = catalog.meta["psfstampsize"] # Size of the PSF stamps that I should extract from psfimg
+		if psfstampsize is None:
+			raise RuntimeError("Provide psfstampsize")	
 		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
 		if not(psfxname in catalog.colnames and psfyname in catalog.colnames):
-			raise RuntimeError("psfxname (%s) and psfyname (%s) are not available in the catalog" % (psfxname,psfyname))
+			raise RuntimeError("The psf position columns (%s, %s) are not available in the catalog %s" % (psfxname,psfyname, catalog.colnames))
 
 		if type(psfimg) is str:
 			logger.debug("You gave me a filepath, and I'm now loading the image...")
