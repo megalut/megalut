@@ -82,7 +82,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	
 		% ls -1 simdir/name_of_simparams/*
 		
-		simdir/name_of_simparams/20141016T170441_psfimg.fits     <-- PSF image is copied!
+		simdir/name_of_simparams/20141016T170441_kj34jj_psfimg.fits   <-- PSF image is copied!
 		
 		simdir/name_of_simparams/20141016T170441_1ZBNwd_cat.pkl  <-- the catalogs
 		simdir/name_of_simparams/20141016T170441_BJjhps_cat.pkl  <-- (ncat different ones)
