@@ -65,25 +65,24 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 
 
 
-def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
+def drawimg(catalog, psfimg = None, psfxname="psfx", psfyname="psfy",
 			simgalimgfilepath = "test.fits", simtrugalimgfilepath = None, simpsfimgfilepath = None):
 
 	"""
 	Turns a catalog as obtained from drawcat into FITS images.
 	Only the position jitter and the pixel noise are randomized. All the other info is taken from the input catalogs.
 	So simply call me several times for the same input to get different realizations of the same galaxies.
+	To specify the PSF, pass me a psfimg, and add the columns given by psfxname and psfyname to the catalog.
 	
-	:param galcat: an input catalog of galaxy shape parameters, as returned by drawcat.
-		The corresponding stampsize must be provided as galcat.meta["stampsize"].
-	:param psfcat: (optional) an input psf catalog, of the same length as galcat (line-by-line correspondence).
-		It contains the positions of the psf in psfimg to be used for each galaxy.
-		As for the galcat, the stampsize of the PSFs must be provided as psfcat.meta["stampsize"].
-		If psfcat is not specified, I just use Gaussians.
+	:param catalog: an input catalog of galaxy shape parameters, as returned by drawcat.
+		The corresponding stampsize must be provided as catalog.meta["stampsize"].
+		If you specify a psfimg, you'll also have to add the PSF coordinates for each galaxy to this catalog.
+		The stampsize of the PSFs must be provided as catalog.meta["psfstampsize"].
 	:param psfimg: filepath to a FITS image containing the PSFs to be used, or directly the GalSim image.
 		Depending on the size of this image, one or the other option might be better. If you use run.multi(),
 		ncat * nrea copies of this parameter will be made, and so better pass a filepath if the image is large.
 	:type psfimg: GalSim image or string
-	:param psfxname: column name of psfcat containing the x coordinate in pixels (not the index)
+	:param psfxname: column name of catalog containing the PSF x coordinate in pixels (not the index)
 	:param psfyname: idem for y
 	:param simgalimgfilepath: where I write my output image
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
@@ -100,36 +99,31 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	"""
 	starttime = datetime.now()	
 	
-	if "n" not in galcat.meta.keys():
-		raise RuntimeError("Provide n in the meta data of the input galcat to drawimg.")
-	if "stampsize" not in galcat.meta.keys():
-		raise RuntimeError("Provide stampsize in the meta data of the input galcat to drawimg.")	
+	if "n" not in catalog.meta.keys():
+		raise RuntimeError("Provide n in the meta data of the input catalog to drawimg.")
+	if "stampsize" not in catalog.meta.keys():
+		raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")	
 	
-	n = galcat.meta["n"]
-	stampsize = galcat.meta["stampsize"] # The stamps I'm going to draw
-	
-	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(galcat), n, n))
+	n = catalog.meta["n"]
+	stampsize = catalog.meta["stampsize"] # The stamps I'm going to draw
+		
+	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
-	if psfcat is not None: # If the user provided some PSFs:
-		if len(galcat) != len(psfcat):
-			raise RuntimeError("Length of the galcat must match length of psfcat!")
-		if "stampsize" not in psfcat.meta:
-			raise RuntimeError("I need to have 'stampsize' in psfcat.meta!")
-		if psfimg is None:
-			raise RuntimeError("You gave me a psfcat but no psfimg!")
-		else:
-			if type(psfimg) is str:
-				logger.debug("You gave me a filepath, and I'm now loading the image...")
-				psfimg = tools.image.loadimg(psfimg)
-		
-		psfstampsize = psfcat.meta["stampsize"] # The PSF stamps I should extract from psfimg
+	if psfimg is not None: # If the user provided some PSFs:
+
+		if "psfstampsize" not in catalog.meta.keys():
+			raise RuntimeError("Given that you specified a psfimg, provide psfstampsize in the meta data of the input catalog to drawimg.")	
+		psfstampsize = catalog.meta["psfstampsize"] # Size of the PSF stamps that I should extract from psfimg
 		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
-		
-		if not(psfxname in psfcat.colnames and psfyname in psfcat.colnames):
-			raise RuntimeError("psfxname (%s) and psfyname (%s) must be in colnames!" % (psfxname,psfyname))
+		if not(psfxname in catalog.colnames and psfyname in catalog.colnames):
+			raise RuntimeError("psfxname (%s) and psfyname (%s) are not available in the catalog" % (psfxname,psfyname))
+
+		if type(psfimg) is str:
+			logger.debug("You gave me a filepath, and I'm now loading the image...")
+			psfimg = tools.image.loadimg(psfimg)
+				
 	else:
-		psfcat = [None] * len(galcat)
 		logger.info("No PSFs given: I will use plain Gaussians!")
 
 	
@@ -146,17 +140,17 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 	trugal_image.scale = 1.0
 	psf_image.scale = 1.0
 
-	# And loop through the gal and psf catalogs:
-	for galrow, psfrow in zip(galcat, psfcat):
+	# And loop through the catalog:
+	for row in catalog:
 		
 		# Some simplistic progress indication:
-		fracdone = float(galrow.index) / len(galcat)
-		if galrow.index%500 == 0:
-			logger.info("%6.2f%% done (%i/%i) " % (fracdone*100.0, galrow.index, len(galcat)))
+		fracdone = float(row.index) / len(catalog)
+		if row.index%500 == 0:
+			logger.info("%6.2f%% done (%i/%i) " % (fracdone*100.0, row.index, len(catalog)))
 		
 		# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
-		ix = int(galrow["ix"])
-		iy = int(galrow["iy"])
+		ix = int(row["ix"])
+		iy = int(row["iy"])
 		assert ix < n and iy < n
 		bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
 		gal_stamp = gal_image[bounds]
@@ -164,8 +158,8 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		psf_stamp = psf_image[bounds]
 	
 		# We draw a sersic profile
-		gal = galsim.Sersic(n=galrow["tru_sersicn"], half_light_radius=galrow["tru_rad"], flux=galrow["tru_flux"])
-		gal.applyShear(g1=galrow["tru_g1"], g2=galrow["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
+		gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
+		gal.applyShear(g1=row["tru_g1"], g2=row["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
 		
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
@@ -177,7 +171,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 
 		# We get the PSF stamp, if provided
 		if psfimg is not None:
-			(inputpsfstamp, flag) = tools.image.getstamp(psfrow[psfxname], psfrow[psfyname], psfimg, psfstampsize)
+			(inputpsfstamp, flag) = tools.image.getstamp(row[psfxname], row[psfyname], psfimg, psfstampsize)
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 					
@@ -193,7 +187,7 @@ def drawimg(galcat, psfcat = None, psfimg = None, psfxname="x", psfyname="y",
 		galconv.draw(gal_stamp)
 		
 		# And add shot noise to the convolved galaxy:
-		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=galrow["tru_sig"]))
+		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=row["tru_sig"]))
 		
 		
 	logger.info("Done with drawing, now writing output FITS files ...")	
