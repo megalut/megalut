@@ -24,7 +24,7 @@ def loadimg(imgfilepath):
     img.setOrigin(0,0)
     logger.info("Done with loading %s, shape is %s" % (os.path.basename(imgfilepath), img.array.shape))
     
-    logger.warning("The origin and stampsize conventions are new and should be tested !")
+    #logger.warning("The origin and stampsize conventions are new and should be tested !")
     
     img.origimgfilepath = imgfilepath # Just to keep this somewhere
     
