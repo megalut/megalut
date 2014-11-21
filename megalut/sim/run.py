@@ -13,7 +13,9 @@ import glob
 import datetime
 import tempfile
 import cPickle as pickle
+import numpy as np
 import copy
+import shutil
 import multiprocessing
 
 import stampgrid
@@ -64,6 +66,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		to specify any of the other psf-related arguments.
 	:param psfimgpath: path to a FITS image with the PSFs.
 	:param psfstampsize: size of PSF stamps to extract (in pixels)
+	:type psfstampsize: int
 	:param psfxname: column name of psfcat containing the x position of the PSF to use
 	:param psfyname: idem for y
 	:param psfselect: either "random" or "sequential"
@@ -139,6 +142,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 			raise RuntimeError("PSF coordinates (%s, %s) are not available in the psfcat" % (psfxname, psfyname))
 		if psfimgpath is None:
 			raise RuntimeError("You gave me a psfcat but no psfimgpath")
+		if psfstampsize is None:
+			raise RuntimeError("Please specify the psfstampsize argument")
 		if type(psfimgpath) is not str:
 			raise RuntimeError("The psfimgpath should be a filepath (string)")
 	
@@ -165,8 +170,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 				raise RuntimeError("Unknown psfselect")	
 
 			# And we copy the columns
-			galcat["psfx"] = matched_psfcat[psfxname]
-			galcat["psfy"] = matched_psfcat[psfyname]
+			catalog["psfx"] = matched_psfcat[psfxname]
+			catalog["psfy"] = matched_psfcat[psfyname]
 		
 		# We copy the PSF image into the workdir.
 		# We want this to be perfectly collision-free -- just using the timestamp prefix is *not* enough,
@@ -220,7 +225,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 			
 			# Pointing to the PSF image:
 			if psfcat is not None:
-				thisdrawimgkwargs["psfimg"] = os.path.join(workdir, simpsfimgfilename) 
+				thisdrawimgkwargs["psfimg"] = os.path.join(workdir, drawpsfimgfilename) 
 			
 			# Preparing the filepaths in which we will write the image(s)
 			# Note that we removed all these keys from the the drawimgkwargs before!
@@ -245,8 +250,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		# Indeed the worker loop iterates over this same dir for every realization.
 		
 		os.mkdir(os.path.join(workdir, catalog.meta["catname"] + "_img"))
-	
-				
+		
+		
 	assert len(wslist) == ncat * nrea
 	
 	# The catalogs could be heavy, but note that we do not put unique copies of the catalogs in this list !
