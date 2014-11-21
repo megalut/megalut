@@ -11,7 +11,7 @@ basedir = '/tmp/MegaLUT_demo/'
 
 print "Step 1: drawing the sims"
 
-simdir = os.path.join(basedir, "simdir")
+simdir = os.path.join(basedir, "simdir") # Where the simulations should be written
 
 class Flux80(megalut.sim.params.Params):
 	def get_flux(self):
@@ -19,28 +19,28 @@ class Flux80(megalut.sim.params.Params):
 
 simparams = Flux80()
 
-drawcatkwargs = {"n":100, "stampsize":64}
-psfimgpath = "../generic/psfs/psfgrid.fits"
+"""
+drawcatkwargs = {"n":10, "stampsize":64}
 psfcat = megalut.tools.io.readpickle("../generic/psfs/cat_psfgrid.pkl")
-psfstampsize = psfcat.meta["stampsize"]
+psfimgpath = "../generic/psfs/psfgrid.fits"
+drawimgkwargs = {"psfstampsize":psfcat.meta["stampsize"], "psfxname":"psfgridx", "psfyname":"psfgridy"}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, 
-	psfcat=psfcat, psfimgpath=psfimgpath, psfstampsize=psfstampsize, psfxname="psfgridx", psfyname="psfgridy", psfselect="random",
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
+	psfcat=psfcat, psfimgpath=psfimgpath, psfselect="random",
 	ncat=3, nrea=5, ncpu=3)
 
 
-
-exit()
+"""
 
 print "Step 2, measuring"
 
-measdir = os.path.join(basedir, "measdir_adamom")
+measdir = os.path.join(basedir, "measdir_adamom") # Where the measurements should be written
 measfct = megalut.meas.galsim_adamom.measure
 measfctkwargs = {"stampsize":64}
 
 megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
 
-
+exit()
 
 print "Step 3, summarizing measurements accross simulations"
 
