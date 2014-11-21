@@ -172,6 +172,8 @@ def drawimg(catalog, psfimg = None, psfxname="psfx", psfyname="psfy",
 		# We get the PSF stamp, if provided
 		if psfimg is not None:
 			(inputpsfstamp, flag) = tools.image.getstamp(row[psfxname], row[psfyname], psfimg, psfstampsize)
+			if flag != 0:
+				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg" % (psfstampsize, psfstampsize, row[psfxname], row[psfyname]))
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 					
