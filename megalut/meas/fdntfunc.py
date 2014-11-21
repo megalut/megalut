@@ -18,10 +18,11 @@ import astropy.table
 from megalut import tools
 from megalut.meas import sewfunc
 import sewpy
+from megalut.meas import utils
 
 
-def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", measuresky=True,
-	    sewpy_workdir='sewpy', psf_catalog=None, psf_img=None, psf_great3_type=None):
+def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="fdnt_", measuresky=True,
+	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128, psf_great3_type=None):
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
 	Return a copy of the given catalog, with new columns appended.
@@ -58,13 +59,10 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 		img = tools.image.loadimg(img)
 		img.setOrigin(0,0)     # for it to work with megalut.tools.image.getstamp()
 
-	if (psf_img is None) and (psf_catalog is None):
+	if type(psfimg) is str:
 
 		# TODO: fix psfimg input.
-		psf_img = img.replace('_galimg','_psfimg')  # following the sim naming convention
-
-		# TODO: fix psfimg input.
-		psf_img = tools.image.loadimg(psf_img)
+		psf_img = tools.image.loadimg(psfimg)
 		psf_img.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
 
 	"""
@@ -110,7 +108,6 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 		output[prefix+col].mask = [True] * len(output)
 		output[prefix+col].fill_value = col_fill
 
-	"""
 	# Similarly, we prepare columns for the sky stats:
 	if measuresky:
 		output.add_columns([
@@ -121,7 +118,6 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 		])
 		for col in ["skystd", "skymad", "skymean", "skymed"]:
 			output[prefix+col].mask = [True] * len(output)
-	"""
 	
 	# Save something useful to the meta dict
 	output.meta[prefix + "xname"] = xname
@@ -129,24 +125,11 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 	
 	n = len(output)
 	
-	try:
-		if psf_catalog is None:
-			psfstampsize = catalog.meta["stampsize"]
-		else:
-			psfstampsize = psf_catalog.meta["stampsize"]
-		print
-		print 'psfstampsize', psfstampsize
-		print
-	except KeyError:  # catalog.meta does not contain "stampsize"
-		print
-		print "GET PROPER PSF INPUT!!!"   # TODO: implement PSF input
-		print
-
 	# Loop over each object
 
 	# DEBUG BLOCK
 	count = 0
-	mincount, maxcount = (5, 6)
+	mincount, maxcount = (0, 1)
 
 	for gal in output:
 		
@@ -166,6 +149,7 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 
 		# get centroid, size and shear estimates from catalog
 		(x, y) = (gal[xname], gal[yname])
+		(psfx, psfy) = (gal[psfxname], gal[psfyname])
 		#g1g2 = (gal['tru_g1'], gal['tru_g2'])
 		(a,b,theta) = (gal['AWIN_IMAGE'], gal['BWIN_IMAGE'], gal['THETAWIN_IMAGE'])
 		"""
@@ -185,7 +169,7 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 
 		# get the PSF postage stamp image
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
-		(psfstamp, flag) = tools.image.getstamp(x, y, psf_img, psfstampsize)
+		(psfstamp, flag) = tools.image.getstamp(psfx, psfy, psf_img, psfstampsize)
 		psfstamp = psfstamp.copy()   # if I want to move the pixel coords, then I need a copy for RunFDNT() to work
 		if flag != 0:   # postage stamp extraction unsuccessful
 			print 'psfstamp extraction failure'
@@ -201,12 +185,22 @@ def measure(img, catalog, stampsize=128, xname="x", yname="y", prefix="fdnt_", m
 			continue
 		print "galstamp before padding", galstamp.bounds   # DEBUG
 
+		# find the noise level around the stamp
+		sky_out = utils.skystats(galstamp)
+		if measuresky:
+			gal[prefix + "skystd"] = sky_out["std"]
+			gal[prefix + "skymad"] = sky_out["mad"]
+			gal[prefix + "skymean"] = sky_out["mean"]
+			gal[prefix + "skymed"] = sky_out["med"]
+
+
 		# add padding, 2x the stamp size, for FFT purposes
 		safe_pad_margin = 4
 		noise_pad_size = max(galstamp.array.shape) * 2.0 + safe_pad_margin
 		noise_pad_image = galsim.Image(noise_pad_size, noise_pad_size, dtype=galstamp.dtype)
 		rng = galsim.BaseDeviate()
-		noise = galsim.GaussianNoise(rng, sigma=gal["tru_sig"])
+		noise = galsim.GaussianNoise(rng, sigma=sky_out["std"])
+		print "NOISE LEVEL:", sky_out["std"]
 		noise_pad_image.addNoise(noise)
 		galstamp = galstamp.view()
 		galstamp_center = galstamp.center()
