@@ -69,7 +69,7 @@ class Run(utils.Branch):
 		
 		"""
 		
-        # Lists that we will pass to meas.run.general():
+		# Lists that we will pass to meas.run.general():
 		img_fnames = []
 		incat_fnames = []
 		outcat_fnames = []
