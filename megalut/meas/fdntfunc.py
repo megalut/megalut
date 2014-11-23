@@ -22,16 +22,22 @@ from megalut.meas import utils
 
 
 def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="fdnt_",
-	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128, psf_great3_type=None):
+	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128,):
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
 	Return a copy of the given catalog, with new columns appended.
 	
 	:param img: image to be measured
 	:param catalog: astropy table of objects to be measured
+	:param psfimg: PSF image that is convolved into the image
+
+	:param stampsize: img stamp size
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: column name containing the y coordinates in pixels
 	:param prefix: a string to prefix the field names that are added to the catalog
+	:param psfxname: column name containing the x coordinates of the PSF in pixels
+	:param psfyname: column name containing the y coordinates of the PSF in pixels
+	:param stampsize: psfimg stamp size
 	
 	:returns: astropy table (the original catalog, with additional columns of measurement values)
 	
