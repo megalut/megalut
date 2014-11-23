@@ -21,7 +21,7 @@ import sewpy
 from megalut.meas import utils
 
 
-def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="fdnt_", measuresky=True,
+def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="fdnt_",
 	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128, psf_great3_type=None):
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
@@ -65,16 +65,8 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 		psf_img = tools.image.loadimg(psfimg)
 		psf_img.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
 
-	"""
-	# check if stampsize info is already in the catalog
-	if "stampsize" in catalog.meta:
-		if stampsize != catalog.meta["stampsize"]:
-			logger.warning("Measuring with stampsize=%i, but stamps have been generated with stampsize=%i" %\
-				(stampsize, catalog.meta["stampsize"]))
-	"""
-
 	# Prepare an output table with all the required columns
-	output = astropy.table.Table(copy.deepcopy(se_output), masked=True) # Convert the table to a masked table
+	output = astropy.table.Table(copy.deepcopy(se_output))  #, masked=True) # Convert the table to a masked table
 	output.add_columns([
 
 		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
@@ -105,20 +97,16 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 				 [   -1.,  0.,  0., -10., -10.,     -1.,    -1.,        0.,
 				            0,     -10.,     -10.,         -1.,        -1.,    -1,
 				           -1,        0.,             0.,         0.,        0]):
-		output[prefix+col].mask = [True] * len(output)
-		output[prefix+col].fill_value = col_fill
+		output[prefix+col][:] = col_fill
 
 	# Similarly, we prepare columns for the sky stats:
-	if measuresky:
-		output.add_columns([
-			astropy.table.MaskedColumn(name=prefix+"skystd", dtype=float, length=len(output)),
-			astropy.table.MaskedColumn(name=prefix+"skymad", dtype=float, length=len(output)),
-			astropy.table.MaskedColumn(name=prefix+"skymean", dtype=float, length=len(output)),
-			astropy.table.MaskedColumn(name=prefix+"skymed", dtype=float, length=len(output))
-		])
-		for col in ["skystd", "skymad", "skymean", "skymed"]:
-			output[prefix+col].mask = [True] * len(output)
-	
+	output.add_columns([
+			astropy.table.Column(name=prefix+"skystd", dtype=float, length=len(output)),
+			astropy.table.Column(name=prefix+"skymad", dtype=float, length=len(output)),
+			astropy.table.Column(name=prefix+"skymean", dtype=float, length=len(output)),
+			astropy.table.Column(name=prefix+"skymed", dtype=float, length=len(output))
+			])
+
 	# Save something useful to the meta dict
 	output.meta[prefix + "xname"] = xname
 	output.meta[prefix + "yname"] = yname
@@ -129,34 +117,24 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 
 	# DEBUG BLOCK
 	count = 0
-	mincount, maxcount = (0, 1)
+	mincount, maxcount = (4, 13)
 
 	for gal in output:
 		
 		# DEBUG BLOCK
 		count += 1  ## DEBUG
 		if count < mincount: continue  ## DEBUG
-
 		# Some simplistic progress indication:
-		print "DEBUG: before gal.index"
 		if gal.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n),
 							       gal.index, n))
 
-		print "DEBUG: before collecting gal data"
-		print "DEBUG: colnames"
-		print output.colnames  ## DEBUG
-
 		# get centroid, size and shear estimates from catalog
 		(x, y) = (gal[xname], gal[yname])
 		(psfx, psfy) = (gal[psfxname], gal[psfyname])
-		#g1g2 = (gal['tru_g1'], gal['tru_g2'])
 		(a,b,theta) = (gal['AWIN_IMAGE'], gal['BWIN_IMAGE'], gal['THETAWIN_IMAGE'])
-		"""
-		size = gal['tru_rad']/0.77741  # gal['tru_rad']/1.17741 is the "true" value;
-		                               # this converges better for size ~1 pixel
-		"""
 		size = np.hypot(a,b)
+
 		# TODO: use SExtractor size for psf_size as well...
 		psf_size = 3.5  # (from stampgrid.py, default is round Gaussian PSF of size sigma~3.5)
 		psf_size += 0.5  ## DEBUG TESTING (offset from true answer)
@@ -164,8 +142,6 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 		if gal['assoc_flag'] == False:   # not detected by SExtractor
 			print 'SExtractor failed on this object'
 			continue
-
-		print "DEBUG: before psf postage stamp"
 
 		# get the PSF postage stamp image
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
@@ -175,33 +151,28 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 			print 'psfstamp extraction failure'
 			continue
 
-		print "DEBUG: after psf postage stamp"
-
 		# get the galaxy postage stamp image (so much faster!)
 		(galstamp, flag) = tools.image.getstamp(x, y, img, stampsize)
 		galstamp = galstamp.copy()
 		if flag != 0:   # postage stamp extraction unsuccessful
 			print 'galstamp extraction failure'
 			continue
-		print "galstamp before padding", galstamp.bounds   # DEBUG
 
 		# find the noise level around the stamp
 		sky_out = utils.skystats(galstamp)
-		if measuresky:
-			gal[prefix + "skystd"] = sky_out["std"]
-			gal[prefix + "skymad"] = sky_out["mad"]
-			gal[prefix + "skymean"] = sky_out["mean"]
-			gal[prefix + "skymed"] = sky_out["med"]
-
+		gal[prefix + "skystd"] = sky_out["std"]
+		gal[prefix + "skymad"] = sky_out["mad"]  # median absolute deviation scaled to std
+		gal[prefix + "skymean"] = sky_out["mean"]
+		gal[prefix + "skymed"] = sky_out["med"]
 
 		# add padding, 2x the stamp size, for FFT purposes
 		safe_pad_margin = 4
 		noise_pad_size = max(galstamp.array.shape) * 2.0 + safe_pad_margin
 		noise_pad_image = galsim.Image(noise_pad_size, noise_pad_size, dtype=galstamp.dtype)
 		rng = galsim.BaseDeviate()
-		noise = galsim.GaussianNoise(rng, sigma=sky_out["std"])
-		print "NOISE LEVEL:", sky_out["std"]
+		noise = galsim.GaussianNoise(rng, sigma=sky_out["mad"])  # mad is more robust than std
 		noise_pad_image.addNoise(noise)
+		noise_pad_image += sky_out["med"]  # median is more robust than mean
 		galstamp = galstamp.view()
 		galstamp_center = galstamp.center()
 		galstamp.setCenter(0,0)
@@ -212,7 +183,6 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 			noise_pad_image = galstamp
 		galstamp = noise_pad_image
 		galstamp.setCenter(galstamp_center)
-		print "galstamp size after padding", galstamp.bounds  # DEBUG
 
 		# We measure the moments... GLMoment may fail from time to time, hence the try:
 		try:
@@ -234,6 +204,7 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 			continue
 
 		gal[prefix + "flag"] = res.intrinsic_flags
+
 		try:
 			# first PSF measurement info
 			gal[prefix+'psf_flags'] = res.psf_flags
@@ -262,12 +233,9 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 			gal[prefix + "snratio"] = res.observed_significance
 
 		except ValueError:
+			print "results not set correctly"  # NOTE: currently no masking is applied
 			pass  # do nothing, this will "mask" the value out from the astropy table.
 
-		# If we made it so far, we check that the centroid is roughly ok:
-		#if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
-		#	gal[prefix + "flag"] = 2
-		
 		## DEBUG BLOCK
 		if count >= maxcount:
 			print output[:maxcount]
@@ -289,7 +257,6 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 			    (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
 	print output  ## DEBUG
-	#print gal[prefix + "flag"] ## DEBUG
 	return output
 
 
