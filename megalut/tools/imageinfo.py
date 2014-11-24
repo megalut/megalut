@@ -52,12 +52,27 @@ class ImageInfo():
 
 	def __str__(self):
 		"""
-		Retruns the image name
+		Retruns a short description of this object
 		"""
-		return self.name
+		return "ImageInfo(%s, %s, %s, %s)" % (self.name, self.xname, self.yname, self.stampsize)
 
 	def load(self):
 		"""
 		Returns the image as GalSim Image object.
 		"""
 		return image.loadimg(self.filepath)
+
+
+	def checkcolumns(self, catalog):
+		"""
+		Verifies that the attributes xname and yname are available as columns in the given catalog.
+		If not, raises a nicely descriptive RuntimeError.
+		As this is such a common check, a dedicated method seems appropriate.
+		"""
+		if not (self.xname in catalog.colnames and self.yname in catalog.colnames):
+			raise RuntimeError("The columns (%s, %s) are not among the ones available in the catalog: %s"\
+				% (self.xname, self.yname, catalog.colnames))
+
+		
+		
+		
