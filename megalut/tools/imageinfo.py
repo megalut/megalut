@@ -19,7 +19,7 @@ class ImageInfo():
 	In future, this class can in principle hold more complex WCS-like coordinate systems.
 	"""
 
-	def __init__(self, filepath, xname="x", yname="y", stampsize=None, imgname=None, workdir=None):
+	def __init__(self, filepath, xname="x", yname="y", stampsize=None, name=None, workdir=None):
 		"""
 		:param filepath: absolute path to the FITS image
 		:type filepath: string
@@ -30,9 +30,9 @@ class ImageInfo():
 		:param stampsize: width and height of a stamp, in pixels, if the image consists of gridded stamps.
 			Leave it to None if the image does not hold stamps.
 		:type stampsize: int
-		:param imgname: a name for the image. By default (None) the filename will be used, but sometimes
-			it might be helpful to specify different names.
-		:type imgname: string
+		:param name: a name for the image. By default (None) the filename will be used, but sometimes
+			it might be helpful to specify different names. Functions use these names to refer to the image in logs etc.
+		:type name: string
 		:param workdir: path to a working directory for this image
 		:type imgname: string	
 		"""
@@ -43,16 +43,16 @@ class ImageInfo():
 		self.stampsize = stampsize
 
 		
-		if imgname is None:
-			self.imgname = os.path.splitext(os.path.basename(filepath))[0]
+		if name is None:
+			self.name = os.path.splitext(os.path.basename(filepath))[0]
 		else:
-			self.imgname = imgname
+			self.name = name
 		
 		self.workdir = workdir # To be developed...
 				
 
 	def __str__(self):
-		return self.imgname
+		return self.name
 
 	def load(self):
-		return image.loadimage(self.filepath)
+		return image.loadimg(self.filepath)
