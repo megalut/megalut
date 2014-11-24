@@ -28,17 +28,23 @@ galcat = megalut.sim.stampgrid.drawcat(mysimparams, n=20, stampsize=48)
 print galcat[:5]
 
 
-# Now, we prepare the PSF stuff. In this case we'll use existing files.
+# Now, we prepare the PSF stuff. We'll use existing PSF stamps.
 # We need an image with PSF stamps, and we need to add new columns in galcat.
-# For the image, we can either specify a Galsim image, or a filepath.
+# To specify the image, we will add an ImageInfo object to catalog.
 
-#psfimg = megalut.tools.image.loadimg("psfs/psfgrid.fits")
-psfimg = "psfs/psfgrid.fits"
+# This PSF image comes with a catalog, which is not in form of an ImageInfo object.
+# (After all, that's what we want to demo here.)
+# So let's first have a look:
+
 psfcat = megalut.tools.io.readpickle("psfs/cat_psfgrid.pkl")
 print psfcat[:5]
 print len(psfcat)
+print psfcat.meta
 
-# The only columns we care about are those giving the position of each PSF, called psfgridx and psfgridy in this case.
+# Now we can prepare the ImageInfo object from scratch, and already attach it to the galcat.
+galcat.meta["psf"] = megalut.tools.imageinfo.ImageInfo("psfs/psfgrid.fits", xname="psfx", yname="psfy", stampsize=32)
+
+# Now we have to add "psfx" and "psfy" columns to our galcat, and fill in a value for each row.
 # Oops, this catalog has only 100 PSFs, but we want to simulate 400 galaxies !
 # So let's randomly assign a PSF to each galaxy in galcat.
 # Here is a neat way of doing this:
@@ -46,25 +52,18 @@ print len(psfcat)
 matched_psfcat = psfcat[np.random.randint(low=0, high=100, size=400)] # We love astropy.table :)
 # Note BTW that this makes a copy (not just refs).
 
-
 # Now we add the PSF positions to the galcat:
-galcat["psfx"] = matched_psfcat["psfgridx"]
-galcat["psfy"] = matched_psfcat["psfgridy"]
+galcat["psfx"] = matched_psfcat["psfx"]
+galcat["psfy"] = matched_psfcat["psfy"]
 
 # Note that the PSFs don't even have to be on a grid, any x and y coordinates are fine.
 # We could also give the same x and y for each galaxy, so that only one PSF gets used.
-
-# We also need galcat.meta to hold the psfstampsize (which can be different from the galcat stampsize !)
-# For this demo catalog, it's correctly set, to 32:
-
-galcat.meta["psfstampsize"] = psfcat.meta["stampsize"]
 
 print galcat[:5]
 
 # We are now ready to feed this into drawimg :
 
-megalut.sim.stampgrid.drawimg(galcat, psfimg=psfimg,
-	psfxname="psfx", psfyname="psfy",
+megalut.sim.stampgrid.drawimg(galcat,
 	simgalimgfilepath="simgalimg.fits",
 	simtrugalimgfilepath="simtrugalimg.fits",
 	simpsfimgfilepath="simpsfimg.fits"

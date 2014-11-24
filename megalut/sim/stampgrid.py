@@ -56,35 +56,29 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	catalog = astropy.table.Table(rows=rows)
 	logger.info("Drawing of catalog done")
 	
+	# The following is aimed at drawimg:
 	catalog.meta["n"] = n
 	catalog.meta["stampsize"] = stampsize
-	
 	
 	return catalog
 	
 
 
 
-def drawimg(catalog, psfimg = None, psfstampsize=None, psfxname="psfx", psfyname="psfy",
-			simgalimgfilepath = "test.fits", simtrugalimgfilepath = None, simpsfimgfilepath = None):
+def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, simpsfimgfilepath=None):
 
 	"""
 	Turns a catalog as obtained from drawcat into FITS images.
 	Only the position jitter and the pixel noise are randomized. All the other info is taken from the input catalogs.
 	So simply call me several times for the same input to get different realizations of the same galaxies.
-	To specify the PSF, pass me a psfimg, and add the columns given by psfxname and psfyname to the catalog.
-	
+	To specify the PSF, pass me a catalog that has an catalog.meta["psf"] ImageInfo object.
+		
 	:param catalog: an input catalog of galaxy shape parameters, as returned by drawcat.
 		The corresponding stampsize must be provided as catalog.meta["stampsize"].
-		If you specify a psfimg, you'll also have to add the PSF coordinates for each galaxy to this catalog.
-	:param psfimg: filepath to a FITS image containing the PSFs to be used, or directly the GalSim image.
-		Depending on the size of this image, one or the other option might be better. If you use run.multi(),
-		ncat * nrea copies of this parameter will be made, and so better pass a filepath if the image is large.
-	:type psfimg: GalSim image or string
-	:param psfstampsize: the stampsize of the PSFs to be extracted
-	:param psfxname: column name of catalog containing the PSF x coordinate in pixels
-	:param psfyname: idem for y
-	:param simgalimgfilepath: where I write my output image
+		If you specify a psf image in catalog.meta["psf"], your catalog must of course also contain
+		PSF coordinates for that image.
+		
+	:param simgalimgfilepath: where I write my output image of simulated and noisy galaxies
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
 	:param simpsfimgfilepath: (optional) where I write the PSFs
 	
@@ -110,19 +104,17 @@ def drawimg(catalog, psfimg = None, psfstampsize=None, psfxname="psfx", psfyname
 	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
-	if psfimg is not None: # If the user provided some PSFs:
+	if "psf" in catalog.meta: # If the user provided some PSFs:
+		
+		psfinfo = catalog.meta["psf"] # Getting the ImageInfo object
+		logger.info("I will use provided PSFs with a stampsize of %i." % (psfinfo.stampsize))
+		if not(psfinfo.xname in catalog.colnames and psfinfo.yname in catalog.colnames):
+			raise RuntimeError("The psf position columns (%s, %s) are not available in the catalog %s" % (psfinfo.xname, psfinfo.yname, catalog.colnames))
 
-		if psfstampsize is None:
-			raise RuntimeError("Provide psfstampsize")	
-		logger.info("I will use provided PSFs with a stampsize of %i." % (psfstampsize))
-		if not(psfxname in catalog.colnames and psfyname in catalog.colnames):
-			raise RuntimeError("The psf position columns (%s, %s) are not available in the catalog %s" % (psfxname,psfyname, catalog.colnames))
-
-		if type(psfimg) is str:
-			logger.debug("You gave me a filepath, and I'm now loading the image...")
-			psfimg = tools.image.loadimg(psfimg)
+		psfimg = psfinfo.load() # The actual GalSim Image
 				
 	else:
+		psfinfo = None
 		logger.info("No PSFs given: I will use plain Gaussians!")
 
 	
@@ -169,10 +161,11 @@ def drawimg(catalog, psfimg = None, psfstampsize=None, psfxname="psfx", psfyname
 		gal.draw(trugal_stamp)
 
 		# We get the PSF stamp, if provided
-		if psfimg is not None:
-			(inputpsfstamp, flag) = tools.image.getstamp(row[psfxname], row[psfyname], psfimg, psfstampsize)
+		if psfinfo is not None:
+			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
 			if flag != 0:
-				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg" % (psfstampsize, psfstampsize, row[psfxname], row[psfyname]))
+				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
+					(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 					
