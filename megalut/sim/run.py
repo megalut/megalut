@@ -22,12 +22,14 @@ import astropy.table
 import stampgrid
 import inspect
 
+from .. import tools
+
 import logging
 logger = logging.getLogger(__name__)
 
 
-def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
-	psfcat=None, psfimgpath=None, psfselect="random",
+def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
+	psfcat=None, psfselect="random",
 	ncat=2, nrea=2, ncpu=1, savetrugalimg=False, savepsfimg=False):
 	"""
 	Uses stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
@@ -40,15 +42,17 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 	simulations using the same simparams in the same directory. Note that a timestamp is included
 	in the filenames, but this is just to help human readability, not for uniqueness.
 	
-	About specifying the PSFs: this function takes a single psfimg and a corresponding psfcat. This psfcat does **not**
-	need to have exactly "n x n" rows (one for each galaxy in each catalog).
-	Instead, for each of the n x n galaxy stamps in the ncat catalogs, a PSF from this psfcat will be assigned
-	either randomly (psfchoice = "random") or in sequence (psfchoice = "sequential").
-	In any case, the information about which PSF is used will be stored in the output catalog.
-	This function also makes a FITS copy of psfimg into its "simdir", to be sure that this information is kept
-	in a consistent way.
+	About specifying the PSFs: this function takes a **single** psfcat, which has to link to an image
+	via a psfcat.meta["img"] ImageInfo object. This psfcat does **not**
+	need to have "n x n" rows (one for each galaxy in each catalog).
+	Instead, for each of the n x n galaxy stamps in the ncat catalogs that will be created, a PSF from this psfcat
+	will be assigned either randomly (psfchoice = "random") or in sequence (psfchoice = "sequential").
+	In any case, the information about which PSF is used will be stored in the output catalogs (using the columns
+	"psfx", "psfy", and meta["psf"]). In fact all columns of psfcat will be placed into the outputcat.
+	Note that this function makes a copy of PSF image into its "simdir" (and refers to that copy instead of the
+	image filepath given in psfcat), to be sure that all information to use the created simulations is kept inside
+	simdir.
 	
-
 	:param simdir: Path to a directory where the simulations are written to.
 		This directory does **not** have to be unique for every call of this function!
 		Subdirectories reflecting the name of each simparams are made under the simdir.
@@ -57,19 +61,19 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 	:param simparams: A sim.simparams instance that defines the distributions of parameters
 	:param drawcatkwargs: Keyword arguments which will be directly passed to stampgrid.drawcat
 	:type drawcatkwargs: dict
-	:param drawimgkwargs: Idem, for stampgrid.drawimg.
+	:param drawimgkwargs: (currently not used) Idem, for stampgrid.drawimg.
 		The filepaths simgalimgfilepath, simtrugalimgfilepath simpsfimgfilepath will be saved
 		with auto-generated filenames, if asked for.
 	:type drawimgkwargs: dict
-	:param psfcat: astropy table (or path to a pkl) with pixel coordinates of PSFs to use.
-		If None, no PSF information will be passed to stampgrid.drawimg, and you won't have
-		to specify any of the other psf-related arguments.
+	:param psfcat: catalog (or path to a pkl) describing the PSFs to use.
+		It has to have meta["img"] set to link to the FITS image.
+		If None, no PSF information will be passed to stampgrid.drawimg.
 		If the psfcat is specified, data from **all its columns will be taken over** into
-		the simulated catalogs (and not just the columns psfxname and psfyname).
-		However, **any "meta" info from psfcat will not be taken over**, as keeping it would be prone
+		the simulated catalogs (and not just the columns giving the x and y position of each PSF).
+		However, any extra "meta" info from psfcat will not be taken over, as keeping it would be prone
 		to confusions.
-	:param psfimgpath: path to a FITS image with the PSFs.
-	:param psfselect: either "random" or "sequential"
+	:param psfselect: either "random" or "sequential", determines how the PSFs should be attributed
+		to the simulated galaxies.
 	:param ncat: The number of catalogs to be generated.
 	:type ncat: int
 	:param nrea: The number of realizations per catalog to be generated.
@@ -113,13 +117,15 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 	"""
 	starttime = datetime.datetime.now()
 	prefix = starttime.strftime("%Y%m%dT%H%M%S_")
+	if drawimgkwargs is None:
+		drawimgkwargs = {}
 	
 	# First, some general checks:
 	if ncat < 1 or nrea < 1:
 		raise RuntimeError("ncat and nrea must be above 0")
 	
 	# Some tests about the drawimgkwargs:
-	forbiddendrawimgkwargs = ["simgalimgfilepath", "simtrugalimgfilepath", "simpsfimgfilepath", "psfimg"]
+	forbiddendrawimgkwargs = ["simgalimgfilepath", "simtrugalimgfilepath", "simpsfimgfilepath"]
 	for kwarg in forbiddendrawimgkwargs:
 		if kwarg in drawimgkwargs:
 			raise RuntimeError("I can't respect your drawimgkwarg '%s', do not specify it." % (kwarg))
@@ -137,40 +143,52 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 
 	logger.info("Drawing %i catalogs, and %i image realizations per catalog" % (ncat, nrea))
 	logger.info("All files will be written into '%s', with prefix '%s'" % (workdir, prefix))
-
-	# We check that the PSF stuff looks fine:
-	if psfcat is not None:
-		if type(psfcat) is str:
-			psfcat = megalut.tools.io.readpickle(psfcat)
-			logger.debug("Your psfcat was a path, I loaded it" % (psfcat))
-		if psfimgpath is None:
-			raise RuntimeError("You gave me a psfcat but no psfimgpath")
-		if type(psfimgpath) is not str:
-			raise RuntimeError("The psfimgpath should be a filepath (string)")
 	
 	# We create the catalogs, this is fast and there is no need to parallelize this: 
 	logger.info("Drawing galaxy catalogs...")
 	catalogs = [stampgrid.drawcat(simparams, **drawcatkwargs) for i in range(ncat)]
 	
-	
-	# We now attribute PSFs to each source in these catalogs
+	# We now attribute PSFs to each source in these catalogs. That's a little bit of work.
 	if psfcat is not None:
-		
-		# First we copy the PSF image into the workdir.
+	
+		# First we check that the PSF stuff looks fine:
+		if "img" not in psfcat.meta:
+			raise RuntimeError("ImageInfo of psfcat is missing, put it into psfcat.meta['img']")
+		psfcat.meta["img"].checkcolumns(psfcat)
+	
+		# Now we copy the PSF image into the workdir.
 		# We want this to be perfectly collision-free -- just using the timestamp prefix is *not* enough,
 		# as several instances of this multi() could be launched at the same time.
 		# So we use tempfile to build a filename for this PSF image.
 		
 		drawpsfimgfile = tempfile.NamedTemporaryFile(mode='wb', prefix=prefix, suffix="_psfimg.fits", dir=workdir, delete=False)
-		drawpsfimgfilename = drawpsfimgfile.name # Will be written in the meta of each catalog
+		drawpsfimgfilename = drawpsfimgfile.name
 		drawpsfimgfile.close()	
+		drawpsfimgfilepath = os.path.join(workdir, drawpsfimgfilename)
 		logger.info("Copying PSF image into the simdir, with filename '%s'..." % (drawpsfimgfilename))
-		shutil.copy(psfimgpath, os.path.join(workdir, drawpsfimgfilename))
-		
+		shutil.copy(psfcat.meta["img"].filepath, drawpsfimgfilepath)
 	
+		# We can now prepare the catalog.meta["psf"] ImageInfo for each catalog, to point to that FITS file.
+		# It's almost the same as psfcat.meta["img"], except that the filepath should point to our new copy.
+		# Let's make a new object instead of tweaking the existing one, so that "name" gets correctly set etc.
+		
+		psfinfo = tools.imageinfo.ImageInfo(
+			drawpsfimgfilepath,
+			xname=psfcat.meta["img"].xname,
+			yname=psfcat.meta["img"].yname,
+			stampsize=psfcat.meta["img"].stampsize
+			)
+			
+		# Now, we have to populate the catalog itself with PSF coordinates.
+		# This part is to be done independently for each catalog, so we loop over the catalogs:
+		
 		logger.info("Attributing PSFs using psfselect='%s'" % (psfselect))
 		mergedcatalogs = []
 		for catalog in catalogs:
+		
+			# We set the catalog.meta["psf"] ImageInfo.
+			catalog.meta["psf"] = psfinfo # It's the same for all catalogs.
+			
 			if psfselect == "random":
 				# We repeat the random drawing for each catalog:
 				matched_psfcat = psfcat[np.random.randint(low=0, high=len(psfcat)-1, size=len(catalog))]
@@ -181,15 +199,9 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 			else:
 				raise RuntimeError("Unknown psfselect")	
 			
-			# Now that we have a copy of psfcat, we can dump its metadata without side-effects:
+			# Now that we have a copy of psfcat (to be merged with catalog),
+			# we can dump its metadata without any side-effects:
 			matched_psfcat.meta = {}
-			# And save instead the drawimgkwargs, which will be good to have when measuring the simulated images.
-			# It's good to do this here for matched_psfcat, so that the hstack below will raise errors in case of
-			# any metadata conflicts.
-			
-			matched_psfcat.meta.update(drawimgkwargs)
-			matched_psfcat.meta["psfimgfilename"] = drawpsfimgfilename
-			matched_psfcat.meta["simparamsname"] = simparams.name	
 			
 			# And we merge this matched_psfcat into the catalog.
 			# However we want to be sure that columns do not have conflicting names.
@@ -198,15 +210,15 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 				if colname in catalog.colnames:
 					raise RuntimeError("The column '%s' of psfcat is in conflict with the drawcat columns")
 			
+			# The merge itself:
 			mergedcatalog = astropy.table.hstack([catalog, matched_psfcat], join_type='exact',
-				table_names=['tru', 'psf'], uniq_col_name='{table_name}_{col_name}', metadata_conflicts="error")
+				table_names=['gal', 'psf'], uniq_col_name='{table_name}_{col_name}', metadata_conflicts="error")
 			
 			mergedcatalogs.append(mergedcatalog)
 		
-		catalogs = mergedcatalogs
+		catalogs = mergedcatalogs # We don't need the non-merged catalogs anymore.
 
-	
-	# Now we save the catalogs, using unique filenames.
+	# Now we save the different catalogs one by one, using unique filenames.
 	# This is not done with the timestamp!  The timestamp is only here to help humans.
 	# The module tempfile takes care of making the filename unique.
 	
@@ -231,14 +243,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 			
 			# We have to customize the drawimgkwargs, and so we work on a copy
 			thisdrawimgkwargs = copy.deepcopy(drawimgkwargs)
-			
-			# Pointing to the PSF image:
-			if psfcat is not None:
-				thisdrawimgkwargs["psfimg"] = os.path.join(workdir, drawpsfimgfilename) 
 				
 			# Preparing the filepaths in which we will write the output image(s)
-			# Note that we removed all these keys from the the drawimgkwargs before!
-			
 			catname = catalog.meta["catname"]
 			catimgdirpath = os.path.join(workdir, catname + "_img")
 				
@@ -279,9 +285,9 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
 			
 	logger.info("Start drawing %i images using %i CPUs" % (len(wslist), ncpu))
 
-	# I suppress the info-or-lower-level logging from the low-level functions:
-	stampgridlogger = logging.getLogger("megalut.sim.stampgrid")
-	stampgridlogger.setLevel(logging.WARNING)
+	# Suppress the info-or-lower-level logging from the low-level functions:
+	#stampgridlogger = logging.getLogger("megalut.sim.stampgrid")
+	#stampgridlogger.setLevel(logging.WARNING)
 	
 	# The single-processing version would be:
 	#map(_worker, wslist)

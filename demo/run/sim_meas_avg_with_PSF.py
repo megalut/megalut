@@ -19,18 +19,21 @@ class Flux80(megalut.sim.params.Params):
 
 simparams = Flux80()
 
-"""
-drawcatkwargs = {"n":10, "stampsize":64}
-psfcat = megalut.tools.io.readpickle("../generic/psfs/cat_psfgrid.pkl")
-psfimgpath = "../generic/psfs/psfgrid.fits"
-drawimgkwargs = {"psfstampsize":psfcat.meta["stampsize"], "psfxname":"psfgridx", "psfyname":"psfgridy"}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs,
-	psfcat=psfcat, psfimgpath=psfimgpath, psfselect="random",
+# We have to prepare a psfcat
+psfcat = megalut.tools.io.readpickle("../generic/psfs/cat_psfgrid.pkl")
+
+# This particular psfcat has no imageinfo yet, so we prepare one from scratch:
+psfcat.meta["img"] = megalut.tools.imageinfo.ImageInfo("../generic/psfs/psfgrid.fits", "psfx", "psfy", 32)
+
+drawcatkwargs = {"n":10, "stampsize":64}
+
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs,
+	psfcat=psfcat, psfselect="random",
 	ncat=3, nrea=5, ncpu=3)
 
 
-"""
+exit()
 
 print "Step 2, measuring"
 
