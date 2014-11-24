@@ -47,11 +47,11 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 	starttime = datetime.now()
 	
 	# Check that SExtractor info is in catalog
-	params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
+	params = ["XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
 		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
 	for param in params:
 		if param not in catalog.colnames:
-			print 'fdntfunc.py: input catalog missing SExtractor measurement info; exiting'
+			print 'fdntfunc.py: input catalog missing SExtractor measurement info (%s); exiting' % param
 			sys.exit(1)
 
 	# OPEN ALL NECESSARY FILES

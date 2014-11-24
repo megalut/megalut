@@ -29,7 +29,7 @@ def measfct(img, catalog, psfimg, workdir=None, stampsize=None, psfstampsize=Non
 	print "IT BEGINS HERE"
 	print
 
-	outcat = megalut.meas.sewfunc_psf.measure(img, outcat, workdir=workdir, sexpath=sexpath)
+	outcat = megalut.meas.sewfunc_psf.measure(psfimg, outcat, workdir=workdir, sexpath=sexpath)
 
 	# Run FDNT:
 	outcat = megalut.meas.fdntfunc.measure(img, outcat, psfimg,
