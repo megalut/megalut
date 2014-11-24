@@ -19,7 +19,7 @@ class ImageInfo():
 	In future, this class can in principle hold more complex WCS-like coordinate systems.
 	"""
 
-	def __init__(self, filepath, xname, yname, stampsize=None, imgname=None, workdir=None):
+	def __init__(self, filepath, xname="x", yname="y", stampsize=None, imgname=None, workdir=None):
 		"""
 		:param filepath: absolute path to the FITS image
 		:type filepath: string
@@ -54,5 +54,5 @@ class ImageInfo():
 	def __str__(self):
 		return self.imgname
 
-	def loadimage(self):
+	def load(self):
 		return image.loadimage(self.filepath)
