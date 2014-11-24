@@ -158,10 +158,10 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 
 		# find the noise level around the stamp
 		sky_out = utils.skystats(galstamp)
-		obj[prefix + "skystd"] = sky_out["std"]
-		obj[prefix + "skymad"] = sky_out["mad"]  # median absolute deviation scaled to std
-		obj[prefix + "skymean"] = sky_out["mean"]
-		obj[prefix + "skymed"] = sky_out["med"]
+		obj["skystd"] = sky_out["std"]
+		obj["skymad"] = sky_out["mad"]  # median absolute deviation scaled to std
+		obj["skymean"] = sky_out["mean"]
+		obj["skymed"] = sky_out["med"]
 
 		# add padding, 2x the stamp size, for FFT purposes
 		safe_pad_margin = 4
