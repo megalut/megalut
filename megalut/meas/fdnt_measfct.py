@@ -22,7 +22,7 @@ def measfct(img, catalog, psfimg=None, workdir=None, stampsize=None, psfstampsiz
 	
 	# Run SExtractor on gals
 	sexpath = "sex"
-	outcat = megalut.meas.sewfunc.measure(img, outcat, workdir=workdir, sexpath=sexpath)
+	outcat = megalut.meas.sewfunc.measure(img, catalog, workdir=workdir, sexpath=sexpath)
 
 	# Run SExtractor on PSFs
 	outcat = megalut.meas.sewfunc_psf.measure(img, outcat, workdir=workdir, sexpath=sexpath)
