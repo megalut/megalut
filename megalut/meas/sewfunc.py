@@ -18,7 +18,7 @@ except ImportError:
 import os
 
 
-def measfct(catalog, **kwargs)
+def measfct(catalog, **kwargs):
 	"""
 	MegaLUT-conform measfct wrapper
 	"""

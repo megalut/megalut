@@ -51,7 +51,13 @@ class ImageInfo():
 				
 
 	def __str__(self):
+		"""
+		Retruns the image name
+		"""
 		return self.name
 
 	def load(self):
+		"""
+		Returns the image as GalSim Image object.
+		"""
 		return image.loadimg(self.filepath)
