@@ -15,8 +15,7 @@ class ImageInfo():
 	
 	When working with simple single-exposure images, the convention that shape measurement functions are asked to understand is that
 	the galaxy stamp image is described in catalog.meta["img"], and (optionally) the PSF stamp image is in catalog.meta["psf"].
-	
-	In future, this class can in principle hold more complex WCS-like coordinate systems.
+	We can derive a more sophisticated hierarchical structure when needed.
 	"""
 
 	def __init__(self, filepath, xname="x", yname="y", stampsize=None, name=None, workdir=None):
