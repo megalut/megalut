@@ -18,13 +18,28 @@ except ImportError:
 import os
 
 
+def measfct(catalog, **kwargs)
+	"""
+	MegaLUT-conform measfct wrapper
+	"""
+	
+	# Here we do not have to load the image, as sewpy works on FITS files
+	
+	return measure(
+		catalog.meta["img"].filepath, catalog,
+		xname=catalog.meta["img"].xname,
+		yname=catalog.meta["img"].yname,
+		workdir=catalog.meta["img"].workdir,
+		**kwargs)
+
+
 def measure(img, catalog, xname="x", yname="y",
 	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_"):
 	"""
 	This is similar (in terms of API) to galsim_adamom.measure().
 	Returns a copy of the given catalog, with new columns appended.
 	
-	:param img: either the path to a FITS image, or a galsim image object
+	:param img: path to a FITS image
 	:param catalog: astropy table of objects to be measured
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
