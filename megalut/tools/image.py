@@ -1,5 +1,5 @@
 """
-load fits images, get stamps...
+Helper functions related to manipulate fits images, get stamps...
 
 """
 
