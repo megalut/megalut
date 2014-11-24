@@ -107,10 +107,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	if "psf" in catalog.meta: # If the user provided some PSFs:
 		
 		psfinfo = catalog.meta["psf"] # Getting the ImageInfo object
-		logger.info("I will use provided PSFs with a stampsize of %i." % (psfinfo.stampsize))
-		if not(psfinfo.xname in catalog.colnames and psfinfo.yname in catalog.colnames):
-			raise RuntimeError("The psf position columns (%s, %s) are not available in the catalog %s" % (psfinfo.xname, psfinfo.yname, catalog.colnames))
-
+		psfinfo.checkcolumns(catalog)
+		logger.info("I will use provided PSFs (%s)" % (str(psfinfo)))
 		psfimg = psfinfo.load() # The actual GalSim Image
 				
 	else:
