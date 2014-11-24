@@ -8,3 +8,5 @@ import table
 import image
 import calc
 import dirs
+import imageinfo
+
