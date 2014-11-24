@@ -5,7 +5,7 @@ passed to the meas.run wrappers.
 
 
 import fdnt
-import os
+import os, sys
 import numpy as np
 import galsim
 
@@ -35,6 +35,7 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: column name containing the y coordinates in pixels
 	:param prefix: a string to prefix the field names that are added to the catalog
+	:param sewpy_workdir: workdir for SExtractor run
 	:param psfxname: column name containing the x coordinates of the PSF in pixels
 	:param psfyname: column name containing the y coordinates of the PSF in pixels
 	:param stampsize: psfimg stamp size
@@ -45,18 +46,13 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 	
 	starttime = datetime.now()
 	
-	# RUN SEXTRACTOR MEASUREMENTS
-	sexpath = 'sex'
+	# Check that SExtractor info is in catalog
 	params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
-		  "FLUX_WIN", "FLUXERR_WIN", "NITER_WIN", "FLAGS_WIN", "FLUX_AUTO", "FLUXERR_AUTO",
-		  "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
-	config = {"DETECT_MINAREA":5, "ASSOC_RADIUS":5, "ASSOC_TYPE":"NEAREST"}
-	sew = sewpy.SEW(sexpath=sexpath, params=params, config=config, workdir=sewpy_workdir, nice=19)
-	out = sew(img, assoc_cat=catalog, assoc_xname=xname, assoc_yname=yname, prefix='')
-	se_output = out["table"]
-
-	print 'DEBUG:: in fdntfunc.py, after SExtractor:'   ## DEBUG
-	print se_output[:5]  ## DEBUG
+		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
+	for param in params:
+		if param not in catalog.colnames:
+			print 'fdntfunc.py: input catalog missing SExtractor measurement info; exiting'
+			sys.exit(1)
 
 	# OPEN ALL NECESSARY FILES
 	if type(img) is str:
@@ -67,12 +63,11 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 
 	if type(psfimg) is str:
 
-		# TODO: fix psfimg input.
 		psf_img = tools.image.loadimg(psfimg)
 		psf_img.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
 
 	# Prepare an output table with all the required columns
-	output = astropy.table.Table(copy.deepcopy(se_output))  #, masked=True) # Convert the table to a masked table
+	output = astropy.table.Table(copy.deepcopy(se_gal_output))  #, masked=True) # Convert the table to a masked table
 	output.add_columns([
 
 		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
@@ -107,10 +102,10 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 
 	# Similarly, we prepare columns for the sky stats:
 	output.add_columns([
-			astropy.table.Column(name=prefix+"skystd", dtype=float, length=len(output)),
-			astropy.table.Column(name=prefix+"skymad", dtype=float, length=len(output)),
-			astropy.table.Column(name=prefix+"skymean", dtype=float, length=len(output)),
-			astropy.table.Column(name=prefix+"skymed", dtype=float, length=len(output))
+			astropy.table.Column(name="skystd", dtype=float, length=len(output)),
+			astropy.table.Column(name="skymad", dtype=float, length=len(output)),
+			astropy.table.Column(name="skymean", dtype=float, length=len(output)),
+			astropy.table.Column(name="skymed", dtype=float, length=len(output))
 			])
 
 	# Save something useful to the meta dict
@@ -125,27 +120,24 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 	count = 0
 	mincount, maxcount = (4, 13)
 
-	for gal in output:
+	for obj in output:
 		
 		# DEBUG BLOCK
 		count += 1  ## DEBUG
 		if count < mincount: continue  ## DEBUG
 		# Some simplistic progress indication:
-		if gal.index%5000 == 0:  # is "index" an astropy table entry?
-			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(gal.index)/float(n),
-							       gal.index, n))
+		if obj.index%5000 == 0:  # is "index" an astropy table entry?
+			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(obj.index)/float(n),
+							       obj.index, n))
 
 		# get centroid, size and shear estimates from catalog
-		(x, y) = (gal[xname], gal[yname])
-		(psfx, psfy) = (gal[psfxname], gal[psfyname])
-		(a,b,theta) = (gal['AWIN_IMAGE'], gal['BWIN_IMAGE'], gal['THETAWIN_IMAGE'])
+		(x, y) = (obj['XWIN_IMAGE'], obj['YWIN_IMAGE'])
+		(psfx, psfy) = (obj[psfxname], obj[psfyname])
+		(a,b,theta) = (obj['AWIN_IMAGE'], obj['BWIN_IMAGE'], obj['THETAWIN_IMAGE'])
 		size = np.hypot(a,b)
 
-		# TODO: use SExtractor size for psf_size as well...
-		psf_size = 3.5  # (from stampgrid.py, default is round Gaussian PSF of size sigma~3.5)
-		psf_size += 0.5  ## DEBUG TESTING (offset from true answer)
-
-		if gal['assoc_flag'] == False:   # not detected by SExtractor
+		# TODO: figure out why some objects are not detected by SExtractor
+		if obj['assoc_flag'] == False:   # not detected by SExtractor
 			print 'SExtractor failed on this object'
 			continue
 
@@ -166,10 +158,10 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 
 		# find the noise level around the stamp
 		sky_out = utils.skystats(galstamp)
-		gal[prefix + "skystd"] = sky_out["std"]
-		gal[prefix + "skymad"] = sky_out["mad"]  # median absolute deviation scaled to std
-		gal[prefix + "skymean"] = sky_out["mean"]
-		gal[prefix + "skymed"] = sky_out["med"]
+		obj[prefix + "skystd"] = sky_out["std"]
+		obj[prefix + "skymad"] = sky_out["mad"]  # median absolute deviation scaled to std
+		obj[prefix + "skymean"] = sky_out["mean"]
+		obj[prefix + "skymed"] = sky_out["med"]
 
 		# add padding, 2x the stamp size, for FFT purposes
 		safe_pad_margin = 4
@@ -203,40 +195,40 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 			#logger.exception("GLMoments failed on: %s" % (str(gal)))
 			# So insted of logging this as an exception, we use debug, but include
 			# the traceback :
-			logger.debug("GLMoments failed with %s:\n %s" % (m, str(gal)), exc_info=True)
+			logger.debug("GLMoments failed with %s:\n %s" % (m, str(obj)), exc_info=True)
 			#print "GLMoments failed on:\n %s" % (str(gal))
-			gal[prefix + "flag"] = -1
+			obj[prefix + "flag"] = -1
 			if count >= maxcount:  break   ## DEBUG
 			continue
 
-		gal[prefix + "flag"] = res.intrinsic_flags
+		obj[prefix + "flag"] = res.intrinsic_flags
 
 		try:
 			# first PSF measurement info
-			gal[prefix+'psf_flags'] = res.psf_flags
-			gal[prefix+'psf_g1'] = res.psf_e1
-			gal[prefix+'psf_g2'] = res.psf_e2
-			gal[prefix+'psf_sigma'] = res.psf_sigma
-			gal[prefix+'psf_b22'] = res.psf_b22
-			gal[prefix+'psf_b00'] = res.psf_b00
-			gal[prefix+'psf_b00_var'] = res.psf_b00_var
-			gal[prefix+'psf_order'] = res.psf_order
-			gal[prefix+'psf_chisq'] = res.psf_chisq
-			gal[prefix+'psf_DOF'] = res.psf_DOF
+			obj[prefix+'psf_flags'] = res.psf_flags
+			obj[prefix+'psf_g1'] = res.psf_e1
+			obj[prefix+'psf_g2'] = res.psf_e2
+			obj[prefix+'psf_sigma'] = res.psf_sigma
+			obj[prefix+'psf_b22'] = res.psf_b22
+			obj[prefix+'psf_b00'] = res.psf_b00
+			obj[prefix+'psf_b00_var'] = res.psf_b00_var
+			obj[prefix+'psf_order'] = res.psf_order
+			obj[prefix+'psf_chisq'] = res.psf_chisq
+			obj[prefix+'psf_DOF'] = res.psf_DOF
 			# native (galaxy + psf) measurement info
 			# intrinsic galaxy info
 			s = galsim.Shear(e1=res.intrinsic_e1, e2=res.intrinsic_e2)
 			g1 = s.getG1()
 			g2 = s.getG2()
-			gal[prefix+"g1"] = g1
-			gal[prefix+"g2"] = g2
-			gal[prefix+"flux"] = res.observed_b00
-			gal[prefix+"x"] = res.observed_centroid.x
-			gal[prefix+"y"] = res.observed_centroid.y
-			gal[prefix+"sigma"] = res.intrinsic_sigma
+			obj[prefix+"g1"] = g1
+			obj[prefix+"g2"] = g2
+			obj[prefix+"flux"] = res.observed_b00
+			obj[prefix+"x"] = res.observed_centroid.x
+			obj[prefix+"y"] = res.observed_centroid.y
+			obj[prefix+"sigma"] = res.intrinsic_sigma
 			# note: b_22 = rho4-4*rho2+2 = rho4-4*b_11+2*b_00;  b22 is a substitute
-			#gal[prefix+"b22"] = res.intrinsic_b22
-			gal[prefix + "snratio"] = res.observed_significance
+			#obj[prefix+"b22"] = res.intrinsic_b22
+			obj[prefix + "snratio"] = res.observed_significance
 
 		except ValueError:
 			print "results not set correctly"  # NOTE: currently no masking is applied
