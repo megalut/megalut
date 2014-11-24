@@ -67,7 +67,7 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 		psf_img.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
 
 	# Prepare an output table with all the required columns
-	output = astropy.table.Table(copy.deepcopy(se_gal_output))  #, masked=True) # Convert the table to a masked table
+	output = astropy.table.Table(copy.deepcopy(catalog))  #, masked=True) # Convert the table to a masked table
 	output.add_columns([
 
 		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
