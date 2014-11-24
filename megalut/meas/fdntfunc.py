@@ -131,7 +131,7 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 							       obj.index, n))
 
 		# get centroid, size and shear estimates from catalog
-		(x, y) = (obj['XWIN_IMAGE'], obj['YWIN_IMAGE'])
+		(x, y) = (obj[xname], obj[yname])  # otherwise it may spill over the edge...
 		(psfx, psfy) = (obj[psfxname], obj[psfyname])
 		(a,b,theta) = (obj['AWIN_IMAGE'], obj['BWIN_IMAGE'], obj['THETAWIN_IMAGE'])
 		size = np.hypot(a,b)  # in pixels
