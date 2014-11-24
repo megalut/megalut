@@ -72,6 +72,7 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 	# Building the input for general():
 	genimgfilepaths = []
 	genincatfilepaths = [] # This is not incatfilepaths! Catalogs will appear multiple times in here.
+	genoutcatfilepaths = []
 	genimgnames = []
 	
 	for incatfilepath in incatfilepaths:
@@ -101,7 +102,7 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 	
 	# And we pass the ball to general():
 	
-	general(genimgfilepaths, genincatfilepaths, measworkdir, measfct, measfctkwargs,
+	general(genimgfilepaths, genincatfilepaths, genoutcatfilepaths, measfct, measfctkwargs,
 		imgnames = genimgnames, ncpu=ncpu, skipdone=skipdone)
 		
 
