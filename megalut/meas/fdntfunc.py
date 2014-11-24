@@ -134,7 +134,8 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 		(x, y) = (obj['XWIN_IMAGE'], obj['YWIN_IMAGE'])
 		(psfx, psfy) = (obj[psfxname], obj[psfyname])
 		(a,b,theta) = (obj['AWIN_IMAGE'], obj['BWIN_IMAGE'], obj['THETAWIN_IMAGE'])
-		size = np.hypot(a,b)
+		size = np.hypot(a,b)  # in pixels
+		psf_size = np.hypot(obj['psf_AWIN_IMAGE'], obj['psf_BWIN_IMAGE'])
 
 		# TODO: figure out why some objects are not detected by SExtractor
 		if obj['assoc_flag'] == False:   # not detected by SExtractor
