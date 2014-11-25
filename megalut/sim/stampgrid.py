@@ -69,15 +69,14 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 
 	"""
 	Turns a catalog as obtained from drawcat into FITS images.
-	Only the position jitter and the pixel noise are randomized. All the other info is taken from the input catalogs.
+	Only the position jitter and the pixel noise are randomized. All the other info is taken from the input catalog.
 	So simply call me several times for the same input to get different realizations of the same galaxies.
-	To specify the PSF, pass me a catalog that has an catalog.meta["psf"] ImageInfo object.
+	To specify the PSFs, add a meta["psf"] ImageInfo object to the catalog.
 		
 	:param catalog: an input catalog of galaxy shape parameters, as returned by drawcat.
 		The corresponding stampsize must be provided as catalog.meta["stampsize"].
 		If you specify a psf image in catalog.meta["psf"], your catalog must of course also contain
 		PSF coordinates for that image.
-		
 	:param simgalimgfilepath: where I write my output image of simulated and noisy galaxies
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
 	:param simpsfimgfilepath: (optional) where I write the PSFs
