@@ -33,17 +33,15 @@ megalut.sim.run.multi(simdir, simparams, drawcatkwargs,
 	ncat=3, nrea=5, ncpu=3)
 
 
-exit()
 
 print "Step 2, measuring"
 
 measdir = os.path.join(basedir, "measdir_adamom") # Where the measurements should be written
-measfct = megalut.meas.galsim_adamom.measure
+measfct = megalut.meas.galsim_adamom.measfct
 measfctkwargs = {"stampsize":64}
 
 megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
 
-exit()
 
 print "Step 3, summarizing measurements accross simulations"
 
@@ -63,6 +61,8 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 
 print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_med", "adamom_flux_std", "adamom_flux_n"]
 
+
+print mybigmeascat.meta
 
 
 

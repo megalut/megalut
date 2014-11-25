@@ -85,7 +85,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	:param savepsfimg: if True, I will also save the PSF stamps.
 	
 	
-	As an illustration, an example of the directory structure I produce (ncat=2, nrea=2)::
+	As an illustration, an example of the directory structure that this function produces (for ncat=2, nrea=2)::
 	
 		% ls -1 simdir/name_of_simparams/*
 		
@@ -114,6 +114,13 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	realization image.  This is intended, so that you can collect things that are based on
 	realization image filenames made from a single name_of_simparams into one directory.
 	It also makes things safer.
+	
+	.. note::
+		About the ImageInfo of the returned catalogs: as each catalog has nrea realizations, we cannot simply attach
+		a single meta["img"] ImageInfo object to a catalog. We have to define a system for storing "realizations".
+		For now, what we do is writing a list of ImageInfo objects into meta["imgreas"]. We can talk about this...
+	
+	
 	"""
 	starttime = datetime.datetime.now()
 	prefix = starttime.strftime("%Y%m%dT%H%M%S_")
@@ -148,6 +155,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	logger.info("Drawing galaxy catalogs...")
 	catalogs = [stampgrid.drawcat(simparams, **drawcatkwargs) for i in range(ncat)]
 	
+		
 	# We now attribute PSFs to each source in these catalogs. That's a little bit of work.
 	if psfcat is not None:
 	
@@ -218,13 +226,32 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		
 		catalogs = mergedcatalogs # We don't need the non-merged catalogs anymore.
 
-	# Now we save the different catalogs one by one, using unique filenames.
+	# Now we prepare the catalogs one by one by adding the ImageInfos of the nrea realizations to be drawn
+	# for each catalog.
+	# For this, we need filenames, and we want them to be unique.
 	# This is not done with the timestamp!  The timestamp is only here to help humans.
 	# The module tempfile takes care of making the filename unique.
+	# And so, we do this in one loop
 	
 	for catalog in catalogs:
+	
+		# We open a file object:
 		catfile = tempfile.NamedTemporaryFile(mode='wb', prefix=prefix, suffix="_cat.pkl", dir=workdir, delete=False)
+		
+		# Now we can get the unique filename
 		catalog.meta["catname"] = os.path.basename(str(catfile.name)).replace("_cat.pkl","")
+		
+		# The images will be written here:
+		catimgdirpath = os.path.join(workdir, catalog.meta["catname"] + "_img")
+		
+		# We set the ImageInfos of the reas, using this unique catname
+		catalog.meta["imgreas"] = [
+			tools.imageinfo.ImageInfo(
+				os.path.join(catimgdirpath, "%s_%i_galimg.fits" % (catalog.meta["catname"], reaindex)),
+				xname="x", yname="y", stampsize = catalog.meta["stampsize"])
+			for reaindex in range(nrea)]
+		
+		# And we can write this catalog to disk
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
 		logger.info("Wrote catalog '%s'" % catalog.meta["catname"])
@@ -248,8 +275,10 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 			catname = catalog.meta["catname"]
 			catimgdirpath = os.path.join(workdir, catname + "_img")
 				
-			thisdrawimgkwargs["simgalimgfilepath"] =\
-				os.path.join(catimgdirpath, "%s_%i_galimg.fits" % (catname, reaindex))
+			# We have already stored the simgalimgfilepath in the catalog meta:
+			thisdrawimgkwargs["simgalimgfilepath"] = catalog.meta["imgreas"][reaindex].filepath	
+			#thisdrawimgkwargs["simgalimgfilepath"] =\
+			#	os.path.join(catimgdirpath, "%s_%i_galimg.fits" % (catname, reaindex))
 		
 			# If the user asked for a trugalimg and a psfimg, we also prepare these filepaths.
 			if savetrugalimg:

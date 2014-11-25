@@ -38,31 +38,42 @@ def onsims(measdir, simparams, **kwargs):
 	outputcats = []
 	for (catname, meascatfilepaths) in catdict.items():
 		
+		# So this are the measurements for a single catalog:
 		logger.info("Reading all measurements for catalog '%s' (%i realizations)..." % (catname, len(meascatfilepaths)))
 		meascats = [tools.io.readpickle(os.path.join(measdir, simparams.name, meascatfilepath)) for meascatfilepath in meascatfilepaths]
 		
+		# To avoid meta conflicts, we remove the meta from all but the first realization:
+		for meascat in meascats[1:]:
+			meascat.meta = {}
+		# We also remove meta["img"] from the first realization, as it does no longer apply after the groupstats.
+		meascats[0].meta.pop("img")
+		
+		# And we call groupstats
 		logger.info("Grouping columns and computing averages for catalog '%s'..." % (catname))
 		grouped = groupstats(meascats, **kwargs)
 		outputcats.append(grouped)
-		
+	
 	# And finally, we stack all these catalogs "vertically", to get a single one.
 	# This is only to be done if we have several catalogs. In fact, vstack crashes if only 
 	# one catalog is present.
 	
 	if len(outputcats) > 1:
 	
-		# We have to remove some of the meta, to avoid conflicts
-		for outputcat in outputcats:
-			outputcat.meta.pop("catname", None) # Now that we merge them, catname has no meaning anymore
-		
-		# We check some other meta for compatibility
+		# Before vstacking, we check some meta for compatibility
 		# All catalogs should have the same ngroupstats (== number of realizations)
 		assert "ngroupstats" in outputcats[0].meta # was written by groupstats.
 		ngroupstats = outputcats[0].meta["ngroupstats"]
 		for outputcat in outputcats:
 			if outputcat.meta["ngroupstats"] != ngroupstats:
 				raise RuntimeError("Catalogs with different numbers of realizations should not be merged, clean your measdir accordingly!")
-			
+		
+		# Now that checks are done, we have to remove some of the meta, to avoid conflicts (and keep thinks logical)
+		for outputcat in outputcats[1:]: # On all but the first one, we remove everything.
+			outputcat.meta = {}
+		outputcats[0].meta.pop("catname") # after the merge, a single catname has no meaning anymore
+		outputcats[0].meta.pop("psf") # There is no single "psf" anymore.
+		outputcats[0].meta.pop("imgreas") # Idem
+		
 		logger.info("Concatenating catalogs...")
 		outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")
 	
@@ -119,8 +130,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 			raise RuntimeError("The column '%s' which should be grouped is not present in the catalog. The availble column names are %s" % (groupcol, colnames))
 		if groupcol in removecols:
 			raise RuntimeError("Cannot both group and remove column '%s' " % groupcol)
-
-
+			
 	# We make a list of the column names that should stay unaffected:
 	fixedcolnames = [colname for colname in colnames if (colname not in groupcols) and (colname not in removecols)]
 	
@@ -136,6 +146,9 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	
 	# Now we prepare subtables containing *only* the groupcols:
 	subincats = [incat[groupcols] for incat in incats]
+	# We remove all meta from these subincats:
+	for subincat in subincats:
+		subincat.meta = {}
 	
 	# We prepare some "suffixes" for these columns. For this we do not try to reuse the int from the realization filename
 	# Indeed, the user could have delete some realizations etc, leading to quite a mess.
@@ -159,9 +172,9 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 		array = np.ma.array(numpycolumns)
 		
 		# And compute the stats:
-		togroupoutcat["%s_mean" % (groupcol)] = np.mean(array, axis=0)
-		togroupoutcat["%s_med" % (groupcol)] = np.median(array, axis=0)
-		togroupoutcat["%s_std" % (groupcol)] = np.std(array, axis=0)
+		togroupoutcat["%s_mean" % (groupcol)] = np.ma.mean(array, axis=0)
+		togroupoutcat["%s_med" % (groupcol)] = np.ma.median(array, axis=0)
+		togroupoutcat["%s_std" % (groupcol)] = np.ma.std(array, axis=0)
 		togroupoutcat["%s_n" % (groupcol)] = np.ma.count(array, axis=0)
 		
 		# We remove the individual columns, if asked for
