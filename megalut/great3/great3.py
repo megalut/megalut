@@ -59,53 +59,67 @@ class Run(utils.Branch):
 			tools.dirs.mkdir(self._get_path(subfolder))
 
 		
-	def meas_obs(self, measfct, skipdone=True, ncpu=1):
+	def meas_obs(self, measfct, skipdone=True, ncpu=1, **kwargs):
 		"""
+		Runs measfct on the GREAT3 data, demonstrating branch 73.
+		
 		:param measfct: some user-defined shape measurement function
 		:param skipdone: set to False to make me overwrite previous measurements
 		:param ncpu: Maximum number of processes that should be used. Default is 1.
 			Set to 0 for maximum number of available CPUs.
 		:type ncpu: int
 		
+		All further kwargs will be passed to the measfct.
+		
 		"""
 		
-        # Lists that we will pass to meas.run.general():
-		img_fnames = []
-		incat_fnames = []
-		outcat_fnames = []
-		psfimgfilepaths = []
-		workdirs = []
-		
-		# Setting the stampsize
-		measfctkwargs = {"stampsize":self.stampsize(), "psfstampsize":self.stampsize()}
-		
+		# Lists that we will pass to meas.run.general():
+		incatfilepaths = []
+		outcatfilepaths = []
+			
 		for subfield in self.subfields:
 			
-			# The image filename
-			img_fname=self.galimgfilepath(subfield) # this is a filepath, not a filename :-( 
-			img_fnames.append(img_fname)
-			
 			# Prep the input catalog
-			input_cat = io.readgalcat(self, subfield)
-			input_cat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
-			input_cat["psfy"] = self.stampsize()/2.0 + 0.5
-			incat_fname=self.galinfilepath(subfield, "obs")  
-			tools.io.writepickle(input_cat, incat_fname)
-			incat_fnames.append(incat_fname)
+			incatfilepath = self.galinfilepath(subfield, "obs") 
+			incatfilename = os.path.splitext(os.path.basename(incatfilepath))[0]
 			
-			# The output catalog:
-			outcat_fname = self._get_path("obs", os.path.splitext(os.path.basename(img_fname))[0] + "_meascat.pkl")
-			outcat_fnames.append(outcat_fname)
+			incat = io.readgalcat(self, subfield)
+			incat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
+			incat["psfy"] = self.stampsize()/2.0 + 0.5
 			
-			# The PSF image:
-			psfimgfilepaths.append(self.psfimgfilepath(subfield))
+			# Add the reference to the img and psf stamps:
 			
-			# And a workdir
-			workdirs.append(self._get_path("obs", os.path.splitext(os.path.basename(img_fname))[0]))
-            
+			incat.meta["img"] = tools.imageinfo.ImageInfo(
+				filepath=self.galimgfilepath(subfield),
+				xname="x",
+				yname="y",
+				stampsize=self.stampsize(),
+				workdir=os.path.splitext(incatfilepath)[0]+"_img"
+				)
+		
+			incat.meta["psf"] = tools.imageinfo.ImageInfo(
+				filepath=self.psfimgfilepath(subfield),
+				xname="psfx",
+				yname="psfy",
+				stampsize=self.stampsize(),
+				workdir=os.path.splitext(incatfilepath)[0]+"_psf"
+				)
+		
+			# Write the input catalog 
+			tools.io.writepickle(incat, incatfilepath)
+			incatfilepaths.append(incatfilepath)
+			
+			# Prepare the filepath for the output catalog
+			outcatfilepath = self._get_path("obs", incatfilename + "_meascat.pkl")
+			outcatfilepaths.append(outcatfilepath)
+
+		# We pass some kwargs for the measfct
+		measfctkwargs = {"branch":self}
+		measfctkwargs.update(kwargs)
+
 		# And we run all this
-		meas.run.general(img_fnames, incat_fnames, outcat_fnames, measfct, measfctkwargs,
-			psfimgfilepaths=psfimgfilepaths, workdirs=workdirs, ncpu=ncpu, skipdone=skipdone)
+		meas.run.general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs=measfctkwargs,
+			ncpu=ncpu, skipdone=skipdone)
 			
 	   
 	   

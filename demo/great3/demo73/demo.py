@@ -1,18 +1,14 @@
 
 import megalut.great3
-import megalut.meas
-import megalut.sim
-import megalut.learn
 
-import demo_measfct
-import demo_simparams
-import demo_mlparams
 
-import numpy as np
+import mymeasfct
+import mysimparams
+import mymlparams
+
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
-
+logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
 
 
 # Create an instance of the GREAT3 class
@@ -22,7 +18,7 @@ run = megalut.great3.great3.Run("control", "ground", "variable",
 	subfields = range(5,10))
 
 # Run measurements on input images
-run.meas_obs(demo_measfct.sewpyadamom, skipdone=True, ncpu = 5)
+run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=5)
 
 exit()
 

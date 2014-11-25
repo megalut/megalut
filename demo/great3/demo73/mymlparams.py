@@ -17,7 +17,7 @@ simple_g = megalut.learn.MLParams(
 # A multi-purpose FANN neural net configuration:
 
 two_twenty = megalut.learn.fannwrapper.FANNParams(
-	name = "two_twenty"
+	name = "two_twenty",
 	hidden_nodes = [20, 20],
 	max_iterations = 500,
 	)
