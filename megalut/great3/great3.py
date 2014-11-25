@@ -112,18 +112,14 @@ class Run(utils.Branch):
 	def meas_sim(self, imgtype, measfct, measfctkwargs, simparams="",
 		groupcols=None, removecols=None, overwrite=False, ncpu=1):
 		"""
-        Made a new func for this, given the completely different signature.
-        Still has to be finalized.
-        
-        simparams=""
-        :param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
+		Made a new func for this, given the completely different signature.
+		Still has to be finalized.
+		
+		:param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
 			if groupcols=None default = adamom features
 		:param removecols: Passed to :func:`megalut.meas.avg.onsims`
 		
-        
-        
-        
-        """
+		"""
 
 
 		for simsubfield in self.simsubfields:
