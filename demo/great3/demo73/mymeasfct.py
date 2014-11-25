@@ -10,12 +10,12 @@ import megalut.meas
 import megalut.meas.sewfunc
 
 
-def demo_great3_measfct(catalog, branch=None):
+def sewpyadamom(catalog, branch=None):
 	"""
-	This function is made to demo the MegaLUT GREAT3 wrapper.
+	This function is made to demonstrate the MegaLUT GREAT3 wrapper.
 	
 	Given that measurement functions might need adjustments depending on the branch,
-	it seems useful to pass the branch object.
+	it seems useful to pass the branch object to them.
 	"""	
 
 	# We run SExtractor on the "img" stamps:
