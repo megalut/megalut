@@ -271,14 +271,14 @@ def _run(wslist, ncpu):
 	
 	logger.info("Starting the measurement on %i images using %i CPUs" % (len(wslist), ncpu))
 	
-	# The single process way (MUCH MUCH EASIER TO DEBUG...)
-	#map(_worker, wslist)
+	if ncpu == 1: # The single process way (MUCH MUCH EASIER TO DEBUG...)
+		map(_worker, wslist)
 	
-	# The multiprocessing way:
-	pool = multiprocessing.Pool(processes=ncpu)
-	pool.map(_worker, wslist)
-	pool.close()
-	pool.join()
+	else:
+		pool = multiprocessing.Pool(processes=ncpu)
+		pool.map(_worker, wslist)
+		pool.close()
+		pool.join()
 	
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total measurement time was %s" % (str(endtime - starttime)))
