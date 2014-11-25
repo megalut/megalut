@@ -99,4 +99,4 @@ print mybigmeascat["id", "tru_flux", "FLUX_WIN_mean", "FLUX_WIN_std", "FLUX_WIN_
 """
 
 # We also save the catalog into a pickle file
-#megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")
+megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")
