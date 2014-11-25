@@ -56,6 +56,12 @@ class ImageInfo():
 		"""
 		return "ImageInfo(%s, %s, %s, %s)" % (self.name, self.xname, self.yname, self.stampsize)
 
+	def __repr__(self):
+		"""
+		Returns str(self) -- convenient when printing catalog.meta.
+		"""
+		return self.__str__()
+
 	def load(self):
 		"""
 		Returns the image as GalSim Image object.
