@@ -70,9 +70,9 @@ def onsims(measdir, simparams, **kwargs):
 		# Now that checks are done, we have to remove some of the meta, to avoid conflicts (and keep thinks logical)
 		for outputcat in outputcats[1:]: # On all but the first one, we remove everything.
 			outputcat.meta = {}
-		outputcats[0].meta.pop("catname") # after the merge, a single catname has no meaning anymore
-		outputcats[0].meta.pop("psf") # There is no single "psf" anymore.
-		outputcats[0].meta.pop("imgreas") # Idem
+		outputcats[0].meta.pop("catname", None) # after the merge, a single catname has no meaning anymore
+		outputcats[0].meta.pop("psf", None) # There is no single "psf" anymore.
+		outputcats[0].meta.pop("imgreas", None) # Idem
 		
 		logger.info("Concatenating catalogs...")
 		outputcat = astropy.table.vstack(outputcats, join_type="exact", metadata_conflicts="error")

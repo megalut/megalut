@@ -13,11 +13,11 @@ print "Step 1: drawing the sims"
 
 simdir = os.path.join(basedir, "simdir") # Where the simulations should be written
 
-class Flux80(megalut.sim.params.Params):
+class Flux70(megalut.sim.params.Params):
 	def get_flux(self):
-		return 80.0 # Low flux, so that we get some failures in this demo.
+		return 70.0 # Low flux, so that we get some failures in this demo.
 
-simparams = Flux80()
+simparams = Flux70()
 
 
 # We have to prepare a psfcat
@@ -60,8 +60,6 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 	)
 
 print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_med", "adamom_flux_std", "adamom_flux_n"]
-
-
 print mybigmeascat.meta
 
 
@@ -74,10 +72,9 @@ print "Step 2, measuring"
 import megalut.meas.sewfunc
 
 measdir = os.path.join(basedir, "measdir_sextractor")
-measfct = megalut.meas.sewfunc.measure
+measfct = megalut.meas.sewfunc.measfct
 measfctkwargs = {
 	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex", 
-	"workdir":os.path.join(measdir, "sewpy"),
 	"prefix":""
 	}
 
@@ -102,4 +99,4 @@ print mybigmeascat["id", "tru_flux", "FLUX_WIN_mean", "FLUX_WIN_std", "FLUX_WIN_
 """
 
 # We also save the catalog into a pickle file
-megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")
+#megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")

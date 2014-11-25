@@ -21,6 +21,7 @@ import os
 def measfct(catalog, **kwargs):
 	"""
 	MegaLUT-conform measfct wrapper
+	Possible kwargs are params, config, sexpath, prefix -- see function measure() below.
 	"""
 	
 	# Here we do not have to load the image, as sewpy works on FITS files

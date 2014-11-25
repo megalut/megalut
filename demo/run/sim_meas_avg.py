@@ -18,17 +18,15 @@ class Flux80(megalut.sim.params.Params):
 		return 80.0 # Low flux, so that we get some failures in this demo.
 
 simparams = Flux80()
-
 drawcatkwargs = {"n":10, "stampsize":64}
-drawimgkwargs = {}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, drawimgkwargs, ncat=3, nrea=5, ncpu=3)
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs, ncat=3, nrea=5, ncpu=3)
 
 
 print "Step 2, measuring"
 
 measdir = os.path.join(basedir, "measdir_adamom")
-measfct = megalut.meas.galsim_adamom.measure
+measfct = megalut.meas.galsim_adamom.measfct
 measfctkwargs = {"stampsize":64}
 
 megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
@@ -64,10 +62,9 @@ print "Step 2, measuring"
 import megalut.meas.sewfunc
 
 measdir = os.path.join(basedir, "measdir_sextractor")
-measfct = megalut.meas.sewfunc.measure
+measfct = megalut.meas.sewfunc.measfct
 measfctkwargs = {
-	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex", 
-	"workdir":os.path.join(measdir, "sewpy"),
+	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
 	"prefix":""
 	}
 
@@ -92,4 +89,4 @@ print mybigmeascat["id", "tru_flux", "FLUX_WIN_mean", "FLUX_WIN_std", "FLUX_WIN_
 """
 
 # We also save the catalog into a pickle file
-megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")
+#megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")

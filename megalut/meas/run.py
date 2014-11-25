@@ -232,7 +232,7 @@ def _worker(ws):
 	
 	
 	# Run measfct, it will read the image by itself:
-	#logger.debug("%s will now run on image %s" % (p.name, incat.meta["img"].name))
+	logger.debug("%s will now run on image %s" % (p.name, incat.meta["img"].name))
 	outcat = ws.measfct(incat, **ws.measfctkwargs)
 	
 	# Write output catalog
