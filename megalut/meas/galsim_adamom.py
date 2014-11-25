@@ -29,7 +29,8 @@ def measfct(catalog, **kwargs):
 		to be a megalut.tools.imageinfo.ImageInfo object.
 	:param kwargs: keyword arguments that will be passed to the lower-level measure() function.
 		These set parameters of the shape measurement, but they do not pass any data.
-		So for this particular measfct, you probably want to set at least stampsize.
+		Do not try to specify "img" or "xname" here, it will fail! Set the catalog's meta["img"] instead.
+		So for this particular measfct, you probably want to give at least stampsize as kwarg.
 	
 	"""
 	
