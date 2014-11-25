@@ -66,7 +66,7 @@ cgv=megalut.great3.great3.Run("control", "ground", "variable",
     subfields = range(5,10))
 
 # Now run the measurements on input images
-cgv.meas_obs(measfct.measfct, skipdone=True, ncpu = 5)
+cgv.meas_obs(measfct.demo_measfct, skipdone=True, ncpu = 5)
 
 exit()
 
