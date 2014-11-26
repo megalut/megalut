@@ -19,6 +19,12 @@ def rmsd(x, y):
 	"""
 	return np.sqrt(np.mean((x - y)**2.0))
 
+def rmsd_delta(delta):
+	"""
+	Idem, but directly takes the estimation errors.
+	Useful, e.g., to pass as reduce_C_function for hexbin plots.
+	"""
+	return np.sqrt(np.mean(np.asarray(delta)**2.0))
 
 
 def linreg(x, y, prob=0.68):
