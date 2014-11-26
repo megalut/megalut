@@ -20,6 +20,7 @@ def metrics(catalog, label, predlabel):
 	
 	:returns: a dict containing
 		
+		- **labfrac**: Fraction of rows of the catalog that have the label (quite boring, usually exactly 1.0)
 		- **predfrac**: Fraction of predlabels / labels.
 			For example, 0.5 means that only half of the rows having a label value also have a predlabel value.
 		- **rmsd**: the RMSD
@@ -29,7 +30,8 @@ def metrics(catalog, label, predlabel):
 		- **cerr**: error on additive bias
 
 	"""
-
+	
+	logger.debug("Computing metrics for label = %s and predlabel = %s" % (label, predlabel))
 	logger.debug("Input catalog is masked: %s" % (catalog.masked))
 		
 	# In any case, we convert this to masked numpy arrays:
@@ -52,12 +54,12 @@ def metrics(catalog, label, predlabel):
 	
 	# And we prepare the return dict:
 	
-	ret = {"predfrac":float(npre)/float(nlab)}
+	ret = {"labfrac":float(nlab)/float(ncat), "predfrac":float(npre)/float(nlab)}
 	
 	ret["rmsd"] = calc.rmsd(lab, pre)
 	ret.update(calc.linreg(lab, pre))
 	
-	logger.debug("metrics: %s" % (ret))
+	#logger.debug("metrics: %s" % (ret))
 	
 	return ret
 	
