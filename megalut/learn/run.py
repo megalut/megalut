@@ -161,7 +161,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 	
 	for (mlparams, toolparams) in paramslist:
 		
-		# We create a new ML object, just as a way to get the workdir that was used:
+		# We create a new ML object, to get the workdir that was used
 		newmlobj = ml.ML(mlparams, toolparams, workbasedir=workbasedir)
 		
 		# We load the actual ML object that was used for the training:
@@ -172,7 +172,42 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		if not newmlobj.looks_same(trainedmlobj):
 			raise RuntimeError("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
 	
-		predcat = trainedmlobj.predict(predcat)
+		# And now that we know that the params are fine, we tweak things according to the mode
+		tweakedmlobj = copy.deepcopy(trainedmlobj)
+		# Note that for the prediction we have to use trainedmlobj, and not newmlobj.
+		# Indeed the training is free to save some information in the trainedmlobj, and so we cannot simply use a new object.
+		
+		if mode == "default":
+			pass
+			
+		elif mode == "single": # Drop any "_mean" from features
+	
+			tweakedfeatures = []
+			for feature in tweakedmlobj.mlparams.features:
+				if feature.endswith("_mean"):
+					tweakedfeatures.append(feature[:-len("_mean")])
+				else:
+					tweakedfeatures.append(feature)
+			tweakedmlobj.mlparams.features = tweakedfeatures
+			
+		elif mode == "first": # Replace "_mean" by "_0"
+		
+			tweakedfeatures = []
+			for feature in tweakedmlobj.mlparams.features:
+				if feature.endswith("_mean"):
+					tweakedfeatures.append(feature[:-len("_mean")] + "_0")
+				else:
+					tweakedfeatures.append(feature)
+			tweakedmlobj.mlparams.features = tweakedfeatures
+		
+		elif mode == "all":
+			raise RuntimeError("Not yet implemented")
+		else:
+			raise RuntimeError("Unknown mode '%s'" % mode)
+		
+		logger.debug("Predicting with %s using features %s..." % (tweakedmlobj, tweakedmlobj.mlparams.features))
+		
+		predcat = tweakedmlobj.predict(predcat)
 		
 	return predcat
 
