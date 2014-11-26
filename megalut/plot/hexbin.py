@@ -42,8 +42,9 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	
 	Commonly used kwargs:
 	
+	- gridsize = 15
 	- cmap = "Blues" # add "_r" to reverse...
-	- reduce_C_function = np.mean
+	- reduce_C_function = np.mean (default), tools.calc.rmsd_delta (to compute RMSD from prediction errors)
 		
 	More info at http://matplotlib.org/api/axes_api.html?highlight=hexbin#matplotlib.axes.Axes.hexbin
 	

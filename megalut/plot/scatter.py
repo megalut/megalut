@@ -10,6 +10,7 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.lines import Line2D
 
+from .. import tools
 
 
 import logging
@@ -17,7 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, idlinekwargs=None, sidehists=False, sidehistkwargs=None, **kwargs):
+def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, idlinekwargs=None,
+	metrics=False, sidehists=False, sidehistkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -37,6 +39,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		For more complicated things, add the text yourself to the axes.
 	:param show_id_line: draws an "identity" diagonal line
 	:param idlinekwargs: a dict of kwargs that will be passed to plot() to draw the idline
+	:param metrics: if True, assumes that featx is a label ("tru") and featy is the corresponding predlabel ("pre"), and
+		writes the RMSD and other metrics on the plot.
 	:param sidehists: adds projection histograms on the top and the left (not nicely compatible with the colorbar)
 		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
 	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
@@ -187,7 +191,16 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	if text:
 		ax.annotate(text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -8), textcoords='offset points', ha='left', va='top')
 	
+	if metrics:
 	
+		metrics_label = featx.colname
+		metrics_predlabel = featy.colname
+		metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
+	
+		metrics_text = "predfrac: %.3f\nRMSD: %.3f" % (metrics["predfrac"], metrics["rmsd"])
+		ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
+	
+		
 
 
 
