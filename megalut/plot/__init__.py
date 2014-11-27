@@ -8,6 +8,8 @@ __all__ = []
 import feature
 import scatter
 import hist
+import hexbin
+
 import exp
 
 
