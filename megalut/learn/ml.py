@@ -148,6 +148,8 @@ class ML:
 		into the "train" method of the ml tool.
 		
 		:param catalog: an input astropy table. Has to contain the features and the labels.
+			It can well be masked. Only those rows for which all the required
+			features and labels are unmasked will be used for the training.
 		
 		"""	
 		starttime = datetime.now()
@@ -186,14 +188,18 @@ class ML:
 
 	def predict(self, catalog):
 		"""
-		Same idea as for train, but now with the prediction.
-		Of course I will return a new astropy.table to which I add the "predlabels" columns,
-		instead of changing your catalog in place !
+		Computes the prediction(s) based on the features in the given catalog.
+		Of course it will return a new astropy.table to which the new "predlabels" columns are added,
+		instead of changing your catalog in place.
+		If any feature values of your catalog are masked, the corresponding rows will not be predicted,
+		and the predlabels columns will get masked accordingly.
+		
 		"""
 		
 		# First let's check that the predlabels do not yet exist
 		for colname in self.mlparams.predlabels:
-			assert colname not in catalog.colnames
+			if colname in catalog.colnames:
+				raise RuntimeError("The predlabel '%s' already exists in the catalog" % colname)
 		
 		logger.info("Predicting %i galaxies using the %s (%s, %s) in %s..." % \
 				    (len(catalog), self.toolname, self.mlparams.name,
