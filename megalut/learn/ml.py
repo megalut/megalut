@@ -89,30 +89,59 @@ class ML:
 		
 		self.mlparams = mlparams
 		self.toolparams = toolparams
+		self.workbasedir = workbasedir
+		
+		self.toolname = None # gets set below
+		self.workdir = None # gets set below, depending on the tool to be used
 		
 		if isinstance(self.toolparams, fannwrapper.FANNParams):
 			self.toolname = "FANN"
-			self.workdir = os.path.join(workbasedir,
-						    "ML_%s_%s_%s" % (self.toolname,
-								     self.mlparams.name,
-								     self.toolparams.name))
+			self._set_workdir()
 			self.tool = fannwrapper.FANNWrapper(self.toolparams, workdir=self.workdir)
+		
 		elif isinstance(self.toolparams, skynetwrapper.SkyNetParams):
 			self.toolname = "SkyNet"
-			self.workdir = os.path.join(workbasedir,
-						    "ML_%s_%s_%s" % (self.toolname,
-								     self.mlparams.name,
-								     self.toolparams.name))
+			self._set_workdir()
 			self.tool = skynet.SkyNetWrapper(self.toolparams, workdir=self.workdir)
+		
 		else:
-			raise RuntimeError()
+			raise RuntimeError("toolparams not recognized")
 			# ["skynet", "ffnet", "pybrain", "fann", "minilut"]
 		
+	
+	def __str__(self):
+		"""
+		A string describing an ML object, that will also be used as workdir.
+		"""
+		return "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name)
 		
-		if os.path.exists(self.workdir):
-			logger.warning("ML workdir %s already exists, I might overwrite stuff !" % \
-					       self.workdir)
+	
+	def _set_workdir(self):
+		self.workdir = os.path.join(self.workbasedir, str(self))
+	
+
+	def get_workdir(self):
+		logger.warning("This will be removed: directly use ml.workdir")
+		return self.workdir
 		
+	
+	def looks_same(self, other):
+		"""
+		Compares self to another ML object, and returns True if the objects seem to describe the same machine learning,
+		otherwise False.
+		
+		:param other: an other ML object to compare with
+		
+		In principle this method might be called __eq__ to overwrite the default equality comparion,
+		but given that it is not trivial it seems safer to just define it as a stand-alone function.
+		"""
+		return self.mlparams.__dict__ == other.mlparams.__dict__ and \
+			self.toolparams.__dict__ == other.toolparams.__dict__ and \
+			self.workbasedir == other.workbasedir and \
+			self.toolname == other.toolname and \
+			self.workdir == other.workdir
+
+
 	def train(self, catalog):
 		"""
 		Runs the training, by extracting the numbers from the catalog and feeding them
@@ -191,7 +220,5 @@ class ML:
 							       data = preddata[:,i]))
 		return output
 	
-	def get_workdir(self):
-		return self.tool.workdir
 		
 
