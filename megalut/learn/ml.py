@@ -1,6 +1,7 @@
 """
 A module to connect the shape measurement stuff (astropy.table catalogs...) to the machine learning
 (ml) wrappers.
+It also takes care of masked columns, so that the underlying ml wrappers do not have to deal with masked arrays.
 """
 
 import numpy as np
@@ -195,36 +196,54 @@ class ML:
 		and the predlabels columns will get masked accordingly.
 		
 		"""
+		logger.info("Predicting %s with %s using features %s..." % (self.mlparams.predlabels, str(self), self.mlparams.features))
 		
 		# First let's check that the predlabels do not yet exist
-		for colname in self.mlparams.predlabels:
-			if colname in catalog.colnames:
-				raise RuntimeError("The predlabel '%s' already exists in the catalog" % colname)
+		for predlabel in self.mlparams.predlabels:
+			if predlabel in catalog.colnames:
+				raise RuntimeError("The predlabel '%s' already exists in the catalog, refusing to overwrite" % colname)
 		
-		logger.info("Predicting %i galaxies using the %s (%s, %s) in %s..." % \
-				    (len(catalog), self.toolname, self.mlparams.name,
-				     self.toolparams.name, self.workdir))
+		# We rather manually build a mask for the features. A row is masked whenver one or more features ar masked.
 		
-		# Again, we get the features
-		featuresdata = np.column_stack([np.array(catalog[colname]) for colname in \
-							self.mlparams.features])
-
+		featuresmask = np.column_stack([
+			np.array(np.ma.getmaskarray(np.ma.array(catalog[feature])), dtype=bool) \
+			for feature in self.mlparams.features])
+		allfeaturesmask = np.sum(featuresmask, axis=1).astype(bool)
+		assert allfeaturesmask.size == len(catalog)
+		
+		logger.info("%i out of %i (that is %.2f %%) of the rows have masked features and will not be predicted" \
+			% (np.sum(allfeaturesmask), allfeaturesmask.size, 100.0 * float(np.sum(allfeaturesmask)) / float(allfeaturesmask.size)))
+		
+		# Now we get the array of unmasked features:
+		featuresdata = np.column_stack([np.array(catalog[colname])[np.logical_not(allfeaturesmask)] for colname in self.mlparams.features])
+		assert featuresdata.shape[0] == np.sum(np.logical_not(allfeaturesmask)) # Number of good (unmasked) rows
+		assert featuresdata.shape[1] == len(self.mlparams.features) # Number of features
+		
+		# We can run the prediction tool, it doesn't have to worry about any masks:
 		preddata = self.tool.predict(features=featuresdata)
 		
-		assert preddata.shape[0] == len(catalog) # Number of galaxies has to match
+		# Let's check that the output looks good:
+		assert preddata.shape[0] == np.sum(np.logical_not(allfeaturesmask)) # Number of good (unmasked) rows
 		assert preddata.shape[1] == len(self.mlparams.predlabels) # Number of predlabels
-                                                                          # has to match
+  
+  		# Finally, we build a catalog containing the predicted data.
+		# We'll work on and return a **masked** copy of the input catalog
+		# Probably the input catalog was already masked anyway.
+		outcat = astropy.table.Table(copy.deepcopy(catalog), masked=True)
 		
-		# We prepare the output catalog
-		output = copy.deepcopy(catalog)
-		
+		# ... to which we add masked columns.
 		# An explicit loop, to highlight that we care very much about the order.
 		# Note that this might be slow for large tables anyway (adding columns generates
 		# copies in memory)
 		for (i, predlabel) in enumerate(self.mlparams.predlabels):
-			output.add_column(astropy.table.Column(name = predlabel,
-							       data = preddata[:,i]))
-		return output
+		
+			newcoldata = np.ma.masked_all(len(outcat)) # All entries masked
+			newcoldata[np.logical_not(allfeaturesmask)] = preddata[:,i] # Automatically unmasks entries
+			newcol = astropy.table.MaskedColumn(data=newcoldata, name=predlabel) 
+			assert len(newcol) == len(outcat)
+			outcat.add_column(newcol)
+
+		return outcat
 	
 		
 
