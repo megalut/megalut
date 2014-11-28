@@ -1,7 +1,8 @@
 """
 A module to connect the shape measurement stuff (astropy.table catalogs...) to the machine learning
 (ml) wrappers.
-It also takes care of masked columns, so that the underlying ml wrappers do not have to deal with masked arrays.
+It also takes care of masked columns, so that the underlying ml wrappers do not have to deal with
+masked arrays.
 """
 
 import numpy as np
@@ -25,29 +26,27 @@ class MLParams:
 	"""
 	A container for the general parameters describing the machine learning:
 	what features should I use to predict what labels ?
-	Features, labels, and predlabels are lists of strings, with the names of the columns of
-	the catalog to use.
-
-	:param name: pick a short string describing these machine learning params.
-	             It will be used within filenames to store ML data.
-	:param features: the list of column names to be used as input, i.e. "features", for
-	             the machine learning
-	:param labels: the list of column names that I should learn to predict (that is, the "truth")
-	:param predlabels: the corresponding list of column names where I should write my predictions
-		
-	To give a minimal example, to predict shear you could use something like:
-	
-	>>> features = ["mes_g1", "mes_g2", "mes_size", "mes_flux"],
-	>>> labels = ["tru_g1", "tru_g2"]
-	>>> predlabels = ["pre_g1", "pre_g2"]
-	
 	"""
 	
 	def __init__(self, name, features, labels, predlabels):
 		"""
-		Text written here does not show up in the doc with the default sphinx apidoc params,
-		as __init__ is private.
-		One reason why we'll replace apidoc...
+		Features, labels, and predlabels are lists of strings, with the names of the columns of
+		the catalog to use.
+
+		:param name: pick a short string describing these machine learning params.
+			It will be used within filenames to store ML data.
+		:param features: the list of column names to be used as input, i.e. "features", for
+			the machine learning
+		:param labels: the list of column names that the machine should learn to predict (that is, the "truth")
+		:param predlabels: the corresponding list of column names where predictions should be written,
+			in the returned catalog.
+		
+		To give a minimal example, to predict shear you could use something like:
+		
+		>>> features = ["mes_g1", "mes_g2", "mes_size", "mes_flux"],
+		>>> labels = ["tru_g1", "tru_g2"]
+		>>> predlabels = ["pre_g1", "pre_g2"]
+		
 		"""
 		
 		self.name = name
@@ -66,27 +65,27 @@ class MLParams:
 		return txt
 
 
-
-
 class ML:
 	"""
-	This is a class that will hopefully nicely wrap any machine learning regression code.
+	This is a class that will hopefully nicely wrap any supervised machine learning regression code.
 	
-	:param mlparams: an MLParams object, describing *what* to learn.
-	:param toolparams: this describes *how* to learn. For instance a FANNParams object, if you
-	                 want to use FANN.
-	:param workbasedir: path to a directory in which I should keep what I've learned.
-	                 Within this directroy, I will create subdirectories using the
-			 mlparams.name and toolparams.name. If not specified, I use the current
-			 directory as workbasedir.
-
-	This class has two key methods: train and predict. These methods directly call the train
-	and predict methods of the underlying machine learning wrappers.
-	So any machine learning wrapper has to implement such methods.
-	
+	This class has two key methods: train and predict. These methods call the "train"
+	and "predict" methods of the underlying machine learning wrappers.
+	For this to work, any machine learning wrapper has to implement methods with such names.
 	"""
 
 	def __init__(self, mlparams, toolparams, workbasedir = "."):
+		"""
+		:param mlparams: an MLParams object, describing *what* to learn.
+		:param toolparams: this describes *how* to learn. For instance a FANNParams object, if you
+			want to use FANN.
+		:param workbasedir: path to a directory in which the machine parameters and any other
+			intermediary or log files can be stored.
+			Within this directroy, the training method will create a subdirectory using the
+			mlparams.name and toolparams.name. So you can very well give the **same workbasedir**
+			to different ML objects.
+			If not specified (default), the current working directory will be used as workbasedir.
+		"""
 		
 		self.mlparams = mlparams
 		self.toolparams = toolparams
@@ -112,7 +111,7 @@ class ML:
 	
 	def __str__(self):
 		"""
-		A string describing an ML object, that will also be used as workdir.
+		A string describing an ML object, that will also be used as workdir name.
 		"""
 		return "ML_%s_%s_%s" % (self.toolname, self.mlparams.name, self.toolparams.name)
 		
@@ -128,8 +127,8 @@ class ML:
 	
 	def looks_same(self, other):
 		"""
-		Compares self to another ML object, and returns True if the objects seem to describe the same machine learning,
-		otherwise False.
+		Compares self to another ML object, and returns True if the objects seem to describe the "same"
+		machine learning, in terms of parameters. Otherwise it returns False.
 		
 		:param other: an other ML object to compare with
 		
@@ -155,37 +154,46 @@ class ML:
 		"""	
 		starttime = datetime.now()
 			
-		logger.info("Training %s (%s, %s) with %i galaxies in %s..." % \
-				    (self.toolname, self.mlparams.name, self.toolparams.name,
-				     len(catalog), self.workdir))
+		logger.info("Training %s  in %s..." % (str(self), self.workdir))
 		logger.info(str(self.mlparams))
 		logger.info(str(self.toolparams))
 		
+		# We can only use a row for training if all its features and all labels are unmasked.
+		# So we build such a "combined mask", to extract these rows.
+		# We do not want this to fail on unmasked astropy tables, and so to make it easy
+		# we convert everything to masked arrays.
 		
-		# Now we turn the relevant columns of catalog into 2D numpy arrays.
+		masks = np.column_stack([
+			np.array(np.ma.getmaskarray(np.ma.array(catalog[colname])), dtype=bool) \
+			for colname in self.mlparams.features + self.mlparams.labels])
+		combimask = np.sum(masks, axis=1).astype(bool)
+		assert combimask.size == len(catalog)
+		
+		logger.info("%i out of %i (%.2f %%) rows have masked features or labels and will not be used" \
+			% (np.sum(combimask), combimask.size, 100.0 * float(np.sum(combimask)) / float(combimask.size)))
+		
+		# Now we turn the relevant rows and columns of the catalog into unmasked 2D numpy arrays.
 		# There are several ways of turning astropy.tables into plain numpy arrays.
 		# The shortest is np.array(table...)
-		#featurescat = catalog[self.mlparams.features]
-		#featuresdata = np.array(featurescat).view((float, len(featurescat.dtype.names)))
-		
 		# I use the following one, as I find it the most explicit (in terms of respecting
-		# the order of features and labels)
+		# the order of features and labels).
 		# We could add dtype control, but the automatic way should work fine.
 		
-		featuresdata = np.column_stack([np.array(catalog[colname]) for colname in \
-							self.mlparams.features])
-		labelsdata = np.column_stack([np.array(catalog[colname]) for colname in \
-						      self.mlparams.labels])
+		featuresdata = np.column_stack([np.array(catalog[colname])[np.logical_not(combimask)] for colname in \
+			self.mlparams.features])	
+		labelsdata = np.column_stack([np.array(catalog[colname])[np.logical_not(combimask)] for colname in \
+			self.mlparams.labels])
 		
-		assert featuresdata.shape[0] == labelsdata.shape[0]
+		assert featuresdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
+		assert labelsdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
 		
+		# And we call the tool's train method:
 		self.tool.train(features=featuresdata, labels=labelsdata)
-	
+		
 		endtime = datetime.now()
 		logger.info("Done! This training took %s" % (str(endtime - starttime)))
+		
 
-
-	
 
 	def predict(self, catalog):
 		"""
@@ -203,7 +211,7 @@ class ML:
 			if predlabel in catalog.colnames:
 				raise RuntimeError("The predlabel '%s' already exists in the catalog, refusing to overwrite" % colname)
 		
-		# We rather manually build a mask for the features. A row is masked whenver one or more features ar masked.
+		# We rather manually build a mask for the features. A row is masked whenever one or more features ar masked.
 		
 		featuresmask = np.column_stack([
 			np.array(np.ma.getmaskarray(np.ma.array(catalog[feature])), dtype=bool) \
@@ -211,7 +219,7 @@ class ML:
 		allfeaturesmask = np.sum(featuresmask, axis=1).astype(bool)
 		assert allfeaturesmask.size == len(catalog)
 		
-		logger.info("%i out of %i (that is %.2f %%) of the rows have masked features and will not be predicted" \
+		logger.info("%i out of %i (%.2f %%) rows have masked features and will not be predicted" \
 			% (np.sum(allfeaturesmask), allfeaturesmask.size, 100.0 * float(np.sum(allfeaturesmask)) / float(allfeaturesmask.size)))
 		
 		# Now we get the array of unmasked features:
@@ -240,7 +248,9 @@ class ML:
 			newcoldata = np.ma.masked_all(len(outcat)) # All entries masked
 			newcoldata[np.logical_not(allfeaturesmask)] = preddata[:,i] # Automatically unmasks entries
 			newcol = astropy.table.MaskedColumn(data=newcoldata, name=predlabel) 
-			assert len(newcol) == len(outcat)
+			assert len(newcol) == len(outcat) # OK, hard to imagine how this can fail
+			assert np.all(newcol.mask == allfeaturesmask) # This checks hat the newcol was correctly created
+			
 			outcat.add_column(newcol)
 
 		return outcat
