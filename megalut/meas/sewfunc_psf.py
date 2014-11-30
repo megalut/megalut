@@ -54,7 +54,7 @@ def measure(psfimg, catalog, psfxname="psfx", psfyname="psfy",
 	if params == None:
 		params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
 			"FLUX_WIN", "FLUXERR_WIN", "NITER_WIN", "FLAGS_WIN", "FLUX_AUTO", "FLUXERR_AUTO",
-			"FWHM_IMAGE", "BACKGROUND", "FLAGS"]
+			"FWHM_IMAGE", "BACKGROUND", "FLAGS", "FLUX_RADIUS"]
 	
 	if config == None:
 		config = {"DETECT_MINAREA":5, "ASSOC_RADIUS":5, "ASSOC_TYPE":"NEAREST"}
@@ -79,7 +79,7 @@ def measure(psfimg, catalog, psfxname="psfx", psfyname="psfy",
         psf_tags = ['FLAGS_WIN', 'FLAGS']
         for tag in psf_tags:
             catalog.add_columns([Column(name='psf_'+tag, dtype=int, length=len(catalog)),])
-        psf_tags = ['FWHM_IMAGE', 'AWIN_IMAGE', 'BWIN_IMAGE', 'THETAWIN_IMAGE', 'FLUX_AUTO',]
+        psf_tags = ['FLUX_RADIUS', 'AWIN_IMAGE', 'BWIN_IMAGE', 'THETAWIN_IMAGE', 'FLUX_AUTO',]
         for tag in psf_tags:
             catalog.add_columns([Column(name='psf_'+tag, dtype=float, length=len(catalog)),])
                     

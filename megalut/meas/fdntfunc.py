@@ -46,9 +46,9 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 	
 	starttime = datetime.now()
 	
-	# Check that SExtractor info is in catalog
-	params = ["XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
-		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
+	# Check that the required SExtractor info is in catalog
+	params = ["AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
+		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS", "psf_FLUX_RADIUS"]
 	for param in params:
 		if param not in catalog.colnames:
 			print 'fdntfunc.py: input catalog missing SExtractor measurement info (%s); exiting' % param
@@ -135,7 +135,7 @@ def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="f
 		(psfx, psfy) = (obj[psfxname], obj[psfyname])
 		(a,b,theta) = (obj['AWIN_IMAGE'], obj['BWIN_IMAGE'], obj['THETAWIN_IMAGE'])
 		size = np.hypot(a,b)  # in pixels
-		psf_size = np.hypot(obj['psf_AWIN_IMAGE'], obj['psf_BWIN_IMAGE'])
+		psf_size = obj['psf_FLUX_RADIUS']   # psf_FLUX_RADIUS == psfEE50
 
 		# TODO: figure out why some objects are not detected by SExtractor
 		if obj['assoc_flag'] == False:   # not detected by SExtractor
