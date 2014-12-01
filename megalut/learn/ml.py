@@ -249,7 +249,7 @@ class ML:
 			newcoldata[np.logical_not(allfeaturesmask)] = preddata[:,i] # Automatically unmasks entries
 			newcol = astropy.table.MaskedColumn(data=newcoldata, name=predlabel) 
 			assert len(newcol) == len(outcat) # OK, hard to imagine how this can fail
-			assert np.all(newcol.mask == allfeaturesmask) # This checks hat the newcol was correctly created
+			assert np.all(newcol.mask == allfeaturesmask) # This checks that the newcol was correctly created
 			
 			outcat.add_column(newcol)
 
