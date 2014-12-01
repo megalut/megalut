@@ -84,7 +84,7 @@ class Run(utils.Branch):
 				xname="psfx",
 				yname="psfy",
 				stampsize=self.stampsize(),
-				workdir = self._get_path("obs", "star_%i_measworkdir" % subfield)
+				workdir=self._get_path("obs", "star_%i_measworkdir" % subfield)
 				)
 			
 			starcat = measfct(starcat, branch=self)
@@ -122,12 +122,15 @@ class Run(utils.Branch):
 			
 			starcat = tools.io.readpickle(self._get_path("obs", "star_%i_meascat.pkl" % subfield))
 			starcat.meta = {} # Dump the "img" entry
-			matchedstarcat = starcat[np.zeros(len(incat)]
-			assert len(incat) == len(starcat)
+			matchedstarcat = starcat[np.zeros(len(incat), dtype=int)]
+			assert len(incat) == len(matchedstarcat)
+			for colname in incat.colnames:
+				if colname in matchedstarcat.colnames:
+					raise RuntimeError("colname %s appears twice" % colname)
 			
+			incat = astropy.table.hstack([incat, matchedstarcat], join_type="exact", metadata_conflicts="error")
 			
-			incat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
-			incat["psfy"] = self.stampsize()/2.0 + 0.5
+			#print incat.colnames
 			
 			# Add the reference to the img and psf stamps:
 			
@@ -136,23 +139,24 @@ class Run(utils.Branch):
 				xname="x",
 				yname="y",
 				stampsize=self.stampsize(),
-				workdir=os.path.splitext(incatfilepath)[0]+"_img"
+				workdir=self._get_path("obs", "img_%i_measworkdir" % subfield)
 				)
 		
 			incat.meta["psf"] = tools.imageinfo.ImageInfo(
-				filepath=self.psfimgfilepath(subfield),
+				filepath=self.starimgfilepath(subfield),
 				xname="psfx",
 				yname="psfy",
 				stampsize=self.stampsize(),
-				workdir=os.path.splitext(incatfilepath)[0]+"_psf"
+				workdir=None
 				)
 		
-			# Write the input catalog 
+			# Write the input catalog
+			incatfilepath = self._get_path("obs", "img_%i_incat.pkl" % subfield)
 			tools.io.writepickle(incat, incatfilepath)
 			incatfilepaths.append(incatfilepath)
 			
 			# Prepare the filepath for the output catalog
-			outcatfilepath = self._get_path("obs", incatfilename + "_meascat.pkl")
+			outcatfilepath = self._get_path("obs", "img_%i_meascat.pkl" % subfield)
 			outcatfilepaths.append(outcatfilepath)
 
 		# We pass some kwargs for the measfct

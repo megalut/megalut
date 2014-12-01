@@ -17,6 +17,7 @@ run = megalut.great3.great3.Run("control", "space", "constant",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT_v5_GREAT3_run77",
 	subfields = range(3))
 
+
 # Measure the stars (PSFs)
 run.meas_psf(mymeasfct.psf_sewpyadamom)
 
@@ -24,7 +25,11 @@ run.meas_psf(mymeasfct.psf_sewpyadamom)
 run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=3)
 
 
+
+
 exit()
+
+
 
 # Make sim catalogs & images
 cgv.sim(cgv_simparm,n=10,ncpu=0,nrea=8)
