@@ -205,8 +205,6 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		else:
 			raise RuntimeError("Unknown mode '%s'" % mode)
 		
-		logger.debug("Predicting with %s using features %s..." % (tweakedmlobj, tweakedmlobj.mlparams.features))
-		
 		predcat = tweakedmlobj.predict(predcat)
 		
 	return predcat
