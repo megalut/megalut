@@ -12,13 +12,17 @@ logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcNam
 
 
 # Create an instance of the GREAT3 class
-run = megalut.great3.great3.Run("control", "ground", "variable",
+run = megalut.great3.great3.Run("control", "space", "constant",
 	datadir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT_v5_GREAT3_run77",
 	subfields = range(3))
 
+# Measure the stars (PSFs)
+run.meas_psf(mymeasfct.psf_sewpyadamom)
+
 # Run measurements on input images
 run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=3)
+
 
 exit()
 

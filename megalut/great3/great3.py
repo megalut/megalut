@@ -10,7 +10,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 import os
-from astropy.table import Table
+#from astropy.table import Table
+import astropy
+
 import numpy as np
 
 import utils
@@ -58,6 +60,40 @@ class Run(utils.Branch):
 		for subfolder in ["obs","sim","ml","pred","out"]:
 			tools.dirs.mkdir(self._get_path(subfolder))
 
+
+	def meas_psf(self, measfct):
+		"""
+		Measures the 3 x 3 PSF stamps of each subfield, and writes the info to pkl.
+		"""
+		for subfield in self.subfields:
+			
+			# We don't bother reading the starcat, and just make one
+			
+			stars = []
+			for i in range(3):
+				for j in range(3):
+					stars.append( [0.5 + self.stampsize()/2.0 + i*self.stampsize(), 0.5 + self.stampsize()/2.0 + j*self.stampsize()] )
+			stars = np.array(stars)
+			
+			starcat = astropy.table.Table([stars[:,0], stars[:,1]], names=('psfx', 'psfy'))
+			#print starcat
+			
+			# To measure the stars, we attach the image:
+			starcat.meta["img"] = tools.imageinfo.ImageInfo(
+				filepath=self.starimgfilepath(subfield),
+				xname="psfx",
+				yname="psfy",
+				stampsize=self.stampsize(),
+				workdir = self._get_path("obs", "star_%i_measworkdir" % subfield)
+				)
+			
+			starcat = measfct(starcat, branch=self)
+			
+			#print starcat
+			
+			tools.io.writepickle(starcat, self._get_path("obs", "star_%i_meascat.pkl" % subfield))
+			
+			
 		
 	def meas_obs(self, measfct, skipdone=True, ncpu=1, **kwargs):
 		"""
@@ -79,11 +115,17 @@ class Run(utils.Branch):
 			
 		for subfield in self.subfields:
 			
-			# Prep the input catalog
-			incatfilepath = self.galinfilepath(subfield, "obs") 
-			incatfilename = os.path.splitext(os.path.basename(incatfilepath))[0]
 			
 			incat = io.readgalcat(self, subfield)
+			
+			# We add PSF info to this field. PSFs are already measured, and we just take the first one:
+			
+			starcat = tools.io.readpickle(self._get_path("obs", "star_%i_meascat.pkl" % subfield))
+			starcat.meta = {} # Dump the "img" entry
+			matchedstarcat = starcat[np.zeros(len(incat)]
+			assert len(incat) == len(starcat)
+			
+			
 			incat["psfx"] = self.stampsize()/2.0 + 0.5 # Sets the same value for all rows.
 			incat["psfy"] = self.stampsize()/2.0 + 0.5
 			
