@@ -41,11 +41,12 @@ class MLParams:
 		:param predlabels: the corresponding list of column names where predictions should be written,
 			in the returned catalog.
 		
-		To give a minimal example, to predict shear you could use something like:
-		
-		>>> features = ["mes_g1", "mes_g2", "mes_size", "mes_flux"],
-		>>> labels = ["tru_g1", "tru_g2"]
-		>>> predlabels = ["pre_g1", "pre_g2"]
+		To give a minimal example, to predict shear you could use something like::
+			
+			name = "simpleshear"
+			features = ["mes_g1", "mes_g2", "mes_size", "mes_flux"]
+			labels = ["tru_g1", "tru_g2"]
+			predlabels = ["pre_g1", "pre_g2"]
 		
 		"""
 		
