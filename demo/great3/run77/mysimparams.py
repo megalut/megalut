@@ -39,10 +39,10 @@ class Space_v1(megalut.sim.params.Params):
 	"""
 	
 	def get_rad(self):
-		return np.random.uniform(0.5, 15.0)
+		return np.random.uniform(0.5, 12.0)
 		
 	def get_flux(self):
-		return np.random.uniform(8, 40.0)# + (np.random.uniform())**5.0 * 100.0
+		return np.random.uniform(8, 40.0) + (np.random.uniform())**5.0 * 100.0
 	
 	def get_g(self):
 		maxg = 0.9
