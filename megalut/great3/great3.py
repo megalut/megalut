@@ -166,103 +166,61 @@ class Run(utils.Branch):
 		# And we run all this
 		meas.run.general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs=measfctkwargs,
 			ncpu=ncpu, skipdone=skipdone)
-			
-	   
-	   
-	def meas_sim(self, imgtype, measfct, measfctkwargs, simparams="",
-		groupcols=None, removecols=None, overwrite=False, ncpu=1):
-		"""
-		Made a new func for this, given the completely different signature.
-		Still has to be finalized.
-		
-		:param groupcols: Passed to :func:`megalut.meas.avg.onsims`, 
-			if groupcols=None default = adamom features
-		:param removecols: Passed to :func:`megalut.meas.avg.onsims`
-		
-		"""
 
-
-		for simsubfield in self.simsubfields:
-			img_fname=self.simgalimgfilepath(simsubfield)
-			simdir=self._get_path(imgtype,"%03d" % simsubfield)
-		
-			meas.run.onsims(simdir, simparams, simdir, measfct, measfctkwargs, ncpu, skipdone)
-			
-			if groupcols==None:
-				groupcols = [
-				"adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
-				"adamom_sigma", "adamom_rho4",
-				"adamom_skystd", "adamom_skymad", "adamom_skymean", "adamom_skymed", "adamom_flag"
-				]
-			if removecols==None:
-				removecols=[]
-			
-			avgcat = meas.avg.onsims(simdir, simparams,
-							groupcols=groupcols,removecols=removecols,removereas=True)
-			for simd in meas.utils.simmeasdict(simdir, simparams):
-				fname = '%s_avg_galimg_meascat.pkl' % simd
-				tools.dirs.mkdir(os.path.join(simdir,"meas",simparams.name))
-				fname=os.path.join(simdir,"meas",simparams.name,fname)
-				tools.io.writepickle(avgcat,fname)
 		
 			
-	def sim(self, simparams, n, overwrite=False, psf_selection=[4],ncat=1,nrea=1,ncpu=1):
-		"""
-		Does the simulation
-		
-		:param simparams: an (overloaded if needed) megalut.sim.params.Params instance
-		:param n: square root of the number of simulation
-		:param overwrite: *deprecated* if `True` and the simulation exist they are deleted and simulated.
-		:param psf_selection: Which PSF(s) to use in the catalogue ? Chosen from a random pick
-			into a eligible PSF catalogue. Default: the center (ie 4th) PSF.
-		:param ncat: The number of catalogs to be generated.
-		:type ncat: int
-		:param nrea: The number of realizations per catalog to be generated.
-		:type nrea: int
-		:param ncpu: Maximum number of processes that should be used. Default is 1.
-			Set to 0 for maximum number of available CPUs.
-		:type ncpu: int
-		
-		.. note: for an example of simparams have a look at demo/gret3/demo_CGV.py
+	def make_sim(self, simparams, n, ncat=1, nrea=1, ncpu=1):
 		"""
 		
-		for simsubfield in self.simsubfields:
-			# TODO: the +5 is only to make the code work in the presence of images 5--9
-			matched_psfcat=Table.read(self.starcatpath(simsubfield+5), format="ascii")
+		"""
+		
+		for subfield in self.subfields:
 			
-			cat_fname=self._get_path("sim","galaxy_catalog-%03i.fits" % simsubfield)
-			img_fname=self.simgalimgfilepath(simsubfield)
+			simdir = self._get_path("sim","%03i" % subfield)
 			
-			simdir=self._get_path("sim","%03d" % simsubfield)
-			
-			# figure out if we need to overwrite (if applicable)
-			if os.path.exists(cat_fname) and os.path.exists(img_fname):
-				if overwrite: 
-					logger.info("Sim of subfield %d, I'm told to overwrite..." % (simsubfield))
-					os.remove(cat_fname)
-				else: 
-					logger.info("Sim of subfield %d already exists, skipping..." % (simsubfield))
-					continue
-			elif os.path.exists(cat_fname):
-				os.remove(cat_fname)
-				logger.warning("catalog (subfield %d) only was found, removing it" % (simsubfield))
-			elif os.path.exists(img_fname):
-				os.remove(img_fname)
-				logger.warning("image (subfield %d) only was found, removing it" % (simsubfield))
-				
-			psf_selected=np.random.choice(psf_selection,n*n)
-			matched_psfcat = matched_psfcat[psf_selected]
-			matched_psfcat.meta["stampsize"]=self.stampsize()
-			
-			psfimg=tools.image.loadimg(self.psfimgfilepath(simsubfield+5))
-				
+			starcat = tools.io.readpickle(self._get_path("obs", "star_%i_meascat.pkl" % subfield))
 			drawcatkwargs = {"n":n, "stampsize":self.stampsize()}
-			drawimgkwargs = {"psfcat":matched_psfcat,'psfimg':psfimg,
-							 "psfxname":"col1", "psfyname":"col2"}
-			matched_psfcat["col1"]+=1
-			matched_psfcat["col2"]+=1
-			sim.run.multi(simdir, simparams,
-						  drawcatkwargs, drawimgkwargs, ncat, nrea, ncpu)
+			
+			# We have to read in the obs catalog of this subfield to get the noise of the sky:
+			obscat = tools.io.readpickle(self._get_path("obs", "img_%i_meascat.pkl" % subfield))
+			sig = np.ma.mean(obscat["adamom_skymad"])
+			simparams.sig = sig
+			
+			sim.run.multi(simdir, simparams, drawcatkwargs, psfcat=starcat, psfselect="random",
+				ncat=ncat, nrea=nrea, ncpu=ncpu)
+			
+
+
+	   
+	def meas_sim(self, simparams, measfct, groupcols=None, removecols=None, ncpu=1):
+		"""		
+		
+		"""
+		
+		measfctkwargs = {"branch":self}
+		
+		for subfield in self.subfields:
+			
+			simdir = self._get_path("sim","%03i" % subfield)
+			measdir = self._get_path("simmeas","%03i" % subfield)
+		
+			
+			meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=ncpu)
+			
+			avgcat = meas.avg.onsims(measdir, simparams, groupcols=groupcols, removecols=removecols, removereas=False)
+			
+			tools.io.writepickle(avgcat, self._get_path("simmeas", "%03i" % subfield, simparams.name, "avgcat.pkl"))
+			
+			
+			# To make things easier for plots of single-realization stuff, we copy a single realization meascat
+			
+			simmeasdict = meas.utils.simmeasdict(measdir, simparams)
+			firstmeascatdir = simmeasdict.items()[0][0]
+			firstmeascatfilename = simmeasdict[firstmeascatdir][0]
+			firstmeascatfilepath = self._get_path("simmeas", "%03i" % (subfield), simparams.name, firstmeascatfilename)
+			shutil.copy(firstmeascatfilepath, self._get_path("simmeas", "%03i" % subfield, simparams.name, "rea0cat.pkl"))
+			
+
 
 	def learn(self, learnparams, mlparams, simparam_name, suffix="_mean", 
 			  method_prefix="", overwrite=False):

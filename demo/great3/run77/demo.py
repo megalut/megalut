@@ -5,7 +5,7 @@ import megalut.great3
 import mymeasfct
 import mysimparams
 import mymlparams
-
+import plots
 
 import logging
 logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
@@ -15,28 +15,34 @@ logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcNam
 run = megalut.great3.great3.Run("control", "space", "constant",
 	datadir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT_v5_GREAT3_run77",
-	subfields = range(3))
+	subfields = range(1))
 
 
+simparams = mysimparams.space_v1
+
+
+"""
 # Measure the stars (PSFs)
 run.meas_psf(mymeasfct.psf_sewpyadamom)
 
 # Run measurements on input images
-run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=3)
+run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=6)
+
+"""
+
+# Make simulations
+run.make_sim(simparams, n=20, ncat=1, nrea=1, ncpu=6)
+
+"""
+# Measure them
+run.meas_sim(simparams, mymeasfct.sewpyadamom,
+	groupcols=mymeasfct.sewpyadamom_groupcols, removecols=mymeasfct.sewpyadamom_removecols, ncpu=6)
+"""	
+
+#plots.simobscompa(run, simparams)
 
 
-
-
-exit()
-
-
-
-# Make sim catalogs & images
-cgv.sim(cgv_simparm,n=10,ncpu=0,nrea=8)
-
-# Measure the observations with the same methods than the observation
-cgv.meas("sim",measfct,measfctkwargs,ncpu=0,simparams=cgv_simparm)
-
+"""
 # Train the ML
 cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
           method_prefix="adamom_",suffix="_mean")
@@ -50,3 +56,4 @@ cgv.writeout("ML_FANN_demo_default")
 # Prepare the presubmission file
 # (This will fail as we work only on a subset of the data)
 cgv.presubmit()
+"""
