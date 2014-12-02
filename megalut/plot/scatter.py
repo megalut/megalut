@@ -261,10 +261,13 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		axhistx = divider.append_axes("top", 1.0, pad=0.1, sharex=ax)
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
-		axhistx.hist(simcat[featx.colname], color="red", ec="red", **mysidehistxkwargs)
-		axhistx.hist(obscat[featx.colname], color="blue", ec="blue", **mysidehistxkwargs)
-		axhisty.hist(simcat[featy.colname], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
-		axhisty.hist(obscat[featy.colname], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
+		
+		axhistx.hist(simcat[featx.colname][np.logical_not(simcat[featx.colname].mask)], color="red", ec="red", **mysidehistxkwargs)
+		axhistx.hist(obscat[featx.colname][np.logical_not(obscat[featx.colname].mask)], color="blue", ec="blue", **mysidehistxkwargs)
+		
+		
+		axhisty.hist(simcat[featy.colname][np.logical_not(simcat[featy.colname].mask)], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obscat[featy.colname][np.logical_not(obscat[featy.colname].mask)], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
