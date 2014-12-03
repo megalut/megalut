@@ -39,13 +39,13 @@ run.meas_sim(simparams, mymeasfct.sewpyadamom,
 
 run.subfields = [0]
 
-#plots.simobscompa(run, simparams)
+plots.simobscompa(run, simparams)
 
 #run.train(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name, ncpu=4)
 
 #run.self_predict(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name)
 
-plots.presimcheck(run, trainname="default_doubletwenty", simname=simparams.name)
+#plots.presimcheck(run, trainname="default_doubletwenty", simname=simparams.name)
 
 
 

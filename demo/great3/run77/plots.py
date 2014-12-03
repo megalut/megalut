@@ -107,14 +107,17 @@ def presimcheck(run, trainname, simname):
 		
 		cat["snr"] = cat["sewpy_FLUX_AUTO_mean"] / cat["sewpy_FLUXERR_AUTO_mean"]
 		snr = megalut.plot.feature.Feature("snr", 0.1, 150, "SExtractor SNR")
-		snr_narrow = megalut.plot.feature.Feature("snr", 10, 30, "SExtractor SNR")
+		snr_narrow = megalut.plot.feature.Feature("snr", 10, 40, "SExtractor SNR")
 		
 		ngroupstats = cat.meta["ngroupstats"]
 		logger.info("Preparing predsimcheck of %i galaxies, ngroupstats (nrea) is %i" % (len(cat), ngroupstats))
-	
+		
 		cat["measfrac"] = cat["adamom_flux_n"] / float(ngroupstats)
 		measfrac = megalut.plot.feature.Feature("measfrac", 0.0, 1.0, "Measurement success fraction")
-
+		
+		
+		# Not currently used in the plots:
+		"""
 		cat["g1prerr"] = cat["pre_g1"] - cat["tru_g1"]
 		cat["g2prerr"] = cat["pre_g2"] - cat["tru_g2"]
 		cat["gprerr"] = np.hypot(cat["g1prerr"], cat["g2prerr"])
@@ -130,7 +133,7 @@ def presimcheck(run, trainname, simname):
 		sersicnprerr = megalut.plot.feature.Feature("sersicnprerr", -1.5, 1.5, "pre_sersicn - tru_sersicn")
 		sersicnbias = megalut.plot.feature.Feature("sersicnprerr", -0.5, 0.5, "sersicn bias")
 		sersicnrmsd = megalut.plot.feature.Feature("sersicnprerr", 0.0, 1.0, "sersicn RMSD")
-	
+		"""
 		
 		tru_g1 = megalut.plot.feature.Feature("tru_g1", -1.0, 1.0)
 		tru_g2 = megalut.plot.feature.Feature("tru_g2", -1.0, 1.0)
@@ -161,17 +164,20 @@ def presimcheck(run, trainname, simname):
 		ax = fig.add_subplot(3, 4, 3)	
 		megalut.plot.scatter.scatter(ax, cat, tru_rad, pre_rad, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 
-		#ax = fig.add_subplot(3, 4, 4)	
-		#megalut.plot.scatter.scatter(ax, cat, tru_sersicn, pre_sersicn, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3, metrics=True)
+		ax = fig.add_subplot(3, 4, 4)	
+		megalut.plot.scatter.scatter(ax, cat, tru_sersicn, pre_sersicn, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 
 		ax = fig.add_subplot(3, 4, 5)	
-		megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, snr_narrow, s=4, metrics=True)
+		megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, snr_narrow, s=5, metrics=True)
 		
 		ax = fig.add_subplot(3, 4, 6)	
-		megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, snr_narrow, s=4, metrics=True)
+		megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, snr_narrow, s=5, metrics=True)
 		
 		ax = fig.add_subplot(3, 4, 7)	
-		megalut.plot.scatter.scatter(ax, cat, tru_rad, pre_rad, snr_narrow, s=4, metrics=True)
+		megalut.plot.scatter.scatter(ax, cat, tru_rad, pre_rad, snr_narrow, s=5, metrics=True)
+
+		ax = fig.add_subplot(3, 4, 8)	
+		megalut.plot.scatter.scatter(ax, cat, tru_sersicn, pre_sersicn, snr_narrow, s=5, metrics=True)
 
 
 
