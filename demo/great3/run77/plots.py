@@ -106,6 +106,8 @@ def presimcheck(run, trainname, simname):
 		cat = megalut.tools.io.readpickle(os.path.join(traindir, "pretraincat_rea0.pkl"))
 		
 		cat["snr"] = cat["sewpy_FLUX_AUTO_mean"] / cat["sewpy_FLUXERR_AUTO_mean"]
+		snr = megalut.plot.feature.Feature("snr", 0.1, 150, "SExtractor SNR")
+		snr_narrow = megalut.plot.feature.Feature("snr", 10, 30, "SExtractor SNR")
 		
 		ngroupstats = cat.meta["ngroupstats"]
 		logger.info("Preparing predsimcheck of %i galaxies, ngroupstats (nrea) is %i" % (len(cat), ngroupstats))
@@ -145,19 +147,32 @@ def presimcheck(run, trainname, simname):
 		
 		txt = "Subfield %i, sim '%s', train '%s', " % (subfield, simname, trainname)
 	
-		fig = plt.figure(figsize=(18, 12))
-		fig.subplots_adjust(bottom=0.07, top=0.92, left=0.05, right=0.95, wspace=0.2)
+		fig = plt.figure(figsize=(22, 13))
+		fig.subplots_adjust(bottom=0.07, top=0.92, left=0.05, right=0.95, wspace=0.4)
 
 		fig.text(0.05, 0.95, txt, {"fontsize":15})
 		
-		ax = fig.add_subplot(2, 3, 1)	
+		ax = fig.add_subplot(3, 4, 1)	
 		megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 		
-		ax = fig.add_subplot(2, 3, 2)	
+		ax = fig.add_subplot(3, 4, 2)	
 		megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 		
-		ax = fig.add_subplot(2, 3, 3)	
+		ax = fig.add_subplot(3, 4, 3)	
 		megalut.plot.scatter.scatter(ax, cat, tru_rad, pre_rad, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+
+		#ax = fig.add_subplot(3, 4, 4)	
+		#megalut.plot.scatter.scatter(ax, cat, tru_sersicn, pre_sersicn, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3, metrics=True)
+
+		ax = fig.add_subplot(3, 4, 5)	
+		megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, snr_narrow, s=4, metrics=True)
+		
+		ax = fig.add_subplot(3, 4, 6)	
+		megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, snr_narrow, s=4, metrics=True)
+		
+		ax = fig.add_subplot(3, 4, 7)	
+		megalut.plot.scatter.scatter(ax, cat, tru_rad, pre_rad, snr_narrow, s=4, metrics=True)
+
 
 
 		plt.show()	

@@ -28,7 +28,6 @@ run.meas_psf(mymeasfct.psf_sewpyadamom)
 # Run measurements on input images
 run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=10)
 
-
 # Make simulations
 run.make_sim(simparams, n=100, ncat=1, nrea=30, ncpu=10)
 
@@ -41,8 +40,6 @@ run.meas_sim(simparams, mymeasfct.sewpyadamom,
 run.subfields = [0]
 
 #plots.simobscompa(run, simparams)
-
-
 
 #run.train(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name, ncpu=4)
 

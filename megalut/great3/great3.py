@@ -270,55 +270,7 @@ class Run(utils.Branch):
 		
 		
 		
-		
-		"""
-			# a deepcopy is made to make sure we don't use modified catalogs 
-			# (see right after ml.train())
-			lp=copy.deepcopy(learnparams)
-			lp.features = [feature + suffix for feature in lp.features]
 
-			ml = learn.ML(lp, mlparams,workbasedir=os.path.join(self.workdir,
-																		 "ml","%03d" % simsubfield))
-						
-			ml_dir=ml.get_workdir()
-			exists=True
-			if not os.path.exists(os.path.join(ml_dir,"ML.pkl")) :
-				exists=False
-
-			if exists and not overwrite:
-				logger.info("Learn of simsubfield %d already exists, skipping..." % (simsubfield))
-				continue
-			elif overwrite and exists:
-				logger.info("Learn of simsubfield %d, I'm told to overwrite..." % (simsubfield))
-				shutil.rmtree(ml_dir)
-
-			# This is a quick fix, only working with one catalog!
-			seapat=self._get_path("sim","%03d" % simsubfield, "meas",
-								  "%s" % simparam_name,"*_meascat.pkl")
-			cats = glob.glob(seapat)
-			if len(cats)==0:
-				raise ValueError("No catalog found for subfield %d" % simsubfield)
-			elif len(cats)>1:
-				raise NotImplemented("I'm not foreseen to be that smart, calm down")
-			
-			input_cat = tools.io.readpickle(cats[0])
-			# Important: we don't want to train on badly measured data!
-			# If we take a suffix, this means we took out the badly measured data already
-			#TODO: This line is bad, because method_prefix will disappear!
-			if suffix=="":
-				input_cat = input_cat[input_cat[method_prefix+"flag"] == 0] 
-
-			ml.train(input_cat)
-			
-			# Removes the suffix from the ml params as we observe only once, and thus no average
-			for i, f in enumerate(ml.mlparams.features):
-				if not suffix in f: continue
-				ml.mlparams.features[i] = f[:-1*len(suffix)]
-			
-			# export the ML object:
-			tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
-			
-		"""
 			
 			
 	def predict(self,method_prefix="adamom_",overwrite=False):
