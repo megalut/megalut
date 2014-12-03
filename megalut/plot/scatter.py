@@ -131,8 +131,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		# And draw the histograms		
-		axhistx.hist(xdata, **mysidehistxkwargs)
-		axhisty.hist(ydata, orientation='horizontal', **mysidehistykwargs)
+		axhistx.hist(xdata[np.logical_not(xdata.mask)], **mysidehistxkwargs)
+		axhisty.hist(ydata[np.logical_not(ydata.mask)], orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -197,7 +197,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		metrics_predlabel = featy.colname
 		metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
 	
-		metrics_text = "predfrac: %.3f\nRMSD: %.3f" % (metrics["predfrac"], metrics["rmsd"])
+		metrics_text = "predfrac: %.3f\nRMSD: %.3f\nm*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0)
 		ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
 	
 		
