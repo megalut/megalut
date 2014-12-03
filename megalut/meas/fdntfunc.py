@@ -21,6 +21,48 @@ import sewpy
 from megalut.meas import utils
 
 
+def measfct(catalog, **kwargs):
+        """
+        This is a wrapper around FDNT that meets the requirements of a MegaLUT-conformed shape
+	measurement function, namely to take only one catalog (astropy table) object containing
+	-- or linking to -- all the required data.
+
+        In other words, this is a function that you could pass to meas.run.general() etc.
+
+        If you want to combine several shape measurement algorithms into one shot, you would
+	define such a function yourself (not here in megalut, but somewhere in your scripts).
+        The present measfct serves as an example and is a bit long. It could be kept very short.
+
+        :param catalog: an astropy table, which, in this case, is expected to have
+	                catalog.meta["img"] set to be a megalut.tools.imageinfo.ImageInfo object.
+        :param kwargs: keyword arguments that will be passed to the lower-level measure() function.
+                       These set parameters of the shape measurement, but they do not pass any data.
+		       Do not try to specify "img" or "xname" here, it will fail! Set the catalog's
+		       meta["img"] instead.
+                       So for this particular measfct, you probably want to give at least stampsize
+		       as kwarg.
+        """
+
+        # We could have some warnings here.
+	# Just to illustrate, an example:
+
+	if catalog.meta["img"].stampsize is not None and "stampsize" in kwargs:
+		if catalog.meta["img"].stampsize != kwargs["stampsize"]:
+			logger.warning("Measuring with stampsize %i, but stamps have been generated with stampsize %i" % (kwargs["stampsize"], catalog.meta["img"].stampsize))
+
+	# load the images:
+	img = catalog.meta["img"].load()
+	psfimg = catalog.meta["psf"].load()
+
+        # And we pass it, with all required kwargs, to the lower-level function:
+	return measure(img, catalog,
+		       xname=catalog.meta["img"].xname, yname=catalog.meta["img"].yname,
+		       psfxname=catalog.meta["psf"].xname, psfyname=catalog.meta["psf"].yname,
+		       stampsize=catalog.meta["img"].stampsize,
+		       psfstampsize=catalog.meta["psf"].stampsize,
+		       **kwargs)
+
+
 def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="fdnt_",
 	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128,):
 	"""
