@@ -18,7 +18,9 @@ run = megalut.great3.great3.Run("control", "space", "constant",
 	subfields = range(10))
 
 
-simparams = mysimparams.space_v1
+run.subfields = [0]
+#simparams = mysimparams.space_v1
+simparams = mysimparams.Space_v1("Space_v1_n30_nrea100")
 
 
 """
@@ -28,24 +30,36 @@ run.meas_psf(mymeasfct.psf_sewpyadamom)
 # Run measurements on input images
 run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=10)
 
+"""
+
+
 # Make simulations
-run.make_sim(simparams, n=100, ncat=1, nrea=30, ncpu=10)
+run.make_sim(simparams, n=25, ncat=1, nrea=100, ncpu=10)
 
 # Measure them
 run.meas_sim(simparams, mymeasfct.sewpyadamom,
 	groupcols=mymeasfct.sewpyadamom_groupcols, removecols=mymeasfct.sewpyadamom_removecols, ncpu=10)
 
-"""
+#run.subfields = [0]
+#plots.simobscompa(run, simparams)
+
 
 run.subfields = [0]
 
-plots.simobscompa(run, simparams)
+# default:
 
-#run.train(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name, ncpu=4)
+run.train(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name, ncpu=4)
+run.self_predict(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name)
+plots.presimcheck(run, trainname="default_simpleten", simname=simparams.name)
 
-#run.self_predict(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name)
 
-#plots.presimcheck(run, trainname="default_doubletwenty", simname=simparams.name)
+
+"""
+# rea0:
+run.train(trainparams=mymlparams.rea0_doubletwenty, trainname="rea0_doubletwenty", simname=simparams.name, ncpu=4)
+run.self_predict(trainparams=mymlparams.rea0_doubletwenty, trainname="rea0_doubletwenty", simname=simparams.name)
+plots.presimcheck(run, trainname="rea0_doubletwenty", simname=simparams.name)
+"""
 
 
 

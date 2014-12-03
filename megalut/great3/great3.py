@@ -269,75 +269,49 @@ class Run(utils.Branch):
 			tools.io.writepickle(pretraincat_rea0, os.path.join(traindir, "pretraincat_rea0.pkl"))
 		
 		
-		
-
+	
 			
-			
-	def predict(self,method_prefix="adamom_",overwrite=False):
+	def predict(self, trainparams, trainname, simname):
 		"""
-		Predicts values according to the configuration of the ML pickles. 
-		Predicts on all ML available.
-		
-		:param method_prefix: *deprecated* the prefix of the features
-		:param overwrite: if `True` and the predictions exist they are deleted and re-predicted.
+
 		"""
 
 					
-		for subfield in self.subfields:	  
-			if self.sheartype == "constant":
-				simsubfield = subfield
-			elif self.sheartype == "variable":
-				simsubfield = int(subfield/20)*20
-			fpath =	 os.path.join(self.workdir,"ml","%03d" % simsubfield)
-			for root, dirs, files in os.walk(fpath):
-				if not "ML.pkl" in files: 
-					logger.info("Nothing found in %s" % fpath)
-					continue
-				ml_name = root.split("/")[-1]
-				
-				cat_fname=self._get_path("pred","%s-%03d.fits" % (ml_name,subfield))
-				if os.path.exists(cat_fname) and overwrite:
-					logger.info("Pred of subfield %d, I'm told to overwrite..." % (subfield))
-					os.remove(cat_fname)
-				elif os.path.exists(cat_fname):
-					logger.info("Pred of subfield %d already exists, skipping..." % (subfield))
-					continue
-				
-				logger.info("Using %s to predict on subfield %03d" % (ml_name,simsubfield))
-
-				ml=tools.io.readpickle(os.path.join(root,"ML.pkl"))
-				
-				input_cat=self.galfilepath(subfield,"obs")
-				input_cat=tools.io.readpickle(input_cat)
-				
-				# We predict everything, we will remove flags later
-				predicted=ml.predict(input_cat)
-				#TODO: This line is bad, because method_prefix will disappear!
-				failed=predicted[method_prefix+"flag"]>0
-				count_failed=0
-				for p in predicted[failed]:
-					# TODO: Better and faster way to do this ?
-					p["pre_g1"]=20.
-					p["pre_g2"]=20.
-					count_failed+=1
-					
-				logger.info("Predicted on %d objects, %d failed" % (len(input_cat),count_failed))
-				
-				predicted.write(cat_fname,format="fits")
-				
-	def writeout(self, ml_name):
-		"""
-		Write the shear catalog out
+		for subfield in self.subfields:
 		
-		:param ml_name: the name of the ML to use (from train & predict)
-		"""
-		for subfield in self.subfields:	 
-			input_cat = Table.read(self._get_path("pred","%s-%03d.fits" % (ml_name,subfield)))
 			
-			input_cat=input_cat["ID","pre_g1","pre_g2"]
-			input_cat.write(self._get_path("out","%03d.cat" % subfield),
-							format="ascii.commented_header")
-			logger.info("Wrote shear cat for subfield %03d" % subfield)
+			# We read the obs measurements
+			obscat = tools.io.readpickle(self._get_path("obs", "img_%i_meascat.pkl" % subfield))
+		
+			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
+			
+			preobscat = learn.run.predict(obscat, traindir, trainparams, mode="single")
+			
+			# And we save the predictions
+			
+			tools.io.writepickle(preobscat, self._get_path("pred", "%03i" % subfield, trainname, simname, "preobscat.pkl"))
+		
+				
+	def writeout(self, trainname, simname):
+		"""
+	
+		"""
+		for subfield in self.subfields:
+		
+			preobscat = tools.io.readpickle(self._get_path("pred", "%03i" % subfield, trainname, simname, "preobscat.pkl"))
+			
+			# We replace masked predictions with 20.0
+			preobscat["pre_g1"][preobscat["pre_g1"].mask] = 20.0
+			preobscat["pre_g2"][preobscat["pre_g2"].mask] = 20.0
+			
+			# We cut out the columns we need
+			preobscat = preobscat["ID","pre_g1","pre_g2"]
+			
+			# We write the ascii file
+			preobscat.write(self._get_path("out", "%03i.cat" % subfield), format="ascii.commented_header")
+			
+			logger.info("Wrote shear cat for subfield %03i" % subfield)
+			
 			
 	def presubmit(self, corr2path=".", use_weights=False):
 		"""
