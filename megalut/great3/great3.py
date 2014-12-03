@@ -1,18 +1,12 @@
 """
-Helper class for GREAT3 that does the trivial tasks for the user.
-
-Todo list
----------
-* make this inherit a generic run class
-
+Quick and dirty GREAT3 Run class making use of the new code of branch #73
 """
+
 import logging
 logger = logging.getLogger(__name__)
 
 import os
-#from astropy.table import Table
 import astropy
-
 import numpy as np
 
 import utils
@@ -31,11 +25,14 @@ class Run(utils.Branch):
 	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None,\
 				  subfields=range(200)):
 		
-		utils.Branch.__init__(self,experiment, obstype, sheartype, datadir, workdir)
+		utils.Branch.__init__(self, experiment, obstype, sheartype, datadir, workdir)
+		logger.info("Working on branch %s-%s-%s" % (experiment, obstype, sheartype))
 
 		self._mkdir(workdir)
 		self.subfields=subfields
 		
+		# This is way too "magic" and weird. For now let's just use "self.subfields"
+		"""
 		if self.sheartype == "constant":
 			self.simsubfields = subfields
 		elif self.sheartype == "variable":
@@ -43,8 +40,8 @@ class Run(utils.Branch):
 			self.simsubfields=self.simsubfields.astype(np.int)
 			self.simsubfields *= 20
 			self.simsubfields = np.unique(self.simsubfields)
+		"""
 
-		logger.info("Starting new GREAT3 branch %s-%s-%s" % (experiment, obstype, sheartype))
 		
 	def _mkdir(self, workdir):
 		"""
@@ -195,6 +192,7 @@ class Run(utils.Branch):
 	def meas_sim(self, simparams, measfct, groupcols=None, removecols=None, ncpu=1):
 		"""		
 		
+		Stores all ouput in directories using simparams.name
 		"""
 		
 		measfctkwargs = {"branch":self}
@@ -222,39 +220,58 @@ class Run(utils.Branch):
 			
 
 
-	def learn(self, learnparams, mlparams, simparam_name, suffix="_mean", 
-			  method_prefix="", overwrite=False):
+	def train(self, trainparams, trainname, simname, ncpu=1):
 		"""
-		A method that train any given algorithm.
 		
-		:param learnparams: an instance of megalut.learn.MLParams
-		:param mlparams: an instance of :class:`megalut.learn.fannwrapper.FANNParams`
-		:param suffix: what suffix of the measurements to take ? Default: "_mean". 
-		:param method_prefix: *deprecated* the prefix of the features
-		:param simparam_name: the name of the simulation to use
-		:param overwrite: if `True` and the output ML file exist they are deleted and re-trained.
+		simname is the simparams.name of the simparams to be trained with
 		
-		
-		Example usage::
-		
-			>>> learnparams = megalut.learn.MLParams(
-					name = "demo",
-					features = ["gs_g1", "gs_g2", "gs_flux"],
-					labels = ["tru_g1","tru_g2"],
-					predlabels = ["pre_g1","pre_g2"],
-					)
-			
-			>>> fannparams=megalut.learn.fannwrapper.FANNParams(
-					hidden_nodes = [20, 20],
-					max_iterations = 500,
-				)
-				
-			>>> great3.learn(learnparams=learnparams, mlparams=fannparams)
+		Stores all output in directories usign both trainname and simname (simname == simparams.name)
 		"""
-		# TODO: how to merge different measurements together ?
 		
-		for simsubfield in self.simsubfields:	   
+		for subfield in self.subfields:
+		
+			simdir = self._get_path("sim", "%03i" % subfield)
+			measdir = self._get_path("simmeas", "%03i" % subfield)
 			
+			# We load the right avg catalog (location depends on simname):
+			avgcat = tools.io.readpickle(self._get_path("simmeas", "%03i" % subfield, simname, "avgcat.pkl"))
+			
+			# Reject crap measurements here
+			ngroupstats = avgcat.meta["ngroupstats"]
+			avgcat = avgcat[avgcat["adamom_flux_n"] > float(ngroupstats)/2.0] # At least half of the reas could be measured
+			logger.info("Keeping %i galaxies for training" % (len(avgcat)))
+			
+			# We will store all the ouput here:
+			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
+		 	if not os.path.exists(traindir):
+				os.makedirs(traindir)
+			
+			# Before training, let's save the input catalog (e.g., for later self-predictions):
+			tools.io.writepickle(avgcat, os.path.join(traindir, "traincat.pkl"))
+					
+			learn.run.train(avgcat, traindir, trainparams, ncpu=ncpu)
+			
+
+			
+
+	def self_predict(self, trainparams, trainname, simname):
+		"""
+		
+		
+		"""
+		
+		for subfield in self.subfields:
+		
+			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
+			traincat = tools.io.readpickle(os.path.join(traindir, "traincat.pkl"))
+			
+			pretraincat_rea0 = learn.run.predict(traincat, traindir, trainparams, mode="first")
+			tools.io.writepickle(pretraincat_rea0, os.path.join(traindir, "pretraincat_rea0.pkl"))
+		
+		
+		
+		
+		"""
 			# a deepcopy is made to make sure we don't use modified catalogs 
 			# (see right after ml.train())
 			lp=copy.deepcopy(learnparams)
@@ -300,6 +317,9 @@ class Run(utils.Branch):
 			
 			# export the ML object:
 			tools.io.writepickle(ml, os.path.join(ml_dir,"ML.pkl"))
+			
+		"""
+			
 			
 	def predict(self,method_prefix="adamom_",overwrite=False):
 		"""

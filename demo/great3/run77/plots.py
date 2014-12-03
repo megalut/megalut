@@ -1,10 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+import megalut
 import megalut.plot
-import megalut.plot.stamps
 
-import numpy as np
+import os
 
 import logging
 logger = logging.getLogger(__name__)
@@ -86,5 +86,82 @@ def simobscompa(run, simparams):
 		#plt.tight_layout()
 		plt.show()	
 		plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+def presimcheck(run, trainname, simname):
+	"""
+	Visualize predictions obtained on simulations
+	"""
+		
+	
+	
+	for subfield in run.subfields:
+
+		# We load the self-predicted (on rea0) catalog:
+	
+		traindir = run._get_path("ml", "%03i" % subfield, trainname, simname)
+		cat = megalut.tools.io.readpickle(os.path.join(traindir, "pretraincat_rea0.pkl"))
+		
+		cat["snr"] = cat["sewpy_FLUX_AUTO_mean"] / cat["sewpy_FLUXERR_AUTO_mean"]
+		
+		ngroupstats = cat.meta["ngroupstats"]
+		logger.info("Preparing predsimcheck of %i galaxies, ngroupstats (nrea) is %i" % (len(cat), ngroupstats))
+	
+		cat["measfrac"] = cat["adamom_flux_n"] / float(ngroupstats)
+		measfrac = megalut.plot.feature.Feature("measfrac", 0.0, 1.0, "Measurement success fraction")
+
+		cat["g1prerr"] = cat["pre_g1"] - cat["tru_g1"]
+		cat["g2prerr"] = cat["pre_g2"] - cat["tru_g2"]
+		cat["gprerr"] = np.hypot(cat["g1prerr"], cat["g2prerr"])
+		gprerr = megalut.plot.feature.Feature("gprerr", 0.0, 0.2, "$|g|$ error")
+	
+		cat["radprerr"] = cat["pre_rad"] - cat["tru_rad"]
+		radprerr = megalut.plot.feature.Feature("radprerr", -0.5, 0.5, "pre_rad - tru_rad")
+		radbias = megalut.plot.feature.Feature("radprerr", -0.5, 0.5, "rad bias")
+		radrmsd = megalut.plot.feature.Feature("radprerr", 0.0, 0.5, "rad RMSD")
+	
+	
+		cat["sersicnprerr"] = cat["pre_sersicn"] - cat["tru_sersicn"]
+		sersicnprerr = megalut.plot.feature.Feature("sersicnprerr", -1.5, 1.5, "pre_sersicn - tru_sersicn")
+		sersicnbias = megalut.plot.feature.Feature("sersicnprerr", -0.5, 0.5, "sersicn bias")
+		sersicnrmsd = megalut.plot.feature.Feature("sersicnprerr", 0.0, 1.0, "sersicn RMSD")
+	
+		
+		tru_g1 = megalut.plot.feature.Feature("tru_g1", -1.0, 1.0)
+		tru_g2 = megalut.plot.feature.Feature("tru_g2", -1.0, 1.0)
+		tru_flux = megalut.plot.feature.Feature("tru_flux", 0.0, 200.0)
+		tru_rad = megalut.plot.feature.Feature("tru_rad", 0, 13)
+		tru_sersicn = megalut.plot.feature.Feature("tru_sersicn", 0.3, 4.5)
+	
+		pre_g1 = megalut.plot.feature.Feature("pre_g1", -1.0, 1.0)
+		pre_g2 = megalut.plot.feature.Feature("pre_g2", -1.0, 1.0)
+		pre_flux = megalut.plot.feature.Feature("pre_flux", 0.0, 200.0)
+		pre_rad = megalut.plot.feature.Feature("pre_rad", 0, 13)
+		pre_sersicn = megalut.plot.feature.Feature("pre_sersicn", 0.3, 4.5)
+		
+		
+		txt = "Subfield %i, sim '%s', train '%s', " % (subfield, simname, trainname)
+	
+		fig = plt.figure(figsize=(18, 12))
+		fig.subplots_adjust(bottom=0.07, top=0.92, left=0.05, right=0.95, wspace=0.2)
+
+		fig.text(0.05, 0.95, txt, {"fontsize":15})
+		
+		ax = fig.add_subplot(2, 3, 1)	
+		megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+		
+		ax = fig.add_subplot(2, 3, 2)	
+		megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+		
+		ax = fig.add_subplot(2, 3, 3)	
+		megalut.plot.scatter.scatter(ax, cat, tru_rad, pre_rad, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+
+
+		plt.show()	
+		plt.close(fig) # Helps releasing memory when calling in large loops.
+
 
 
