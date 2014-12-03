@@ -21,7 +21,7 @@ run = megalut.great3.great3.Run("control", "space", "constant",
 simparams = mysimparams.space_v1
 
 
-
+"""
 # Measure the stars (PSFs)
 run.meas_psf(mymeasfct.psf_sewpyadamom)
 
@@ -36,16 +36,24 @@ run.make_sim(simparams, n=100, ncat=1, nrea=30, ncpu=10)
 run.meas_sim(simparams, mymeasfct.sewpyadamom,
 	groupcols=mymeasfct.sewpyadamom_groupcols, removecols=mymeasfct.sewpyadamom_removecols, ncpu=10)
 
+"""
 
+run.subfields = [0]
 
 #plots.simobscompa(run, simparams)
 
 
-"""
-# Train the ML
-cgv.learn(learnparams=learnparams, mlparams=fannparams, simparam_name=simparam_name, 
-          method_prefix="adamom_",suffix="_mean")
 
+#run.train(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name, ncpu=4)
+
+#run.self_predict(trainparams=mymlparams.default_doubletwenty, trainname="default_doubletwenty", simname=simparams.name)
+
+plots.presimcheck(run, trainname="default_doubletwenty", simname=simparams.name)
+
+
+
+
+"""
 # Predict the output
 cgv.predict()
 
