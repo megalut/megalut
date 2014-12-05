@@ -24,7 +24,7 @@ run = megalut.great3.great3.Run("control", "space", "constant",
 simparams = mysimparams.Space_v1("Space_v1_n25_nrea30")
 
 
-
+"""
 # Measure the stars (PSFs)
 run.meas_psf(mymeasfct.psf_sewpyadamom)
 
@@ -40,9 +40,9 @@ run.meas_sim(simparams, mymeasfct.sewpyadamom,
 	groupcols=mymeasfct.sewpyadamom_groupcols, removecols=mymeasfct.sewpyadamom_removecols, ncpu=10)
 
 #plots.simobscompa(run, simparams)
+"""
 
-
-
+"""
 # default:
 
 run.train(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name, ncpu=4)
@@ -50,7 +50,7 @@ run.self_predict(trainparams=mymlparams.default_simpleten, trainname="default_si
 
 #plots.presimcheck(run, trainname="default_simpleten", simname=simparams.name)
 
-
+"""
 
 """
 # rea0:
@@ -59,18 +59,17 @@ run.self_predict(trainparams=mymlparams.rea0_doubletwenty, trainname="rea0_doubl
 plots.presimcheck(run, trainname="rea0_doubletwenty", simname=simparams.name)
 """
 
-"""
-
-
-run.predict(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name)
-
-run.writeout(trainname="default_simpleten", simname=simparams.name)
-
-run.presubmit(corr2path = "/users/mtewes/GREAT3/mjarvis-read-only")
 
 
 
-"""
+#run.predict(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name)
+
+#run.writeout(trainname="default_simpleten", simname=simparams.name)
+
+run.presubmit(corr2path = "/users/mtewes/GREAT3/mjarvis-read-only", presubdir="/users/mtewes/GREAT3/great3-public-svn/presubmission_script")
+
+
+
 
 """
 # Predict the output

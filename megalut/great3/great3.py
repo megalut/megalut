@@ -289,7 +289,12 @@ class Run(utils.Branch):
 			
 			# And we save the predictions
 			
-			tools.io.writepickle(preobscat, self._get_path("pred", "%03i" % subfield, trainname, simname, "preobscat.pkl"))
+			predir = self._get_path("pred", "%03i" % subfield, trainname, simname)
+			
+			if not os.path.exists(predir):
+				os.makedirs(predir)
+			
+			tools.io.writepickle(preobscat, os.path.join(predir, "preobscat.pkl"))
 		
 				
 	def writeout(self, trainname, simname):
@@ -313,16 +318,17 @@ class Run(utils.Branch):
 			logger.info("Wrote shear cat for subfield %03i" % subfield)
 			
 			
-	def presubmit(self, corr2path=".", use_weights=False):
+	def presubmit(self, corr2path=".", presubdir=".", use_weights=False):
 		"""
 		:param corr2path: The directory containing the Michael Jarvis's corr2 code, 
 				which can be downloaded from http://code.google.com/p/mjarvis/.
 		:param use_weights: is the shear catalogue using weights?
 		
-		:requires: presubmission files in the megalut/great3/presubmission_script directory.
-				Those files can be downloaded from https://github.com/barnabytprowe/great3-public.
+	
 		"""
-		presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
+		# Nope...
+		#presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
+		
 		presubscriptpath = os.path.join(presubdir, "presubmission.py")
 		catpath = self._get_path("out", "*.cat")
 		branchcode = self.branchcode()

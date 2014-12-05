@@ -29,24 +29,37 @@ run.meas_psf(mymeasfct.psf_sewpyadamom)
 # Run measurements on input images
 run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=4)
 """
-
-run.subfields = range(0, 200, 20)
-run.subfields = [0]
-
 """
+#run.subfields = range(0, 200, 20)
+#run.subfields = [0]
+run.subfields = range(20, 200, 20)
+
+
 # Make simulations
 run.make_sim(simparams, n=30, ncat=1, nrea=30, ncpu=4)
 
-"""
+
 # Measure them
 run.meas_sim(simparams, mymeasfct.sewpyadamom,
-	groupcols=mymeasfct.sewpyadamom_groupcols, removecols=mymeasfct.sewpyadamom_removecols, ncpu=2)
+	groupcols=mymeasfct.sewpyadamom_groupcols, removecols=mymeasfct.sewpyadamom_removecols, ncpu=4)
 
 
 #plots.simobscompa(run, simparams)
 
 
+run.train(trainparams=mymlparams.default_doubleten, trainname="default_doubleten", simname=simparams.name, ncpu=4)
+run.self_predict(trainparams=mymlparams.default_doubleten, trainname="default_doubleten", simname=simparams.name)
+
+#plots.presimcheck(run, trainname="default_doubleten", simname=simparams.name)
+
 """
-run.train(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name, ncpu=4)
-run.self_predict(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name)
-"""
+
+run.subfields = range(200)
+
+run.predict(trainparams=mymlparams.default_simpleten, trainname="default_simpleten", simname=simparams.name)
+
+run.writeout(trainname="default_simpleten", simname=simparams.name)
+
+run.presubmit(corr2path = "/users/mtewes/GREAT3/mjarvis-read-only", presubdir="/users/mtewes/GREAT3/great3-public-svn/presubmission_script")
+
+
