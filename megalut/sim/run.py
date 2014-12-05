@@ -199,7 +199,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 			
 			if psfselect == "random":
 				# We repeat the random drawing for each catalog:
-				matched_psfcat = psfcat[np.random.randint(low=0, high=len(psfcat)-1, size=len(catalog))]
+				matched_psfcat = psfcat[np.random.randint(low=0, high=len(psfcat), size=len(catalog))]
+				# the "high" of randing is exclusive !
 	
 			elif psfselect == "sequential":
 				raise RuntimeError("Not yet implemented")
