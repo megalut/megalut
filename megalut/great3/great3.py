@@ -31,16 +31,15 @@ class Run(utils.Branch):
 		self._mkdir(workdir)
 		self.subfields=subfields
 		
-		# This is way too "magic" and weird. For now let's just use "self.subfields"
-		"""
-		if self.sheartype == "constant":
-			self.simsubfields = subfields
-		elif self.sheartype == "variable":
-			self.simsubfields = np.asarray(subfields)/20.
-			self.simsubfields=self.simsubfields.astype(np.int)
-			self.simsubfields *= 20
-			self.simsubfields = np.unique(self.simsubfields)
-		"""
+		# This is **way** too "magic" and weird. For now let's just use "self.subfields"
+		
+		#if self.sheartype == "constant":
+		#	self.simsubfields = subfields
+		#elif self.sheartype == "variable":
+		#	self.simsubfields = np.asarray(subfields)/20.
+		#	self.simsubfields=self.simsubfields.astype(np.int)
+		#	self.simsubfields *= 20
+		#	self.simsubfields = np.unique(self.simsubfields)
 
 		
 	def _mkdir(self, workdir):
