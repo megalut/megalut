@@ -88,6 +88,7 @@ def skystats(stamp):
 	:param stamp: a galsim image, usually a stamp
 
 	:returns: a dict containing "std", "mad", "mean" and "med"
+	
 	Note that "mad" is already rescaled by 1.4826 to be comparable with std.
 	"""
 
