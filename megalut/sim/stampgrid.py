@@ -35,7 +35,7 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	if int(stampsize)%2 != 0:
 		raise RuntimeError("stampsize should be even!")
 
-	logger.info("Drawing a catalog of %i x %i galaxies..." % (n, n))
+	logger.info("Drawing a catalog of %i x %i galaxies using params '%s'..." % (n, n, params))
 		
 	# This explicit loop is kept for the sake of clarity.
 	rows = []

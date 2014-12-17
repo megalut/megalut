@@ -147,6 +147,8 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		
 	"""
 	
+	logger.debug("Predicting with mode '%s'..." % (mode))
+	
 	# We check that the MLs do not predict the same predlabels, as otherwise we can't merge the predictions into a single catalog.
 	predlabels = []
 	for (mlparams, toolparams) in paramslist:
@@ -179,6 +181,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		
 		if mode == "default":
 			pass
+			predcat = tweakedmlobj.predict(predcat)			
 			
 		elif mode == "single": # Drop any "_mean" from features
 	
@@ -189,6 +192,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 				else:
 					tweakedfeatures.append(feature)
 			tweakedmlobj.mlparams.features = tweakedfeatures
+			predcat = tweakedmlobj.predict(predcat)
 			
 		elif mode == "first": # Replace "_mean" by "_0"
 		
@@ -199,14 +203,42 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 				else:
 					tweakedfeatures.append(feature)
 			tweakedmlobj.mlparams.features = tweakedfeatures
+			predcat = tweakedmlobj.predict(predcat)
 		
-		elif mode == "all":
-			raise RuntimeError("Not yet implemented")
+		elif mode == "all": # Replace "_mean" by all realizations, and then groupstat...
+			
+			# We start with some preparatory work:
+			# See how many realizations we have, and check that we have all the features that we need.
+			
+			print cat.meta["ngroupstats"]
+			
+			exit()
+			reafeatures = [] # features that have many realizations
+			for feature in tweakedmlobj.mlparams.features:
+				if feature.endswith("_mean"):
+					reafeatures.append(feature[:-len("_mean")])
+			
+			logger.debug("")
+			
+			
+			
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		else:
 			raise RuntimeError("Unknown mode '%s'" % mode)
-		
-		predcat = tweakedmlobj.predict(predcat)
-		
+			
 	return predcat
 
 
