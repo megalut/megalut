@@ -26,8 +26,6 @@ import datetime
 import multiprocessing
 import copy
 
-import megalut
-
 from .. import tools
 
 import logging
@@ -79,7 +77,7 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 	for incatfilepath in incatfilepaths:
 		
 		# We read the catalog
-		incat = megalut.tools.io.readpickle(incatfilepath)
+		incat = tools.io.readpickle(incatfilepath)
 		
 		# And loop over the "declared" realization ImageInfo objects:
 		for imgrea in incat.meta["imgreas"]:
@@ -225,7 +223,7 @@ def _worker(ws):
 	logger.debug("%s uses measfctkwargs %s" % (p.name, str(ws.measfctkwargs)))
 	
 	# Read input catalog
-	incat = megalut.tools.io.readpickle(ws.incatfilepath)
+	incat = tools.io.readpickle(ws.incatfilepath)
 	if ws.incatmetadict is not None:
 		logger.debug("%s updates the catalog meta dict with %s" % (p.name, str(ws.incatmetadict)))
 		incat.meta.update(ws.incatmetadict)
@@ -236,7 +234,7 @@ def _worker(ws):
 	outcat = ws.measfct(incat, **ws.measfctkwargs)
 	
 	# Write output catalog
-	megalut.tools.io.writepickle(outcat, ws.outcatfilepath)
+	tools.io.writepickle(outcat, ws.outcatfilepath)
 
 	endtime = datetime.datetime.now()
 	logger.info("%s is done, it took %s" % (p.name, str(endtime - starttime)))
