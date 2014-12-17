@@ -11,26 +11,36 @@ basedir = '/tmp/MegaLUT_demo/'
 
 print "Step 1: drawing the sims"
 
-simdir = os.path.join(basedir, "simdir")
+simdir = os.path.join(basedir, "simdir") # Where the simulations should be written
 
-class Flux80(megalut.sim.params.Params):
+class Flux70(megalut.sim.params.Params):
 	def get_flux(self):
-		return 80.0 # Low flux, so that we get some failures in this demo.
+		return 70.0 # Low flux, so that we get some failures in this demo.
 
-simparams = Flux80()
+simparams = Flux70()
+
+
+# We have to prepare a psfcat
+psfcat = megalut.tools.io.readpickle("../generic/psfs/cat_psfgrid.pkl")
+
+# This particular psfcat has no imageinfo yet, so we prepare one from scratch:
+psfcat.meta["img"] = megalut.tools.imageinfo.ImageInfo("../generic/psfs/psfgrid.fits", "psfx", "psfy", 32)
+
 drawcatkwargs = {"n":10, "stampsize":64}
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, ncat=3, nrea=5, ncpu=3)
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs,
+	psfcat=psfcat, psfselect="random",
+	ncat=3, nrea=5, ncpu=3)
+
 
 
 print "Step 2, measuring"
 
-measdir = os.path.join(basedir, "measdir_adamom")
+measdir = os.path.join(basedir, "measdir_adamom") # Where the measurements should be written
 measfct = megalut.meas.galsim_adamom.measfct
 measfctkwargs = {"stampsize":64}
 
 megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
-
 
 
 print "Step 3, summarizing measurements accross simulations"
@@ -50,7 +60,7 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 	)
 
 print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_med", "adamom_flux_std", "adamom_flux_n"]
-
+print mybigmeascat.meta
 
 
 
@@ -64,7 +74,7 @@ import megalut.meas.sewfunc
 measdir = os.path.join(basedir, "measdir_sextractor")
 measfct = megalut.meas.sewfunc.measfct
 measfctkwargs = {
-	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex", 
 	"prefix":""
 	}
 

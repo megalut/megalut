@@ -147,102 +147,102 @@ class Branch:
 
 
 # 
-# 	def obsstarsexpath(self, subfield):
-# 		return os.path.join(self.obsdir(), 'star_catalog-%03i.txt' % subfield)
+#	def obsstarsexpath(self, subfield):
+#		return os.path.join(self.obsdir(), 'star_catalog-%03i.txt' % subfield)
 # 
-# 	def obsgalfilepath(self, subfield):
-# 		return os.path.join(self.obsdir(), "obs-%03i.pkl" % (subfield))
+#	def obsgalfilepath(self, subfield):
+#		return os.path.join(self.obsdir(), "obs-%03i.pkl" % (subfield))
 # 
-# 	def obsstarfilepath(self, subfield):
-# 		return os.path.join(self.obsdir(), "obs-star-%03i.pkl" % (subfield))
+#	def obsstarfilepath(self, subfield):
+#		return os.path.join(self.obsdir(), "obs-star-%03i.pkl" % (subfield))
 # 
-# 	def precoaddpsfimgfilepath(self, subfield):
-# 		return os.path.join(self.precoadddir(), "coadd_starfield_image-%03i.fits" % (subfield))
+#	def precoaddpsfimgfilepath(self, subfield):
+#		return os.path.join(self.precoadddir(), "coadd_starfield_image-%03i.fits" % (subfield))
 # 
-# 	
-# 	def obsdir(self): # Measurements on observations will go here
-# 		if self.denoise:
-# 			return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
-# 		else:
-# 			return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-%s" % (self.version))
-# 	
-# 	def simdir(self): # Simulation related stuff will go here
-# 		if self.denoise:
-# 			return os.path.join(self.workdir, "sim-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
-# 		else:
-# 			return os.path.join(self.workdir, "sim-" + "-".join(self.branch) + "-%s" % (self.version))
-# 	
-# 	def outdir(self): # Submission files will go here
-# 		if self.denoise:
-# 			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
-# 		else:	
-# 			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s" % (self.version))
-# 	
-# 	
-# 	def subfilepath(self): # the final submission file
-# 		if self.denoise:
-# 			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s-den%s.txt" % (self.version, self.denoise))
-# 		else:	
-# 			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s.txt" % (self.version))
-# 	
-# 	
+#	
+#	def obsdir(self): # Measurements on observations will go here
+#		if self.denoise:
+#			return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
+#		else:
+#			return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-%s" % (self.version))
+#	
+#	def simdir(self): # Simulation related stuff will go here
+#		if self.denoise:
+#			return os.path.join(self.workdir, "sim-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
+#		else:
+#			return os.path.join(self.workdir, "sim-" + "-".join(self.branch) + "-%s" % (self.version))
+#	
+#	def outdir(self): # Submission files will go here
+#		if self.denoise:
+#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
+#		else:	
+#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s" % (self.version))
+#	
+#	
+#	def subfilepath(self): # the final submission file
+#		if self.denoise:
+#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s-den%s.txt" % (self.version, self.denoise))
+#		else:	
+#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s.txt" % (self.version))
+#	
+#	
 # 
-# 	def check_dir(self):
-# 		# Making sure all the directories are there:
-# 		if self.denoise:
-# 			#Observation
-# 			if not os.path.exists(self.denbranchdir()):
-# 				os.makedirs(self.denbranchdir())
-# 		# Observation
-# 		if not os.path.isdir(self.obsdir()):
-# 			os.mkdir(self.obsdir())
-# 		# Simulations
-# 		if not os.path.isdir(self.simdir()):
-# 			os.mkdir(self.simdir())
-# 		# Outdir
-# 		if not os.path.exists(self.outdir()):
-# 			os.mkdir(self.outdir())
+#	def check_dir(self):
+#		# Making sure all the directories are there:
+#		if self.denoise:
+#			#Observation
+#			if not os.path.exists(self.denbranchdir()):
+#				os.makedirs(self.denbranchdir())
+#		# Observation
+#		if not os.path.isdir(self.obsdir()):
+#			os.mkdir(self.obsdir())
+#		# Simulations
+#		if not os.path.isdir(self.simdir()):
+#			os.mkdir(self.simdir())
+#		# Outdir
+#		if not os.path.exists(self.outdir()):
+#			os.mkdir(self.outdir())
 # 
-# 	def precoadddir(self):
-# 		if len(self.precoadd) == 0:
-# 			raise RuntimeError("Ouch, I don't know where is the precoadd data !")
-# 		return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-coadd-" + self.precoadd)
-# 	
+#	def precoadddir(self):
+#		if len(self.precoadd) == 0:
+#			raise RuntimeError("Ouch, I don't know where is the precoadd data !")
+#		return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-coadd-" + self.precoadd)
+#	
 # 
-# 		# Stuff related to the observations
-# 		
+#		# Stuff related to the observations
+#		
 # 
-# 	def denobsgalimgfilepath(self, subfield, epoch=0):
-# 		return os.path.join(self.denbranchdir(), "image-%03i-%i.fits" % (subfield, epoch))
-# 	
-# 	def precoaddgalimgfilepath(self, subfield):
-# 		return os.path.join(self.precoadddir(), "coadd_image-%03i.fits" % (subfield))
+#	def denobsgalimgfilepath(self, subfield, epoch=0):
+#		return os.path.join(self.denbranchdir(), "image-%03i-%i.fits" % (subfield, epoch))
+#	
+#	def precoaddgalimgfilepath(self, subfield):
+#		return os.path.join(self.precoadddir(), "coadd_image-%03i.fits" % (subfield))
 # 
 # 
-# 		# Stuff related to the simulations
-# 		
-# 	def simgalimgfilepath(self, subfield, nimg=None):
-# 		if nimg == None:
-# 			return os.path.join(self.simdir(), "sim-%03i-galimg.fits" % (subfield))
-# 		else:
-# 			return os.path.join(self.simdir(), "sim-%03i-%02i-galimg.fits" % (subfield,nimg))
-# 		
-# 	def densimgalimgfilepath(self, subfield):
-# 		return os.path.join(self.simdir(), "sim-%03i-galimg-den.fits" % (subfield))
-# 	
-# 	def simgalfilepath(self, subfield,nimg):
-# 		if nimg == None:
-# 			return os.path.join(self.simdir(), "sim-%03i.pkl" % (subfield))
-# 		else:
-# 			return os.path.join(self.simdir(), "sim-%03i-%02i.pkl" % (subfield,nimg))
+#		# Stuff related to the simulations
+#		
+#	def simgalimgfilepath(self, subfield, nimg=None):
+#		if nimg == None:
+#			return os.path.join(self.simdir(), "sim-%03i-galimg.fits" % (subfield))
+#		else:
+#			return os.path.join(self.simdir(), "sim-%03i-%02i-galimg.fits" % (subfield,nimg))
+#		
+#	def densimgalimgfilepath(self, subfield):
+#		return os.path.join(self.simdir(), "sim-%03i-galimg-den.fits" % (subfield))
+#	
+#	def simgalfilepath(self, subfield,nimg):
+#		if nimg == None:
+#			return os.path.join(self.simdir(), "sim-%03i.pkl" % (subfield))
+#		else:
+#			return os.path.join(self.simdir(), "sim-%03i-%02i.pkl" % (subfield,nimg))
 # 
-# #	def simstarfilepath(self, subfield):
+# # def simstarfilepath(self, subfield):
 # #		return os.path.join(self.obsdir(), "sim-star-%03i.pkl" % (subfield))
-# 	
-# 	def simtrugalimgfilepath(self, subfield,nimg):
-# 		return os.path.join(self.simdir(), "sim-%03i-%02i-trugalimg.fits" % (subfield,nimg))
+#	
+#	def simtrugalimgfilepath(self, subfield,nimg):
+#		return os.path.join(self.simdir(), "sim-%03i-%02i-trugalimg.fits" % (subfield,nimg))
 # 
-# 	def simpsfimgfilepath(self, subfield,nimg):
-# 		return os.path.join(self.simdir(), "sim-%03i-%02i-psfimg.fits" % (subfield,nimg))
-# 	
-# 	
+#	def simpsfimgfilepath(self, subfield,nimg):
+#		return os.path.join(self.simdir(), "sim-%03i-%02i-psfimg.fits" % (subfield,nimg))
+#	
+#	

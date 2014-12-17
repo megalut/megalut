@@ -16,12 +16,45 @@ import galsim
 from .. import tools
 
 
+def measfct(catalog, **kwargs):
+	"""
+	This is a wrapper around galsim_adamom that meets the requirements of a MegaLUT-conform shape measurement function, namely
+	to take only one catalog (astropy table) object containing -- or link to -- all the required data.
+	In other words, this is a function that you could pass to meas.run.general() etc.
+	If you want to combine several shape measurement algorithms into one shot, you would define such a function yourself (not here
+	in megalut, but somewhere in your scripts).
+	The present measfct serves as an example and is a bit long. It could be kept very short.
+	
+	:param catalog: an astropy table, which, in this case, is expected to have catalog.meta["img"] set
+		to be a megalut.tools.imageinfo.ImageInfo object.
+	:param kwargs: keyword arguments that will be passed to the lower-level measure() function.
+		These set parameters of the shape measurement, but they do not pass any data.
+		Do not try to specify "img" or "xname" here, it will fail! Set the catalog's meta["img"] instead.
+		So for this particular measfct, you probably want to give at least stampsize as kwarg.
+	
+	"""
+	
+	# We could have some warnings here.
+	# Just to illustrate, an example:
+	
+	if catalog.meta["img"].stampsize is not None and "stampsize" in kwargs:
+		if catalog.meta["img"].stampsize != kwargs["stampsize"]:
+			logger.warning("Measuring with stampsize %i, but stamps have been generated with stampsize %i" %\
+				(kwargs["stampsize"], catalog.meta["img"].stampsize))
+	
+	
+	# We load the image:
+	img = catalog.meta["img"].load()
+
+	# And we pass it, with all required kwargs, to the lower-level function:
+	return measure(img, catalog, xname=catalog.meta["img"].xname, yname=catalog.meta["img"].yname, **kwargs)
+
 
 def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
 	"""
-	I use the pixel positions provided via the input table to extract postage stamps
-	from the image and measure their shape parameters.
-	I return a copy of your input catalog with the new (masked) columns appended.
+	Use the pixel positions provided via the 'catalog' input table to extract
+	postage stamps from the image and measure their shape parameters.
+	Returns a copy of your input catalog with the new (masked) columns appended.
 	One of these colums (the only one that is not masked) is the flag:
 	
 	* 0: OK
@@ -30,14 +63,15 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	* 3: galsim failed
 	
 	:param img: either the path to a FITS image, or a galsim image object
-	:param catalog: astropy table of objects that I should measure
+	:param catalog: astropy table of objects to be measured
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
 	:param measuresky: set this to False if you don't want me to measure the sky (edge of stamps)
+	:param workdir: path where any possible output files are kept.
 	:param prefix: a string to prefix the field names that I'll write
-		
+	
 	:returns: masked astropy table
 	
 	"""
@@ -46,12 +80,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		logger.debug("You gave me a filepath, and I'm now loading the image...")
 		img = tools.image.loadimg(img)
 	
-	if "stampsize" in catalog.meta:
-		if stampsize != catalog.meta["stampsize"]:
-			logger.warning("Measuring with stampsize=%i, but stamps have been generated with stampsize=%i" %\
-				(stampsize, catalog.meta["stampsize"]))
-			
-
 	if int(stampsize)%2 != 0:
 		raise RuntimeError("stampsize should be even!")
 
@@ -73,9 +101,9 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		astropy.table.MaskedColumn(name=prefix+"sigma", dtype=float, length=len(output)),
 		astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output))
 	])
-	# By default, all these entries are masked:
+	# We want to mask all these entries. They will get unmasked when values will be attributed.
 	for col in ["flux", "x", "y", "g1", "g2", "sigma", "rho4"]:
-		output[prefix+col].mask = [True] * len(output)
+		output[prefix+col].mask = [True] * len(output) # "True" means masked !
 	
 	# Similarly, we prepare columns for the sky stats:
 	if measuresky:
@@ -87,13 +115,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		])
 		for col in ["skystd", "skymad", "skymean", "skymed"]:
 			output[prefix+col].mask = [True] * len(output)
-	
-	# Let's save something useful to the meta dict
-	output.meta[prefix + "xname"] = xname
-	output.meta[prefix + "yname"] = yname
-	
-	# We do not store this long string here, as it leads to problems when saving the cat to FITS
-	#output.meta[prefix + "imgfilepath"] = img.origimgfilepath
 	
 	n = len(output)
 	
