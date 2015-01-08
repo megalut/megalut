@@ -7,6 +7,7 @@ import sys
 
 import astropy
 import numpy as np
+import datetime
 
 from .. import tools
 import utils
@@ -88,33 +89,47 @@ def onsims(measdir, simparams, **kwargs):
 
 
 
-def groupstats(incats, groupcols=None, removecols=None, removereas=True):
+def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True):
 	"""
-	This function "horizontally" merges input catalogs having the same columns by "hstacking" some of them (groupcols).
-	Then, for each colname in groupcols, the function computes new statistics columns:
+	This function computes simple statistics "across" corresponding columns from the list of input catalogs (incats).
+	For each colname in groupcols, the function computes:
 	
 	- **colname_mean**: the average of colname from the different incats (skipping masked measurements)
-	- **colname_med**: the median
-	- **colname_std**: the sample standard deviation
+	- **colname_med**: the median (idem)
+	- **colname_std**: the sample standard deviation (idem)
 	- **colname_n**: the number of available (that is, unmasked) measurements
 		From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
 		or the success fraction of the measurement (``n/output.meta["ngroupstats"]``).
 	
 	:param incats: list of input catalogs (astropy tables, usually masked).
-		They must all have identical order and columns (this will be checked).
-	:param groupcols: list of column names that should be grouped, that is the columns that differ from incat to incat.
-	:param removecols: list of column names that should be discarded
-	:param removereas: if True, the individual realization columns in the output table will not be kept.
+		They must all have identical order and column names (this will be checked).
+	:param groupcols: list of column names that should be "grouped", that is the columns that differ from incat to incat.
+	:param removecols: list of column names that should be discarded in the output catalog
+	:param removereas: if True, the individual realization columns in the output table will **not** be kept in the ouput
+		(except maybe the first one, see keepfirstreas).
+		Setting this to False can result in very bulky catalogs.
+	:param keepfirstreas: if True, the values of the first realization ("_0") will be kept.
+		It is usually handy (and not too bulky) to "keep" one single realization in the output catalog.
 	
 	The function tests that **any column which is not in groupcols or removecols is indeed IDENTICAL among the incats**.
 	It could be that this leads to perfomance issues one day, but in the meantime it should make things safe.
+	
+	Developer note: it is slow to append columns to astropy tables (as this makes a copy of the full table).
+		So we try to avoid this as much as possible here, and use masked numpy arrays and hstack.
+	
 	"""
+	
+	starttime = datetime.datetime.now()
+	
 	if groupcols is None:
 		groupcols = []
 	if removecols is None:
 		removecols = [] 
 
 	# First, some checks on the incats:
+	if len(incats) < 2:
+		raise RuntimeError("Statistics can only be computed if several incats are given.")
+	
 	colnames = incats[0].colnames # to check colnames
 	
 	for incat in incats:
@@ -123,7 +138,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 				% (incat.colnames, colnames))
 		
 		if incat.masked is False:
-			logger.critical("Unmasked incats given (OK, but unexpected)")
+			logger.critical("Input catalogs are not masked (OK for me, but unexpected)")
 
 	for groupcol in groupcols:
 		if groupcol not in colnames:
@@ -134,64 +149,82 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True):
 	# We make a list of the column names that should stay unaffected:
 	fixedcolnames = [colname for colname in colnames if (colname not in groupcols) and (colname not in removecols)]
 	
-	# We will take those columns from the first incat (we test later that this choice doesn't matter)
-	outcat = incats[0][fixedcolnames] # This makes a copy
+	if len(fixedcolnames) > 0:
+		# We will take those columns from the first incat (we test below that this choice doesn't matter)
+		fixedcat = incats[0][fixedcolnames] # This makes a copy
 	
+		# We test that the columns of these fixedcolnames are the same for all the different incats
+		for incat in incats:
+			if not np.all(incat[fixedcolnames] == fixedcat):
+				raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % outcat.colnames)
+		logger.debug("Done with testing the identity of all the common columns")
 	
-	# We test that the columns of these fixedcolnames are the same for all the different incats
-	for incat in incats:
-		if not np.all(incat[fixedcolnames] == outcat):
-			raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % outcat.colnames)
-	
-	
-	# Now we prepare subtables containing *only* the groupcols:
-	subincats = [incat[groupcols] for incat in incats]
-	# We remove all meta from these subincats:
-	for subincat in subincats:
-		subincat.meta = {}
-	
-	# We prepare some "suffixes" for these columns. For this we do not try to reuse the int from the realization filename
+	# We prepare some "suffixes" to use when mixing colums of the incats.
+	# For this we do not try to reuse the int from the realization filename
 	# Indeed, the user could have delete some realizations etc, leading to quite a mess.
 	# It's easier to just make a new integer range:
-	incat_names = ["%i" % (i) for i in range(len(subincats))]
+	incat_names = ["%i" % (i) for i in range(len(incats))]
+
+	statscatdict = {} # We will add statistics columns (numpy arrays) to this list
+	statscatdictnames = [] # Is used to keep a nice ordering
+	reascats = [] # We might put single-realization columns here
 	
-	# We use hstack to collect all these columns into a single table, adding these incat_names as suffixes to the column names.
-	togroupoutcat = astropy.table.hstack(subincats, join_type="exact",
-		table_names=incat_names, uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
-	
-	# At this point, this table just contains the individual groupcols from the incats.
-	# For each groupcol, we now compute some statistics, and add them as new columns
+	# For each groupcol, we now compute some statistics
 	for groupcol in groupcols:
-			
+		logger.debug("Computing stats for '%s'" % (groupcol))
 		suffixedcolnames = ["%s_%s" % (groupcol, incat_name) for incat_name in incat_names]
 		# So this looks like adamom_flux_1, adamom_flux_2, ...
 		
 		# We build a masked numpy array with the data of these columns
-		# Maybe this can be done in a better way ?
-		numpycolumns = [np.ma.array(togroupoutcat[suffixedcolname]) for suffixedcolname in suffixedcolnames]
-		array = np.ma.array(numpycolumns)
+		array = np.ma.vstack([incat[groupcol] for incat in incats])
+		# first index is incat, second is row
 		
 		# And compute the stats:
-		togroupoutcat["%s_mean" % (groupcol)] = np.ma.mean(array, axis=0)
-		togroupoutcat["%s_med" % (groupcol)] = np.ma.median(array, axis=0)
-		togroupoutcat["%s_std" % (groupcol)] = np.ma.std(array, axis=0)
-		togroupoutcat["%s_n" % (groupcol)] = np.ma.count(array, axis=0)
+		statscatdict["%s_mean" % (groupcol)] = np.ma.mean(array, axis=0)
+		statscatdict["%s_med" % (groupcol)] = np.ma.median(array, axis=0)
+		statscatdict["%s_std" % (groupcol)] = np.ma.std(array, axis=0)
+		statscatdict["%s_n" % (groupcol)] = np.ma.count(array, axis=0)
+		# We also add those names to a list:
+		statscatdictnames.extend(["%s_mean" % (groupcol), "%s_med" % (groupcol), "%s_std" % (groupcol), "%s_n" % (groupcol)])
 		
-		# We remove the individual columns, if asked for
-		if removereas:
-			togroupoutcat.remove_columns(suffixedcolnames)
-		
+		# Depening on the removereas and keepfirstreas flags, we also keep some columns
+		# from the individual realizations.
+		if removereas == False:
+			# We keep every column:
+			reascats.append(astropy.table.Table([incat[groupcol] for incat in incats], names = suffixedcolnames))
+			 
+		else:
+			# see if we should keep the first:
+			if keepfirstrea == True:
+				# keep the first
+				reascats.append(astropy.table.Table([incat[groupcol] for incat in [incats[0]]], names = [suffixedcolnames[0]]))
+			
+	assert len(statscatdict) == 4*len(groupcols) # Just a check, as in principle stuff in the dict could be overwritten.
+
+	# We now make a table out of the statscatdict :
+	statscat = astropy.table.Table(statscatdict, names=statscatdictnames)
 	
-	# Finally, we add the fixedcolname-columns to the table:
-	outputcat = astropy.table.hstack([outcat, togroupoutcat], join_type="exact",
-		table_names=["SHOULD_NOT_BE_SEEN", "SHOULD_NEVER_BE_SEEN"], uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
+	# We add individual realization data (if needed) :
+	if len(reascats) != 0:
+		statscat = astropy.table.hstack([statscat] + reascats, join_type="exact",
+		metadata_conflicts="error")
 	
+	# Finally, we prepend the fixedcolname-columns to the table:
+	if len(fixedcolnames) > 0:
+		outputcat = astropy.table.hstack([fixedcat, statscat], join_type="exact",
+			table_names=["SHOULD_NOT_BE_SEEN", "SHOULD_NEVER_BE_SEEN"], uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
+	else:
+		outputcat = statscat
+
 	# And we save the number of catalogs that got grouped (should usually be nrea):
 	outputcat.meta["ngroupstats"] = len(incats)
+
+	endtime = datetime.datetime.now()
+	logger.debug("The groupstats computations took %s" % (str(endtime - starttime)))
+	logger.debug("Output table: %i rows and %i columns (%i common, %i computed, %i reas)" %
+		(len(outputcat), len(outputcat.colnames), len(fixedcolnames), len(statscatdict), len(statscat.colnames)-len(statscatdict)))
 	
 	return outputcat
-
-
 
 
 
