@@ -37,3 +37,5 @@ groupcat = megalut.meas.avg.groupstats(incats, groupcols=["b", "c"], removecols=
 
 print "The output:"
 print groupcat
+
+print groupcat["b_mean"].meta

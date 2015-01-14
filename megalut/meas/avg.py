@@ -89,7 +89,7 @@ def onsims(measdir, simparams, **kwargs):
 
 
 
-def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True):
+def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True, checkcommon=True):
 	"""
 	This function computes simple statistics "across" corresponding columns from the list of input catalogs (incats).
 	For each colname in groupcols, the function computes:
@@ -110,9 +110,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		Setting this to False can result in very bulky catalogs.
 	:param keepfirstreas: if True, the values of the first realization ("_0") will be kept.
 		It is usually handy (and not too bulky) to "keep" one single realization in the output catalog.
-	
-	The function tests that **any column which is not in groupcols or removecols is indeed IDENTICAL among the incats**.
-	It could be that this leads to perfomance issues one day, but in the meantime it should make things safe.
+	:param checkcommon: if True (default), the function tests that **any column which is not in groupcols or removecols is indeed IDENTICAL among the incats**.
+		This can lead to perfomance issues for catalogs with many (say > 1000) columns.
 	
 	Developer note: it is slow to append columns to astropy tables (as this makes a copy of the full table).
 		So we try to avoid this as much as possible here, and use masked numpy arrays and hstack.
@@ -153,11 +152,14 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		# We will take those columns from the first incat (we test below that this choice doesn't matter)
 		fixedcat = incats[0][fixedcolnames] # This makes a copy
 	
-		# We test that the columns of these fixedcolnames are the same for all the different incats
-		for incat in incats:
-			if not np.all(incat[fixedcolnames] == fixedcat):
-				raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % outcat.colnames)
-		logger.debug("Done with testing the identity of all the common columns")
+		if checkcommon == True:
+			# We test that the columns of these fixedcolnames are the same for all the different incats
+			for incat in incats:
+				if not np.all(incat[fixedcolnames] == fixedcat):
+					raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % outcat.colnames)
+			logger.debug("Done with testing the identity of all the common columns")
+		else:
+			logger.debug("Did not test the identity of all the common columns")
 	
 	# We prepare some "suffixes" to use when mixing colums of the incats.
 	# For this we do not try to reuse the int from the realization filename
@@ -204,6 +206,12 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	# We now make a table out of the statscatdict :
 	statscat = astropy.table.Table(statscatdict, names=statscatdictnames)
 	
+	# We add the number of catalogs that got grouped in the meta of every new "groupstats" column.
+	# Strictly speaking this is where this information belongs, as it relates to the new columns, not to the catalog.
+	# See note a few lines below.
+	for colname in statscat.colnames:
+		statscat[colname].meta["ngroupstats"] = len(incats)
+	
 	# We add individual realization data (if needed) :
 	if len(reascats) != 0:
 		statscat = astropy.table.hstack([statscat] + reascats, join_type="exact",
@@ -215,8 +223,9 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 			table_names=["SHOULD_NOT_BE_SEEN", "SHOULD_NEVER_BE_SEEN"], uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
 	else:
 		outputcat = statscat
-
-	# And we save the number of catalogs that got grouped (should usually be nrea):
+	
+	# Especially when averaging measurements on realizations, it seems ok to write ngroupstats also into the meta of the catalog itself.
+	# So we keep doing this.
 	outputcat.meta["ngroupstats"] = len(incats)
 
 	endtime = datetime.datetime.now()
