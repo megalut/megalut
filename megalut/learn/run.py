@@ -17,6 +17,7 @@ import datetime
 import copy
 
 from .. import tools
+from .. import meas
 
 import logging
 logger = logging.getLogger(__name__)
@@ -142,7 +143,11 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		  It allows a fair comparisions of the predictions based on simulations and real observations.
 		* If "all", it will predict all realizations (_0, _1, ...), and then use groupstats to compute statistics
 		  of the predictions coming from the different realizations.
-		  So this mode is related to error bars on predictions, subject to be analysed.
+		  So this mode will only be used on simulations, and is related to getting error bars on predictions.
+		  The input catalog must in this case contain all the realizations: this is obtained by running
+		  meas.onsims with the option removereas=False.
+		* If mode is an integer (say n), it will do the same as for mode "all", but using only the n first
+		  realizations.
 	
 		
 	"""
@@ -205,36 +210,48 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 			tweakedmlobj.mlparams.features = tweakedfeatures
 			predcat = tweakedmlobj.predict(predcat)
 		
-		elif mode == "all": # Replace "_mean" by all realizations, and then groupstat...
+		elif mode == "all" or type(mode) == int: # Replace "_mean" successively by all realizations, and then run groupstat...
 			
 			# We start with some preparatory work:
-			# See how many realizations we have, and check that we have all the features that we need.
+			# See how many realizations we have
+			try:
+				nrea_available = cat.meta["ngroupstats"]
+			except:
+				raise RuntimeError("Input catalog has no ngroupstats in its meta dict")
 			
-			print cat.meta["ngroupstats"]
+			reapredcats = [] # Predicted catalogs will get added to this list
+			origfeatures = copy.deepcopy(trainedmlobj.mlparams.features) # A list of the features (we won't change this list)
 			
-			exit()
-			reafeatures = [] # features that have many realizations
-			for feature in tweakedmlobj.mlparams.features:
-				if feature.endswith("_mean"):
-					reafeatures.append(feature[:-len("_mean")])
+			if type(mode) == int:
+				nrea_touse = mode
+				if nrea_touse > nrea_available:
+					raise RuntimeError("Cannot use %i realizations, as only %i are available in the input catalog" % (nrea_touse, nrea_available))
+			else:
+				nrea_touse = nrea_available
+				
+			logger.debug("Starting predictions on %i (out of %i) realizations..." % (nrea_touse, nrea_available))
+			for irea in range(nrea_touse):
+				tweakedfeatures = []
+				for feature in origfeatures:
+					if feature.endswith("_mean"):
+						tweakedfeatures.append(feature[:-len("_mean")] + "_%i" % (irea))
+					else:
+						tweakedfeatures.append(feature)
+						
+				tweakedmlobj.mlparams.features = tweakedfeatures
+				reapredcats.append(tweakedmlobj.predict(predcat))
 			
-			logger.debug("")
+			logger.debug("Done, now calling groupstats")
 			
+			# We want to group the predictions (predlabels) obtained on the different realizations.
+			groupcols = tweakedmlobj.mlparams.predlabels
 			
+			# We can't and shouldn't remove the realization measurements here, they might be needed for the next step in paramslist !
+			removecols = None
 			
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+			# And we run groupstats:
+			predcat = meas.avg.groupstats(reapredcats, groupcols=groupcols, removecols=removecols, removereas=True, keepfirstrea=False)
+
 		
 		else:
 			raise RuntimeError("Unknown mode '%s'" % mode)
