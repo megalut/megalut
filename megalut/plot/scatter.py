@@ -27,6 +27,9 @@ def getdata(cat, featx, featy, featc=None):
 	:param cat: an astropy table
 	:param featx: a Feature object describing what should be drawn on the x axis
 	:param featy: idem for y
+	:param featc: idem for an optional color feature
+	
+	I return a dict with the data, see code.
 	
 	"""
 	# Potentially, 5 masks can exist:	
@@ -44,7 +47,7 @@ def getdata(cat, featx, featy, featc=None):
 	ngood = np.sum(combimask)
 	nbad = combimask.size - ngood
 		
-	logger.info("%s vs %s: %i out of %i (%.2f %%) rows have masked values which will be disregarded" \
+	logger.info("'%s' vs '%s': %i out of %i (%.2f %%) rows have masked values which will be disregarded" \
 		% (featy.nicename, featx.nicename, nbad, combimask.size, 100.0 * float(nbad) / float(combimask.size)))
 	
 	# We disregard the masked rows:
@@ -131,7 +134,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	
 	# Getting the data (without masked points):
 	data = getdata(cat, featx, featy, featc)		
-	
+		
 	# And now, two options:
 	if featc is not None: # We will use scatter(), to have a colorbar
 		
@@ -165,16 +168,17 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
-		# And we also add any errorbarkwargs
+		
+		# And we also prepare any errorbarkwargs
 		myerrorbarkwargs = {"capthick":0, "zorder":-100} # Different from the defaults for scatter() !
 		myerrorbarkwargs.update(errorbarkwargs)
-		mykwargs.update(myerrorbarkwargs)
-
+		
 		# And now the actual plot:
 		if featx.errcolname == None and featy.errcolname == None:
 			# Plain plot:
 			ax.plot(data["x"], data["y"], **mykwargs)
 		else:
+			mykwargs.update(myerrorbarkwargs)
 			ax.errorbar(data["x"], data["y"], xerr=data["xerr"], yerr=data["yerr"], **mykwargs)
 		
 	
@@ -242,12 +246,12 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		# For "low":
 		if featx.low is None or featy.low is None: # We use the data...
-			minid = max(np.min(xdata), np.min(ydata))
+			minid = max(np.min(data["x"]), np.min(data["y"]))
 		else:
 			minid = max(featx.low, featy.low)
 		# Same for "high":
 		if featx.high is None or featy.high is None: # We use the data...
-			maxid = min(np.max(xdata), np.max(ydata))
+			maxid = min(np.max(data["x"]), np.max(data["y"]))
 		else:
 			maxid = min(featx.high, featy.high)
 			
