@@ -151,7 +151,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 	
 	When predicting simulations, one typically runs this twice in a row: once in mode "all" or "integer" to get pre_X_std,
 	and once in mode "first" or "default" to get pre_X.
-	Note that this has to be done in that order, otherwise ml.predict will complain, as it needs to be able to write columns pre_X
+	Note that it has to be done in **this order**, otherwise ml.predict will complain, as it needs to be able to write columns pre_X
 	in order to compute pre_X_std etc.	
 	"""
 	
