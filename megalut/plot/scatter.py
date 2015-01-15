@@ -310,11 +310,14 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# Could we warn the user in case it seems that the catalogs are inverted ?
 	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
+	simdata = getdata(simcat, featx, featy)
+	obsdata = getdata(obscat, featx, featy)
+	
 	# First we use plot() to get a scatter, directly on the axes:
 	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
 	plotkwargs.update(kwargs)
-	ax.plot(simcat[featx.colname], simcat[featy.colname], color="red", **plotkwargs)
-	ax.plot(obscat[featx.colname], obscat[featy.colname], color="blue", **plotkwargs)
+	ax.plot(simdata["x"], simdata["y"], color="red", **plotkwargs)
+	ax.plot(obsdata["x"], obsdata["y"], color="blue", **plotkwargs)
 	
 	
 	# Now we build the sidehists:
@@ -345,12 +348,12 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		
-		axhistx.hist(simcat[featx.colname][np.logical_not(simcat[featx.colname].mask)], color="red", ec="red", **mysidehistxkwargs)
-		axhistx.hist(obscat[featx.colname][np.logical_not(obscat[featx.colname].mask)], color="blue", ec="blue", **mysidehistxkwargs)
+		axhistx.hist(simdata["x"], color="red", ec="red", **mysidehistxkwargs)
+		axhistx.hist(obsdata["x"], color="blue", ec="blue", **mysidehistxkwargs)
 		
 		
-		axhisty.hist(simcat[featy.colname][np.logical_not(simcat[featy.colname].mask)], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
-		axhisty.hist(obscat[featy.colname][np.logical_not(obscat[featy.colname].mask)], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(simdata["y"], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obsdata["y"], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
