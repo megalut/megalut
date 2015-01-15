@@ -210,7 +210,7 @@ class ML:
 		# First let's check that the predlabels do not yet exist
 		for predlabel in self.mlparams.predlabels:
 			if predlabel in catalog.colnames:
-				raise RuntimeError("The predlabel '%s' already exists in the catalog, refusing to overwrite" % colname)
+				raise RuntimeError("The predlabel '%s' already exists in the catalog, refusing to overwrite" % predlabel)
 		
 		# We rather manually build a mask for the features. A row is masked whenever one or more features ar masked.
 		
