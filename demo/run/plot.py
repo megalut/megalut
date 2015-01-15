@@ -30,6 +30,9 @@ def myplot(cat, filepath=None):
 	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one of the two limits.
 	size = megalut.plot.feature.Feature("adamom_sigma_mean", 0.0, 6.0, nicename = "Measured size")
 
+	# Adding error bars is as simple as specifying a column name:
+	g1_witherr = megalut.plot.feature.Feature("adamom_g1_mean", -0.6, 0.6, "Measured g1", errcolname="adamom_g1_std")
+	g2_witherr = megalut.plot.feature.Feature("adamom_g2_mean", -0.6, 0.6, "Measured g2", errcolname="adamom_g2_std")
 
 	fig = plt.figure(figsize=(12, 10))
 	#fig.subplots_adjust(bottom=0.05, top=0.90, left=0.05, right=0.95, wspace=0.42)
@@ -50,6 +53,10 @@ def myplot(cat, filepath=None):
 	megalut.plot.hist.hist(ax3, cat[cat["adamom_flag_mean"] == 0], size, color="blue", label="average flag = 0", title="A title")
 	megalut.plot.hist.hist(ax3, cat[cat["adamom_flag_mean"] > 0], size, color="red", label="average flag > 0", text="Test")	
 	ax3.legend()
+	
+	ax4 = fig.add_subplot(224)
+	megalut.plot.scatter.scatter(ax4, cat, g1_witherr, g2_witherr, size, title="Demo using Features with errors",
+		text="To get errorbars, simply specify errcolnames.\nEverything can be customized with kwargs.", s=20)
 	
 	plt.tight_layout()
 	if filepath:
