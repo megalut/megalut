@@ -17,9 +17,70 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def getdata(cat, featx, featy, featc=None):
+	"""
+	Prepares the (unmasked) data to be plotted, given a catalog and two features.
+	Without masked columns, this would be rather trivial. Here we take care of removing masked points,
+	and we also perform other useful computations (ranges, errorbars).
+	Importantly, we also log a bit about the masked points that we remove.
+	
+	:param cat: an astropy table
+	:param featx: a Feature object describing what should be drawn on the x axis
+	:param featy: idem for y
+	
+	"""
+	# Potentially, 5 masks can exist:	
+	colnames = [featx.colname, featy.colname, featx.errcolname, featy.errcolname]
+	if featc != None:
+		colnames.append(featc.colname)
+	
+	# Remove None (i.e., undefined errcolnames):
+	colnames = filter(lambda x: x != None, colnames)
+	
+	# We first build one combined mask.
+	masks = np.column_stack([np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool) for colname in colnames])
+	combimask = np.logical_not(np.sum(masks, axis=1).astype(bool)) # So "True" means "keep this".
+	assert combimask.size == len(cat)
+	ngood = np.sum(combimask)
+	nbad = combimask.size - ngood
+		
+	logger.info("%s vs %s: %i out of %i (%.2f %%) rows have masked values which will be disregarded" \
+		% (featy.nicename, featx.nicename, nbad, combimask.size, 100.0 * float(nbad) / float(combimask.size)))
+	
+	# We disregard the masked rows:
+	nomaskcat = cat[combimask]
+	assert len(nomaskcat) == ngood
+	
+	# And get the data:
+	x = nomaskcat[featx.colname]
+	y = nomaskcat[featy.colname]
+	
+	assert len(x) == ngood
+	assert len(y) == ngood
+	assert np.all(np.logical_not(x.mask)) == True
+	assert np.all(np.logical_not(y.mask)) == True
+	
+	xerr = None
+	yerr = None	
+	if featx.errcolname != None:
+		xerr = nomaskcat[featx.errcolname]
+		assert len(xerr) == ngood
+	if featy.errcolname != None:
+		yerr = nomaskcat[featy.errcolname]
+		assert len(yerr) == ngood
+	
+	c = None
+	if featc != None:
+		c = nomaskcat[featc.colname]
+	
+	return {"x":x, "y":y, "xerr":xerr, "yerr":yerr, "c":c}
+
+	
+
+
 
 def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, idlinekwargs=None,
-	metrics=False, sidehists=False, sidehistkwargs=None, **kwargs):
+	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -61,14 +122,20 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	* **label**: for the legend
 
 	"""
-
-	xdata = cat[featx.colname]
-	ydata = cat[featy.colname]
 	
+	# Some initial settings:
+	if sidehistkwargs is None:
+		sidehistkwargs = {}
+	if errorbarkwargs is None:
+		errorbarkwargs = {}
+	
+	# Getting the data (without masked points):
+	data = getdata(cat, featx, featy, featc)		
+	
+	# And now, two options:
 	if featc is not None: # We will use scatter(), to have a colorbar
 		
-		logger.debug("Preparing scatter plot of %i points with colorbar" % (len(cat))) # Log it as this might be slow
-		cdata = cat[featc.colname]
+		logger.info("Preparing scatter plot of %i points with colorbar" % (len(data["x"]))) # Log it as this might be slow
 		
 		# We prepare to use scatter, with a colorbar
 		cmap = matplotlib.cm.get_cmap(cmap)
@@ -78,7 +145,13 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		mykwargs.update(kwargs)
 		
 		# And make the plot:
-		stuff = ax.scatter(xdata, ydata, c=cdata, **mykwargs)
+		
+		if featx.errcolname != None or featy.errcolname != None:
+			myerrorbarkwargs = {"fmt":"none", "capthick":0, "ecolor":"gray", "zorder":-100}
+			myerrorbarkwargs.update(errorbarkwargs)
+			ax.errorbar(data["x"], data["y"], xerr=data["xerr"], yerr=data["yerr"], **myerrorbarkwargs)
+		
+		stuff = ax.scatter(data["x"], data["y"], c=data["c"], **mykwargs)
 		divider = make_axes_locatable(ax)
 		cax = divider.append_axes("right", "5%", pad="3%")
 		cax = plt.colorbar(stuff, cax)
@@ -87,15 +160,23 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			
 	else: # We will use plot()
 	
-		logger.debug("Preparing plain plot of %i points without colorbar" % (len(cat)))
+		logger.info("Preparing plain plot of %i points without colorbar" % (len(data["x"])))
 		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
+		# And we also add any errorbarkwargs
+		myerrorbarkwargs = {"capthick":0, "zorder":-100} # Different from the defaults for scatter() !
+		myerrorbarkwargs.update(errorbarkwargs)
+		mykwargs.update(myerrorbarkwargs)
 
-		# Plain plot:
-		ax.plot(xdata, ydata, **mykwargs)
-
+		# And now the actual plot:
+		if featx.errcolname == None and featy.errcolname == None:
+			# Plain plot:
+			ax.plot(data["x"], data["y"], **mykwargs)
+		else:
+			ax.errorbar(data["x"], data["y"], xerr=data["xerr"], yerr=data["yerr"], **mykwargs)
+		
 	
 	# We want minor ticks:
 	ax.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -117,8 +198,6 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		
 		# Same as for kwargs: we first define some defaults, and then update these defaults:
-		if sidehistkwargs is None:
-			sidehistkwargs = {}
 		
 		mysidehistxkwargs = {"histtype":"stepfilled", "bins":100, "ec":"none", "color":"gray", "range":histxrange}
 		mysidehistxkwargs.update(sidehistkwargs)
@@ -131,8 +210,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		# And draw the histograms		
-		axhistx.hist(xdata[np.logical_not(xdata.mask)], **mysidehistxkwargs)
-		axhisty.hist(ydata[np.logical_not(ydata.mask)], orientation='horizontal', **mysidehistykwargs)
+		axhistx.hist(data["x"], **mysidehistxkwargs)
+		axhisty.hist(data["y"], orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
