@@ -17,7 +17,6 @@ import datetime
 import copy
 
 from .. import tools
-from .. import meas
 
 import logging
 logger = logging.getLogger(__name__)
@@ -142,14 +141,18 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		  Of course it works only if meas.avg.onsims() was run with the option removereas=False. 
 		  It allows a fair comparisions of the predictions based on simulations and real observations.
 		* If "all", it will predict all realizations (_0, _1, ...), and then use groupstats to compute statistics
-		  of the predictions coming from the different realizations.
+		  of the predictions coming from the different realizations, resulting in field names such as
+		  pre_g1_mean, pre_g1_std, etc.
 		  So this mode will only be used on simulations, and is related to getting error bars on predictions.
 		  The input catalog must in this case contain all the realizations: this is obtained by running
-		  meas.onsims with the option removereas=False.
+		  meas.avg.onsims with the option removereas=False.
 		* If mode is an integer (say n), it will do the same as for mode "all", but using only the n first
 		  realizations.
 	
-		
+	When predicting simulations, one typically runs this twice in a row: once in mode "all" or "integer" to get pre_X_std,
+	and once in mode "first" or "default" to get pre_X.
+	Note that this has to be done in that order, otherwise ml.predict will complain, as it needs to be able to write columns pre_X
+	in order to compute pre_X_std etc.	
 	"""
 	
 	logger.debug("Predicting with mode '%s'..." % (mode))
@@ -250,7 +253,9 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 			removecols = None
 			
 			# And we run groupstats:
-			predcat = meas.avg.groupstats(reapredcats, groupcols=groupcols, removecols=removecols, removereas=True, keepfirstrea=False)
+			predcat = tools.table.groupstats(reapredcats, groupcols=groupcols, removecols=removecols, removereas=True, keepfirstrea=False)
+			# We use removereas = True as we do not want the predictiosn for every realization in the catalog
+			# We use keepfirstrea = False as we do not want columns like pre_g1_0
 
 		
 		else:
