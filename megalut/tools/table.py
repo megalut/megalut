@@ -110,7 +110,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
 		or the success fraction of the measurement (``n/output.meta["ngroupstats"]``).
 	
-	The function returns a single catalog, and the above will be new columns of this catalog.
+	The function returns a single catalog, and the above will be the new column names of this catalog.
 	
 	:param incats: list of input catalogs (astropy tables, usually masked).
 		They must all have identical order and column names (this will be checked).
@@ -138,7 +138,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 
 	# First, some checks on the incats:
 	if len(incats) < 2:
-		raise RuntimeError("Statistics can only be computed if several incats are given.")
+		raise RuntimeError("Statistics can only be computed if more than one incats are given.")
 	
 	colnames = incats[0].colnames # to check colnames
 	
@@ -172,9 +172,9 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		else:
 			logger.debug("Did not test the identity of all the common columns")
 	
-	# We prepare some "suffixes" to use when mixing colums of the incats.
+	# We prepare some "suffixes" to use when mixing columns of the incats.
 	# For this we do not try to reuse the int from the realization filename
-	# Indeed, the user could have delete some realizations etc, leading to quite a mess.
+	# Indeed, the user could have deleted some realizations etc, leading to quite a mess.
 	# It's easier to just make a new integer range:
 	incat_names = ["%i" % (i) for i in range(len(incats))]
 
