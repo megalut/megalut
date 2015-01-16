@@ -9,11 +9,11 @@ class Feature():
 	def __init__(self, colname, low=None, high=None, nicename=None, errcolname=None):
 		"""
 
-		:param colanme: name of a column 
-		:param low: lower bound of the interval to show on the plot.
-		:param high: higher bound
-		:param nicename: A nicer string designating the feature, to be used as axis label.
-		:param errcolname: name of a column  
+		:param colanme: name of a catalog column containing the values to be plotted 
+		:param low: (optional) lower bound of the interval to show on the plot
+		:param high: (optional) higher bound
+		:param nicename: (optional) a "nice" string designating the feature, to be used as axis label.
+		:param errcolname: (optional) name of a column containing uncertainties / errorbars 
 		
 		"""
 		
