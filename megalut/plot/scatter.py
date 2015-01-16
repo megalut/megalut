@@ -19,17 +19,20 @@ logger = logging.getLogger(__name__)
 
 def getdata(cat, featx, featy, featc=None):
 	"""
-	Prepares the (unmasked) data to be plotted, given a catalog and two features.
-	Without masked columns, this would be rather trivial. Here we take care of removing masked points,
-	and we also perform other useful computations (ranges, errorbars).
-	Importantly, we also log a bit about the masked points that we remove.
+	Prepares the data to be plotted, given a catalog and two features.
+	In a world without masked columns, this would be rather trivial.
+	But when some of the data is masked, we have to properly "combine" the masks from the different
+	features to select only those rows for which every feature is available.
+	That's what this function does.
+	It also extracts the errorbars, if available.
+	Importantly, we log a bit about the masked points that we remove.
 	
 	:param cat: an astropy table
 	:param featx: a Feature object describing what should be drawn on the x axis
 	:param featy: idem for y
 	:param featc: idem for an optional color feature
 	
-	I return a dict with the data, see code.
+	The function returns a dict with the data, see code.
 	
 	"""
 	# Potentially, 5 masks can exist:	
