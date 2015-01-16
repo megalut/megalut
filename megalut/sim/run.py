@@ -319,15 +319,17 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	#stampgridlogger = logging.getLogger("megalut.sim.stampgrid")
 	#stampgridlogger.setLevel(logging.WARNING)
 	
-	# The single-processing version would be:
-	#map(_worker, wslist)
+	if ncpu == 1:
+		# The single-processing version (not using multiprocessing to keep it easier to debug):
+		logger.debug("Not using multiprocessing")
+		map(_worker, wslist)
 
-	# The simple multiprocessing map is:
-	
-	pool = multiprocessing.Pool(processes=ncpu)
-	pool.map(_worker, wslist)
-	pool.close()
-	pool.join()
+	else:
+		# multiprocessing map:
+		pool = multiprocessing.Pool(processes=ncpu)
+		pool.map(_worker, wslist)
+		pool.close()
+		pool.join()
 	
 	endtime = datetime.datetime.now()
 	nstamps = len(catalogs[0])*nrea
