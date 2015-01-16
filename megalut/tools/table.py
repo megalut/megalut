@@ -101,20 +101,10 @@ def shuffle(table):
 def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True, checkcommon=True):
 	"""
 	This function computes simple statistics "across" corresponding columns from the list of input catalogs (incats).
-	For each colname in groupcols, the function computes:
-	
-	- **colname_mean**: the average of colname from the different incats (skipping masked measurements)
-	- **colname_med**: the median (idem)
-	- **colname_std**: the sample standard deviation (idem)
-	- **colname_n**: the number of available (that is, unmasked) measurements
-		From this ``n``, you could compute the statistical error on the mean (``std/sqrt(n)``),
-		or the success fraction of the measurement (``n/output.meta["ngroupstats"]``).
-	
-	The function returns a single catalog, and the above will be new columns of this catalog.
 	
 	:param incats: list of input catalogs (astropy tables, usually masked).
 		They must all have identical order and column names (this will be checked).
-	:param groupcols: list of column names that should be "grouped", that is the columns that differ from incat to incat.
+	:param groupcols: list of column names that should be "grouped", that is the columns whose content differ from incat to incat.
 	:param removecols: list of column names that should be discarded in the output catalog
 	:param removereas: if True, the individual realization columns in the output table will **not** be kept in the ouput
 		(except maybe the first one, see keepfirstreas).
@@ -124,6 +114,20 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	:param checkcommon: if True (default), the function tests that **any column which is not in groupcols or removecols is indeed IDENTICAL among the incats**.
 		This can lead to perfomance issues for catalogs with many (say > 1000) columns.
 	
+	For each colname in groupcols, the function computes:
+	
+	- **colname_mean**: the average of colname from the different incats (skipping masked measurements)
+	- **colname_med**: the median (idem)
+	- **colname_std**: the sample standard deviation (idem)
+	- **colname_n**: the number of available (that is, unmasked) measurements
+	
+	The function returns a single catalog, and the above column names designate the new columns that will be added to this catalog.
+	
+	.. note:: The number of incats (which is the maximum possible value for "colname_n") is stored as meta["ngroupstats"]
+		of each of the newly created columns.	
+		When running on measurements obtained on different realizations, this "ngroupstats" allows for instance to compute
+		the success fraction of the measurement:  outcat["foo_n"] / outcat["foo_n"].meta["ngroupstats"]  
+		
 	Developer note: it is slow to append columns to astropy tables (as this makes a copy of the full table).
 		So we try to avoid this as much as possible here, and use masked numpy arrays and hstack.
 	
@@ -138,7 +142,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 
 	# First, some checks on the incats:
 	if len(incats) < 2:
-		raise RuntimeError("Statistics can only be computed if several incats are given.")
+		raise RuntimeError("Statistics can only be computed if more than one incats are given.")
 	
 	colnames = incats[0].colnames # to check colnames
 	
@@ -172,9 +176,9 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		else:
 			logger.debug("Did not test the identity of all the common columns")
 	
-	# We prepare some "suffixes" to use when mixing colums of the incats.
+	# We prepare some "suffixes" to use when mixing columns of the incats.
 	# For this we do not try to reuse the int from the realization filename
-	# Indeed, the user could have delete some realizations etc, leading to quite a mess.
+	# Indeed, the user could have deleted some realizations etc, leading to quite a mess.
 	# It's easier to just make a new integer range:
 	incat_names = ["%i" % (i) for i in range(len(incats))]
 

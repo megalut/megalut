@@ -13,6 +13,12 @@ import megalut.meas
 import numpy as np
 import astropy
 
+############################################################################################
+# Note that all this is an illustration of the low-level functions.
+# To draw and measure sims in real life, have a look at the much shorter "run" demos.
+############################################################################################
+
+
 
 # As before, we first set the desired distributions of parameters:
 
