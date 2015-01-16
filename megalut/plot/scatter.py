@@ -112,6 +112,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
 	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
 		Add range=None to these if you want all bins to be computed.
+	:param errorbarkwargs: a dict of keywords to be passed to errorbar()
 	
 	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
 	
