@@ -110,7 +110,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		writes the RMSD and other metrics on the plot.
 	:param sidehists: adds projection histograms on the top and the left (not nicely compatible with the colorbar)
 		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
-	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
+	:param sidehistkwargs: a dict of keyword arguments to be passed to these histograms.
 		Add range=None to these if you want all bins to be computed.
 	:param errorbarkwargs: a dict of keywords to be passed to errorbar()
 	
