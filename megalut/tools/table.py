@@ -188,7 +188,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	
 	# For each groupcol, we now compute some statistics
 	for groupcol in groupcols:
-		logger.debug("Computing stats for '%s'" % (groupcol))
+		logger.info("Computing stats for '%s'" % (groupcol))
 		suffixedcolnames = ["%s_%s" % (groupcol, incat_name) for incat_name in incat_names]
 		# So this looks like adamom_flux_1, adamom_flux_2, ...
 		
@@ -244,8 +244,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	outputcat.meta["ngroupstats"] = len(incats)
 
 	endtime = datetime.datetime.now()
-	logger.debug("The groupstats computations took %s" % (str(endtime - starttime)))
-	logger.debug("Output table: %i rows and %i columns (%i common, %i computed, %i reas)" %
+	logger.info("The groupstats computations took %s" % (str(endtime - starttime)))
+	logger.info("Output table: %i rows and %i columns (%i common, %i computed, %i reas)" %
 		(len(outputcat), len(outputcat.colnames), len(fixedcolnames), len(statscatdict), len(statscat.colnames)-len(statscatdict)))
 	
 	return outputcat
