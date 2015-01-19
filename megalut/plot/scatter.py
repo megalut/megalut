@@ -128,6 +128,9 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	* **s**: marker size
 	* **label**: for the legend
 
+	By default plots will be rasterized if the catalog has more than 5000 entries. To overwrite,
+	just pass rasterized = True or False as kwarg.
+
 	"""
 	
 	# Some initial settings:
@@ -135,6 +138,12 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		sidehistkwargs = {}
 	if errorbarkwargs is None:
 		errorbarkwargs = {}
+	
+	if len(cat) > 5000: # We rasterize plot() and scatter(), to avoid millions of vector points.
+		logger.info("Plot will be rasterized, use kwarg rasterized=False if you want to avoid this")
+		rasterized = True
+	else:
+		rasterized = False
 	
 	# Getting the data (without masked points):
 	data = getdata(cat, featx, featy, featc)		
@@ -146,7 +155,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		# We prepare to use scatter, with a colorbar
 		cmap = matplotlib.cm.get_cmap(cmap)
-		mykwargs = {"marker":"o", "lw":0, "s":15, "cmap":cmap, "vmin":featc.low, "vmax":featc.high}
+		mykwargs = {"marker":"o", "lw":0, "s":15, "cmap":cmap, "vmin":featc.low, "vmax":featc.high, "rasterized":rasterized}
 		
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
@@ -154,7 +163,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		# And make the plot:
 		
 		if featx.errcolname != None or featy.errcolname != None:
-			myerrorbarkwargs = {"fmt":"none", "capthick":0, "ecolor":"gray", "zorder":-100}
+			myerrorbarkwargs = {"fmt":"none", "capthick":0, "ecolor":"gray", "zorder":-100, "rasterized":rasterized}
 			myerrorbarkwargs.update(errorbarkwargs)
 			ax.errorbar(data["x"], data["y"], xerr=data["xerr"], yerr=data["yerr"], **myerrorbarkwargs)
 		
@@ -168,13 +177,13 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	else: # We will use plot()
 	
 		logger.info("Preparing plain plot of %i points without colorbar" % (len(data["x"])))
-		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
+		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
 		
 		# And we also prepare any errorbarkwargs
-		myerrorbarkwargs = {"capthick":0, "zorder":-100} # Different from the defaults for scatter() !
+		myerrorbarkwargs = {"capthick":0, "zorder":-100, "rasterized":rasterized} # Different from the defaults for scatter() !
 		myerrorbarkwargs.update(errorbarkwargs)
 		
 		# And now the actual plot:
@@ -317,8 +326,15 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	simdata = getdata(simcat, featx, featy)
 	obsdata = getdata(obscat, featx, featy)
 	
+	
+	if len(simcat) > 5000 or len(obscat) > 5000: # We rasterize plot() to avoid millions of vector points.
+		logger.info("Plot will be rasterized, use kwarg rasterized=False if you want to avoid this")
+		rasterized = True
+	else:
+		rasterized = False
+
 	# First we use plot() to get a scatter, directly on the axes:
-	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
+	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	plotkwargs.update(kwargs)
 	ax.plot(simdata["x"], simdata["y"], color="red", **plotkwargs)
 	ax.plot(obsdata["x"], obsdata["y"], color="blue", **plotkwargs)
