@@ -32,7 +32,7 @@ def getdata(cat, featx, featy, featc=None):
 	:param featy: idem for y
 	:param featc: idem for an optional color feature
 	
-	The function returns a dict with the data, see code.
+	The function returns a dict with fields x, y, xerr, yerr, and c, each containing a column (aka numpy array) of the same size.
 	
 	"""
 	# Potentially, 5 masks can exist:	
