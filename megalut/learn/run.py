@@ -137,7 +137,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		  This is the mode which is meant to be useful when predicting real observations!
 		* If "first", it will replace any "_mean" by "_0", thus using only the first realization.
 		  This is a mode only useful for simulations.
-		  It allows a fair comparisions of the predictions based on simulations and real observations. 
+		  It allows a fair comparision of the predictions based on simulations and real observations. 
 		  Of course it works only if meas.avg.onsims() was run with the option removereas=False. 
 		  It allows a fair comparisions of the predictions based on simulations and real observations.
 		* If "all", it will predict all realizations (_0, _1, ...), and then use groupstats to compute statistics

@@ -17,9 +17,76 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def getdata(cat, featx, featy, featc=None):
+	"""
+	Prepares the data to be plotted, given a catalog and two features.
+	In a world without masked columns, this would be rather trivial.
+	But when some of the data is masked, we have to properly "combine" the masks from the different
+	features to select only those rows for which every feature is available.
+	That's what this function does.
+	It also extracts the errorbars, if available.
+	Importantly, we log a bit about the masked points that we remove.
+	
+	:param cat: an astropy table
+	:param featx: a Feature object describing what should be drawn on the x axis
+	:param featy: idem for y
+	:param featc: idem for an optional color feature
+	
+	The function returns a dict with fields x, y, xerr, yerr, and c, each containing a column (aka numpy array) of the same size.
+	
+	"""
+	# Potentially, 5 masks can exist:	
+	colnames = [featx.colname, featy.colname, featx.errcolname, featy.errcolname]
+	if featc != None:
+		colnames.append(featc.colname)
+	
+	# Remove None (i.e., undefined errcolnames):
+	colnames = filter(lambda x: x != None, colnames)
+	
+	# We first build one combined mask.
+	masks = np.column_stack([np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool) for colname in colnames])
+	combimask = np.logical_not(np.sum(masks, axis=1).astype(bool)) # So "True" means "keep this".
+	assert combimask.size == len(cat)
+	ngood = np.sum(combimask)
+	nbad = combimask.size - ngood
+		
+	logger.info("'%s' vs '%s': %i out of %i (%.2f %%) rows have masked values which will be disregarded" \
+		% (featy.nicename, featx.nicename, nbad, combimask.size, 100.0 * float(nbad) / float(combimask.size)))
+	
+	# We disregard the masked rows:
+	nomaskcat = cat[combimask]
+	assert len(nomaskcat) == ngood
+	
+	# And get the data:
+	x = nomaskcat[featx.colname]
+	y = nomaskcat[featy.colname]
+	
+	assert len(x) == ngood
+	assert len(y) == ngood
+	assert np.all(np.logical_not(x.mask)) == True
+	assert np.all(np.logical_not(y.mask)) == True
+	
+	xerr = None
+	yerr = None	
+	if featx.errcolname != None:
+		xerr = nomaskcat[featx.errcolname]
+		assert len(xerr) == ngood
+	if featy.errcolname != None:
+		yerr = nomaskcat[featy.errcolname]
+		assert len(yerr) == ngood
+	
+	c = None
+	if featc != None:
+		c = nomaskcat[featc.colname]
+	
+	return {"x":x, "y":y, "xerr":xerr, "yerr":yerr, "c":c}
+
+	
+
+
 
 def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, idlinekwargs=None,
-	metrics=False, sidehists=False, sidehistkwargs=None, **kwargs):
+	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -43,8 +110,9 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		writes the RMSD and other metrics on the plot.
 	:param sidehists: adds projection histograms on the top and the left (not nicely compatible with the colorbar)
 		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
-	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
+	:param sidehistkwargs: a dict of keyword arguments to be passed to these histograms.
 		Add range=None to these if you want all bins to be computed.
+	:param errorbarkwargs: a dict of keywords to be passed to errorbar()
 	
 	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
 	
@@ -61,14 +129,20 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	* **label**: for the legend
 
 	"""
-
-	xdata = cat[featx.colname]
-	ydata = cat[featy.colname]
 	
+	# Some initial settings:
+	if sidehistkwargs is None:
+		sidehistkwargs = {}
+	if errorbarkwargs is None:
+		errorbarkwargs = {}
+	
+	# Getting the data (without masked points):
+	data = getdata(cat, featx, featy, featc)		
+		
+	# And now, two options:
 	if featc is not None: # We will use scatter(), to have a colorbar
 		
-		logger.debug("Preparing scatter plot of %i points with colorbar" % (len(cat))) # Log it as this might be slow
-		cdata = cat[featc.colname]
+		logger.info("Preparing scatter plot of %i points with colorbar" % (len(data["x"]))) # Log it as this might be slow
 		
 		# We prepare to use scatter, with a colorbar
 		cmap = matplotlib.cm.get_cmap(cmap)
@@ -78,7 +152,13 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		mykwargs.update(kwargs)
 		
 		# And make the plot:
-		stuff = ax.scatter(xdata, ydata, c=cdata, **mykwargs)
+		
+		if featx.errcolname != None or featy.errcolname != None:
+			myerrorbarkwargs = {"fmt":"none", "capthick":0, "ecolor":"gray", "zorder":-100}
+			myerrorbarkwargs.update(errorbarkwargs)
+			ax.errorbar(data["x"], data["y"], xerr=data["xerr"], yerr=data["yerr"], **myerrorbarkwargs)
+		
+		stuff = ax.scatter(data["x"], data["y"], c=data["c"], **mykwargs)
 		divider = make_axes_locatable(ax)
 		cax = divider.append_axes("right", "5%", pad="3%")
 		cax = plt.colorbar(stuff, cax)
@@ -87,15 +167,24 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			
 	else: # We will use plot()
 	
-		logger.debug("Preparing plain plot of %i points without colorbar" % (len(cat)))
+		logger.info("Preparing plain plot of %i points without colorbar" % (len(data["x"])))
 		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
-
-		# Plain plot:
-		ax.plot(xdata, ydata, **mykwargs)
-
+		
+		# And we also prepare any errorbarkwargs
+		myerrorbarkwargs = {"capthick":0, "zorder":-100} # Different from the defaults for scatter() !
+		myerrorbarkwargs.update(errorbarkwargs)
+		
+		# And now the actual plot:
+		if featx.errcolname == None and featy.errcolname == None:
+			# Plain plot:
+			ax.plot(data["x"], data["y"], **mykwargs)
+		else:
+			mykwargs.update(myerrorbarkwargs)
+			ax.errorbar(data["x"], data["y"], xerr=data["xerr"], yerr=data["yerr"], **mykwargs)
+		
 	
 	# We want minor ticks:
 	ax.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -117,8 +206,6 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		
 		# Same as for kwargs: we first define some defaults, and then update these defaults:
-		if sidehistkwargs is None:
-			sidehistkwargs = {}
 		
 		mysidehistxkwargs = {"histtype":"stepfilled", "bins":100, "ec":"none", "color":"gray", "range":histxrange}
 		mysidehistxkwargs.update(sidehistkwargs)
@@ -131,8 +218,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		# And draw the histograms		
-		axhistx.hist(xdata[np.logical_not(xdata.mask)], **mysidehistxkwargs)
-		axhisty.hist(ydata[np.logical_not(ydata.mask)], orientation='horizontal', **mysidehistykwargs)
+		axhistx.hist(data["x"], **mysidehistxkwargs)
+		axhisty.hist(data["y"], orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -163,12 +250,12 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		# For "low":
 		if featx.low is None or featy.low is None: # We use the data...
-			minid = max(np.min(xdata), np.min(ydata))
+			minid = max(np.min(data["x"]), np.min(data["y"]))
 		else:
 			minid = max(featx.low, featy.low)
 		# Same for "high":
 		if featx.high is None or featy.high is None: # We use the data...
-			maxid = min(np.max(xdata), np.max(ydata))
+			maxid = min(np.max(data["x"]), np.max(data["y"]))
 		else:
 			maxid = min(featx.high, featy.high)
 			
@@ -227,11 +314,14 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# Could we warn the user in case it seems that the catalogs are inverted ?
 	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
+	simdata = getdata(simcat, featx, featy)
+	obsdata = getdata(obscat, featx, featy)
+	
 	# First we use plot() to get a scatter, directly on the axes:
 	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
 	plotkwargs.update(kwargs)
-	ax.plot(simcat[featx.colname], simcat[featy.colname], color="red", **plotkwargs)
-	ax.plot(obscat[featx.colname], obscat[featy.colname], color="blue", **plotkwargs)
+	ax.plot(simdata["x"], simdata["y"], color="red", **plotkwargs)
+	ax.plot(obsdata["x"], obsdata["y"], color="blue", **plotkwargs)
 	
 	
 	# Now we build the sidehists:
@@ -262,12 +352,12 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		
-		axhistx.hist(simcat[featx.colname][np.logical_not(simcat[featx.colname].mask)], color="red", ec="red", **mysidehistxkwargs)
-		axhistx.hist(obscat[featx.colname][np.logical_not(obscat[featx.colname].mask)], color="blue", ec="blue", **mysidehistxkwargs)
+		axhistx.hist(simdata["x"], color="red", ec="red", **mysidehistxkwargs)
+		axhistx.hist(obsdata["x"], color="blue", ec="blue", **mysidehistxkwargs)
 		
 		
-		axhisty.hist(simcat[featy.colname][np.logical_not(simcat[featy.colname].mask)], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
-		axhisty.hist(obscat[featy.colname][np.logical_not(obscat[featy.colname].mask)], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(simdata["y"], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obsdata["y"], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
