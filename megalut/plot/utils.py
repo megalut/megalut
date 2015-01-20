@@ -31,5 +31,7 @@ def getdata(cat, features):
 	
 	# We get rid of rows with masked content:
 	nomaskcat = tools.table.cutmasked(cat, colnames, keep_all_columns=False)
+	# Indeed for plots we don't need the other columns !
+	# It's safer to remove them.
 	
 	return nomaskcat
