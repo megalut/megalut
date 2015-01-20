@@ -252,6 +252,20 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 
 
 
+class Selector:
+	
+	def __init__(self, criteria, name):
+		
+		self.criteria = criteria
+		self.name = name
+		
+		
+	def select(self, cat):
+		"""
+		Returns those rows of cat that match all criteria
+		"""
+		pass
+		return cat
 
 	
 	
