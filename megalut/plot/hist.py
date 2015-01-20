@@ -2,8 +2,8 @@
 Histogram helper functions
 """
 
-import logging
-logger = logging.getLogger(__name__)
+import utils
+import feature
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +11,12 @@ import matplotlib.cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import AutoMinorLocator
+
+from scipy.stats import norm
+
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def hist(ax, cat, feat, text=None, title=None, **kwargs):
@@ -62,3 +68,40 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	if title:
 		ax.set_title(title)
 
+
+
+
+
+def errhist(ax, cat, prefeat, trufeat, normrad=3.0, **kwargs):
+	"""
+	Shows the distribution of prediction errors (prefeat - trufeat), as a histogram.
+	If prefeat has an errcolname, each term is normalized by this errobar.
+	
+	"""
+	
+	data = utils.getdata(cat, [prefeat, trufeat])
+	
+	if prefeat.errcolname is None:
+		# Then we plot a simple histogram of the prediction errors
+		
+		data["err"] = data[prefeat.colname] - data[trufeat.colname]
+		
+		err = feature.Feature("err", nicename = "%s - %s" % (prefeat.nicename, trufeat.nicename))
+		hist(ax, data, err, normed=True, **kwargs)
+	
+	else:
+		# We normalize the residuals with the uncertainties
+		
+		data["err"] = (data[prefeat.colname] - data[trufeat.colname]) / data[prefeat.errcolname]
+		
+		err = feature.Feature("err", -normrad, normrad, nicename = "%s - %s" % (prefeat.nicename, trufeat.nicename))
+		
+	
+		hist(ax, data, err, normed=True, label = "Residuals normalized by uncertainty", **kwargs)
+		
+		x = np.linspace(-normrad, normrad, 1000)
+		ax.plot(x, norm.pdf(x, 0.0, 1.0), color="black", label="Standard normal distribution")
+
+		ax.legend()
+	
+	
