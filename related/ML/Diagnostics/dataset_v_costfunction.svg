@@ -15,7 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="New document 1">
+   sodipodi:docname="dataset_v_costfunction.svg"
+   inkscape:export-filename="/home/kuntzer/Desktop/dataset_v_costfunction.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
   <defs
      id="defs4">
     <linearGradient
@@ -186,7 +189,7 @@
    id="tspan4944">(RMSD)</tspan></tspan></text>
     <path
        style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.99400002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Lstart);marker-end:url(#Arrow1Lend)"
-       d="m 267.14286,234.50224 0,118.57703"
+       d="m 299.14286,234.50224 0,118.57703"
        id="path3019"
        inkscape:connector-curvature="0" />
     <path
@@ -197,13 +200,13 @@
     <text
        xml:space="preserve"
        style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Sans"
-       x="274.28571"
+       x="306.28571"
        y="304.50504"
        id="text4785"
        sodipodi:linespacing="125%"><tspan
          sodipodi:role="line"
          id="tspan4787"
-         x="274.28571"
+         x="306.28571"
          y="304.50504"
          style="font-size:20px;fill:#ff0000;fill-opacity:1;stroke:none">Bias</tspan></text>
     <path
@@ -290,5 +293,30 @@
          y="493.7048"
          style="font-size:16px;fill:#ff0000;fill-opacity:1"
          id="tspan4934">- decreasing regularisation </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="75"
+       y="23.742184"
+       id="text4965"
+       sodipodi:linespacing="125%"
+       transform="translate(84.655556,121.1479)"><tspan
+         sodipodi:role="line"
+         id="tspan4967"
+         x="75"
+         y="23.742184"
+         style="font-size:20px">Cross-validation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="149.65555"
+       y="334.89011"
+       id="text4969"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4971"
+         x="149.65555"
+         y="334.89011"
+         style="font-size:20px">Training set</tspan></text>
   </g>
 </svg>
