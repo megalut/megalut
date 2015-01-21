@@ -211,8 +211,6 @@ class FANNWrapper:
 		ann.set_training_algorithm(libfann.TRAIN_RPROP)
 		"""
 
-
-
 		Choices for set_training_algorithm:
 
 		 TRAIN_INCREMENTAL
@@ -256,7 +254,6 @@ class FANNWrapper:
 		#		  self.params.iterations_between_reports,
 		#		  self.params.desired_error)
 
-		print 'before', ann.get_MSE()
 		ann.save(os.path.join(self.workdir, "FANN.net"))
 	
 	def test(self, features, labels):
@@ -267,14 +264,16 @@ class FANNWrapper:
 		std_features = standardize(features, self.features_norm_params, rangeval=self.params.rangeval)
 		std_labels = standardize(labels, self.labels_norm_params, rangeval=self.params.rangeval)
 		
+		# This is thrown away after the computation, we don't need it (it's very fast, it's a 
+		# forward pass on the input features. 
 		std_output = np.array(map(ann.test, std_features, std_labels))
 		
-		output = unstandardize(std_output, self.labels_norm_params,
-				       rangeval=self.params.rangeval)
+		#output = unstandardize(std_output, self.labels_norm_params,
+		#		       rangeval=self.params.rangeval)
 		#output = std_output
 		#print output
 		
-		return output, ann.get_MSE()
+		return ann.get_MSE()
 	
 	
 	def predict(self, features):

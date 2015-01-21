@@ -33,6 +33,9 @@ myml = megalut.learn.ML(mymlparams, myfannparams)
 
 myml.train(inputcat)
 
+print 'Final training error :', myml.train_error
+print 'Cross-validation error : ', myml.test_error
+
 # Note the name of the directory that was created to store the trained network!
 
 outputcat = myml.predict(inputcat)

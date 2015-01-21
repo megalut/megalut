@@ -262,7 +262,7 @@ skynet_
 		pred = self.predict(features, exe=exe)
 		rmsd = tools.calc.rmsd(pred, labels)
 		
-		return pred, rmsd
+		return rmsd
 	
 	
 	def predict(self, features, exe = "nice -n 15 CalPred"):

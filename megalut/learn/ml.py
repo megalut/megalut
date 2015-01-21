@@ -143,7 +143,7 @@ class ML:
 			self.workdir == other.workdir
 
 
-	def train(self, catalog):
+	def train(self, catalog, validation_fraction=0.3):
 		"""
 		Runs the training, by extracting the numbers from the catalog and feeding them
 		into the "train" method of the ml tool.
@@ -151,6 +151,9 @@ class ML:
 		:param catalog: an input astropy table. Has to contain the features and the labels.
 			It can well be masked. Only those rows for which all the required
 			features and labels are unmasked will be used for the training.
+		:param validation_fraction: What fraction of the data should be used to measure overfitting ?
+			0. means all the data is used for the training. This value should be around 0.3-0.5.
+		:type validation_fraction: float between 0. and <1.
 		
 		"""	
 		starttime = datetime.now()
@@ -188,12 +191,39 @@ class ML:
 		assert featuresdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
 		assert labelsdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
 		
-		# And we call the tool's train method:
-		self.tool.train(features=featuresdata, labels=labelsdata)
+		# Let's separate the training into a training set and a cross-validation set.
+		if  validation_fraction >= 1. :
+			raise ValueError("The training set is empty! Reduce the value of validation_fraction")
+		elif validation_fraction < 0. :
+			raise ValueError("The value of validation_fraction is <0, this is a non-sense")
 		
-		#TODO: TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
-		# Change the place of this ?
-		self.tool.test(features=featuresdata, labels=labelsdata)
+		# We don't care about the order, as the data is randomly ordered already
+		if validation_fraction > 0. :
+			length = featuresdata.shape[0]
+			sepind = length - np.int(validation_fraction * length)
+			if sepind <= 0 or sepind == length:
+				raise ValueError("One of the training or cross-validation set is empty!")
+			
+			featurestrain = featuresdata[:sepind]
+			labelstrain = labelsdata[:sepind]
+			
+			featurestest = featuresdata[sepind:]
+			labelstest = labelsdata[sepind:]
+			
+		else :
+			featurestrain = featuresdata
+			labelstrain = labelsdata
+		
+		# And we call the tool's train method:
+		self.tool.train(features=featurestrain, labels=labelstrain)
+		
+		# We do it also on the training set to make sure the error is computed with the final weights
+		self.train_error = self.tool.test(features=featurestrain, labels=labelstrain)
+		
+		if validation_fraction > 0. :
+			self.test_error = self.tool.test(features=featurestest, labels=labelstest)
+		else:
+			self.test_error = None
 		
 		endtime = datetime.now()
 		logger.info("Done! This training took %s" % (str(endtime - starttime)))
