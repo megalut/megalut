@@ -331,6 +331,8 @@ class Selector:
 		
 		return cat[combimask]
 
+
+
 def cutmasked(cat, colnames, keep_all_columns=True):
 	"""
 	Returns those rows of table for which all of the given colnames are unmasked.
