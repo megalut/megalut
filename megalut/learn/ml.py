@@ -191,6 +191,10 @@ class ML:
 		# And we call the tool's train method:
 		self.tool.train(features=featuresdata, labels=labelsdata)
 		
+		#TODO: TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO TODO
+		# Change the place of this ?
+		self.tool.test(features=featuresdata, labels=labelsdata)
+		
 		endtime = datetime.now()
 		logger.info("Done! This training took %s" % (str(endtime - starttime)))
 		

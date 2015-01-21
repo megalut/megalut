@@ -11,6 +11,7 @@ import os
 import numpy as np
 import random
 from datetime import datetime
+from .. import tools
 
 import logging
 logger = logging.getLogger(__name__)
@@ -255,6 +256,13 @@ skynet_
 		endtime = datetime.now()
 		if verbose:
 			print "This training took %s" % (str(endtime - starttime))
+			
+	def test(self, features, labels, exe = "nice -n 15 SkyNet"):
+		
+		pred = self.predict(features, exe=exe)
+		rmsd = tools.calc.rmsd(pred, labels)
+		
+		return pred, rmsd
 	
 	
 	def predict(self, features, exe = "nice -n 15 CalPred"):

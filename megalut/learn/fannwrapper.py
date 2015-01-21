@@ -256,9 +256,25 @@ class FANNWrapper:
 		#		  self.params.iterations_between_reports,
 		#		  self.params.desired_error)
 
+		print 'before', ann.get_MSE()
 		ann.save(os.path.join(self.workdir, "FANN.net"))
 	
+	def test(self, features, labels):
 		
+		ann = libfann.neural_net()
+		ann.create_from_file(os.path.join(self.workdir, "FANN.net"))
+		
+		std_features = standardize(features, self.features_norm_params, rangeval=self.params.rangeval)
+		std_labels = standardize(labels, self.labels_norm_params, rangeval=self.params.rangeval)
+		
+		std_output = np.array(map(ann.test, std_features, std_labels))
+		
+		output = unstandardize(std_output, self.labels_norm_params,
+				       rangeval=self.params.rangeval)
+		#output = std_output
+		#print output
+		
+		return output, ann.get_MSE()
 	
 	
 	def predict(self, features):
