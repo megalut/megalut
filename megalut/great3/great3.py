@@ -44,7 +44,7 @@ class Run(utils.Branch):
 		
 	def _mkdir(self, workdir):
 		"""
-		Creates the working directories. Outputs a warning if the directories already exist		 
+		Creates the working directories. Does NOT output a warning if the directories already exist		 
 		"""
 
 		if workdir==None: workdir="./%s" % (self.get_branchacronym()) 
@@ -57,12 +57,15 @@ class Run(utils.Branch):
 			tools.dirs.mkdir(self._get_path(subfolder))
 
 
-	def meas_psf(self, measfct):
+	def meas_psf(self, measfct, skipdone=False):
 		"""
 		Measures the 3 x 3 PSF stamps of each subfield, and writes the info to pkl.
 		"""
 		for subfield in self.subfields:
-			
+			outfname = self._get_path("obs", "star_%i_meascat.pkl" % subfield)
+			if skipdone and os.path.exists(outfname):
+				logger.info("Star catalog %s already exists, skipping this one..." % outfname)
+				continue
 			# We don't bother reading the starcat, and just make one
 			
 			stars = []
@@ -87,7 +90,7 @@ class Run(utils.Branch):
 			
 			#print starcat
 			
-			tools.io.writepickle(starcat, self._get_path("obs", "star_%i_meascat.pkl" % subfield))
+			tools.io.writepickle(starcat, outfname)
 			
 			
 		

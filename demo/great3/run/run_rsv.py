@@ -2,7 +2,7 @@
 import megalut.great3
 
 
-import mymeasfct
+import sewpymeasfct as measfct
 import mysimparams
 import mymlparams
 import plots
@@ -20,14 +20,13 @@ run = megalut.great3.great3.Run("real_galaxy", "space", "variable",
 
 simparams = mysimparams.Space_v1("Space_v1_n30_nrea30")
 
-
 """
 run.subfields = range(0, 200)
 # Measure the stars (PSFs)
-run.meas_psf(mymeasfct.psf_sewpyadamom)
+run.meas_psf(measfct.psf)
 
 # Run measurements on input images
-run.meas_obs(mymeasfct.sewpyadamom, skipdone=False, ncpu=4)
+run.meas_obs(measfct.galaxies, skipdone=False, ncpu=4)
 """
 """
 #run.subfields = range(0, 200, 20)

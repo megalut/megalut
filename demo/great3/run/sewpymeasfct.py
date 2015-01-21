@@ -8,9 +8,10 @@ it without causing any trouble!
 
 import megalut.meas
 import megalut.meas.sewfunc
+import config
 
 
-def psf_sewpyadamom(catalog, branch=None):
+def psf(catalog, branch=None):
 	"""
 	This is to measure PSF shapes when running on the PSF catalog, and therefore the PSF image stamps
 	are to be referenced in "img", not in "psf"...
@@ -25,7 +26,7 @@ def psf_sewpyadamom(catalog, branch=None):
 		"FWHM_IMAGE", "KRON_RADIUS", "FLUX_RADIUS(7)", "BACKGROUND", "FLAGS"]
 	
 	catalog = megalut.meas.sewfunc.measfct(catalog, runon="img", config=sewpy_config,
-		params=sewpy_params, sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+		params=sewpy_params, sexpath=config.sexpath,
 		prefix="psf_sewpy_")
 	
 	# We run galsim_adamom :
@@ -36,7 +37,7 @@ def psf_sewpyadamom(catalog, branch=None):
 
 
 
-def sewpyadamom(catalog, branch=None):
+def galaxies(catalog, branch=None):
 	"""
 	The normal measfct, for galaxies.
 	
@@ -51,7 +52,7 @@ def sewpyadamom(catalog, branch=None):
 		"FWHM_IMAGE", "KRON_RADIUS", "FLUX_RADIUS(7)", "BACKGROUND", "FLAGS"]
 	
 	catalog = megalut.meas.sewfunc.measfct(catalog, runon="img", config=sewpy_config,
-		params=sewpy_params, sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex")
+		params=sewpy_params, sexpath=config.sexpath)
 	
 	# We run galsim_adamom :
 	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=branch.stampsize(), measuresky=True)
@@ -60,7 +61,7 @@ def sewpyadamom(catalog, branch=None):
 
 
 
-sewpyadamom_groupcols = [
+groupcols = [
 'sewpy_XWIN_IMAGE',
 'sewpy_YWIN_IMAGE',
 'sewpy_AWIN_IMAGE',
@@ -98,7 +99,7 @@ sewpyadamom_groupcols = [
 'adamom_skymed'
 ]
 
-sewpyadamom_removecols = []
+removecols = []
 
 
 

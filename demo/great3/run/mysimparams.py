@@ -23,7 +23,7 @@ class Ground_v1(megalut.sim.params.Params):
 		theta = np.random.uniform(0.0, 2.0* np.pi) 
 		eps = np.random.uniform(0.0, 0.7) 
 		return (eps * np.cos(2.0 * theta), eps * np.sin(2.0 * theta))
-	  
+
 	def get_sersicn(self, ix=0, iy=0, n=1):
 		return 1.0 + (float(iy)/float(n)) * 2.0    
 		# Lower sersic index = broader
@@ -56,4 +56,4 @@ class Space_v1(megalut.sim.params.Params):
 	
 
 space_v1 = Space_v1()
-
+ground_v1 = Ground_v1()
