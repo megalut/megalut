@@ -68,14 +68,14 @@ rea0_flux = megalut.learn.MLParams(
 
 
 # Standard FANN neural net configurations
-
+tripletwenty = megalut.learn.fannwrapper.FANNParams(name="tripletwenty", hidden_nodes=[20, 20, 20], max_iterations=1000)
 doubletwenty = megalut.learn.fannwrapper.FANNParams(name="doubletwenty", hidden_nodes=[20, 20], max_iterations=1000)
 doubleten = megalut.learn.fannwrapper.FANNParams(name="doubleten", hidden_nodes=[10, 10], max_iterations=1000)
 simpleten = megalut.learn.fannwrapper.FANNParams(name="simpleten", hidden_nodes=[10], max_iterations=1000)
 
 
 # And combinations of these settings
-
+default_doubletwenty = [(default_g, tripletwenty), (default_rad, tripletwenty), (default_sersicn, tripletwenty), (default_flux, tripletwenty)]
 default_doubletwenty = [(default_g, doubletwenty), (default_rad, doubletwenty), (default_sersicn, doubletwenty), (default_flux, doubletwenty)]
 default_doubleten = [(default_g, doubleten), (default_rad, doubleten), (default_sersicn, doubleten), (default_flux, doubleten)]
 default_simpleten = [(default_g, simpleten), (default_rad, simpleten), (default_sersicn, simpleten), (default_flux, simpleten)]
