@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="453.7016"
+   height="375.88504"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="New document 1">
+  <defs
+     id="defs4">
+    <linearGradient
+       inkscape:collect="always"
+       id="linearGradient4823">
+      <stop
+         style="stop-color:#000000;stop-opacity:1;"
+         offset="0"
+         id="stop4825" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0;"
+         offset="1"
+         id="stop4827" />
+    </linearGradient>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible">
+      <path
+         id="path3796"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lstart"
+       style="overflow:visible">
+      <path
+         id="path3793"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lstart-4"
+       style="overflow:visible">
+      <path
+         inkscape:connector-curvature="0"
+         id="path3793-4"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(0.8,0,0,0.8,10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend-5"
+       style="overflow:visible">
+      <path
+         inkscape:connector-curvature="0"
+         id="path3796-2"
+         d="M 0,0 5,-5 -12.5,0 5,5 0,0 z"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1pt"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)" />
+    </marker>
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4823"
+       id="linearGradient4829"
+       x1="276.2486"
+       y1="297.04898"
+       x2="315.2525"
+       y2="297.04898"
+       gradientUnits="userSpaceOnUse" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="261.39582"
+     inkscape:cy="255.43725"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1855"
+     inkscape:window-height="1056"
+     inkscape:window-x="65"
+     inkscape:window-y="24"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-84.655556,-121.1479)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 125.71429,121.6479 0,267.85714"
+       id="path2985"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 86.428572,354.50504 444.285718,0"
+       id="path2987"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 144.28571,126.6479 c 0,0 -3.25773,42.94812 82.85715,73.57143 44.09042,15.67899 309.28571,13.57142 309.28571,13.57142"
+       id="path2991"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 144.65091,339.55234 c 0,0 -3.25773,-42.94812 82.85715,-73.57143 44.09043,-15.67899 309.28572,-13.57142 309.28572,-13.57142"
+       id="path2991-2"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csc" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="275"
+       y="381.64789"
+       id="text3011"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3013"
+         x="275"
+         y="381.64789"
+         style="font-size:20px">Dataset size</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="149.75253"
+       y="-95.697548"
+       id="text3015"
+       sodipodi:linespacing="125%"
+       transform="matrix(0,1,-1,0,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan3017"
+         x="149.75253"
+         y="-95.697548"
+         style="font-size:20px">Cost function <tspan
+   style="font-size:12px"
+   id="tspan4944">(RMSD)</tspan></tspan></text>
+    <path
+       style="fill:#ff0000;fill-opacity:1;stroke:#ff0000;stroke-width:0.99400002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Lstart);marker-end:url(#Arrow1Lend)"
+       d="m 267.14286,234.50224 0,118.57703"
+       id="path3019"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1, 2;stroke-dashoffset:0"
+       d="m 125.71429,233.50504 412.14285,0"
+       id="path4783"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#ff0000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="274.28571"
+       y="304.50504"
+       id="text4785"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4787"
+         x="274.28571"
+         y="304.50504"
+         style="font-size:20px;fill:#ff0000;fill-opacity:1;stroke:none">Bias</tspan></text>
+    <path
+       style="fill:none;stroke:#00ff00;stroke-width:0.99400002;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;marker-start:url(#Arrow1Lstart);marker-end:url(#Arrow1Lend)"
+       d="m 387.14286,213.58401 0,38.98493"
+       id="path3019-1"
+       inkscape:connector-curvature="0" />
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#00ff00;fill-opacity:1;stroke:none;font-family:Sans"
+       x="392.85715"
+       y="250.21933"
+       id="text4819"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4821"
+         x="392.85715"
+         y="250.21933"
+         style="font-size:20px;fill:#00ff00;fill-opacity:1">Variance</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#00ff00;fill-opacity:1;stroke:none;font-family:Sans"
+       x="83.874306"
+       y="413.88968"
+       id="text4819-0"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4821-9"
+         x="83.874306"
+         y="413.88968"
+         style="font-size:16px;fill:#00ff00;fill-opacity:1">Reduce variance by:</tspan><tspan
+         sodipodi:role="line"
+         x="83.874306"
+         y="433.88968"
+         style="font-size:16px;fill:#00ff00;fill-opacity:1"
+         id="tspan4856">- more training examples</tspan><tspan
+         sodipodi:role="line"
+         x="83.874306"
+         y="453.88968"
+         style="font-size:16px;fill:#00ff00;fill-opacity:1"
+         id="tspan4860">- reducing set of features</tspan><tspan
+         sodipodi:role="line"
+         x="83.874306"
+         y="473.88968"
+         style="font-size:16px;fill:#00ff00;fill-opacity:1"
+         id="tspan4864">- increasing regularisation </tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:40px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#00ff00;fill-opacity:1;stroke:none;font-family:Sans"
+       x="308.10269"
+       y="413.7048"
+       id="text4819-0-8"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="308.10269"
+         y="413.7048"
+         style="font-size:16px;fill:#ff0000;fill-opacity:1"
+         id="tspan4856-7">Reduce bias by:</tspan><tspan
+         sodipodi:role="line"
+         x="308.10269"
+         y="433.7048"
+         style="font-size:16px;fill:#ff0000;fill-opacity:1"
+         id="tspan4860-1">- adding more features</tspan><tspan
+         sodipodi:role="line"
+         x="308.10269"
+         y="453.7048"
+         style="font-size:16px;fill:#ff0000;fill-opacity:1"
+         id="tspan4864-0">- adding polynomial features</tspan><tspan
+         sodipodi:role="line"
+         x="308.10269"
+         y="473.7048"
+         style="font-size:16px;fill:#ff0000;fill-opacity:1"
+         id="tspan4914">ie x<tspan
+   style="font-size:65.00091553%;baseline-shift:sub"
+   id="tspan4912">1</tspan>x<tspan
+   style="font-size:65.00091553%;baseline-shift:sub"
+   id="tspan4910">2</tspan> or x<tspan
+   style="font-size:65.00091553%;baseline-shift:sub"
+   id="tspan4938">1</tspan><tspan
+   style="font-size:65.00091553%;baseline-shift:super"
+   id="tspan4940">2 </tspan></tspan><tspan
+         sodipodi:role="line"
+         x="308.10269"
+         y="493.7048"
+         style="font-size:16px;fill:#ff0000;fill-opacity:1"
+         id="tspan4934">- decreasing regularisation </tspan></text>
+  </g>
+</svg>
