@@ -253,19 +253,83 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 
 
 class Selector:
+	"""
+	Aims at providing a simple way of getting "configurable" sub-selections of rows from a table.
+	"""
 	
-	def __init__(self, criteria, name):
+	def __init__(self, name, criteria):
+		"""
 		
-		self.criteria = criteria
+		:param name: a short string describing this selector (like "star", "low_snr", ...)
+		:param criteria: a list of tuples describing the criteria. Each of these tuples starts 
+			with a string giving its type, followed by some arguments.
+	
+			Illustration of the available criteria (all limits are inclusive):
+		
+			- ``("in", "tru_rad", 0.5, 0.6)`` : ``"tru_rad"`` is between 0.5 and 0.6 ("in" stands for *interval*)
+			- ``("max", "snr", 10.0)`` : ``"snr"`` is below 10.0
+			- ``("min", "adamom_flux", 10.0)`` : ``"adamom_flux"`` is above 10.0
+			- ``("is", "Flag", 2)`` : ``"Flag"`` is exactly 2
+			- ``("nomask", "pre_g1")`` : ``"pre_g1"`` is not masked
+		
+		
+		"""
 		self.name = name
+		self.criteria = criteria
 		
 		
 	def select(self, cat):
 		"""
-		Returns those rows of cat that match all criteria
+		Returns a copy of cat with those rows that satisfy all criteria.
+		
+		:param cat: an astropy table
+		
 		"""
-		pass
-		return cat
+		
+		passmasks = []
+		for crit in self.criteria:
+			
+			if crit[0] == "in":
+				if len(crit) != 4: raise RuntimeError("Expected 4 elements in criterion %s" % (str(crit)))
+				passmask = np.logical_and(cat[crit[1]] >= crit[2], cat[crit[1]] <= crit[3])
+			
+			elif crit[0] == "max":
+				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
+				passmask = cat[crit[1]] <= crit[2]
+			
+			elif crit[0] == "min":
+				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
+				passmask = cat[crit[1]] >= crit[2]
+			
+			elif crit[0] == "is":
+				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
+				passmask = cat[crit[1]] == crit[2]
+			
+			elif crit[0] == "nomask":
+				if len(crit) != 2: raise RuntimeError("Expected 2 elements in criterion %s" % (str(crit)))
+				if hasattr(cat[crit[1]], "mask"): # i.e., if this column is masked:
+					passmask = np.logical_not(cat[crit[1]].mask)
+				else:
+					logger.warning("Criterion %s is facing an unmasked column!" % (str(crit)))
+					passmask = np.ones(len(cat), dtype=bool)
+			
+			else:
+				raise RuntimeError("Unknown criterion %s" % (crit))
+					
+			logger.debug("Criterion %s of '%s' selects %i/%i rows (%.2f %%)" %
+				(crit, self.name, np.sum(passmask), len(cat), 100.0 * float(np.sum(passmask))/float(len(cat))))
+			
+			assert len(passmask) == len(cat)
+			passmasks.append(passmask) # "True" means "pass" == "keep this"
+		
+		# Combining the passmasks:
+		passmasks = np.logical_not(np.column_stack(passmasks)) # "True" means "reject"
+		combimask = np.logical_not(np.sum(passmasks, axis=1).astype(bool)) # ... and "True" means "keep this" again.
+		
+		logger.info("Selector '%s' selects %i/%i rows (%.2f)" %
+				(self.name, np.sum(combimask), len(cat), 100.0 * float(np.sum(combimask))/float(len(cat))))
+		
+		return cat[combimask]
 
 	
 	
