@@ -33,13 +33,17 @@ myml = megalut.learn.ML(mymlparams, myfannparams)
 
 myml.train(inputcat)
 
+# We save it into a pickle
+megalut.tools.io.writepickle(myml, "myml.pkl")
+
 print 'Final training error :', myml.train_error
 print 'Cross-validation error : ', myml.test_error
 
 # Note the name of the directory that was created to store the trained network!
 
-traincat = myml.predict(inputcat[:myml.training_set_index])
-validationcat = myml.predict(inputcat[myml.training_set_index:])
+traincat = myml.predict(inputcat)
+validationcat = traincat[myml.training_set_index:]
+traincat = traincat[:myml.training_set_index]
 
 # Here we are:
 #print outputcat

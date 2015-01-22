@@ -9,6 +9,7 @@ import feature
 import scatter
 import hist
 import hexbin
+import qqplot
 
 import exp
 
