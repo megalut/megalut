@@ -374,6 +374,7 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	
 	# We disregard the masked rows:
 	nomaskcat = cat[combimask] # Only works as combimask is a numpy array ! It would do something else with a list !
+	# Wow, this is extremely SLOW !
 	
 	# More asserts:
 	assert len(nomaskcat) == ngood
@@ -382,6 +383,7 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	
 	if not keep_all_columns:
 		nomaskcat.keep_columns(colnames)
+		# Moving this to before the slow "cat[combimask]" seems to not speedup this function -- strange ?
 	
 	return nomaskcat
 
