@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
+from .. import tools
 
 def _compute_qqplot(cat, feat, dist):
 	"""
@@ -68,7 +69,7 @@ def qqplot2dataset(ax, catx, caty, feat, dist='norm', **kwargs):
 	
 	datatoshow = []
 	for by in binsy:
-		ii = find_nearest(binsx, by)
+		ii = tools.table.find_nearest(binsx, by)
 		datatoshow.append(ii)	
 	
 	print mykwargs
