@@ -125,7 +125,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			
 	else: # We will use plot()
 	
-		logger.info("Drawing %i points without colorbar (using 'plot')" % (len(data["x"])))
+		logger.info("Drawing %i points without colorbar (using 'plot')" % (len(data[featx.colname])))
 		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
@@ -240,11 +240,13 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	
 		metrics_label = featx.colname
 		metrics_predlabel = featy.colname
-		metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
-	
-		metrics_text = "predfrac: %.3f\nRMSD: %.3f\nm*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0)
-		ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
-	
+		
+		try:
+			metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
+			metrics_text = "predfrac: %.3f\nRMSD: %.3f\nm*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0)
+			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
+		except:
+			logger.warning("Metrics compuation failed", exc_info = True)
 		
 
 
