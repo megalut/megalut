@@ -16,10 +16,7 @@ def getdata(cat, features):
 	:param cat: an astropy table
 	:param features: a list of Feature objects
 	
-	The function returns a dict with keys equal to the colnames and errcolnames of the given features,
-	and the columns (aka numpy array) of the same size as corresponding values.
-	For every feature, this dict contains both colname and errcolname, with the value of errcolname being None
-	if this feature had no errcolname.
+	:returns: a table containing only the available rows and required columns. 
 	
 	"""
 	# Potentially, these columns can exist:	
