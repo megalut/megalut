@@ -74,11 +74,4 @@ megalut.plot.scatter.scatter(ax, traincat, tru_g1, pre_g1, color="green", label=
 megalut.plot.scatter.scatter(ax, validationcat, tru_g1, pre_g1, color="blue", label="Validation set")
 plt.legend(loc="best")
 
-fig = plt.figure(figsize=(16,6))
-ax = fig.add_subplot(121)
-megalut.plot.hexbin.hexbin(ax, traincat, tru_g1, pre_g1)
-ax.set_title("Train set")
-ax = fig.add_subplot(122)
-megalut.plot.hexbin.hexbin(ax, validationcat, tru_g1, pre_g1)
-ax.set_title("Cross-validation set")
 plt.show()

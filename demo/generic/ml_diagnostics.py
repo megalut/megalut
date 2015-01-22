@@ -14,11 +14,15 @@ import megalut.diagnostics
 inputcat = megalut.tools.io.readpickle("meascat.pkl")
 myml = megalut.tools.io.readpickle("myml.pkl")
 
-diagnostics = megalut.diagnostics.learn(myml, inputcat)
+diagnostics = megalut.diagnostics.Learn(myml, inputcat)
 
 fig1 = plt.figure()
 diagnostics.compare_distrib(fig1)
 
 fig2 = plt.figure()
 diagnostics.compare_distrib(fig2, error=True)
+
+fig3 = plt.figure()
+diagnostics.compare_density(fig3)
+
 plt.show()

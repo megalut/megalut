@@ -75,3 +75,14 @@ def linreg(x, y, prob=0.68):
 		raise RuntimeError("Intercept error, %f, %f" % (intercept, b0))
 	
 	return ret
+
+def linreg_on_masked_array(xx, yy):
+	mask = np.logical_not(np.ma.getmask(xx))
+	xx = xx[mask]
+	yy = yy[mask]
+		
+	mask = np.logical_not(np.ma.getmask(yy))
+	xx = xx[mask]
+	yy = yy[mask]
+
+	return linreg(xx, yy)

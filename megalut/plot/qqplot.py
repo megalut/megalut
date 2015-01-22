@@ -1,7 +1,7 @@
 """
 QQ-plot to easily compare the distributions
 
-:requires.. scipy
+:requires.. scipy.stats
 """
 
 import logging
@@ -26,6 +26,7 @@ def _compute_qqplot(cat, feat, dist):
 	
 	More info : http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
 	"""
+	
 	x = cat[feat.colname]
 	x = np.ma.asarray(x)
 	x = np.ma.compressed(x)
@@ -34,9 +35,25 @@ def _compute_qqplot(cat, feat, dist):
 	
 	return res
 
-def qqplot(ax, cat, feat, dist='norm', title=None, text=None, **kwargs):
+def qqplot(ax, cat, feat, dist='norm', **kwargs):
+	"""
+	Draws a qqplot for a dataset and a distribution$
+	
+	:param ax: a matplotlib.axes.Axes object
+	:param cat: an astropy table
+	:param feat: a Feature object
+	:param dist: Distribution or distribution function name. See scipy.stats.probplot, "norm" is normal
+	
+	:returns: the output of `scipy.stats.probplot`
+	
+	:notes.. qqplot can't handle masked table, so we convert the array to numpy and remove masked values
+	
+	More info : http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
+	
+	Any further kwargs are either passed to ``plot()``
+	"""
 
-	mykwargs = {"marker":".", "color":"black", "alpha":0.3, "edgecolor":"None"}
+	mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
 	mykwargs.update(kwargs)
 	
 	res = _compute_qqplot(cat, feat, dist)
@@ -44,19 +61,35 @@ def qqplot(ax, cat, feat, dist='norm', title=None, text=None, **kwargs):
 	xx = np.asarray(res[0])
 	yy = np.asarray(res[1])
 
-	ax.scatter(xx, yy, **mykwargs)
-	
-	# Writing any text:
-	if text:
-		ax.annotate(text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -8), textcoords='offset points', ha='left', va='top')
-	if title:
-		ax.set_title(title)
+	ax.plot(xx, yy, **mykwargs)
 		
 	return res
 
 def qqplot2dataset(ax, catx, caty, feat, dist='norm', **kwargs):
+	"""
+	Draws a qqplot for a dataset and a distribution$
 	
-	mykwargs = {"marker":".", "alpha":0.3, "edgecolor":"None"}
+	:param ax: a matplotlib.axes.Axes object
+	:param catx: an astropy table for the quantiles on the x-axis
+	:param catx: an astropy table for the quantiles on the y-axis
+	:param feat: a common Feature object
+	:param dist: Distribution or distribution function name. See scipy.stats.probplot, "norm" is normal
+	:param title: the title to place on top of the axis.
+		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
+	:param text: some text to be written in the figure (top left corner)
+		As we frequently want to do this, here is a simple way to do it.
+		For more complicated things, add the text yourself to the axes.
+	
+	:returns: the output of `scipy.stats.probplot`
+	
+	:notes.. qqplot can't handle masked table, so we convert the array to numpy and remove masked values
+	
+	More info : http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
+	
+	Any further kwargs are either passed to ``plot()``
+	"""
+	
+	mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
 	mykwargs.update(kwargs)
 	
 	res = _compute_qqplot(catx, feat, dist)
@@ -72,7 +105,7 @@ def qqplot2dataset(ax, catx, caty, feat, dist='norm', **kwargs):
 		ii = tools.table.find_nearest(binsx, by)
 		datatoshow.append(ii)	
 
-	ax.scatter(xx[datatoshow], yy, **mykwargs)
+	ax.plot(xx[datatoshow], yy, **mykwargs)
 	
 	return xx[datatoshow], yy
 
