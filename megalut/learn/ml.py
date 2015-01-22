@@ -224,9 +224,9 @@ class ML:
 		self.train_error = self.tool.test(features=featurestrain, labels=labelstrain)
 		
 		if validation_fraction > 0. :
-			self.test_error = self.tool.test(features=featurestest, labels=labelstest)
+			self.validation_error = self.tool.test(features=featurestest, labels=labelstest)
 		else:
-			self.test_error = None
+			self.validation_error = None
 		
 		endtime = datetime.now()
 		logger.info("Done! This training took %s" % (str(endtime - starttime)))

@@ -37,7 +37,7 @@ myml.train(inputcat)
 megalut.tools.io.writepickle(myml, "myml.pkl")
 
 print 'Final training error :', myml.train_error
-print 'Cross-validation error : ', myml.test_error
+print 'Cross-validation error : ', myml.validation_error
 
 # Note the name of the directory that was created to store the trained network!
 

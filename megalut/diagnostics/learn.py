@@ -4,6 +4,9 @@ from .. import plot
 from .. import tools
 from astropy.table import Table
 
+import logging
+logger = logging.getLogger(__name__)
+
 class Learn():
 	"""
 	The class containing the diagnostics for testing the robustness of the learning
@@ -252,3 +255,26 @@ class Learn():
 		plt.subplots_adjust(wspace = .001)
 		plt.subplots_adjust(hspace = .3)
 			
+	def is_overfitting(self, threshold=0.05):
+		"""
+		Returns a simple estimation of the overfit (True/False) if the variance error is larger than
+			the threshold*training_error.
+		"""
+		
+		logger.info("Training error is %g" % self.myml.train_error)
+		logger.info("Cross-validation error is %g" % self.myml.validation_error) 
+		
+		delta = self.myml.validation_error-self.myml.train_error
+		
+		if delta < 0 :
+			logger.warning("The training error is larger than validation error, something's wrong")
+		
+		mag = delta/self.myml.train_error
+		msg = "Variance is %2.1f%% of the training error." % (100.*mag)
+		if mag > threshold:
+			logger.warning(msg+" That's a lot!")
+			return True
+		else:
+			logger.info()
+			return False
+		
