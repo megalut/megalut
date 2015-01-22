@@ -38,7 +38,8 @@ print 'Cross-validation error : ', myml.test_error
 
 # Note the name of the directory that was created to store the trained network!
 
-outputcat = myml.predict(inputcat)
+traincat = myml.predict(inputcat[:myml.training_set_index])
+validationcat = myml.predict(inputcat[myml.training_set_index:])
 
 # Here we are:
 #print outputcat
@@ -65,5 +66,15 @@ ax = fig.add_subplot(111)
 tru_g1 = megalut.plot.feature.Feature("tru_g1", -0.6, 0.6, "Nice label for true g1")
 pre_g1 = megalut.plot.feature.Feature("pre_g1") # Minimal call, just to highlight the default behavior.
 
-megalut.plot.scatter.scatter(ax, outputcat, tru_g1, pre_g1, color="green")
+megalut.plot.scatter.scatter(ax, traincat, tru_g1, pre_g1, color="green", label="Train set")
+megalut.plot.scatter.scatter(ax, validationcat, tru_g1, pre_g1, color="blue", label="Validation set")
+plt.legend(loc="best")
+
+fig = plt.figure(figsize=(16,6))
+ax = fig.add_subplot(121)
+megalut.plot.hexbin.hexbin(ax, traincat, tru_g1, pre_g1)
+ax.set_title("Train set")
+ax = fig.add_subplot(122)
+megalut.plot.hexbin.hexbin(ax, validationcat, tru_g1, pre_g1)
+ax.set_title("Cross-validation set")
 plt.show()

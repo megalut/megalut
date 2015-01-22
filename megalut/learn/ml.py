@@ -198,8 +198,8 @@ class ML:
 			raise ValueError("The value of validation_fraction is <0, this is a non-sense")
 		
 		# We don't care about the order, as the data is randomly ordered already
+		length = featuresdata.shape[0]
 		if validation_fraction > 0. :
-			length = featuresdata.shape[0]
 			sepind = length - np.int(validation_fraction * length)
 			if sepind <= 0 or sepind == length:
 				raise ValueError("One of the training or cross-validation set is empty!")
@@ -210,9 +210,12 @@ class ML:
 			featurestest = featuresdata[sepind:]
 			labelstest = labelsdata[sepind:]
 			
+			self.training_set_index = sepind
 		else :
 			featurestrain = featuresdata
 			labelstrain = labelsdata
+			
+			self.training_set_index = length
 		
 		# And we call the tool's train method:
 		self.tool.train(features=featurestrain, labels=labelstrain)
