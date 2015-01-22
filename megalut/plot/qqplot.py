@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
-from .. import tools
+import megalut.tools as tools
 
 def _compute_qqplot(cat, feat, dist):
 	"""
@@ -71,8 +71,9 @@ def qqplot2dataset(ax, catx, caty, feat, dist='norm', **kwargs):
 	for by in binsy:
 		ii = tools.table.find_nearest(binsx, by)
 		datatoshow.append(ii)	
-	
-	print mykwargs
+
 	ax.scatter(xx[datatoshow], yy, **mykwargs)
+	
+	return xx[datatoshow], yy
 
 

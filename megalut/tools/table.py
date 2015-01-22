@@ -209,7 +209,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		if removereas == False:
 			# We keep every column:
 			reascats.append(astropy.table.Table([incat[groupcol] for incat in incats], names = suffixedcolnames))
-			 
+			
 		else:
 			# see if we should keep the first:
 			if keepfirstrea == True:

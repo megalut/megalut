@@ -12,5 +12,3 @@ import hexbin
 import qqplot
 
 import exp
-
-
