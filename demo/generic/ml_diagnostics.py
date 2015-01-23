@@ -11,18 +11,26 @@ import megalut
 import matplotlib.pyplot as plt
 import megalut.diagnostics
 
+import numpy as np
+
 inputcat = megalut.tools.io.readpickle("meascat.pkl")
+
+sepind = np.int(0.7*np.shape(inputcat)[0])
+
+validationcat = inputcat[sepind:]
+inputcat = inputcat[:sepind]
+
 myml = megalut.tools.io.readpickle("myml.pkl")
 
-diagnostics = megalut.diagnostics.Learn(myml, inputcat)
-
+diagnostics = megalut.diagnostics.Learn(myml, inputcat, validationcat)
 print diagnostics
 
-fig0 = plt.figure()
-diagnostics.test_training_size(fig0, ncpu=7)
+#fig0 = plt.figure()
+#diagnostics.test_training_size(fig0, ncpu=6)
 
 overfit = diagnostics.is_overfitting()
 print 'The current training is likely to overfit ? %r' % overfit
+exit()
 
 fig1 = plt.figure()
 diagnostics.compare_distrib(fig1)

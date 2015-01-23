@@ -9,12 +9,18 @@ logging.basicConfig(level=logging.INFO)
 
 import megalut
 import megalut.learn
+import numpy as np
 
 inputcat = megalut.tools.io.readpickle("meascat.pkl")
 
 # Important: we don't want to train on badly measured data!
 
 inputcat = inputcat[inputcat["mes_flag"] == 0]
+
+sepind = np.int(0.7*np.shape(inputcat)[0])
+
+validationcat = inputcat[sepind:]
+inputcat = inputcat[:sepind]
 
 # That's what is available in our catalog:
 #print inputcat.colnames
@@ -36,15 +42,10 @@ myml.train(inputcat)
 # We save it into a pickle
 megalut.tools.io.writepickle(myml, "myml.pkl")
 
-print 'Final training error :', myml.train_error
-print 'Cross-validation error : ', myml.validation_error
-
 # Note the name of the directory that was created to store the trained network!
 
 traincat = myml.predict(inputcat)
-validationcat = traincat[myml.training_set_index:]
-traincat = traincat[:myml.training_set_index]
-
+validationcat = myml.predict(validationcat)
 # Here we are:
 #print outputcat
 
