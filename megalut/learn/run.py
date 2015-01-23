@@ -135,11 +135,12 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 		* If mode is "default", it will predict using exactly the column names that the MLParams of the paramslist specify.
 		* If "single", it will drop any "_mean" in the feature column names.
 		  This is the mode which is meant to be useful when predicting real observations!
+		* If "single0", it will drop any "_0" in the feature column names.
+		  This special mode is useful when predicting control samples with MLs that have been trained on single realizations.
 		* If "first", it will replace any "_mean" by "_0", thus using only the first realization.
 		  This is a mode only useful for simulations.
 		  It allows a fair comparision of the predictions based on simulations and real observations. 
-		  Of course it works only if meas.avg.onsims() was run with the option removereas=False. 
-		  It allows a fair comparisions of the predictions based on simulations and real observations.
+		  Of course it works only if meas.avg.onsims() was run with the option removereas=False.
 		* If "all", it will predict all realizations (_0, _1, ...), and then use groupstats to compute statistics
 		  of the predictions coming from the different realizations, resulting in field names such as
 		  pre_g1_mean, pre_g1_std, etc.
@@ -201,7 +202,19 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 					tweakedfeatures.append(feature)
 			tweakedmlobj.mlparams.features = tweakedfeatures
 			predcat = tweakedmlobj.predict(predcat)
-			
+		
+		elif mode == "single0": # Drop any "_0" from features
+	
+			tweakedfeatures = []
+			for feature in tweakedmlobj.mlparams.features:
+				if feature.endswith("_0"):
+					tweakedfeatures.append(feature[:-len("_0")])
+				else:
+					tweakedfeatures.append(feature)
+			tweakedmlobj.mlparams.features = tweakedfeatures
+			predcat = tweakedmlobj.predict(predcat)
+		
+		
 		elif mode == "first": # Replace "_mean" by "_0"
 		
 			tweakedfeatures = []
@@ -232,7 +245,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 			else:
 				nrea_touse = nrea_available
 				
-			logger.debug("Starting predictions on %i (out of %i) realizations..." % (nrea_touse, nrea_available))
+			logger.info("Starting predictions on %i (out of %i) realizations..." % (nrea_touse, nrea_available))
 			for irea in range(nrea_touse):
 				tweakedfeatures = []
 				for feature in origfeatures:
@@ -244,7 +257,7 @@ def predict(cat, workbasedir, paramslist, mode="default"):
 				tweakedmlobj.mlparams.features = tweakedfeatures
 				reapredcats.append(tweakedmlobj.predict(predcat))
 			
-			logger.debug("Done, now calling groupstats")
+			logger.info("Done, now calling groupstats")
 			
 			# We want to group the predictions (predlabels) obtained on the different realizations.
 			groupcols = tweakedmlobj.mlparams.predlabels
