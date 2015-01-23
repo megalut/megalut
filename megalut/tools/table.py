@@ -209,7 +209,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 		if removereas == False:
 			# We keep every column:
 			reascats.append(astropy.table.Table([incat[groupcol] for incat in incats], names = suffixedcolnames))
-			
+			 
 		else:
 			# see if we should keep the first:
 			if keepfirstrea == True:
@@ -251,18 +251,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	return outputcat
 
 
-def find_nearest(array,value):
-	"""
-	Find nearest value is an array
-	
-	:param array: the haystack
-	:param value: the needle
-	
-	:returns: the id of the closest value in the haystack 
-	"""
-	
-	idx = (np.abs(array-value)).argmin()
-	return idx
+
+
 	
 	
 	

@@ -2,7 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .. import plot
 from .. import tools
-from astropy.table import Table
+from astropy.table import Table, vstack
+import multiprocessing
+import copy
 
 import logging
 logger = logging.getLogger(__name__)
@@ -12,21 +14,31 @@ class Learn():
 	The class containing the diagnostics for testing the robustness of the learning
 	"""
 	
-	def __init__(self, myml, inputcat):
+	def __init__(self, ml, inputcat):
 		"""
-		:param myml: a ML instance
+		:param ml: a ML instance
 		:param inputcat: the input astropy table used for training
 		"""
-		self.myml = myml
+		self.ml = ml
 		
 		self.inputcat = inputcat
 		
-		traincat = myml.predict(inputcat)
-		self.validationcat = traincat[myml.training_set_index:]
-		self.traincat = traincat[:myml.training_set_index]
+		traincat = ml.predict(inputcat)
+		self.validationcat = traincat[ml.training_set_index:]
+		self.traincat = traincat[:ml.training_set_index]
 		
 		if np.size(self.validationcat) == 0:
 			raise ValueError("There is no validation set")
+		
+		# Declare that the training on different size has not been done.
+		self.errors_training_size = None
+		
+	def __str__(self):
+		txt = "Diagnostics on the %s ML algorithm" % self.ml.mlparams.__str__() + \
+		"\nUsing %s" % self.ml.toolparams.__str__() + \
+		"\nWith %d training samples and %d cross-validation samples." % (np.shape(self.traincat)[0],
+														np.shape(self.validationcat)[0],)
+		return txt
 
 	def compare_distrib(self, fig, prelabels=None, error=False, trulabels=None, fit_linreg=True,
 					fitlinekwargs=None, titles=None, show_id_line=True, idlinekwargs=None, **kwargs):
@@ -178,7 +190,7 @@ class Learn():
 			
 			trulabels = ["tru" + i.colname[3:] for i in prelabels]
 			trulabels = [plot.feature.Feature(f) for f in trulabels]
-			 
+
 			deltalabels = ["delta" + i.colname[3:] for i in prelabels]
 			deltalabels = [plot.feature.Feature(f) for f in deltalabels]
 		
@@ -261,15 +273,15 @@ class Learn():
 			the threshold*training_error.
 		"""
 		
-		logger.info("Training error is %g" % self.myml.train_error)
-		logger.info("Cross-validation error is %g" % self.myml.validation_error) 
+		logger.info("Training error is %g" % self.ml.train_error)
+		logger.info("Cross-validation error is %g" % self.ml.validation_error) 
 		
-		delta = self.myml.validation_error-self.myml.train_error
+		delta = self.ml.validation_error-self.ml.train_error
 		
 		if delta < 0 :
 			logger.warning("The training error is larger than validation error, something's wrong")
 		
-		mag = delta/self.myml.train_error
+		mag = delta/self.ml.train_error
 		msg = "Variance is %2.1f%% of the training error." % (100.*mag)
 		if mag > threshold:
 			logger.warning(msg+" That's a lot!")
@@ -278,3 +290,48 @@ class Learn():
 			logger.info()
 			return False
 		
+	def test_training_size(self, fig, fractions=[0.2, 0.4, 0.6, 0.8, 1.], ncpu=1, **kwargs):
+		
+		logger.info("Beginning the test on different training sample size")
+		
+		cat = vstack([self.traincat, self.validationcat])
+		
+		if self.errors_training_size is None or not self.fractions_training_size == fractions:
+			trainparams = [[f, copy.deepcopy(self.ml), \
+				cat[:np.int(f * np.shape(cat)[0])]] for f in fractions]
+			
+			if ncpu == 1: # The single-processing version, much easier to debug !
+				res = map(_trainer_size, trainparams)
+		
+			else: # The simple multiprocessing map is:
+				print "multi-cpu"
+				pool = multiprocessing.Pool(processes=ncpu)
+				res = pool.map(_trainer_size, trainparams)
+				pool.close()
+				pool.join()
+			
+			res = np.sort(np.asarray(res), axis=0)
+			self.errors_training_size = res
+			self.fractions_training_size = np.asarray(fractions) * (1. - self.ml.validation_fraction)
+			
+		mykwargs = {"marker":"+", "ms":5, "ls":"--", "alpha":1.}
+		mykwargs.update(kwargs)
+		mykwargs.update({'color':"blue"})
+
+		print self.fractions_training_size
+		xx = self.fractions_training_size * np.shape(cat)[0]
+		print xx
+		plt.plot(xx, self.errors_training_size[:,1], label="Training set", **mykwargs)
+		
+		mykwargs.update({'color':"green"})
+		plt.plot(xx, self.errors_training_size[:,2], label="Cross-validation set", **mykwargs)
+		plt.grid()
+		plt.legend(loc="best")
+		plt.xlabel("Training set size")
+		plt.ylabel("%s RMS error" % (self.ml.toolparams.name))
+		
+def _trainer_size(params):
+	frac, ml, cat = params
+	ml.train(cat)
+	return frac, ml.train_error, ml.validation_error
+

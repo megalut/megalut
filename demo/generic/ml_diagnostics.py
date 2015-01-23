@@ -16,6 +16,11 @@ myml = megalut.tools.io.readpickle("myml.pkl")
 
 diagnostics = megalut.diagnostics.Learn(myml, inputcat)
 
+print diagnostics
+
+fig0 = plt.figure()
+diagnostics.test_training_size(fig0, ncpu=7)
+
 overfit = diagnostics.is_overfitting()
 print 'The current training is likely to overfit ? %r' % overfit
 

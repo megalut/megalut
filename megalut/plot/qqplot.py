@@ -102,7 +102,7 @@ def qqplot2dataset(ax, catx, caty, feat, dist='norm', **kwargs):
 	
 	datatoshow = []
 	for by in binsy:
-		ii = tools.table.find_nearest(binsx, by)
+		ii = (np.abs(binsx-by)).argmin()
 		datatoshow.append(ii)	
 
 	ax.plot(xx[datatoshow], yy, **mykwargs)

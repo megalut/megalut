@@ -12,13 +12,13 @@ import megalut.meas
 
 class Flux50(megalut.sim.params.Params):
 	def get_flux(self):
-		return 150.0
+		return 50.0
 		
 mysimparams = Flux50()
 
 
 # We make a catalog of 20 x 20 simulated galaxies :
-simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=200, stampsize=48)
+simcat = megalut.sim.stampgrid.drawcat(mysimparams, n=20, stampsize=48)
 
 
 # Now, we pass this catalog to drawimg, to generate the actual simulated images.

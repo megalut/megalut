@@ -196,6 +196,7 @@ class ML:
 			raise ValueError("The training set is empty! Reduce the value of validation_fraction")
 		elif validation_fraction < 0. :
 			raise ValueError("The value of validation_fraction is <0, this is a non-sense")
+		self.validation_fraction = validation_fraction
 		
 		# We don't care about the order, as the data is randomly ordered already
 		length = featuresdata.shape[0]
@@ -211,11 +212,16 @@ class ML:
 			labelstest = labelsdata[sepind:]
 			
 			self.training_set_index = sepind
+			
+			logger.info("The training set size is %d and cross-validation set is %d" % (sepind + 1,
+					length-sepind))
 		else :
 			featurestrain = featuresdata
 			labelstrain = labelsdata
 			
 			self.training_set_index = length
+			
+			logger.info("The training set size is %d, with no cross-validation set" % (length))
 		
 		# And we call the tool's train method:
 		self.tool.train(features=featurestrain, labels=labelstrain)
