@@ -306,8 +306,9 @@ class Learn():
 		
 		if self.errors_training_size is None or not self.fractions_training_size == fractions:
 			trainparams = [[f, copy.deepcopy(self.ml), \
-						self.traincat[:np.int(f * np.shape(self.traincat)[0])], \
-						self.validationcat[:np.int(f * np.shape(self.traincat)[0])]] for f in fractions]
+						copy.deepcopy(self.traincat[:np.int(f * np.shape(self.traincat)[0])]), \
+						copy.deepcopy(self.validationcat[:np.int(f * np.shape(self.traincat)[0])])]\
+						 for f in fractions]
 			
 			if ncpu == 1: # The single-processing version, much easier to debug !
 				res = map(_trainer_size, trainparams)
@@ -350,9 +351,11 @@ def _compute_error(cat, predlabels, labels):
 	for p, l in zip(predlabels, labels):
 		err = cat[p] - cat[l]
 		rmsd[p] = np.sqrt(err * err)
+		
 			
 	rmsd = np.array(rmsd)
 	rmsd = rmsd.view(np.float64).reshape(rmsd.shape + (-1,))
+	rmsd = rmsd[~np.isnan(rmsd)]
 	rmsd = np.mean(rmsd)
 		
 	return rmsd
