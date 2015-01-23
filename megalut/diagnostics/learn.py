@@ -32,6 +32,9 @@ class Learn():
 		self.compute_error()
 		
 	def compute_error(self):
+		"""
+		Computes the error for the stored training and validation samples using the ML object.
+		"""
 		
 		predlabels = self.ml.mlparams.predlabels
 		labels = self.ml.mlparams.labels
@@ -279,6 +282,8 @@ class Learn():
 		"""
 		Returns a simple estimation of the overfit (True/False) if the variance error is larger than
 			the threshold*training_error.
+			
+		:param threshold:
 		"""
 		
 		logger.info("Training error is %g" % self.train_error)
@@ -301,27 +306,35 @@ class Learn():
 			return False
 		
 	def test_training_size(self, fig, fractions=[0.2, 0.4, 0.6, 0.8, 1.], ncpu=1, **kwargs):
+		"""
+		Computes the RMSD error for different training sizes and plots it. 
+		
+		:param fig: a figure instance of pyplot
+		:param fractions: a list of the fraction of the training sample size to use
+		:param ncpu: how many cpus to use ?
+		
+		All remaining arguments are passed to `pyplot.plot`.
+		"""
 		
 		logger.info("Beginning the test on different training sample size")
 		
-		if self.errors_training_size is None or not self.fractions_training_size == fractions:
-			trainparams = [[f, copy.deepcopy(self.ml), \
-						copy.deepcopy(self.traincat[:np.int(f * np.shape(self.traincat)[0])]), \
-						copy.deepcopy(self.validationcat[:np.int(f * np.shape(self.traincat)[0])])]\
-						 for f in fractions]
-			
-			if ncpu == 1: # The single-processing version, much easier to debug !
-				res = map(_trainer_size, trainparams)
+		trainparams = [[f, copy.deepcopy(self.ml), \
+					copy.deepcopy(self.traincat[:np.int(f * np.shape(self.traincat)[0])]), \
+					copy.deepcopy(self.validationcat[:np.int(f * np.shape(self.traincat)[0])])]\
+					 for f in fractions]
 		
-			else: # The simple multiprocessing map is:
-				pool = multiprocessing.Pool(processes=ncpu)
-				res = pool.map(_trainer_size, trainparams)
-				pool.close()
-				pool.join()
-			
-			res = np.sort(np.asarray(res), axis=0)
-			self.errors_training_size = res
-			self.fractions_training_size = np.asarray(fractions)
+		if ncpu == 1: # The single-processing version, much easier to debug !
+			res = map(_trainer_size, trainparams)
+	
+		else: # The simple multiprocessing map is:
+			pool = multiprocessing.Pool(processes=ncpu)
+			res = pool.map(_trainer_size, trainparams)
+			pool.close()
+			pool.join()
+		
+		res = np.sort(np.asarray(res), axis=0)
+		self.errors_training_size = res
+		self.fractions_training_size = np.asarray(fractions)
 			
 		mykwargs = {"marker":"+", "ms":5, "ls":"--", "alpha":1.}
 		mykwargs.update(kwargs)
@@ -338,6 +351,12 @@ class Learn():
 		plt.ylabel("%s RMS error" % (self.ml.toolparams.name))
 		
 def _trainer_size(params):
+	"""
+	Worker function for `func:test_training_size`. It trains a ML and computes the training and 
+		validation error
+	
+	:param params: a list containing [fraction of data, ML object, train samples, validation samples]
+	"""
 	frac, ml, traincat, validationcat = params
 	ml.train(traincat)
 	train_err = _compute_error(traincat, ml.mlparams.predlabels, ml.mlparams.labels)
@@ -345,6 +364,15 @@ def _trainer_size(params):
 	return frac, train_err, valid_err
 
 def _compute_error(cat, predlabels, labels):
+	"""
+	Computes the RMSD error across all predictions and takes the mean of it.
+	
+	:param cat: An astropy table
+	:param predlabels: A list containing the names of the predictions
+	:param labels: A list containing the names of the labels
+	
+	:returns: the RMSD error
+	"""
 
 	rmsd = Table()
 

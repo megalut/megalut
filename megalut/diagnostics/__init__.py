@@ -1,1 +1,1 @@
-from megalut.diagnostics.learn import *
+from megalut.diagnostics.learn import Learn
