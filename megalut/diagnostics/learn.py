@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .. import plot
 from .. import tools
-from astropy.table import Table, vstack
+from astropy.table import Table
 import multiprocessing
 import copy
 
@@ -352,7 +352,7 @@ class Learn():
 		
 def _trainer_size(params):
 	"""
-	Worker function for `func:test_training_size`. It trains a ML and computes the training and 
+	Worker function for :func:`test_training_size`. It trains a ML and computes the training and 
 		validation error
 	
 	:param params: a list containing [fraction of data, ML object, train samples, validation samples]

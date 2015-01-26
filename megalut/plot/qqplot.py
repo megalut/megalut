@@ -1,7 +1,9 @@
 """
 QQ-plot to easily compare the distributions
 
-:requires.. scipy.stats
+.. note:: Require scipy.stats
+
+.. seealso:: http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
 """
 
 import logging
@@ -22,9 +24,7 @@ def _compute_qqplot(cat, feat, dist):
 	
 	:returns: the output of `scipy.stats.probplot`
 	
-	:notes.. qqplot can't handle masked table, so we convert the array to numpy and remove masked values
-	
-	More info : http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
+	.. note:: qqplot can't handle masked table, so we convert the array to numpy and remove masked values
 	"""
 	
 	x = cat[feat.colname]
@@ -46,9 +46,7 @@ def qqplot(ax, cat, feat, dist='norm', **kwargs):
 	
 	:returns: the output of `scipy.stats.probplot`
 	
-	:notes.. qqplot can't handle masked table, so we convert the array to numpy and remove masked values
-	
-	More info : http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
+	.. note:: qqplot can't handle masked table, so we convert the array to numpy and remove masked values
 	
 	Any further kwargs are either passed to ``plot()``
 	"""
@@ -82,9 +80,7 @@ def qqplot2dataset(ax, catx, caty, feat, dist='norm', **kwargs):
 	
 	:returns: the output of `scipy.stats.probplot`
 	
-	:notes.. qqplot can't handle masked table, so we convert the array to numpy and remove masked values
-	
-	More info : http://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.probplot.html
+	.. note:: qqplot can't handle masked table, so we convert the array to numpy and remove masked values
 	
 	Any further kwargs are either passed to ``plot()``
 	"""
