@@ -367,6 +367,61 @@ class Selector:
 		
 		return cat[combimask]
 
-		
+
+
+def cutmasked(cat, colnames, keep_all_columns=True):
+	"""
+	Returns those rows of table for which all of the given colnames are unmasked.
+	To do this, it "combines" the masks from the different colnames.
+	Importantly, it logs a bit about the masked columns.
 	
+	:param cat: an astropy table
+	:param colnames: a list of column names whose data must be available in the output
+	:param keep_all_columns: if False, the returned table only contains the given colnames.
+	
+	:returns: an astropy table		
+	"""
+	# Some trivial tests:
+	for colname in colnames:
+		if colname not in cat.colnames:
+			raise RuntimeError("The column '%s' is not available among %s" (colname, str(cat.colnames)))
+	if len(colnames) != len(list(set(colnames))):
+		raise RuntimeError("Strange, some colnames appear multiple times in %s" % (str(colnames)))
+	
+	# We now group all the masks for all these columns.
+	masks = np.column_stack([np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool) for colname in colnames])
+	
+	# This is a 2D boolean array. Now we log some details about how many points are masked in each column.
+	for (i, colname) in enumerate(colnames):
+		mask = masks[:,i]
+		assert len(mask) == len(cat)
+		nbad = np.sum(mask)
+		logger.info("Column %20s: %5i (%5.2f %%) of the values are masked" \
+			% ("'"+colname+"'", nbad, 100.0 * float(nbad) / float(len(cat))))
+	
+	# Now we combine the masks:
+	combimask = np.logical_not(np.sum(masks, axis=1).astype(bool)) # So "True" means "keep this".
+	assert combimask.size == len(cat)
+	ngood = np.sum(combimask)
+	nbad = combimask.size - ngood
+	logger.info("Combination: %i out of %i (%.2f %%) rows have masked values and will be disregarded" \
+		% (nbad, combimask.size, 100.0 * float(nbad) / float(combimask.size)))
+	
+	# We disregard the masked rows:
+	nomaskcat = cat[combimask] # Only works as combimask is a numpy array ! It would do something else with a list !
+	# Wow, this is extremely SLOW !
+	# Note that everything so far also works for columns which are **not** masked. They will remain maskless.
+	
+	# More asserts:
+	assert len(nomaskcat) == ngood
+	for colname in colnames:
+		if hasattr(nomaskcat[colname], "mask"): # We make this test only if the column is masked
+			assert np.all(np.logical_not(nomaskcat[colname].mask)) == True # Tests that all values are unmasked.
+	
+	if not keep_all_columns:
+		nomaskcat.keep_columns(colnames)
+		# Moving this to before the slow "cat[combimask]" seems to not speedup this function -- strange ?
+	
+	return nomaskcat
+
 	
