@@ -225,13 +225,15 @@ class Learn():
 		myfitlinekwargs2.update({"color":"darkblue", "ls":"-"})
 		
 		def _plot_helper(ax, cat, featx, featy, fit_linreg, **kwargs):
-			xx = cat[featx.colname]
-			yy = cat[featy.colname]
+			catc = tools.table.cutmasked(cat, [featx.colname, featy.colname], keep_all_columns=False)
+			xx = catc[featx.colname]
+			yy = catc[featy.colname]
 			
 			plot.hexbin.hexbin(ax, cat, featx, featy, makecolorbar=False)
 			
 			if fit_linreg:
-				ret = tools.calc.linreg_on_masked_array(xx, yy)
+
+				ret = tools.calc.linreg(xx, yy)
 				dx = np.array([np.amin(xx), np.amax(xx)])
 				dy = dx * (ret['m'] + 1) + ret['c']
 			
