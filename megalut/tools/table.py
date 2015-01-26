@@ -387,7 +387,6 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 			raise RuntimeError("The column '%s' is not available among %s" (colname, str(cat.colnames)))
 	if len(colnames) != len(list(set(colnames))):
 		raise RuntimeError("Strange, some colnames appear multiple times in %s" % (str(colnames)))
-		
 	
 	# We now group all the masks for all these columns.
 	masks = np.column_stack([np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool) for colname in colnames])
@@ -411,11 +410,13 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	# We disregard the masked rows:
 	nomaskcat = cat[combimask] # Only works as combimask is a numpy array ! It would do something else with a list !
 	# Wow, this is extremely SLOW !
+	# Note that everything so far also works for columns which are **not** masked. They will remain maskless.
 	
 	# More asserts:
 	assert len(nomaskcat) == ngood
 	for colname in colnames:
-		assert np.all(np.logical_not(nomaskcat[colname].mask)) == True # Tests that all values are unmasked.
+		if hasattr(nomaskcat[colname], "mask"): # We make this test only if the column is masked
+			assert np.all(np.logical_not(nomaskcat[colname].mask)) == True # Tests that all values are unmasked.
 	
 	if not keep_all_columns:
 		nomaskcat.keep_columns(colnames)
