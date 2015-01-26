@@ -375,18 +375,12 @@ def _compute_error(cat, predlabels, labels):
 	
 	:returns: the RMSD error
 	"""
-
-	rmsd = Table()
-
+	
+	
+	N = len(predlabels)
+	rmsd = 0
 	for p, l in zip(predlabels, labels):
-		err = cat[p] - cat[l]
-		rmsd[p] = np.sqrt(err * err)
-		
-			
-	rmsd = np.array(rmsd)
-	rmsd = rmsd.view(np.float64).reshape(rmsd.shape + (-1,))
-	rmsd = rmsd[~np.isnan(rmsd)]
-	rmsd = np.mean(rmsd)
-		
+		rmsd += tools.calc.rmsd(cat[p], cat[l])/N
+
 	return rmsd
 
