@@ -400,8 +400,8 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 		mask = masks[:,i]
 		assert len(mask) == len(cat)
 		nbad = np.sum(mask)
-		logger.info("Column %20s: %5i (%5.2f %%) of the values are masked" \
-			% ("'"+colname+"'", nbad, 100.0 * float(nbad) / float(len(cat))))
+		logger.info("Column %20s: %5i (%5.2f %%) of the %i entries are masked" \
+			% ("'"+colname+"'", nbad, 100.0 * float(nbad) / float(len(cat)), len(cat)))
 	
 	# Now we combine the masks:
 	combimask = np.logical_not(np.sum(masks, axis=1).astype(bool)) # So "True" means "keep this".
