@@ -384,7 +384,7 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	# Some trivial tests:
 	for colname in colnames:
 		if colname not in cat.colnames:
-			raise RuntimeError("The column '%s' is not available among %s" (colname, str(cat.colnames)))
+			raise RuntimeError("The column '%s' is not available among %s" % (colname, str(cat.colnames)))
 	if len(colnames) != len(list(set(colnames))):
 		raise RuntimeError("Strange, some colnames appear multiple times in %s" % (str(colnames)))
 	
