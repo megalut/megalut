@@ -168,14 +168,17 @@ class Run(utils.Branch):
 
 		
 			
-	def make_sim(self, simparams, n, ncat=1, nrea=1, ncpu=1):
+	def make_sim(self, simparams, n, ncat=1, nrea=1, ncpu=1, outdir="sim"):
 		"""
 		
 		"""
+		
+		if not outdir == "sim":
+			tools.dirs.mkdir(self._get_path(outdir)) 
 		
 		for subfield in self.subfields:
 			
-			simdir = self._get_path("sim","%03i" % subfield)
+			simdir = self._get_path(outdir,"%03i" % subfield)
 			
 			starcat = tools.io.readpickle(self._get_path("obs", "star_%i_meascat.pkl" % subfield))
 			drawcatkwargs = {"n":n, "stampsize":self.stampsize()}
@@ -190,7 +193,7 @@ class Run(utils.Branch):
 			
 
 
-	def meas_sim(self, simparams, measfct, groupcols=None, removecols=None, ncpu=1):
+	def meas_sim(self, simparams, measfct, groupcols=None, removecols=None, ncpu=1, outdir="sim"):
 		"""		
 		
 		Stores all ouput in directories using simparams.name
@@ -198,14 +201,17 @@ class Run(utils.Branch):
 		
 		measfctkwargs = {"branch":self}
 		
+		
+		if not outdir == "sim":
+			tools.dirs.mkdir(self._get_path(outdir+"meas")) 
+		
 		for subfield in self.subfields:
 			
-			simdir = self._get_path("sim","%03i" % subfield)
-			measdir = self._get_path("simmeas","%03i" % subfield)
+			simdir = self._get_path(outdir,"%03i" % subfield)
+			measdir = self._get_path(outdir + "meas","%03i" % subfield)
 
 			meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=ncpu)
 			
-			print measdir
 			avgcat = meas.avg.onsims(measdir, simparams, groupcols=groupcols, removecols=removecols, removereas=False)
 			
 			tools.io.writepickle(avgcat, self._get_path("simmeas", "%03i" % subfield, simparams.name, "avgcat.pkl"))
@@ -216,8 +222,8 @@ class Run(utils.Branch):
 			simmeasdict = meas.utils.simmeasdict(measdir, simparams)
 			firstmeascatdir = simmeasdict.items()[0][0]
 			firstmeascatfilename = simmeasdict[firstmeascatdir][0]
-			firstmeascatfilepath = self._get_path("simmeas", "%03i" % (subfield), simparams.name, firstmeascatfilename)
-			shutil.copy(firstmeascatfilepath, self._get_path("simmeas", "%03i" % subfield, simparams.name, "rea0cat.pkl"))
+			firstmeascatfilepath = self._get_path(outdir + "meas", "%03i" % (subfield), simparams.name, firstmeascatfilename)
+			shutil.copy(firstmeascatfilepath, self._get_path(outdir + "meas", "%03i" % subfield, simparams.name, "rea0cat.pkl"))
 			
 
 

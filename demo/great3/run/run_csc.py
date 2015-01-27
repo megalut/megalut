@@ -8,7 +8,7 @@ import plots
 import config
 
 import logging
-logging.basicConfig(format='%(asctime)s %(levelname)s: %(name)s(%(funcName)s): %(message)s', level=logging.DEBUG)
+logging.basicConfig(format=config.loggingformat, level=logging.DEBUG)
 
 # Create an instance of the GREAT3 class
 run = megalut.great3.great3.Run("control", "space", "constant",
@@ -28,16 +28,24 @@ run.meas_psf(measfct.psf, skipdone=config.skipdone)
 
 # Run measurements on input images
 run.meas_obs(measfct.galaxies, skipdone=config.skipdone, ncpu=config.ncpu)
-print 'OKAY'; exit()
+
 
 # Make simulations
-run.make_sim(simparams, n=10, ncat=2, nrea=3, ncpu=config.ncpu)
+run.make_sim(simparams, n=10, ncat=25, nrea=30, ncpu=config.ncpu)
 
 # Measure them
 run.meas_sim(simparams, measfct.galaxies,
 	groupcols=measfct.groupcols, removecols=measfct.removecols, ncpu=config.ncpu)
 
 plots.simobscompa(run, simparams)
+
+# Create cross-validation simulations
+run.make_sim(simparams, n=10, ncat=1, nrea=2, ncpu=config.ncpu, outdir="valid")
+
+# Measure them
+run.meas_sim(simparams, measfct.galaxies,
+	groupcols=measfct.groupcols, removecols=measfct.removecols, ncpu=config.ncpu, outdir="valid")
+
 
 # default:
 
