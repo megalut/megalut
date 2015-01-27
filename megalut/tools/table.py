@@ -148,13 +148,17 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	
 	colnames = incats[0].colnames # to check colnames
 	
+	notmasked = False
 	for incat in incats:
 		if incat.colnames != colnames:
 			raise RuntimeError("Your input catalogs do not have the same columns: \n\n %s \n\n is not \n\n %s"
 				% (incat.colnames, colnames))
 		
 		if incat.masked is False:
-			logger.critical("Input catalogs are not masked (OK for me, but unexpected)")
+			notmasked = True
+	
+	if notmasked:
+		logger.info("At least one of the input catalogs is not masked (OK but unexpected)")
 
 	for groupcol in groupcols:
 		if groupcol not in colnames:
@@ -384,7 +388,7 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	# Some trivial tests:
 	for colname in colnames:
 		if colname not in cat.colnames:
-			raise RuntimeError("The column '%s' is not available among %s" (colname, str(cat.colnames)))
+			raise RuntimeError("The column '%s' is not available among %s" % (colname, str(cat.colnames)))
 	if len(colnames) != len(list(set(colnames))):
 		raise RuntimeError("Strange, some colnames appear multiple times in %s" % (str(colnames)))
 	
@@ -396,8 +400,8 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 		mask = masks[:,i]
 		assert len(mask) == len(cat)
 		nbad = np.sum(mask)
-		logger.info("Column %20s: %5i (%5.2f %%) of the values are masked" \
-			% ("'"+colname+"'", nbad, 100.0 * float(nbad) / float(len(cat))))
+		logger.info("Column %20s: %5i (%5.2f %%) of the %i entries are masked" \
+			% ("'"+colname+"'", nbad, 100.0 * float(nbad) / float(len(cat)), len(cat)))
 	
 	# Now we combine the masks:
 	combimask = np.logical_not(np.sum(masks, axis=1).astype(bool)) # So "True" means "keep this".
