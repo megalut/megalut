@@ -148,13 +148,17 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	
 	colnames = incats[0].colnames # to check colnames
 	
+	notmasked = False
 	for incat in incats:
 		if incat.colnames != colnames:
 			raise RuntimeError("Your input catalogs do not have the same columns: \n\n %s \n\n is not \n\n %s"
 				% (incat.colnames, colnames))
 		
 		if incat.masked is False:
-			logger.critical("Input catalogs are not masked (OK for me, but unexpected)")
+			notmasked = True
+	
+	if notmasked:
+		logger.info("At least one of the input catalogs is not masked (OK but unexpected)")
 
 	for groupcol in groupcols:
 		if groupcol not in colnames:
