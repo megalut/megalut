@@ -190,7 +190,6 @@ class Run(utils.Branch):
 			
 
 
-	   
 	def meas_sim(self, simparams, measfct, groupcols=None, removecols=None, ncpu=1):
 		"""		
 		
@@ -203,10 +202,10 @@ class Run(utils.Branch):
 			
 			simdir = self._get_path("sim","%03i" % subfield)
 			measdir = self._get_path("simmeas","%03i" % subfield)
-		
-			
+
 			meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=ncpu)
 			
+			print measdir
 			avgcat = meas.avg.onsims(measdir, simparams, groupcols=groupcols, removecols=removecols, removereas=False)
 			
 			tools.io.writepickle(avgcat, self._get_path("simmeas", "%03i" % subfield, simparams.name, "avgcat.pkl"))

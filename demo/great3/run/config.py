@@ -7,7 +7,7 @@ datadir = "/home/kuntzer/workspace/MegaLUT/great3_data_part"
 workdir = None
 skipdone = True
 ncpu = 8
-subfield = range(5,7)
+subfields = range(5,7)
 
 # External path to library
 sexpath = "sex"

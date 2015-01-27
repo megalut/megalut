@@ -28,7 +28,7 @@ run.meas_psf(measfct.psf, skipdone=config.skipdone)
 
 # Run measurements on input images
 run.meas_obs(measfct.galaxies, skipdone=config.skipdone, ncpu=config.ncpu)
-
+print 'OKAY'; exit()
 
 # Make simulations
 run.make_sim(simparams, n=10, ncat=2, nrea=3, ncpu=config.ncpu)
