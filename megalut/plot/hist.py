@@ -81,6 +81,9 @@ def errhist(ax, cat, prefeat, trufeat, normrad=3.0, **kwargs):
 	
 	"""
 	
+	if trufeat.errcolname is not None:
+		logger.warning("The 'truth' has an uncertainty, this is strange. Inverted arguments?")
+	
 	data = utils.getdata(cat, [prefeat, trufeat])
 	# Good to do this here (and not leave it only to hist), so that data has a reduced number
 	# of columns. Indeed we add some columns below.
