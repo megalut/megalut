@@ -11,6 +11,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.lines import Line2D
 
 
+import utils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -51,10 +52,17 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	How to select good colormaps: http://matplotlib.org/users/colormaps.html
 	"""
 	
-	logger.debug("Preparing hexbin of %i points" % (len(cat))) # Log it as this might be slow or crash.
+	if featc == None:
+		featctxt = "counts"
+	else:
+		featctxt = featc.colname
+	logger.info("Preparing hexbin plot of '%s' in the ('%s', '%s') plane" % (featctxt, featx.colname, featy.colname))
 	
-	xdata = cat[featx.colname]
-	ydata = cat[featy.colname]
+	# Getting the data (without masked points):
+	features = [featx, featy]
+	if featc is not None:
+		features.append(featc)
+	data = utils.getdata(cat, features)		
 	
 	if featx.low is not None and featx.high is not None and featy.low is not None and featy.high is not None: 
 		extent = (featx.low, featx.high, featy.low, featy.high) # xmin xmax ymin ymax
@@ -68,11 +76,11 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	mykwargs.update(kwargs)
 	
 	if featc == None: # We use number counts to determine color
-		cbstuff = ax.hexbin(xdata, ydata, **mykwargs)
+		cbstuff = ax.hexbin(data[featx.colname], ydata[featy.colname], **mykwargs)
 		
 	else: # We use featc to extract data
 		cdata = cat[featc.colname]
-		cbstuff = ax.hexbin(xdata, ydata, C=cdata, vmin=featc.low, vmax=featc.high,  **mykwargs)
+		cbstuff = ax.hexbin(data[featx.colname], data[featy.colname], C=data[featc.colname], vmin=featc.low, vmax=featc.high,  **mykwargs)
 		
 	if makecolorbar:
 		divider = make_axes_locatable(ax)
