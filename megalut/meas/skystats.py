@@ -1,6 +1,17 @@
 """
 A measfct which computes statistics about the sky noise/level, using the edge of stamps
+
 """
+
+import numpy as np
+import copy
+import astropy.table
+
+import logging
+logger = logging.getLogger(__name__)
+
+import utils
+from .. import tools
 
 
 def measfct(cat, runon="img", prefix="", stampsize=None):
@@ -17,7 +28,7 @@ def measfct(cat, runon="img", prefix="", stampsize=None):
 	stampsize = cat.meta[runon].get_stampsize(stampsize)
 
 	# Load the image:
-	img = catalog.meta[runon].load()
+	img = cat.meta[runon].load()
 	
 	# Prepare the catalog: THIS SHOULD BE REVIEWED ONCE WE ALL ADOPT ASTROPY 1.0 AND A RECENT NUMPY !
 	cat = astropy.table.Table(copy.deepcopy(cat), masked=True) # Convert the table to a masked table
@@ -25,7 +36,7 @@ def measfct(cat, runon="img", prefix="", stampsize=None):
 	# But without it, it just doesn't result in a masked table once the masked columns are appended.
 
 	cat.add_columns([
-		astropy.table.Column(name=prefix+"skyflag", data=np.zeros(len(output), dtype=int)), # We will always have a flag
+		astropy.table.Column(name=prefix+"skyflag", data=np.zeros(len(cat), dtype=int)), # We will always have a flag
 		astropy.table.MaskedColumn(name=prefix+"skystd", dtype=float, length=len(cat)),
 		astropy.table.MaskedColumn(name=prefix+"skymad", dtype=float, length=len(cat)),
 		astropy.table.MaskedColumn(name=prefix+"skymean", dtype=float, length=len(cat)),
