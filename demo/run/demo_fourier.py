@@ -24,7 +24,7 @@ class Flux700(megalut.sim.params.Params):
 
 simparams = Flux700()
 
-"""
+
 # We have to prepare a psfcat
 psfcat = megalut.tools.io.readpickle("../generic/psfs/cat_psfgrid.pkl")
 
@@ -37,8 +37,6 @@ megalut.sim.run.multi(simdir, simparams, drawcatkwargs,
 	psfcat=psfcat, psfselect="random",
 	ncat=1, nrea=1, ncpu=1)
 
-exit()
-"""
 
 print "Step 2, measuring"
 
@@ -49,16 +47,16 @@ measfctkwargs = {}
 megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=False)
 
 
-
-
 exit()
+
+
 
 print "Step 3, summarizing measurements accross simulations"
 
 groupcols = [
-	"adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
-	"adamom_sigma", "adamom_rho4",
-	"adamom_skystd", "adamom_skymad", "adamom_skymean", "adamom_skymed", "adamom_flag"
+	"fourier_adamom_flux", "fourier_adamom_x", "fourier_adamom_y", "fourier_adamom_g1", "fourier_adamom_g2",
+	"fourier_adamom_sigma", "fourier_adamom_rho4", "fourier_adamom_flag",
+	"skystd", "skymad", "skymean", "skymed", "skyflag"
 	]
 
 removecols=[]
@@ -69,7 +67,7 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 	removereas = True
 	)
 
-print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_med", "adamom_flux_std", "adamom_flux_n"]
+print mybigmeascat["id", "tru_flux", "fourier_adamom_flux_mean", "fourier_adamom_flux_med", "fourier_adamom_flux_std", "fourier_adamom_flux_n"]
 print mybigmeascat.meta
 
 
