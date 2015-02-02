@@ -8,5 +8,7 @@ import utils
 import galsim_adamom
 # import sewfunc # Better leave this to the user for now, sewpy is optional
 
+import fourier
+
 import run
 import avg
