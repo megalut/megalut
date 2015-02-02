@@ -98,7 +98,7 @@ class ImageInfo():
 		# If given, the argument supersedes the first guess:
 		if stampsize != None:
 			use_stampsize = stampsize
-			if self.stampsize != None # means that both were given:
+			if self.stampsize != None: # means that both were given:
 				if stampsize != self.stampsize:
 					logger.warning("A stampsize %i was specified, but stamps seem to have a stampsize of %i" %\
 						(stampsize, self.stampsize))
