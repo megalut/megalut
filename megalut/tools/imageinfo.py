@@ -27,7 +27,7 @@ class ImageInfo():
 		:param yname: idem for y
 		:type yname: int
 		:param stampsize: width and height of a stamp, in pixels, if the image consists of gridded stamps.
-			Leave it to None if the image does not hold stamps.
+			Leave it to None if the image does not hold stamps (real life images, for instance).
 		:type stampsize: int
 		:param name: a name for the image. By default (None) the filename will be used, but sometimes
 			it might be helpful to specify different names. Functions use these names to refer to the image in logs etc.
@@ -79,6 +79,35 @@ class ImageInfo():
 			raise RuntimeError("The columns (%s, %s) are not among the ones available in the catalog: %s"\
 				% (self.xname, self.yname, catalog.colnames))
 
+		
+	def get_stampsize(self, stampsize=None):
+		"""
+		Returns the stampsize to be used for a shape measurement.
+		If the stampsize is specified as argument, this supersedes the object's stampsize.
+		If both the object's stampsize and the argument are different from None,
+		warns the user if they don't agree.
+		If both are None, raises an exception.
+		
+		:param stampsize: a stampsize given e.g. as argument to a measfct 
+		 
+		"""
+		
+		# First guess, the own stampsize:
+		use_stampsize = self.stampsize
+		
+		# If given, the argument supersedes the first guess:
+		if stampsize != None:
+			use_stampsize = stampsize
+			if self.stampsize != None # means that both were given:
+				if stampsize != self.stampsize:
+					logger.warning("A stampsize %i was specified, but stamps seem to have a stampsize of %i" %\
+						(stampsize, self.stampsize))
+		
+		# If no stampsize has been found:
+		if use_stampsize is None:
+			raise RuntimeError("Specify a stampsize, either in the ImageInfo object or as argument")
+		
+		return use_stampsize
 		
 		
 		
