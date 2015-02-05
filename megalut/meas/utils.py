@@ -5,6 +5,7 @@ import os
 import glob
 import re
 import numpy as np
+import galsim
 
 import logging
 logger = logging.getLogger(__name__)
@@ -91,8 +92,14 @@ def skystats(stamp):
 	
 	Note that "mad" is already rescaled by 1.4826 to be comparable with std.
 	"""
-
-	a = stamp.array
+	
+	if isinstance(stamp, galsim.Image):
+		a = stamp.array
+		# Normally there should be a .transpose() here, to get the orientation right.
+		# But in the present case it doesn't change anything, and we can skip it.
+	else:
+		a = stamp # Then we assume that it's simply a numpy array.
+	
 	edgepixels = np.concatenate([
 			a[0,1:], # left
 			a[-1,1:], # right
@@ -100,7 +107,6 @@ def skystats(stamp):
 			a[1:-1,-1] # top
 			])
 	assert len(edgepixels) == 2*(a.shape[0]-1) + 2*(a.shape[0]-1)
-
 
 	# And we convert the mad into an estimate of the Gaussian std:
 	return {
