@@ -15,6 +15,7 @@ import astropy.table
 
 import utils
 import galsim_adamom
+import sewfunc
 from .. import tools
 
 #import galsim
@@ -83,9 +84,12 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 	#fourier_gal_image_path = os.path.join(workdir, "fourier_gal.fits")
 	#fourier_psf_image_path = os.path.join(workdir, "fourier_psf.fits")
 	
-	test_image = np.zeros((stampsize * ncols , stampsize * nrows), dtype=float)
-	test_image_path = os.path.join(workdir, "fourier.fits")
 	
+	#real_image = np.zeros((stampsize * ncols , stampsize * nrows), dtype=float)
+	#real_image_path = os.path.join(workdir, "real.fits")
+	
+	fft_image = np.zeros((stampsize * ncols , stampsize * nrows), dtype=float)
+	fft_image_path = os.path.join(workdir, "fourier.fits")
 	
 	
 	for gal in cat:
@@ -111,9 +115,18 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 		(stamp, flag) = tools.image.getstamp(gal[xname], gal[yname], img, stampsize)
 		if flag != 0:
 			raise RuntimeError("getstamp failed")
+		stamp = stamp.array.transpose() # The transpose compensates for galsim internal convention 
 	
-		# FFT
-		fftstamp = np.fft.fftshift(np.fft.fft2(stamp.array))
+	
+		# FFT, keeping only the norm:
+		fftstamp = np.abs(np.fft.fftshift(np.fft.fft2(stamp)))
+		
+		# We subtract the background
+		ss = utils.skystats(fftstamp)
+		fftstamp -= ss["mean"]
+		
+		# Another option would be to estimate this level from the background mad measured in real space
+		
 	
 		# We write the result into the output stamp:
 		ix = gal.index % ncols
@@ -131,10 +144,12 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 		#fourier_gal_image[xmin:xmax, ymin:ymax] = np.abs(fgal)
 		#fourier_psf_image[xmin:xmax, ymin:ymax] = np.abs(fpsf)
 		
-		test_image[xmin:xmax, ymin:ymax] = np.abs(fftstamp)
+		fft_image[xmin:xmax, ymin:ymax] = fftstamp
+		#real_image[xmin:xmax, ymin:ymax] = stamp
 		
-		gal[prefix+"x"] = (xmin + xmax) / 2.0
-		gal[prefix+"y"] = (ymin + ymax) / 2.0
+		
+		gal[prefix+"x"] = 1.0 + ((xmin + xmax) / 2.0) # The plus one is empirical, might be due to fftshift...
+		gal[prefix+"y"] = 1.0 + ((ymin + ymax) / 2.0)
 		
 		#(fourierstamp, fourierflgalstampag) = tools.image.getstamp(x, y, fourier_image, stampsize)
 		#fourierstamp = galstamp
@@ -142,12 +157,47 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 	
 	#tools.io.tofits(fourier_gal_image, fourier_gal_image_path)
 	#tools.io.tofits(fourier_psf_image, fourier_psf_image_path)
-	tools.io.tofits(test_image, test_image_path)
+	
+	tools.io.tofits(fft_image, fft_image_path)
+	#tools.io.tofits(real_image, real_image_path)
+	
 	
 	# For now, we just call galsim_adamom on this stuff:
 	cat = galsim_adamom.measure(
-		test_image_path,
+		fft_image_path,
 		cat, xname=prefix+"x", yname=prefix+"y", stampsize=stampsize, prefix=prefix+"adamom_")
+	
+	# Now we tweak some fields to get features more similar to normal space
+	
+	cat[prefix+"adamom_g1"] *= -1.0		
+	cat[prefix+"adamom_g2"] *= -1.0
+	
+	sigma_is_nice = np.logical_and(np.logical_not(cat[prefix+"adamom_sigma"].mask), cat[prefix+"adamom_sigma"] > 0.0)
+			
+	cat[prefix+"adamom_sigma"][sigma_is_nice] = 1.0 / cat[prefix+"adamom_sigma"][sigma_is_nice]
+	
+	
+	"""
+	cat = galsim_adamom.measure(
+		real_image_path,
+		cat, xname=prefix+"x", yname=prefix+"y", stampsize=stampsize, prefix=prefix+"real_adamom_")
+	
+	sewpy_config = {"DETECT_MINAREA":6, "DETECT_THRESH":2, "ANALYSIS_THRESH":2,
+		"PHOT_FLUXFRAC":"0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9",
+		"ASSOC_RADIUS":5, "ASSOC_TYPE":"NEAREST"}
+	
+	sewpy_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
+		"FLUX_WIN", "FLUXERR_WIN", "NITER_WIN", "FLAGS_WIN", "FLUX_AUTO", "FLUXERR_AUTO",
+		"FWHM_IMAGE", "KRON_RADIUS", "FLUX_RADIUS(7)", "BACKGROUND", "FLAGS"]
+	
+	cat = sewfunc.measure(fft_image_path, cat, xname=prefix+"x", yname=prefix+"y",
+		config=sewpy_config,
+		params=sewpy_params,
+		workdir=workdir,
+		sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+		prefix=prefix+"sewpy_"
+		)
+	"""
 	
 	return cat
 	
