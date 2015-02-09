@@ -214,7 +214,7 @@ class Run(utils.Branch):
 			
 			avgcat = meas.avg.onsims(measdir, simparams, groupcols=groupcols, removecols=removecols, removereas=False)
 			
-			tools.io.writepickle(avgcat, self._get_path("simmeas", "%03i" % subfield, simparams.name, "avgcat.pkl"))
+			tools.io.writepickle(avgcat, self._get_path(outdir + "meas", "%03i" % subfield, simparams.name, "avgcat.pkl"))
 			
 			
 			# To make things easier for plots of single-realization stuff, we copy a single realization meascat
