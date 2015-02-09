@@ -78,8 +78,7 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	if featc == None: # We use number counts to determine color
 		cbstuff = ax.hexbin(data[featx.colname], ydata[featy.colname], **mykwargs)
 		
-	else: # We use featc to extract data
-		cdata = cat[featc.colname]
+	else: # We use featc to determine color
 		cbstuff = ax.hexbin(data[featx.colname], data[featy.colname], C=data[featc.colname], vmin=featc.low, vmax=featc.high,  **mykwargs)
 		
 	if makecolorbar:
