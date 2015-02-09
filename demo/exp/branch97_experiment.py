@@ -29,14 +29,17 @@ def observe(cat):
 	cat = copy.deepcopy(cat)
 	
 	obs1 = 0.01 * cat["param1"]**3 + 1.0 * np.random.randn(len(cat))
-	obs1 = astropy.table.MaskedColumn(obs1, mask=np.random.randn(len(cat))>1.5) # Just to get some mask
+	#obs1 = astropy.table.MaskedColumn(obs1, mask=np.random.randn(len(cat))>1.5) # Just to get some mask
+	
+	obs1 = np.power(np.abs(obs1*100.0), 1./3) * np.sign(obs1)
+	
 	
 	cat["obs1"] = obs1
 	return cat
 
 
 # And we make many realizations
-nrea = 40
+nrea = 100
 reas = [observe(cat) for i in range(nrea)]
 
 # Compute the averages 
