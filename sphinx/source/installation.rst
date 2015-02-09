@@ -5,7 +5,7 @@ Download & Installation
 Dependencies
 ------------
 
-MegaLUT is currently developed using python 2.7 (and probably requires it).
+MegaLUT is currently developed using python 2.7 (and requires it).
 
 It uses the usual numpy, scipy, matplotlib, and
 
