@@ -320,9 +320,9 @@ class Run(utils.Branch):
 			preobscat = preobscat["ID","pre_g1","pre_g2"]
 			
 			# We write the ascii file
-			outdir = os.path.join("out", trainname)
+			outdir = self._get_path("out", trainname)
 			tools.dirs.mkdir(outdir)
-			preobscat.write(self._get_path(outdir, "%03i.cat" % subfield), format="ascii.commented_header")
+			preobscat.write(os.path.join(outdir, "%03i.cat" % subfield), format="ascii.commented_header")
 			
 			logger.info("Wrote shear cat for subfield %03i" % subfield)
 			
@@ -343,9 +343,9 @@ class Run(utils.Branch):
 		branchcode = self.branchcode()
 		corr2path = os.path.join(corr2path, 'corr2')
 
-		outdir = os.path.join("out", trainname)
+		outdir = self._get_path("out", trainname)
 		tools.dirs.mkdir(outdir)
-		outfilepath=self._get_path(outdir, "%s.cat" % branchcode)
+		outfilepath= os.path.join(outdir, "%s.cat" % branchcode)
 
 		if use_weights:
 			cmd = "python %s %s -b %s -w 3 -c2 %s -o %s" % (presubscriptpath, catpath, 
