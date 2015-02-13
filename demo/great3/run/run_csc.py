@@ -66,5 +66,5 @@ run.predict(trainparams=mymlparams.default_simpleten, trainname="default_simplet
 
 run.writeout(trainname="default_simpleten", simname=simparams.name)
 
-run.presubmit(corr2path=config.corr2path, presubdir=config.presubdir)
+run.presubmit(trainname="default_simpleten", corr2path=config.corr2path, presubdir=config.presubdir)
 

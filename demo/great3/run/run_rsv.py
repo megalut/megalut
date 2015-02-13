@@ -59,6 +59,6 @@ run.predict(trainparams=mymlparams.default_simpleten, trainname="default_simplet
 
 run.writeout(trainname="default_simpleten", simname=simparams.name)
 
-run.presubmit(corr2path = "/users/mtewes/GREAT3/mjarvis-read-only", presubdir="/users/mtewes/GREAT3/great3-public-svn/presubmission_script")
+run.presubmit(trainname="default_simpleten", corr2path = "/users/mtewes/GREAT3/mjarvis-read-only", presubdir="/users/mtewes/GREAT3/great3-public-svn/presubmission_script")
 
 

@@ -320,12 +320,14 @@ class Run(utils.Branch):
 			preobscat = preobscat["ID","pre_g1","pre_g2"]
 			
 			# We write the ascii file
-			preobscat.write(self._get_path("out", "%03i.cat" % subfield), format="ascii.commented_header")
+			outdir = os.path.join("out", trainname)
+			tools.dirs.mkdir(outdir)
+			preobscat.write(self._get_path(outdir, "%03i.cat" % subfield), format="ascii.commented_header")
 			
 			logger.info("Wrote shear cat for subfield %03i" % subfield)
 			
 			
-	def presubmit(self, corr2path=".", presubdir=".", use_weights=False):
+	def presubmit(self, trainname, corr2path=".", presubdir=".", use_weights=False):
 		"""
 		:param corr2path: The directory containing the Michael Jarvis's corr2 code, 
 				which can be downloaded from http://code.google.com/p/mjarvis/.
@@ -337,10 +339,13 @@ class Run(utils.Branch):
 		#presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
 		
 		presubscriptpath = os.path.join(presubdir, "presubmission.py")
-		catpath = self._get_path("out", "*.cat")
+		catpath = self._get_path("out", trainname, "*.cat")
 		branchcode = self.branchcode()
 		corr2path = os.path.join(corr2path, 'corr2')
-		outfilepath=self._get_path("out", "%s.cat" % branchcode)
+
+		outdir = os.path.join("out", trainname)
+		tools.dirs.mkdir(outdir)
+		outfilepath=self._get_path(outdir, "%s.cat" % branchcode)
 
 		if use_weights:
 			cmd = "python %s %s -b %s -w 3 -c2 %s -o %s" % (presubscriptpath, catpath, 
