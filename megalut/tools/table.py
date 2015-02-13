@@ -186,7 +186,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	# For this we do not try to reuse the int from the realization filename
 	# Indeed, the user could have deleted some realizations etc, leading to quite a mess.
 	# It's easier to just make a new integer range:
-	incat_names = ["%i" % (i) for i in range(len(incats))]
+	incat_names = ["rea%i" % (i) for i in range(len(incats))]
 
 	statscatdict = {} # We will add statistics columns (numpy arrays) to this list
 	statscatdictnames = [] # Is used to keep a nice ordering
