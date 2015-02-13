@@ -4,7 +4,7 @@ without any shape measurement.
 """
 
 import logging
-logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
+logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
 
 
 import numpy as np
@@ -44,21 +44,23 @@ cat = megalut.tools.table.groupstats(reas, groupcols=["obs1"], removereas=False)
 # First ML is to get point estimates:
 
 workdir = "/vol/fohlen11/fohlen11_1/mtewes/tests"
-mlparams = megalut.learn.ml.MLParams("point", ["obs1_med"], ["param1"], ["pre1"])
-toolparams = megalut.learn.fannwrapper.FANNParams([5, 5], max_iterations=500)
+mlparams = megalut.learn.ml.MLParams("point", ["obs1_rea0"], ["param1"], ["pre1"])
+#toolparams = megalut.learn.fannwrapper.FANNParams([5, 5], max_iterations=500)
+toolparams = megalut.learn.skynetwrapper.SkyNetParams([5, 5], max_iterations=200)
+
 trainparams = [(mlparams, toolparams)]
 megalut.learn.run.train(cat, workdir, trainparams)
 
 # We self-predict the catalog:
 
-cat = megalut.learn.run.predict(cat, workdir, trainparams, mode="all") # To get pre1_std and other stats
+cat = megalut.learn.run.predict(cat, workdir, trainparams, tweakmode="all", totweak="_rea0")
 #cat = megalut.learn.run.predict(cat, workdir, trainparams, mode="first") # To get pre1 (based on obs1_0)
-cat = megalut.learn.run.predict(cat, workdir, trainparams, mode="first")
+cat = megalut.learn.run.predict(cat, workdir, trainparams, tweakmode="default")
 
 print cat.colnames
 
 param1 = megalut.plot.feature.Feature("param1", 0.0, 2.2, r"$\theta$")
-obs1 = megalut.plot.feature.Feature("obs1_0", 1.5, 3.0, r"$d$")
+obs1 = megalut.plot.feature.Feature("obs1_rea0", 1.5, 3.0, r"$d$")
 obs1_mean = megalut.plot.feature.Feature("obs1_mean", 1.5, 3.0, r"$d$")
 pre1 = megalut.plot.feature.Feature("pre1", 0.0, 2.2, r"$\hat{\theta}$ and $\theta$")
 
