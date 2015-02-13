@@ -103,7 +103,7 @@ class ML:
 		elif isinstance(self.toolparams, skynetwrapper.SkyNetParams):
 			self.toolname = "SkyNet"
 			self._set_workdir()
-			self.tool = skynet.SkyNetWrapper(self.toolparams, workdir=self.workdir)
+			self.tool = skynetwrapper.SkyNetWrapper(self.toolparams, workdir=self.workdir)
 		
 		else:
 			raise RuntimeError("toolparams not recognized")
