@@ -14,7 +14,7 @@ import megalut.learn
 import megalut.plot
 import copy
 import matplotlib.pyplot as plt
-
+import matplotlib
 
 np.random.seed(0)
 
@@ -34,7 +34,7 @@ def observe(cat):
 
 
 # And we make many realizations
-nrea = 100
+nrea = 20
 reas = [observe(cat) for i in range(nrea)]
 
 # Compute the averages 
@@ -45,8 +45,8 @@ cat = megalut.tools.table.groupstats(reas, groupcols=["obs1"], removereas=False)
 
 workdir = "/vol/fohlen11/fohlen11_1/mtewes/tests"
 mlparams = megalut.learn.ml.MLParams("point", ["obs1_rea0"], ["param1"], ["pre1"])
-#toolparams = megalut.learn.fannwrapper.FANNParams([5, 5], max_iterations=500)
-toolparams = megalut.learn.skynetwrapper.SkyNetParams([5, 5], max_iterations=200)
+toolparams = megalut.learn.fannwrapper.FANNParams([5, 5], max_iterations=500)
+#toolparams = megalut.learn.skynetwrapper.SkyNetParams([5, 5], max_iterations=200)
 
 trainparams = [(mlparams, toolparams)]
 megalut.learn.run.train(cat, workdir, trainparams)
@@ -57,34 +57,81 @@ cat = megalut.learn.run.predict(cat, workdir, trainparams, tweakmode="all", totw
 #cat = megalut.learn.run.predict(cat, workdir, trainparams, mode="first") # To get pre1 (based on obs1_0)
 cat = megalut.learn.run.predict(cat, workdir, trainparams, tweakmode="default")
 
-print cat.colnames
+
+# Bias correction
+
+cat["bias1"] = cat["pre1_mean"] - cat["param1"]
+cat["pre1_single"] = cat["param1"][:]
+#cat["obs1_single"] = cat["obs1_rea0"][:]
+
+mlparams = megalut.learn.ml.MLParams("bias1", ["pre1_single"], ["bias1"], ["prebias1"])
+toolparams = megalut.learn.fannwrapper.FANNParams([5, 5], max_iterations=500)
+trainparams = [(mlparams, toolparams)]
+megalut.learn.run.train(cat, workdir, trainparams)
+
+# Self-predict the bias correction
+cat = megalut.learn.run.predict(cat, workdir, trainparams, tweakmode="default")
+cat["prebias1"].name = "autoprebias1"
+
+
+cat = megalut.learn.run.predict(cat, workdir, trainparams, tweakmode="all", totweak="_single")
+
+# Gives prebias1_mean
+
+# Correct bias, based on prediction:
+
+#cat["pre1cor"] = cat["pre1"] - cat["prebias1"]
+
+cat["bias2"] = cat["pre1_mean"] - cat["prebias1_mean"]  - cat["param1"]
+
+
 
 param1 = megalut.plot.feature.Feature("param1", 0.0, 2.2, r"$\theta$")
 obs1 = megalut.plot.feature.Feature("obs1_rea0", 1.5, 3.0, r"$d$")
 obs1_mean = megalut.plot.feature.Feature("obs1_mean", 1.5, 3.0, r"$d$")
-pre1 = megalut.plot.feature.Feature("pre1", 0.0, 2.2, r"$\hat{\theta}$ and $\theta$")
+pre1 = megalut.plot.feature.Feature("pre1", 0.0, 2.2, r"$\hat{\theta}$")
+pre1_mean = megalut.plot.feature.Feature("pre1_mean", 0.0, 2.2, r"$<\hat{\theta}>$")
 
-cat["bias"] = cat["pre1_mean"] - cat["param1"]
-bias = megalut.plot.feature.Feature("bias", -1.0, 1.0, r"mean$(\hat{\theta}) - \theta$")
+bias1 = megalut.plot.feature.Feature("bias1", -1.0, 1.0, r"bias = mean$(\hat{\theta}) - \theta$")
+prebias1 = megalut.plot.feature.Feature("prebias1", -1.0, 1.0, r"bias = mean$(\hat{\theta}) - \theta$")
+autoprebias1 = megalut.plot.feature.Feature("autoprebias1", -1.0, 1.0, r"bias = mean$(\hat{\theta}) - \theta$")
 
-fig = plt.figure(figsize=(14, 12))
+pre1cor = megalut.plot.feature.Feature("pre1cor", 0.0, 2.2)
+bias2 = megalut.plot.feature.Feature("bias2", -1.0, 1.0)
 
-ax = fig.add_subplot(2, 2, 1)
+
+
+fig = plt.figure(figsize=(19, 12))
+matplotlib.rcParams['axes.labelsize'] = "xx-large"
+
+ax = fig.add_subplot(2, 3, 1)
 #megalut.plot.scatter.scatter(ax, cat, param1, obs1_mean, color="orange", label="Average over realizations")
-megalut.plot.scatter.scatter(ax, cat, param1, obs1, sidehists=True, label="Single realization")
 megalut.plot.scatter.scatter(ax, cat, pre1, obs1, color="red")
+megalut.plot.scatter.scatter(ax, cat, param1, obs1, sidehists=True)
 
 
 #ax.legend()
-ax.xaxis.label.set_size(30)
-ax.yaxis.label.set_size(30)
+#ax.xaxis.label.set_size(30)
+#ax.yaxis.label.set_size(30)
 
-ax = fig.add_subplot(2, 2, 2)
-megalut.plot.scatter.scatter(ax, cat, param1, bias)
+ax = fig.add_subplot(2, 3, 2)
+megalut.plot.scatter.scatter(ax, cat, param1, bias1)
+megalut.plot.scatter.scatter(ax, cat, param1, autoprebias1, color="green")
 
+ax = fig.add_subplot(2, 3, 3)
+megalut.plot.scatter.scatter(ax, cat, pre1, bias1)
+megalut.plot.scatter.scatter(ax, cat, pre1, autoprebias1, color="green")
 
-ax.xaxis.label.set_size(30)
-ax.yaxis.label.set_size(30)
+ax = fig.add_subplot(2, 3, 4)
+megalut.plot.scatter.scatter(ax, cat, pre1_mean, bias1)
+megalut.plot.scatter.scatter(ax, cat, pre1_mean, autoprebias1, color="green")
+
+ax = fig.add_subplot(2, 3, 5)
+megalut.plot.scatter.scatter(ax, cat, obs1, bias1)
+megalut.plot.scatter.scatter(ax, cat, obs1, autoprebias1, color="green")
+
+ax = fig.add_subplot(2, 3, 6)
+megalut.plot.scatter.scatter(ax, cat, param1, bias2)
 
 plt.tight_layout()
 plt.show()
@@ -106,6 +153,7 @@ megalut.learn.run.train(cat, workdir, trainparams)
 
 cat = megalut.learn.run.predict(cat, workdir, trainparams, mode="all") # To get pre1_std and other stats
 cat = megalut.learn.run.predict(cat, workdir, trainparams, mode="first") # To get pre1 (based on obs1_0)
+
 
 
 # Second ML to get uncertainty estimtates:
