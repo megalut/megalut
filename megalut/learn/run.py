@@ -117,7 +117,7 @@ def _worker(ws):
 
 
 
-def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean"):
+def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", modmlparams=False):
 	"""
 	A wrapper to make predictions from non-overlapping-predlabel MLs, returning a single merged catalog. 
 	Unlike the above train(), this predict() is quite *smart* and can automatically preform sophisticated tasks
@@ -128,7 +128,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean"):
 	 
 	:param cat: an astropy table, has to contain all the required features
 	:param paramslist: exactly the same as used in train()
-	:param tweakmode: a switch for different behaviors:		
+	:param tweakmode: a switch for different behaviors regarding which *features* to use for the predictions	
 	
 		* If mode is "default", it will predict using exactly the column names that the MLParams of the paramslist specify.
 		* If "all", it will predict all realizations by replacing "totweak" with (_0, _1, ...), and then use groupstats to compute statistics
@@ -172,15 +172,29 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean"):
 		# We load the actual ML object that was used for the training:
 		trainedmlobj = tools.io.readpickle(os.path.join(newmlobj.workdir, "ML.pkl"))
 		
-		# We now check that newmlobj has the same params as the one used for training.
-		# This should be the case, we do not want to allow for any "hacking" here.
-		if not newmlobj.looks_same(trainedmlobj):
-			raise RuntimeError("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
+		if modmlparams == False:
+			# We now check that newmlobj has the same params as the one used for training.
+			# This should be the case, we do not want to allow for any "hacking" here.
+			if not newmlobj.looks_same(trainedmlobj):
+				raise RuntimeError("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
 	
-		# And now that we know that the params are fine, we tweak things according to the mode
-		tweakedmlobj = copy.deepcopy(trainedmlobj)
-		# Note that for the prediction we have to use trainedmlobj, and not newmlobj.
-		# Indeed the training is free to save some information in the trainedmlobj, and so we cannot simply use a new object.
+			# And now that we know that the params are fine, we tweak things according to the mode
+			tweakedmlobj = copy.deepcopy(trainedmlobj)
+			# Note that for the prediction we have to use trainedmlobj, and not newmlobj.
+			# Indeed the training is free to save some information in the trainedmlobj, and so we cannot simply use a new object.
+		
+		else:
+			# Else, the MLparamslist given to predict has been modified compared to the one used for training.
+			# We start from the actual training object:
+			tweakedmlobj = copy.deepcopy(trainedmlobj)
+			
+			#if not newmlobj.looks_same(trainedmlobj):
+			#	print "yep, something changed"
+	
+			# And copy the modifications:
+			tweakedmlobj.mlparams = mlparams
+		
+		
 		
 		if tweakmode == "default":
 			predcat = tweakedmlobj.predict(predcat)			
@@ -220,12 +234,12 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean"):
 			removecols = None
 			
 			# And we run groupstats:
-			predcat = tools.table.groupstats(reapredcats, groupcols=groupcols, removecols=removecols, removereas=True, keepfirstrea=False)
+			predcat = tools.table.groupstats(reapredcats, groupcols=groupcols, removecols=removecols, removereas=False, keepfirstrea=False)
 			# We use removereas = True as we do not want the predictiosn for every realization in the catalog
 			# We use keepfirstrea = False as we do not want columns like pre_g1_0
 
 		
-		else: # we just call tweakfeatures, whatever the uses asks for:
+		else: # we just call tweakfeatures, with whatever the user asks for:
 			tweakedfeatures = tweakfeatures(tweakedmlobj.mlparams.features, mode=tweakmode, totweak=totweak)
 			tweakedmlobj.mlparams.features = tweakedfeatures
 			predcat = tweakedmlobj.predict(predcat)
