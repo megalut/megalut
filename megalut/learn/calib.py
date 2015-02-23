@@ -20,8 +20,11 @@ logger = logging.getLogger(__name__)
 
 
 
-def train(cats, workbasedir, paramslist, calibtoolparams, ncit = 10):
+def ontruth(cats, workbasedir, paramslist, calibtoolparams, ncit = 10):
 	"""
+	
+	Attempt to calibrate bias iteratively by fitting the bias(truth) relation and using it with predictions instead of truth.
+	Does not work, as the corrections bring predictions away from the truth domain.
 
 	cats are different realizations of the same cat
 	
@@ -58,6 +61,8 @@ def train(cats, workbasedir, paramslist, calibtoolparams, ncit = 10):
 			errcol = predlabel + "_err"
 			groupcols.append(errcol)
 			biasfeatures.append(label)
+			#biasfeatures.append(predlabel)
+			
 			
 			for cat in cats:		
 				cat[errcol] = cat[predlabel] - cat[label]
@@ -136,16 +141,119 @@ def train(cats, workbasedir, paramslist, calibtoolparams, ncit = 10):
 				groupcols.append(predlabel+"_cit%i_err" % (citi+1))
 				
 				plotpath = os.path.join(workbasedir, "%s_%s_cit%i.png" % (mlparams.name, label, citi))
-				#biasplot(cats, avgcat, label, predlabel, citi, filepath=plotpath)
-				biasplot(cats, avgcat, label, predlabel, citi, filepath=None)
+				#biasplot_truth(cats, avgcat, label, predlabel, citi, filepath=plotpath)
+				biasplot_truth(cats, avgcat, label, predlabel, citi, filepath=None)
 		
 		# End of the loop. groupcols is defined for the next iteration. 
+
+
+
+
+
+
+def onpred(cat, workbasedir, paramslist, calibtoolparams, ncit = 10):
+	"""
+	Here we don't use cats, but a single cat
+	
+	"""
+		
+
+	# We perform the first training on a single realization
+	logger.info("Performing first ML training, based on measurements.")
+	
+		
+	modparamslist = copy.deepcopy(paramslist) # this is for "cit0"
+	for (mlparams, toolparams) in modparamslist:
+		mlparams.name += "_cit0"
+		mlparams.predlabels = [predlabel + "_cit0" for predlabel in mlparams.predlabels]
+	
+	run.train(cat, workbasedir, modparamslist) # For now, we just use the first cat.
+	
+	
+	# We predict every realization with exactly this ML, leading to "_cit0" predictions:
+		
+	cat = run.predict(cat, workbasedir, modparamslist, tweakmode="default")
+
+
+	# We compute errors for every prediction
+	
+	biasfeatures = [] # Will be used as feature for the next stage
+	for (mlparams, toolparams) in modparamslist:
+		for (label, predlabel) in zip(mlparams.labels, mlparams.predlabels):
+			errcol = predlabel + "_err"
+			
+			biasfeatures.append(predlabel)
+			
+			cat[errcol] = cat[predlabel] - cat[label]
+
+	logger.info("Bias correction will be learned in the parameter space: %s" % (biasfeatures))
+
+
+	# Starting from here we loop over the different calibration iterations:
+	for citi in range(ncit):
+		logger.info("Learning calibration iteration %i..." % (citi))
+
+		# In each loop, we will add columns to cat, update groupcols, and above all save the trained calibration MLs.
+
+		# And we train a ML to predic each bias, based on all true shape parameters
+		# For this we build a new paramslist, as the ML is quite different
+	
+		tmpparamslist = copy.deepcopy(paramslist)
+		biasparamslist = []
+		biasfeatures = [] # Will be used as feature for the next stage
+	
+		for (mlparams, toolparams) in tmpparamslist:
+			for (label, predlabel) in zip(mlparams.labels, mlparams.predlabels):
+				biasfeatures.append(predlabel + "_cit%i" % (citi))
+		
+		if len(biasfeatures) != len(set(biasfeatures)):
+			raise RuntimeError("biasfeatures error")
+		
+	
+		for (mlparams, toolparams) in tmpparamslist:
+	
+			mlparams.name += "_cit%i_bias" % (citi)
+			mlparams.features = biasfeatures # all of them
+			mlparams.labels = [predlabel + "_cit%i_err" % (citi) for predlabel in mlparams.predlabels] # just the ones from this mlparams object
+		
+			mlparams.predlabels = [predlabel + "_cit%i_prebias" % (citi) for predlabel in mlparams.predlabels]
+		
+			biasparamslist.append((mlparams, calibtoolparams))
+	
+
+		# The training
+		run.train(cat, workbasedir, biasparamslist)
+		
+		# self-predict
+		cat = run.predict(cat, workbasedir, biasparamslist)
+	
+		# "apply" these predicted calibrations, and compute current errors to be used for the next stage
+	
+		for (mlparams, toolparams) in paramslist:
+			for (label, predlabel) in zip(mlparams.labels, mlparams.predlabels):
+			
+				
+				# the calibrated prediction:
+				cat[predlabel+"_cit%i" % (citi+1)] = cat[predlabel+"_cit%i" % (citi)] - cat[predlabel+"_cit%i_prebias" % (citi)]
+				
+				# the error of the latter:
+				cat[predlabel+"_cit%i_err" % (citi+1)] = cat[predlabel+"_cit%i" % (citi+1)] - cat[label]
+			
+				
+				plotpath = os.path.join(workbasedir, "%s_%s_cit%i_pred.png" % (mlparams.name, label, citi))
+				biasplot_pred(cat, label, predlabel, citi, filepath=plotpath)
+				#biasplot_pred(cat, label, predlabel, citi, filepath=None)
+		
+		# End of the loop. groupcols is defined for the next iteration. 
+
+
+
 
 
 	
 import matplotlib.pyplot as plt
 
-def biasplot(cats, avgcat, label, predlabel, citi, filepath=None):
+def biasplot_truth(cats, avgcat, label, predlabel, citi, filepath=None):
 	flabel = plot.feature.Feature(label) # avgcat and cats
 	fbias = plot.feature.Feature(predlabel + "_cit%i_err_mean" % (citi), -1.0, 1.0) # avgcat
 	fbiaslearn = plot.feature.Feature(predlabel + "_cit%i_prebias" % (citi), -1.0, 1.0) # avgcat
@@ -172,6 +280,44 @@ def biasplot(cats, avgcat, label, predlabel, citi, filepath=None):
 	ax = fig.add_subplot(2, 2, 4)
 	plot.hist.hist(ax, cats[0], flabel, label=flabel.colname, text="Single realization")
 	plot.hist.hist(ax, cats[0], fpredlabel, color="red", label=fpredlabel.colname)
+	ax.set_ylabel(flabel.colname)
+	ax.legend()
+	
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+
+
+
+
+def biasplot_pred(cat, label, predlabel, citi, filepath=None):
+	flabel = plot.feature.Feature(label) # avgcat and cats
+	fbias = plot.feature.Feature(predlabel + "_cit%i_err" % (citi), -1.0, 1.0)
+	fbiaslearn = plot.feature.Feature(predlabel + "_cit%i_prebias" % (citi), -1.0, 1.0)
+	fpredlabel = plot.feature.Feature(predlabel + "_cit%i" % (citi))
+	fpredlabelerr = plot.feature.Feature(predlabel + "_cit%i_err" % (citi))
+	
+	
+	fig = plt.figure(figsize=(12, 10))
+	
+	ax = fig.add_subplot(2, 2, 1)
+	plot.scatter.scatter(ax, cat, flabel, fbias, ms=3)
+	ax.axhline(0.0, color="black")
+	
+	ax = fig.add_subplot(2, 2, 2)
+	plot.scatter.scatter(ax, cat, flabel, fpredlabel, ms=3, show_id_line=True, idlinekwargs={"lw":2, "color":"red"}, metrics=True)
+	
+	ax = fig.add_subplot(2, 2, 3)
+	plot.scatter.scatter(ax, cat, fpredlabel, fpredlabelerr, ms=3)
+	plot.scatter.scatter(ax, cat, fpredlabel, fbiaslearn, color="green", ms=2)
+	ax.axhline(0.0, color="black")
+		
+	ax = fig.add_subplot(2, 2, 4)
+	plot.hist.hist(ax, cat, flabel, label=flabel.colname)
+	plot.hist.hist(ax, cat, fpredlabel, color="red", label=fpredlabel.colname)
 	ax.set_ylabel(flabel.colname)
 	ax.legend()
 	
