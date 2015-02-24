@@ -21,7 +21,7 @@ np.random.seed(0)
 workdir = "/vol/fohlen11/fohlen11_1/mtewes/tests"
 
 # Values of the true parameters:
-n = 10000 #5000
+n = 5000 #5000
 param = np.random.triangular(0.1, 0.3, 2.0, size=n)
 cat = astropy.table.Table(masked=True)
 cat["param"] = param
@@ -53,9 +53,9 @@ megalut.learn.calib.ontruth(reas, workdir, trainparams, calibtoolparams)
 """
 
 
-#### ATTEMPT 2: calibrate the bias(prediction) relation
+#### ATTEMPT 2: calibrate the error(prediction) relation
 
-
+"""
 # We need only one realization for this scheme
 
 cat = observe(cat)
@@ -68,6 +68,26 @@ trainparams = [(mlparams, toolparams)]
 calibtoolparams = megalut.learn.fannwrapper.FANNParams([3], max_iterations=500)
 
 megalut.learn.calib.onpred(cat, workdir, trainparams, calibtoolparams)
+
+"""
+
+#### ATTEMPT 3: calibrate the bias(prediction) relation, averaging over reas
+
+
+# And we make many realizations
+nrea = 100 #100
+reas = [observe(cat) for i in range(nrea)]
+
+workdir = "/vol/fohlen11/fohlen11_1/mtewes/tests"
+mlparams = megalut.learn.ml.MLParams("coucou", ["data"], ["param"], ["preparam"])
+toolparams = megalut.learn.fannwrapper.FANNParams([5], max_iterations=500)
+trainparams = [(mlparams, toolparams)]
+
+calibtoolparams = megalut.learn.fannwrapper.FANNParams([3], max_iterations=500)
+
+megalut.learn.calib.onpredavg(reas, workdir, trainparams, calibtoolparams)
+
+
 
 exit()
 
