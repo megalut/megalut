@@ -57,7 +57,8 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	n, bins, patches = ax.hist(data[feat.colname], **mykwargs)
 	
 	# Set lim and label:
-	ax.set_xlim(feat.low, feat.high)
+	if feat.low is not None and feat.high is not None:
+		ax.set_xlim(feat.low, feat.high)
 	ax.set_xlabel(feat.nicename)
 	
 	# We want minor ticks:
