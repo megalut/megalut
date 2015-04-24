@@ -26,6 +26,8 @@ def getdata(cat, features):
 		if feature.errcolname != None:
 			colnames.append(feature.errcolname)
 	
+	colnames = list(set(colnames)) # To ensure that they are unique
+	
 	# We get rid of rows with masked content:
 	nomaskcat = tools.table.cutmasked(cat, colnames, keep_all_columns=False)
 	# Indeed for plots we don't need the other columns !
