@@ -1,6 +1,9 @@
 """
 Top level function implementing "mean-posterior" regression and then iterative bias corrections
 
+These features are work in progress, not documented, and will have to be cleaned once a good way of calibrating the bias has
+been found.
+
 """
 import os
 import ml
