@@ -131,7 +131,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 	:param tweakmode: a switch for different behaviors regarding which *features* to use for the predictions	
 	
 		* If mode is "default", it will predict using exactly the column names that the MLParams of the paramslist specify.
-		* If "all", it will predict all realizations by replacing "totweak" with (_0, _1, ...), and then use groupstats to compute statistics
+		* If "all", it will predict all realizations by replacing "totweak" with (_rea0, _rea1, ...), and then use groupstats to compute statistics
 		  of the predictions coming from the different realizations, resulting in field names such as
 		  pre_g1_mean, pre_g1_std, etc.
 		  So this mode will only be used on simulations, and is related to debiasing or getting error bars on predictions.
