@@ -36,8 +36,11 @@ megalut.sim.run.multi(simdir, simparams, drawcatkwargs,
 
 print "Step 2, measuring"
 
-measdir = os.path.join(basedir, "measdir_adamom") # Where the measurements should be written
-measfct = megalut.meas.galsim_adamom.measfct
+measdir = os.path.join(basedir, "measdir") # Where the measurements should be written
+def measfct(cat, **kwargs):
+	cat = megalut.meas.galsim_adamom.measfct(cat, **kwargs)
+	cat = megalut.meas.skystats.measfct(cat, **kwargs)
+	return cat
 measfctkwargs = {"stampsize":64}
 
 megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
@@ -47,8 +50,8 @@ print "Step 3, summarizing measurements accross simulations"
 
 groupcols = [
 	"adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
-	"adamom_sigma", "adamom_rho4",
-	"adamom_skystd", "adamom_skymad", "adamom_skymean", "adamom_skymed", "adamom_flag"
+	"adamom_sigma", "adamom_rho4", "adamom_flag",
+	"skystd", "skymad", "skymean", "skymed", "skyflag"
 	]
 
 removecols=[]
