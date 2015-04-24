@@ -24,8 +24,8 @@ def measfct(catalog, runon="img", **kwargs):
 	the "psf" stamps associated to the catalog. This might be useful for FDNT, depending on how
 	a pipeline handles PSF measurements.
 	
-	:param runon: "img" or "psf", decides on which image this should run.
-		You might want to adjust the prefix, if running on "psf".
+	:param runon: "img" or "psf" or ... -- decides on which image this should run.
+		You might want to adjust the prefix, if running on something else than the default "img".
 	
 	Possible additional kwargs are params, config, sexpath, prefix... see function measure() below.
 	"""
