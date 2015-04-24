@@ -377,7 +377,8 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	"""
 	Returns those rows of table for which all of the given colnames are unmasked.
 	To do this, it "combines" the masks from the different colnames.
-	Importantly, it logs a bit about the masked columns.
+	This is in principle close to what **numpy.ma.compress_rows** does.
+	But here we also log a bit about the masked columns.
 	
 	:param cat: an astropy table
 	:param colnames: a list of column names whose data must be available in the output
