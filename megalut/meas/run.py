@@ -186,7 +186,7 @@ def general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs, ncpu=1, ski
 		ws = _WorkerSettings(incatfilepath, outcatfilepath, measfct, measfctkwargsdict, incatmetadict)
 		wslist.append(ws)
 	
-	logger.info("Ready to run measurents on %i images." % (len(wslist)))
+	logger.info("Ready to run measurements on %i images." % (len(wslist)))
 			
 	# And we run a pool of workers on this wslist.
 	_run(wslist, ncpu)
