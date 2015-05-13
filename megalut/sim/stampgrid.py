@@ -77,6 +77,9 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		The corresponding stampsize must be provided as catalog.meta["stampsize"].
 		If you specify a psf image in catalog.meta["psf"], your catalog must of course also contain
 		PSF coordinates for that image.
+		If no PSF stamps are specifed, the code will look for Gaussian PSF parameters in the catalog.
+		If such parameters are not given, no PSF convolution is done.
+		
 	:param simgalimgfilepath: where I write my output image of simulated and noisy galaxies
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
 	:param simpsfimgfilepath: (optional) where I write the PSFs
@@ -103,16 +106,26 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
-	if "psf" in catalog.meta: # If the user provided some PSFs:
+	if "psf" in catalog.meta: # The user provided some PSFs in form of stamps:
 		
 		psfinfo = catalog.meta["psf"] # Getting the ImageInfo object
 		psfinfo.checkcolumns(catalog)
-		logger.info("I will use provided PSFs (%s)" % (str(psfinfo)))
+		logger.info("I will use provided PSF stamps (%s)" % (str(psfinfo)))
 		psfimg = psfinfo.load() # The actual GalSim Image
 				
-	else:
-		psfinfo = None
-		logger.info("No PSFs given: I will use plain Gaussians!")
+	else: # I will look for PSF params in the catalog, and use analytical Gaussians
+		
+		psf_gauss_colnames = ["psf_gauss_sigma", "psf_gauss_g1", "psf_gauss_g2"]
+		psf_gauss_ok = True # Let's check if all those colnames are available:
+		for psf_gauss_colname in psf_gauss_colnames:
+			if psf_gauss_colname not in catalog.colnames:
+				psf_gauss_ok = False
+		if psf_gauss_ok:
+			logger.info("I will use analytical Gaussians PSFs.")
+			psfinfo = "Gauss"
+		else:
+			logger.warning("No PSF information given, I will NOT convolve the galaxies!")
+			psfinfo = None
 
 	
 	# Galsim random number generators
@@ -124,7 +137,7 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
 	psf_image = galsim.ImageF(stampsize * n , stampsize * n)
 
-	gal_image.scale = 1.0
+	gal_image.scale = 1.0 # These pixel scales make things easier. If you change them, be careful to also adapt the jitter scale!
 	trugal_image.scale = 1.0
 	psf_image.scale = 1.0
 
@@ -157,23 +170,33 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		# We draw the pure unconvolved galaxy
 		gal.draw(trugal_stamp)
 
-		# We get the PSF stamp, if provided
-		if psfinfo is not None:
+		# We prepare/get the PSF and do the convolution:
+		
+		if psfinfo is "Gauss":
+			psf = galsim.Gaussian(flux=1., sigma=row["psf_gauss_sigma"])
+			psf.applyShear(g1=row["psf_gauss_g1"], g2=row["psf_gauss_g2"])
+			# Let's apply some jitter to the position of the PSF (not sure if this is required, but does not harm)
+			psf_xjitter = ud() - 0.5
+			psf_yjitter = ud() - 0.5
+			psf.applyShift(psf_xjitter,psf_yjitter)
+			psf.draw(psf_stamp)
+
+			galconv = galsim.Convolve([gal,psf], real_space=False)
+		
+		elif psfinfo is not None:
 			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
 			if flag != 0:
 				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
 					(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, dx=1.0)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
-					
-		else:
-			#psf = galsim.OpticalPSF(lam_over_diam = 0.39, defocus = 0.5, obscuration = 0.1)# Boy is this slow, do not regenerate for every stamp !
-			psf = galsim.Gaussian(flux=1., sigma=1.5)
-			psf.draw(psf_stamp)
+			
+			galconv = galsim.Convolve([gal,psf], real_space=False)		
 
-		# Convolution by the PSF
-		galconv = galsim.Convolve([gal,psf], real_space=False)
-		
+		else:
+			# Nothing to do		
+			galconv = gal
+	
 		# Draw the convolved galaxy	
 		galconv.draw(gal_stamp)
 		
