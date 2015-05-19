@@ -43,7 +43,7 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	for iy in range(n):
 		for ix in range(n):
 		
-			gal = params.get(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy
+			gal = params.draw(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy
 			gal["ix"] = ix
 			gal["iy"] = iy
 			gal["id"] = idprefix + str(ix + n*iy)
@@ -106,30 +106,12 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		
 	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
-	
-	if "psf" in catalog.meta: # The user provided some PSFs in form of stamps:
-		
-		psfinfo = catalog.meta["psf"] # Getting the ImageInfo object
-		psfinfo.checkcolumns(catalog)
-		logger.info("I will use provided PSF stamps (%s)" % (str(psfinfo)))
-		psfimg = psfinfo.load() # The actual GalSim Image
-				
-	else: # I will look for PSF params in the catalog, and use analytical Gaussians
-		
-		psf_gauss_colnames = ["psf_gauss_sigma", "psf_gauss_g1", "psf_gauss_g2"]
-		psf_gauss_ok = True # Let's check if all those colnames are available:
-		for psf_gauss_colname in psf_gauss_colnames:
-			if psf_gauss_colname not in catalog.colnames:
-				psf_gauss_ok = False
-		if psf_gauss_ok:
-			logger.info("I will use analytical Gaussians PSFs.")
-			psfinfo = "Gauss"
-		else:
-			logger.warning("No PSF information given, I will NOT convolve the galaxies!")
-			psfinfo = None
 
-	# Let's check if all required colnames for the profiles are available:
-	check_profiles(catalog)
+	# A special function checks the combination of settings in the provided catalog:
+	todo = checkcat(catalog)
+	
+	if "loadpsfimg" in todo:
+		psfimg = catalog.meta["psf"].load() # Loading the actual GalSim Image
 	
 	# Galsim random number generators
 	rng = galsim.BaseDeviate()
@@ -165,10 +147,10 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		
 		profile_type = params.profile_types[row["tru_type"]]
 		if profile_type == "Sersic":
-			gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
+			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]))
 		elif profile_type == "Gaussian":
-			gal = galsim.Gaussian(flux=row["tru_flux"], sigma=row["tru_sigma"])
-
+			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]))
+			
 		gal.applyShear(g1=row["tru_g1"], g2=row["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
 		
 		# We apply some jitter to the position of this galaxy
@@ -181,18 +163,21 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 
 		# We prepare/get the PSF and do the convolution:
 		
-		if psfinfo is "Gauss":
-			psf = galsim.Gaussian(flux=1., sigma=row["psf_gauss_sigma"])
-			psf.applyShear(g1=row["psf_gauss_g1"], g2=row["psf_gauss_g2"])
-			# Let's apply some jitter to the position of the PSF (not sure if this is required, but does not harm)
+		if "usegausspsf" in todo:
+			
+			psf = galsim.Gaussian(flux=1., sigma=row["tru_psf_sigma"])
+			
+			psf.applyShear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
+			# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
 			psf_xjitter = ud() - 0.5
 			psf_yjitter = ud() - 0.5
 			psf.applyShift(psf_xjitter,psf_yjitter)
 			psf.draw(psf_stamp)
 
-			galconv = galsim.Convolve([gal,psf], real_space=False)
+			galconv = galsim.Convolve([gal,psf])
 		
-		elif psfinfo is not None:
+		elif "loadpsfimg" in todo:
+			
 			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
 			if flag != 0:
 				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
@@ -202,16 +187,19 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			
 			galconv = galsim.Convolve([gal,psf], real_space=False)		
 
-		else:
+		elif "nopsf" in todo:
 			# Nothing to do		
 			galconv = gal
+			
+		else:
+			raise RuntimeError("Bug in todo.")
 	
 		# Draw the convolved galaxy	
 		galconv.draw(gal_stamp)
 		
-		# And add shot noise to the convolved galaxy:
-		gal_stamp.addNoise(galsim.GaussianNoise(rng, sigma=row["tru_sig"]))
-		
+		# And add noise to the convolved galaxy:
+		gal_stamp.addNoise(galsim.CCDNoise(rng, sky_level=float(row["tru_sky_level"]), gain=float(row["tru_gain"]), read_noise=float(row["tru_read_noise"])))
+	
 		
 	logger.info("Done with drawing, now writing output FITS files ...")	
 
@@ -228,9 +216,55 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 
 
 
-def check_profiles(cat):
+def checkcat(cat):
 	"""
-	This function is only there to log about the galaxy light profiles that the user is requesting.
+	Checks the input catalog for consistency, compliance, and purpose (-> "to do"...)
+	This function is mainly here to make things fail nicely if something is missing.
+	It returns a list containing flags that will control some aspects of drawimg.
 	"""
-	pass
+	
+	todo = [] # The output list.
+	
+	# We check some fields that should always be there:
+	for f in ["tru_type", "tru_flux", "tru_g1", "tru_g2", "tru_sky_level", "tru_gain", "tru_read_noise"]:
+		if f not in cat.colnames:
+			raise RuntimeError("The field '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
 
+	# What profiles do we have in there ?
+	contained_profile_types = list(set([params.profile_types[row["tru_type"]] for row in cat]))
+	logger.info("Galaxy profile types to be simulated: %s" % (str(contained_profile_types)))	
+
+	# We check the additional required fields for each of these profile types
+	if "Gaussian" in contained_profile_types:
+		for f in ["tru_sigma"]:
+			if f not in cat.colnames:
+				raise RuntimeError("I should draw a Gaussian profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
+	if "Sersic" in contained_profile_types:
+		for f in ["tru_rad", "tru_sersicn"]:
+			if f not in cat.colnames:
+				raise RuntimeError("I should draw a Sersic profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
+
+		
+	# And now we check the information provided about the PSFs to be used
+	
+	if "psf" in cat.meta: # The user provided some PSFs in form of stamps
+		logger.info("I will use provided PSF stamps (from '%s')" % (str(cat.meta["psf"])))
+		cat.meta["psf"].checkcolumns(catalog) # Check that the ImageInfo object matches to the catalog.
+		
+		todo.append("loadpsfimg")
+				
+	else: # I will look for PSF params in the catalog, and use analytical Gaussians
+		
+		psf_gauss_ok = True
+		for f in ["tru_psf_sigma", "tru_psf_g1", "tru_psf_g2"]:
+			if f not in cat.colnames:
+				psf_gauss_ok = False
+		
+		if psf_gauss_ok:
+			logger.info("I will use analytical Gaussians PSFs.")
+			todo.append("usegausspsf")
+		else:
+			logger.warning("No or not enough PSF information given, I will NOT convolve the simulated galaxies!")
+			todo.append("nopsf")
+	
+	return todo
