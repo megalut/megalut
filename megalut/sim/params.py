@@ -1,11 +1,17 @@
 import numpy as np
 import math
 
+
+profile_types = ["Sersic", "Gaussian"]
+
+
 class Params:
 	"""
 	A container for the distributions describing the parameters of a simulated galaxy.
 	To use it, you inherit this class and override its methods as desired.
-	Only the method "get" gets called by the simulation code. Hence, instead of overriding all the "get_xxx" methods, you can also simply override this "get".
+	The code below is just there to provide a minimal working example with Sersic profiles.
+	Only the method "get" gets called by the simulation code.
+	Hence, instead of overriding some the "get_xxx" methods, it will be easier for you override this "get".
 	
 	The minimal methods implemented here are just examples.	Example how you could inherit and override this:
 	

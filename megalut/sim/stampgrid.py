@@ -16,6 +16,7 @@ import galsim
 from datetime import datetime
 
 from .. import tools
+from . import params
 
 
 def drawcat(params, n=10, stampsize=64, idprefix=""):
@@ -127,6 +128,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			logger.warning("No PSF information given, I will NOT convolve the galaxies!")
 			psfinfo = None
 
+	# Let's check if all required colnames for the profiles are available:
+	check_profiles(catalog)
 	
 	# Galsim random number generators
 	rng = galsim.BaseDeviate()
@@ -158,8 +161,14 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		trugal_stamp = trugal_image[bounds]
 		psf_stamp = psf_image[bounds]
 	
-		# We draw a sersic profile
-		gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
+		# We draw the desired profile
+		
+		profile_type = params.profile_types[row["tru_type"]]
+		if profile_type == "Sersic":
+			gal = galsim.Sersic(n=row["tru_sersicn"], half_light_radius=row["tru_rad"], flux=row["tru_flux"])
+		elif profile_type == "Gaussian":
+			gal = galsim.Gaussian(flux=row["tru_flux"], sigma=row["tru_sigma"])
+
 		gal.applyShear(g1=row["tru_g1"], g2=row["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
 		
 		# We apply some jitter to the position of this galaxy
@@ -218,4 +227,10 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	logger.info("This drawing took %s" % (str(endtime - starttime)))
 
 
+
+def check_profiles(cat):
+	"""
+	This function is only there to log about the galaxy light profiles that the user is requesting.
+	"""
+	pass
 
