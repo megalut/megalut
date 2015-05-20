@@ -27,17 +27,27 @@ class Run():
 		self.workdir = workdir
 		self.ncpu = ncpu
 		
+		self.workobsdir = os.path.join(self.workdir, "obs")
+		self.worksimdir = os.path.join(self.workdir, "sim")
+		
 		if not os.path.exists(self.workdir):
 			os.makedirs(self.workdir)
+		if not os.path.exists(self.workobsdir):
+			os.makedirs(self.workobsdir)
+		if not os.path.exists(self.worksimdir):
+			os.makedirs(self.worksimdir)
 
 	
-	def makecats(self):
+	def makecats(self, onlyn = None, sbe_sample_scale=0.05):
 		"""
 		Read the SBE data files and prepare MegaLUT "observations" catalogs.
 		For each SBE image, an input catalog is written into the workdir.
 		"""
 
 		filenames = io.get_filenames(self.sbedatadir)
+		if onlyn != None:
+			filenames = filenames[:onlyn]
+		
 		
 		# Hardcoded for now:
 		stampsize = 200
@@ -45,20 +55,24 @@ class Run():
 		
 		logger.info("Will make %i cats..." % len(filenames))
 		
-		for filename in filenames:#[:10]:
+		for filename in filenames:
 			
 			datafilepath = io.datafile(filename)
 			imagefilepath = io.imagefile(filename)
-			workprefix = io.workprefix(filename, self.workdir)
-			catfilepath = workprefix + "-inputcat.pkl"
-			imageworkdirfilepath = workprefix + "-imageworkdir"
+			workname = io.workname(filename)
+			catfilepath = os.path.join(self.workobsdir, workname + "-inputcat.pkl")
+			imageworkdirfilepath = os.path.join(self.workobsdir, workname + "-imageworkdir")
+			
+			if os.path.exists(catfilepath):
+				logger.info("Skipping '%s', catalog already exists" % (workname))
+				continue
 			
 			# We read the data file and turn it into an astropy table
 			cat = astropy.io.ascii.read(datafilepath)
 			
-			# Let's keep this filename
-			cat.meta["sbefilename"] = filename
-			cat.meta["workprefix"] = workprefix
+			# Let's keep the file identification also in the meta dict:
+			cat.meta["sbefilename"] = filename # very weird SBE thing, without extension...
+			cat.meta["workname"] = workname
 			
 			# Let's convert the true shape parameters into more convenient forms:
 			
@@ -68,6 +82,11 @@ class Run():
 			cat["Galaxy_e2"] = cat["Galaxy_shape_1"] * np.sin(2.0*cat["Galaxy_shape_2"]*np.pi/180)
 			cat["Galaxy_g1"] = cat["Galaxy_shear_1"] * np.cos(2.0*cat["Galaxy_shear_2"]*np.pi/180)
  			cat["Galaxy_g2"] = cat["Galaxy_shear_1"] * np.sin(2.0*cat["Galaxy_shear_2"]*np.pi/180)
+
+			# And for convenience, include some standard MegaLUT names for the PSFs
+			cat["tru_psf_g1"] = cat["PSF_e1"]
+			cat["tru_psf_g2"] = cat["PSF_e2"]
+			cat["tru_psf_sigma"] = cat["PSF_sigma_arcsec"] / sbe_sample_scale
    
 			# We add the xid, yid, x and y columns, following an explanation by Bryan
 			# on how the data/fits files should be interpreted ("like english text").
@@ -92,69 +111,110 @@ class Run():
 			megalut.tools.io.writepickle(cat, catfilepath)
 		
 
-	def measobs(self, measfct):
+	def measobs(self, measfct, stampsize=200):
 		"""
 		Runs the measfct on the observations
 		"""
 		
-		incatfilepaths = glob.glob(os.path.join(self.workdir, "*-inputcat.pkl"))
+		incatfilepaths = glob.glob(os.path.join(self.workobsdir, "*-inputcat.pkl"))
 		outcatfilepaths = [incat.replace("inputcat", "meascat") for incat in incatfilepaths]
 		
 		logger.info("Measuring %i cats..." % len(incatfilepaths))
 	
-		measfctkwargs = {"stampsize":150} # 200 seems exagerated!
+		measfctkwargs = {"stampsize":stampsize}
 	
-		megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=False)
+		megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=True)
 		
 
 
-	def measobscheckplot(self):
+	def plotobscheck(self):
+		"""
+		One checkplot for every SBE "file"
+		"""
 		
-		catfilepaths = glob.glob(os.path.join(self.workdir, "*-meascat.pkl"))
+		catfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
 	
 		for catfilepath in catfilepaths:#[:1]:
 			
 			
 			cat = megalut.tools.io.readpickle(catfilepath)
 			
-			plotfilepath = cat.meta["workprefix"] + "-measobscheckplot.png"
+			plotfilepath = os.path.join(self.workobsdir, cat.meta["workname"] + "-measobscheckplot.png")
 			
 			plot.meascheck(cat, plotfilepath)
 	
-	
-	def mixobscheckplot(self):
+
+	def groupsomeobs(self, nfiles=50):
+		"""
+		Groups a tractable sample of the obs measurements into a single catalog, handy for testing distributions.
+		"""
 		
-		catfilepaths = glob.glob(os.path.join(self.workdir, "*-meascat.pkl"))
+		catfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
 		
-	
-		somefiles = random.sample(catfilepaths, 200)
+		somefiles = random.sample(catfilepaths, nfiles)
 		
-		#print somefiles
 		somecats = [megalut.tools.io.readpickle(f) for f in somefiles]
 		for cat in somecats:
-			cat.meta = {}
+			cat.meta = {} # To avoid conflicts when stacking
 		
-		cat = astropy.table.vstack(somecats, join_type="exact", metadata_conflicts="error")
+		groupcat = astropy.table.vstack(somecats, join_type="exact", metadata_conflicts="error")
+		
+		megalut.tools.io.writepickle(groupcat, os.path.join(self.workobsdir, "mergedobs.pkl"))
+		
+		
+		
+
+	def plotmixobscheck(self):
+		"""
+		One checkplot mixing several SBE files.
+		"""
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "mergedobs.pkl"))
 		plot.meascheck(cat)
 	
-		#for cat in somecats:
-		#plot.test(cat)
 	
 	
-	def drawsims(self, simparams, n=10, ncat=1, nrea=1):
+	def drawsims(self, simparams, n=10, ncat=1, nrea=1, stampsize=200):
+		"""
+		Draws many sims on several cpus, in the standard MegaLUT style.
+		"""
 		
-		
-		drawcatkwargs = {"n":n, "stampsize":150}
+		drawcatkwargs = {"n":n, "stampsize":stampsize}
 		drawimgkwargs = {}
 		
-		megalut.sim.run.multi(self.workdir, simparams, drawcatkwargs, drawimgkwargs, 
+		megalut.sim.run.multi(self.worksimdir, simparams, drawcatkwargs, drawimgkwargs, 
 			psfcat = None, ncat=ncat, nrea=nrea, ncpu=self.ncpu,
 			savepsfimg=True, savetrugalimg=True)
 
 
-	def meassims(self):
-		pass
+	def meassims(self, simparams, measfct, stampsize=200):
+		"""
+		Idem
+		"""
+		measfctkwargs = {"stampsize":stampsize}
+		megalut.meas.run.onsims(self.worksimdir, simparams, self.worksimdir, measfct, measfctkwargs, ncpu=self.ncpu)
 		
+
+
+	def plotsimobscompa(self, simparams):
+		"""
+		Again, a classic...
+		"""
+		
+		# We read the first rea of the sims
+		simcatpath = megalut.meas.utils.simmeasdict(self.worksimdir, simparams).values()[0][0]
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, simcatpath))
+				
+		# And a bunch of the obs
+		obscat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "mergedobs.pkl"))
+			
+		plot.simobscompa(simcat, obscat)
+		
+
+
+
+
+
 
 	
 	def writeresults(self):

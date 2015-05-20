@@ -101,6 +101,77 @@ def meascheck(cat, filepath=None):
 
 
 
+
+def simobscompa(simcat, obscat):
+
+	"""
+	In feature space
+	"""
+	simcat = megalut.tools.table.shuffle(simcat)
+	obscat = megalut.tools.table.shuffle(obscat)
+	
+	fig = plt.figure(figsize=(23, 11))
+		
+	flux = Feature("adamom_flux", 0, 70000)
+	sigma = Feature("adamom_sigma", 0, 25)
+	
+	rho4 = Feature("adamom_rho4", 1.5, 2.5)
+	g1 = Feature("adamom_g1", -0.6, 0.6)
+	g2 = Feature("adamom_g2", -0.6, 0.6)
+	skymad = Feature("skymad")
+	skystd = Feature("skystd")
+	skymed = Feature("skymed")
+	skymean = Feature("skymean")
+	
+	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06)
+	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06)
+	psf_sigma = Feature("tru_psf_sigma")
+	
+	
+	snr = megalut.plot.feature.Feature("sewpy_snr")
+	#a = megalut.plot.feature.Feature("sewpy_AWIN_IMAGE", 1.0, 4.0)
+	#fwhm = megalut.plot.feature.Feature("sewpy_FWHM_IMAGE", 1.0, 6.0)
+	#sewpyflags = megalut.plot.feature.Feature("sewpy_FLAGS")
+	#flags = megalut.plot.feature.Feature("Flag")
+	
+		
+	ax = fig.add_subplot(2, 4, 1)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, sigma, legend=True)
+
+	ax = fig.add_subplot(2, 4, 2)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, sigma, rho4)
+
+	ax = fig.add_subplot(2, 4, 3)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, g1, g2)
+	
+	ax = fig.add_subplot(2, 4, 4)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, snr)
+		
+	ax = fig.add_subplot(2, 4, 5)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, skymad, skystd)
+	
+	ax = fig.add_subplot(2, 4, 6)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, skymed, skymean)
+	
+	ax = fig.add_subplot(2, 4, 7)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, psf_sigma, sigma)
+	
+	ax = fig.add_subplot(2, 4, 8)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, psf_g1, psf_g2)
+	
+	plt.tight_layout()
+	plt.show()	
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+
+
+
+
+
 def test(cat, filepath=None):
 	
 	
