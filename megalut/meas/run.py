@@ -26,7 +26,7 @@ import datetime
 import multiprocessing
 import copy
 
-import megalut
+from .. import tools
 
 import logging
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 
 	See the doc for general() for the explanation of the other parameters.
 	
-	As an illustration, the file structure looks like::
+	As an illustration, the written file structure looks like::
 	
 		$ ls -1 measdir/name_of_simparams/
 		20141017T185236_Cx9D5b_0_galimg_meascat.pkl
@@ -68,148 +68,125 @@ def onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=
 	if not os.path.exists(measworkdir):
 		os.makedirs(measworkdir)
 	
+	# The input lists for general():
+	genincatfilepaths = [] # This is not incatfilepaths! The same catalogs will appear multiple times in here.
+	genoutcatfilepaths = []
+	genincatmetadicts = [] # Indeed we will have to set meta["img"] to point to the different realizations.
 	
-	# Building the input for general():
-	genimgfilepaths = []
-	genincatfilepaths = [] # This is not incatfilepaths! Catalogs will appear multiple times in here.
-	genimgnames = []
 	
 	for incatfilepath in incatfilepaths:
-		catname = os.path.basename(incatfilepath).replace("_cat.pkl","")
-		imgdir = os.path.join(simworkdir, catname + "_img")
-		if not os.path.exists(imgdir):
-			logger.warning("Could not find the image directory for '%s' (skipping this one)" % (inputcat))
-			continue
-			
-		imgfilepaths = sorted(glob.glob(os.path.join(imgdir, "*_galimg.fits")))
 		
-		if len(imgfilepaths) == 0:
-			logger.warning("Could not find any images for '%s' (skipping this one)" % (inputcat))
-			continue
-			
-		for imgfilepath in imgfilepaths:
+		# We read the catalog
+		incat = tools.io.readpickle(incatfilepath)
 		
-			# We add the relevant things to the gen* lists:
-			genimgfilepaths.append(imgfilepath)
+		# And loop over the "declared" realization ImageInfo objects:
+		for imgrea in incat.meta["imgreas"]:
+			
+			# Let's check that the declared image file does exist:
+			if not os.path.exists(imgrea.filepath):
+				logger.warning("Could not find image realization '%s', will skip it" % (imgrea.filepath))
+				continue
+			
+			# If everything seems ok, we prepare the entries for general for this realization
+			outcatfilepath = os.path.join(measdir, simparams.name, imgrea.name + "_meascat.pkl")
+			
+			# Now the ImageInfo object for meta["img"]. We make a new object, based on the
+			# info for this realization, and add a workdir (in case measfct uses it).
+			workdir = os.path.join(measdir, simparams.name, imgrea.name + "_workdir")
+			imageinfo = tools.imageinfo.ImageInfo(
+				imgrea.filepath, imgrea.xname, imgrea.yname, imgrea.stampsize,
+				workdir = workdir
+				)
+			
 			genincatfilepaths.append(incatfilepath)
-			
-			#imgname = os.path.basename(imgfilepath)[:-12] # e.g. 20141016T170441_BJjhps_0
-			imgname = os.path.splitext(os.path.basename(imgfilepath))[0] # e.g. 20141016T170441_BJjhps_0_galimg
-			# Well, doesn't make a big difference for the moment, but let's take the more general one.
-			
-			genimgnames.append(imgname)
+			genoutcatfilepaths.append(outcatfilepath)
+			genincatmetadicts.append({"img":imageinfo})
+				
 	
 	# And we pass the ball to general():
+	general(genincatfilepaths, genoutcatfilepaths, measfct, measfctkwargs,
+		ncpu=ncpu, skipdone=skipdone, incatmetadicts=genincatmetadicts)
 	
-	general(genimgfilepaths, genincatfilepaths, measworkdir, measfct, measfctkwargs,
-		imgnames = genimgnames, ncpu=ncpu, skipdone=skipdone)
-		
 
 
-def general(imgfilepaths, incatfilepaths, outcatfilepaths, measfct, measfctkwargs, psfimgfilepaths=None, workdirs=None, ncpu=1, skipdone=True):
+def general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs, ncpu=1, skipdone=True, incatmetadicts=None):
 	"""
-	Run the given shape measurement (measfct) on your images using multiprocessing (ncpu).
-	The input should give all the necessary paths.  This is the general case.
-	If you want to run on MegaLUT simulations, see the function onsims() above (which calls this function).
+	Run the given shape measurement (measfct) on your images using a multiprocessing pool map (ncpu).
+	This measfct must be MegaLUT-compliant, i.e. find all the required images by reading the meta of the passed catalog.
+	Note that if you want to run on MegaLUT simulations, see the function onsims() above (which calls this function).
 	
-	:param imgfilepaths: list of paths to the FITS image files
-	:param incatfilepaths: list of paths to the **corresponding** pickled input catalogs.
+	
+	:param incatfilepaths: list of paths to the pickled input catalogs.
 		These catalogs must contain the information required by measfct (and the measfctkwargs)
-		to run on the image files. So typically, the catalogs should contain at least some position.
+		to run on the image file(s) specified as ImageInfo objects in the catalog's meta dicts.
+		Note that there is a trick to run with **different meta dicts**, see argument incatmetadicts below.
 	:param outcatfilepaths: list of paths where the corresponding output catalog pickles should be written.
-	:param measfct: The function that measures the shapes. It must take two positional arguments
-		(an image, an input catalog), and return an output catalog.
+	:param measfct: The function that measures the sources. It has to be MegaLUT-compliant, i.e., it has to find
+		all the required images by reading the meta of the passed catalog.
+		Often you will define this funtion yourself, as you might want to run different algorithms in one shot.
 	:param measfctkwargs: keyword arguments controlling the behavior of the measfct.
-		You can either pass a dict, or, if your kwargs change from img to img, pass a list of dicts
-		(one for every imgfile).
-		Note that if only psfimg and workdir change from image to image, those can more easily be
-		specified using the keywords psfimgfilepaths and workdirs documented below.
-	:type measfctkwargs: dict or list of dicts.
-	:param psfimgfilepaths: list of paths that will be passed as psfimg argument to the measfct, 
-		overwriting any psfimg specified in measfctkwargs.
-		If you want to use the same psfimgfilepath for all imgfiles, it's easier to specify it
-		in measfctkwargs!
-	:param workdirs: list of paths that will be passed as "workdir" argument to measfct,
-		overwriting any workdir specified in measfctkwargs. Many measfct do not require any workdirs,
-		just leave this to None in that case.
+		Usually these stay the same for every catalog/image (then give only one dict), but sometimes you might
+		want to explore a range of different settings (then give a list of dicts, as long as incatfilepaths).
+	:type measfctkwargs: dict or list of dicts
 	:param ncpu: Maximum number of processes that should be used. Default is 1.
 		Set to 0 for maximum number of available CPUs.
 	:type ncpu: int
-	:type skipdone: If set to False, run on every file found, overwriting any existing  catalogs.
+	:type skipdone: If set to False, re-run even if the output catalog already exists.
+	:param incatmetadicts: If specified, these dicts will update the meta of the incats (for example
+		the meta["img"] ...)
+		This trick is very useful when running over several images of the same incat. Using this trick,
+		you don't have to prepare and write to disk one copy of incat for every image.
+	:type incatmetadicts: list of dicts
 
 
 	.. warning:: If called "in parallel" (e.g., from several python scripts launched at about the same time),
-		(in the worst case) all the work in every script might be run.
+		(in the worst case) all the work in every script might be run, i.e., skipdone will not work.
 		Not a safety issue (hence currently no fix for this).  We can see if we want a fix for that.
 		(can be done e.g. with temporary files written/detected and deleted by the workers)
 
 	"""
 	
-#	:param imgnames: list of names of the FITS images. If None (default), use the FITS
-#		image filenames to build a name for the output catalogs.
-#		Specifying imgnames is required if some of the images happen to have the same filenames,
-#		or if you don't want the filenames to be used.
-	
 	# Some trivial tests:
 	
-	nimg = len(imgfilepaths)
-	if len(incatfilepaths) != nimg or len(outcatfilepaths) != nimg:
-		raise RuntimeError("The input lists must have the same length")
-
+	n = len(incatfilepaths)
+	if len(outcatfilepaths) != n:
+		raise RuntimeError("The input/output catalog lists must have the same length")
+	if incatmetadicts is not None:
+		if len(incatmetadicts) != n:
+			raise RuntimeError("The list incatmetadicts does not have the same length as incatfilepaths")
+	else: # We turn this None into a list of None:
+		incatmetadicts = [None] * n
+		
+		
 	# If measfctkwargs is a simple dict, we make a list of identical dicts.
 	
 	if type(measfctkwargs) is dict:
-		measfctkwargslist = [copy.deepcopy(measfctkwargs) for i in range(nimg)]
+		measfctkwargslist = [copy.deepcopy(measfctkwargs) for i in range(n)]
 	else:
 		measfctkwargslist = measfctkwargs
-		if len(measfctkwargs) != nimg:
-			raise RuntimeError("Your list of measfctkwargs does not have the same length as imgfilepaths")
+		if len(measfctkwargs) != n:
+			raise RuntimeError("Your list of measfctkwargs does not have the same length as incatfilepaths")
 			
-	# Now we look at the psfimgfilepaths, and update this measfctkwargs list accordingly.
-	
-	if psfimgfilepaths != None:
-		if len(psfimgfilepaths) != nimg:
-			raise RuntimeError("The lists imgfilepaths and psfimgfilepaths must have the same length")
-		for (measfctkwargsdict, psfimgfilepath) in zip(measfctkwargslist, psfimgfilepaths):
-			measfctkwargsdict["psfimg"] = psfimgfilepath
-			
-	# Same for the workdirs:
-	
-	if workdirs != None:
-		if len(workdirs) != nimg:
-			raise RuntimeError("The lists imgfilepaths and workdirs must have the same length")
-		for (measfctkwargsdict, workdir) in zip(measfctkwargslist, workdirs):
-			measfctkwargsdict["workdir"] = workdir
-	
-	# No matter how the user has specified the workdirs, we now check that they are all different.
+	# It could be that the measfct wants to use the workdir of each image, if such workdirs are set.
+	# In this case, it would be nice to test if all the workdirs are different (as they probably should).
 	# A priori it seems not necessery to enforce this, but it's a simple way to avoid race conditions
 	# at directory creation, or any unwanted file overwriting.
+	# However, for this we would have to open the incats from the main process, this seems weird.
+	# And so we skip this test.
 	
-	check_unique_workdirs = []
-	for measfctkwargsdict in measfctkwargslist:
-		if measfctkwargsdict.get("workdir", None) is not None: # So if it's present and not None:
-			check_unique_workdirs.append(measfctkwargsdict["workdir"])
-	if len(check_unique_workdirs) is not len(set(check_unique_workdirs)):
-		raise RuntimeError("The workdirs must all be different")
-		
-	# Should we create them ?
-	#if not os.path.exists(workdir):
-	#	os.makedirs(workdir)
-		
 	# Now we prepare the parallel processing.
-	
 	wslist = [] # The list to be filled with workersettings
 	
-	for (imgfilepath, incatfilepath, outcatfilepath, measfctkwargsdict) in zip(imgfilepaths, incatfilepaths, outcatfilepaths, measfctkwargslist):
+	for (incatfilepath, outcatfilepath, measfctkwargsdict, incatmetadict) in zip(incatfilepaths, outcatfilepaths, measfctkwargslist, incatmetadicts):
 			
 		if skipdone and os.path.exists(outcatfilepath):
 			logger.info("Output catalog %s already exists, skipping this one..." % (outcatfilepath))	
 			continue
-
-		ws = _WorkerSettings(imgfilepath, incatfilepath, outcatfilepath, measfct, measfctkwargsdict)
+						
+		ws = _WorkerSettings(incatfilepath, outcatfilepath, measfct, measfctkwargsdict, incatmetadict)
 		wslist.append(ws)
 	
-	logger.info("Ready to run measurents on %i images." % (len(wslist)))
+	logger.info("Ready to run measurements on %i images." % (len(wslist)))
 			
 	# And we run a pool of workers on this wslist.
 	_run(wslist, ncpu)
@@ -222,17 +199,16 @@ class _WorkerSettings():
 	A class that holds together all the settings for measuring an image.
 	"""
 	
-	def __init__(self, imgfilepath, incatfilepath, outcatfilepath,
-				 measfct, measfctkwargs):
+	def __init__(self, incatfilepath, outcatfilepath, measfct, measfctkwargs, incatmetadict):
 		
-		self.imgfilepath = imgfilepath
 		self.incatfilepath = incatfilepath
 		self.outcatfilepath = outcatfilepath
 		self.measfct = measfct
 		self.measfctkwargs = measfctkwargs
+		self.incatmetadict = incatmetadict
 	
 	def __str__(self):
-		return "%s" % (os.path.basename(self.imgfilepath))
+		return "%s" % (os.path.basename(self.incatfilepath))
 
 
 
@@ -243,17 +219,22 @@ def _worker(ws):
 	"""
 	starttime = datetime.datetime.now()
 	p = multiprocessing.current_process()
-	logger.info("%s is starting to measure %s with PID %s" % (p.name, str(ws), p.pid))
-	logger.debug("Image %s gets processed with measfctkwargs %s" % (str(ws), str(ws.measfctkwargs)))
+	logger.info("%s is starting to measure catalog %s with PID %s" % (p.name, str(ws), p.pid))
+	logger.debug("%s uses measfctkwargs %s" % (p.name, str(ws.measfctkwargs)))
 	
 	# Read input catalog
-	incat = megalut.tools.io.readpickle(ws.incatfilepath)
+	incat = tools.io.readpickle(ws.incatfilepath)
+	if ws.incatmetadict is not None:
+		logger.debug("%s updates the catalog meta dict with %s" % (p.name, str(ws.incatmetadict)))
+		incat.meta.update(ws.incatmetadict)
+	
 	
 	# Run measfct, it will read the image by itself:
-	outcat = ws.measfct(ws.imgfilepath, incat, **ws.measfctkwargs)
+	logger.debug("%s will now run on image %s" % (p.name, incat.meta["img"].name))
+	outcat = ws.measfct(incat, **ws.measfctkwargs)
 	
 	# Write output catalog
-	megalut.tools.io.writepickle(outcat, ws.outcatfilepath)
+	tools.io.writepickle(outcat, ws.outcatfilepath)
 
 	endtime = datetime.datetime.now()
 	logger.info("%s is done, it took %s" % (p.name, str(endtime - starttime)))
@@ -268,16 +249,15 @@ def _run(wslist, ncpu):
 		logger.info("No images to measure.")
 		return
 
-	# We only want to see warnings or worse from the following low-level stuff:
-	# This solution is bad as it leaves the log handles muted afterwards !
-	# So I remove this for now, we need to find a better way.
-	"""
-	for modulename in ["megalut.meas.galsim_adamom", "megalut.meas.sewfunc",
-			"sewpy.sewpy", "megalut.tools.io", "megalut.tools.image"]:
+	# We do not want to see the log from the low-level stuff:
+	mutemodules = ["megalut.meas.galsim_adamom", "megalut.meas.sewfunc",
+			"sewpy.sewpy", "megalut.tools.io", "megalut.tools.image"]
+	for modulename in mutemodules:
 		lowlevellogger = logging.getLogger(modulename)
+		#lowlevellogger.propagate = False
 		lowlevellogger.setLevel(logging.WARNING)
-	"""
-	
+
+
 	if ncpu == 0:
 		try:
 			ncpu = multiprocessing.cpu_count()
@@ -289,18 +269,22 @@ def _run(wslist, ncpu):
 	
 	logger.info("Starting the measurement on %i images using %i CPUs" % (len(wslist), ncpu))
 	
-	# The single process way (MUCH MUCH EASIER TO DEBUG...)
-	#map(_worker, wslist)
+	if ncpu == 1: # The single process way (MUCH MUCH EASIER TO DEBUG...)
+		map(_worker, wslist)
 	
-	# The multiprocessing way:
-	pool = multiprocessing.Pool(processes=ncpu)
-	pool.map(_worker, wslist)
-	pool.close()
-	pool.join()
+	else:
+		pool = multiprocessing.Pool(processes=ncpu)
+		pool.map(_worker, wslist)
+		pool.close()
+		pool.join()
 	
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total measurement time was %s" % (str(endtime - starttime)))
 	
+	# We unmute the mutemodules:
+	#for modulename in mutemodules:
+	#	lowlevellogger = logging.getLogger(modulename)
+	#	lowlevellogger.propagate = True
 
 
 

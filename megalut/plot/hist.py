@@ -2,8 +2,8 @@
 Histogram helper functions
 """
 
-import logging
-logger = logging.getLogger(__name__)
+import utils
+import feature
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +11,12 @@ import matplotlib.cm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import AutoMinorLocator
+
+from scipy.stats import norm
+
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def hist(ax, cat, feat, text=None, title=None, **kwargs):
@@ -31,7 +37,9 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	Any further kwargs are either passed to ``hist()``.
 	"""
 	
-	logger.debug("Preparing hist of %i points" % (len(cat))) # Log it as this might be slow
+	logger.debug("Preparing hist of '%s'" % (feat.colname))
+	
+	data = utils.getdata(cat, [feat])
 	
 	# By default, we want to limit the "binning" of the actual histogram (not just their display) to the specified range.
 	# However, this fails when the "low" or "high" are set to None. Hence some explicit code:
@@ -46,10 +54,11 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	mykwargs.update(kwargs)
 
 	# We call hist:
-	n, bins, patches = ax.hist(cat[feat.colname], **mykwargs)
+	n, bins, patches = ax.hist(data[feat.colname], **mykwargs)
 	
 	# Set lim and label:
-	ax.set_xlim(feat.low, feat.high)
+	if feat.low is not None and feat.high is not None:
+		ax.set_xlim(feat.low, feat.high)
 	ax.set_xlabel(feat.nicename)
 	
 	# We want minor ticks:
@@ -62,3 +71,44 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	if title:
 		ax.set_title(title)
 
+
+
+
+
+def errhist(ax, cat, prefeat, trufeat, normrad=3.0, **kwargs):
+	"""
+	Shows the distribution of prediction errors (prefeat - trufeat), as a histogram.
+	If prefeat has an errcolname, each term is normalized by this errobar.
+	
+	"""
+	
+	if trufeat.errcolname is not None:
+		logger.warning("The 'truth' has an uncertainty, this is strange. Inverted arguments?")
+	
+	data = utils.getdata(cat, [prefeat, trufeat])
+	# Good to do this here (and not leave it only to hist), so that data has a reduced number
+	# of columns. Indeed we add some columns below.
+	
+	if prefeat.errcolname is None:
+		# Then we plot a simple histogram of the prediction errors
+		
+		data["err"] = data[prefeat.colname] - data[trufeat.colname]
+		
+		err = feature.Feature("err", nicename = "%s - %s" % (prefeat.nicename, trufeat.nicename))
+		hist(ax, data, err, normed=True, **kwargs)
+	
+	else:
+		# We normalize the residuals with the uncertainties
+		
+		data["err"] = (data[prefeat.colname] - data[trufeat.colname]) / data[prefeat.errcolname]
+		
+		err = feature.Feature("err", -normrad, normrad, nicename = "(%s - %s) / %s" % (prefeat.colname, trufeat.colname, prefeat.errcolname))
+		
+	
+		hist(ax, data, err, normed=True, label = "Residuals normalized by uncertainty", **kwargs)
+		
+		x = np.linspace(-normrad, normrad, 1000)
+		ax.plot(x, norm.pdf(x, 0.0, 1.0), color="black", label="Standard normal distribution")
+
+	
+	

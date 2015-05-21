@@ -5,9 +5,13 @@ based on the content of astropy tables.
 """
 __all__ = []
 
+import utils
 import feature
 import scatter
 import hist
+import hexbin
+
+
 import exp
 
 

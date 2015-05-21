@@ -30,26 +30,36 @@ def myplot(cat, filepath=None):
 	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one of the two limits.
 	size = megalut.plot.feature.Feature("adamom_sigma_mean", 0.0, 6.0, nicename = "Measured size")
 
+	# Adding error bars is as simple as specifying a column name:
+	g1_witherr = megalut.plot.feature.Feature("adamom_g1_mean", -0.6, 0.6, "Measured g1", errcolname="adamom_g1_std")
+	g2_witherr = megalut.plot.feature.Feature("adamom_g2_mean", -0.6, 0.6, "Measured g2", errcolname="adamom_g2_std")
 
-	fig = plt.figure(figsize=(12, 10))
+	fig = plt.figure(figsize=(17, 10))
 	#fig.subplots_adjust(bottom=0.05, top=0.90, left=0.05, right=0.95, wspace=0.42)
 	# Often not needed anymore (see tight_layout() below)
 	
-	ax1 = fig.add_subplot(221)	
-	megalut.plot.scatter.scatter(ax1, cat, sersicn, rho4, size, title="Hello", text="Auto text", show_id_line=True) # 5th argument is colorbar
+	ax = fig.add_subplot(2, 3, 1)	
+	megalut.plot.scatter.scatter(ax, cat, sersicn, rho4, size, title="Hello", text="Auto text", show_id_line=True) # 5th argument is colorbar
 	
-	ax2 = fig.add_subplot(222)	
-	megalut.plot.scatter.scatter(ax2, cat, g1, g2, sidehists=True, title="World!")
+	ax = fig.add_subplot(2, 3, 2)	
+	megalut.plot.scatter.scatter(ax, cat, g1, g2, sidehists=True, title="World!")
 	
 	# Of course, one can still modify the axes afterwards !
-	ax2.text(0.1, 0.3, "Some manually-placed text:\nnote the inverted y axis!", transform=ax2.transAxes)
-	ax2.set_ylim(ax2.get_ylim()[::-1])
+	ax.text(0.1, 0.3, "Some manually-placed text:\nnote the inverted y axis!", transform=ax.transAxes)
+	ax.set_ylim(ax.get_ylim()[::-1])
 	
 
-	ax3 = fig.add_subplot(223)
-	megalut.plot.hist.hist(ax3, cat[cat["adamom_flag_mean"] == 0], size, color="blue", label="average flag = 0", title="A title")
-	megalut.plot.hist.hist(ax3, cat[cat["adamom_flag_mean"] > 0], size, color="red", label="average flag > 0", text="Test")	
-	ax3.legend()
+	ax = fig.add_subplot(2, 3, 3)
+	megalut.plot.hist.hist(ax, cat[cat["adamom_flag_mean"] == 0], size, color="blue", label="average flag = 0", title="A title")
+	megalut.plot.hist.hist(ax, cat[cat["adamom_flag_mean"] > 0], size, color="red", label="average flag > 0", text="Test")	
+	ax.legend()
+	
+	ax = fig.add_subplot(2, 3, 4)
+	megalut.plot.scatter.scatter(ax, cat, g1_witherr, g2_witherr, size, title="Demo using Features with errors",
+		text="To get errorbars, simply specify errcolnames.\nEverything can be customized with kwargs.", s=20)
+	
+	ax = fig.add_subplot(2, 3, 5)
+	megalut.plot.hexbin.hexbin(ax, cat, g1, g2, size, gridsize=15) # See the doc for many further options
 	
 	plt.tight_layout()
 	if filepath:

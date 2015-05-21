@@ -13,6 +13,12 @@ import megalut.meas
 import numpy as np
 import astropy
 
+############################################################################################
+# Note that all this is an illustration of the low-level functions.
+# To draw and measure sims in real life, have a look at the much shorter "run" demos.
+############################################################################################
+
+
 
 # As before, we first set the desired distributions of parameters:
 
@@ -28,42 +34,42 @@ galcat = megalut.sim.stampgrid.drawcat(mysimparams, n=20, stampsize=48)
 print galcat[:5]
 
 
-# Now, we prepare the PSF stuff. In this case we'll use existing files.
-# We need an image with PSF stamps, and a catalog of this image.
-# For the image, we can either specify a Galsim image, or a filepath.
+# Now, we prepare the PSF stuff. We'll use existing PSF stamps.
+# We need an image with PSF stamps, and we need to add new columns in galcat.
+# To specify the image, we will add an ImageInfo object to catalog.
 
-#psfimg = megalut.tools.image.loadimg("psfs/psfgrid.fits")
-psfimg = "psfs/psfgrid.fits"
+# This PSF image comes with a catalog, which is not in form of an ImageInfo object.
+# (After all, that's what we want to demo here.)
+# So let's first have a look:
+
 psfcat = megalut.tools.io.readpickle("psfs/cat_psfgrid.pkl")
 print psfcat[:5]
-
-# The only columns we care about are those giving the position of each PSF, called psfgridx and psfgridy in this case.
-# We will later tell drawimg to use these columns.
-# You could very well prepare a catalog containing only x and y, nothing else.
-# Note that the PSFs don't even have to be on a grid !
-
-# We also need psfcat.meta to hold the stampsize (which can be different from the galcat stampsize !)
-# For this demo catalog, it's correctly set, to 32:
-
-print psfcat.meta["stampsize"]
-
-
-# There is one more constraint:
-
 print len(psfcat)
+print psfcat.meta
 
+# Now we can prepare the ImageInfo object from scratch, and already attach it to the galcat.
+galcat.meta["psf"] = megalut.tools.imageinfo.ImageInfo("psfs/psfgrid.fits", xname="psfx", yname="psfy", stampsize=32)
+
+# Now we have to add "psfx" and "psfy" columns to our galcat, and fill in a value for each row.
 # Oops, this catalog has only 100 PSFs, but we want to simulate 400 galaxies !
-# We *have* to provide a PSF catalog of the same length as the galcat.
-# So let's build this catalog by randomly picking PSFs:
+# So let's randomly assign a PSF to each galaxy in galcat.
+# Here is a neat way of doing this:
 
 matched_psfcat = psfcat[np.random.randint(low=0, high=100, size=400)] # We love astropy.table :)
-# Note that this makes a copy (not just refs), exactly as we want.
+# Note BTW that this makes a copy (not just refs).
 
+# Now we add the PSF positions to the galcat:
+galcat["psfx"] = matched_psfcat["psfx"]
+galcat["psfy"] = matched_psfcat["psfy"]
+
+# Note that the PSFs don't even have to be on a grid, any x and y coordinates are fine.
+# We could also give the same x and y for each galaxy, so that only one PSF gets used.
+
+print galcat[:5]
 
 # We are now ready to feed this into drawimg :
 
-megalut.sim.stampgrid.drawimg(galcat, psfcat=matched_psfcat, psfimg=psfimg,
-	psfxname="psfgridx", psfyname="psfgridy",
+megalut.sim.stampgrid.drawimg(galcat,
 	simgalimgfilepath="simgalimg.fits",
 	simtrugalimgfilepath="simtrugalimg.fits",
 	simpsfimgfilepath="simpsfimg.fits"
@@ -80,6 +86,8 @@ print meascat[:5]
 # We save it into a pickle
 megalut.tools.io.writepickle(meascat, "meascat.pkl")
 
+print "If you see masked values here, despite the fact that mes_flag is 0, update your numpy !"
+
 # Let's make a simple comparision plot:
 import matplotlib.pyplot as plt
 resi_x = meascat["mes_x"] - meascat["x"]
@@ -88,6 +96,7 @@ flag = meascat["mes_flag"]
 plt.scatter(resi_x, resi_y, c=flag, lw=0, s=30)
 plt.xlabel("mes_x residual")
 plt.ylabel("mes_y residual")
+plt.title("This is offset as the PSFs are not centered, fix me!")
 plt.show()
 
 

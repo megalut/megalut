@@ -143,7 +143,10 @@ class SkyNetWrapper():
 
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
-
+		else:
+			logger.warning("SkyNet workdir %s already exists, I will overwrite stuff !" % \
+				self.workdir)
+				
 		# How many validation points to use:
 		cut = int(float(np.shape(features)[0])/4.0)
 		
@@ -305,6 +308,8 @@ if __name__ == "__main__":
 	A little demo and test !
 	"""
 	import matplotlib.pyplot as plt
+	import logging
+	logging.basicConfig(level=logging.DEBUG)
 
 	# Simple 1D case : we predict y(x) from noisy data points.
 	

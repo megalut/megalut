@@ -84,7 +84,7 @@ class Branch:
 		return os.path.join(self.datadir, "/".join(self.branchtuple()))
 
 
-	# For now we online define here the "input" stuff, set by GREAT3.
+	# For now we only define here the "input" stuff, set by GREAT3.
 	# The MegaLUT output could be rethought, and is commented out.
 	
 	def get_ftiles(self, xt, yt):
@@ -101,7 +101,7 @@ class Branch:
 			folder=self.branchdir()
 		return os.path.join(folder, "image-%03i-%i%s.fits" % (subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
-	def psfimgfilepath(self, subfield, xt=None, yt=None, epoch=0):
+	def starimgfilepath(self, subfield, xt=None, yt=None, epoch=0):
 		return os.path.join(self.branchdir(), "starfield_image-%03i-%i%s.fits" % 
 						(subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
@@ -112,13 +112,18 @@ class Branch:
 		fname="galaxy_catalog-%03i%s.txt" % (subfield,self.get_ftiles(xt,yt))
 		return os.path.join(folder, fname) # This is set by GREAT3
 		
-	def starcatpath(self, subfield, xt=None, yt=None, folder=None):
+	def starcatfilepath(self, subfield, xt=None, yt=None, folder=None):
 		if folder==None:
 			folder=self.branchdir()
 		return os.path.join(folder, 'star_catalog-%03i%s.txt' % \
 						(subfield,self.get_ftiles(xt,yt))) # This is set by GREAT3
 	
-	def galfilepath(self, subfield, imgtype, prefix="", xt=None, yt=None):
+	
+	
+	
+	# Files that MegaLUT will write: 
+	
+	def obsincat(self, subfield, imgtype, prefix="", xt=None, yt=None):
 		return os.path.join(self.workdir, imgtype, "%simage-%03i-0%s_meascat.pkl" % \
 						(prefix,subfield,self.get_ftiles(xt,yt)))
 	

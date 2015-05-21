@@ -18,13 +18,45 @@ except ImportError:
 import os
 
 
+def measfct(catalog, runon="img", **kwargs):
+	"""
+	MegaLUT-conform measfct wrapper, offering the possiblity to run either on "img" stamps, or on
+	the "psf" stamps associated to the catalog. This might be useful for FDNT, depending on how
+	a pipeline handles PSF measurements.
+	
+	:param runon: "img" or "psf" or ... -- decides on which image this should run.
+		You might want to adjust the prefix, if running on something else than the default "img".
+	
+	Possible additional kwargs are params, config, sexpath, prefix... see function measure() below.
+	"""
+	
+	# Here we do not have to load the image, as sewpy works on FITS files
+	# However, we offer the choice to run on the "img" or the "psf" FITS file.
+	
+	if runon == "img":
+		imgfilepath = catalog.meta["img"].filepath
+	elif runon == "psf":
+		if not "psf" in catalog.meta:
+			raise RuntimeError("Cannot run on the psfs, as catalog.meta['psf'] is not defined.")
+		imgfilepath = catalog.meta["psf"].filepath
+	else:
+		raise RuntimeError("Unknown value for runon")
+	
+	return measure(
+		imgfilepath, catalog,
+		xname=catalog.meta["img"].xname,
+		yname=catalog.meta["img"].yname,
+		workdir=catalog.meta["img"].workdir,
+		**kwargs)
+
+
 def measure(img, catalog, xname="x", yname="y",
 	    params=None, config=None, workdir=None, sexpath="sex", prefix="sewpy_"):
 	"""
 	This is similar (in terms of API) to galsim_adamom.measure().
 	Returns a copy of the given catalog, with new columns appended.
 	
-	:param img: either the path to a FITS image, or a galsim image object
+	:param img: path to a FITS image
 	:param catalog: astropy table of objects to be measured
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: idem for y

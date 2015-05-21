@@ -10,6 +10,8 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.lines import Line2D
 
+import utils
+from .. import tools
 
 
 import logging
@@ -17,7 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, sidehists=False, sidehistkwargs=None, **kwargs):
+
+
+def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, idlinekwargs=None,
+	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -29,17 +34,21 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	:param featx: a Feature object telling me what to draw on my x axis
 	:param featy: idem for y
 	:param featc: a Feature to use for the colorbar, decides if plot() or scatter() is used.
-	:param cmap: the color bar to use
+	:param cmap: the color bar to use. For a scatter plot one usually wants to see every point, avoid white!
 	:param title: the title to place on top of the axis.
 		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
 	:param text: some text to be written in the figure (top left corner)
 		As we frequently want to do this, here is a simple way to do it.
 		For more complicated things, add the text yourself to the axes.
 	:param show_id_line: draws an "identity" diagonal line
+	:param idlinekwargs: a dict of kwargs that will be passed to plot() to draw the idline
+	:param metrics: if True, assumes that featx is a label ("tru") and featy is the corresponding predlabel ("pre"), and
+		writes the RMSD and other metrics on the plot.
 	:param sidehists: adds projection histograms on the top and the left (not nicely compatible with the colorbar)
 		The range of these hists are limited by your features limits. Bins outside your limits are not computed!
-	:param sidehistkwargs: a dict of keywordarguments to be passed to these histograms.
+	:param sidehistkwargs: a dict of keyword arguments to be passed to these histograms.
 		Add range=None to these if you want all bins to be computed.
+	:param errorbarkwargs: a dict of keywords to be passed to errorbar()
 	
 	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
 	
@@ -55,25 +64,59 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	* **s**: marker size
 	* **label**: for the legend
 
-	"""
+	By default plots will be rasterized if the catalog has more than 5000 entries. To overwrite,
+	just pass rasterized = True or False as kwarg.
 
-	xdata = cat[featx.colname]
-	ydata = cat[featy.colname]
+	"""
 	
+	# Some initial settings:
+	if sidehistkwargs is None:
+		sidehistkwargs = {}
+	if errorbarkwargs is None:
+		errorbarkwargs = {}
+	
+	if len(cat) > 5000: # We rasterize plot() and scatter(), to avoid millions of vector points.
+		logger.info("Plot will be rasterized, use kwarg rasterized=False if you want to avoid this")
+		rasterized = True
+	else:
+		rasterized = False
+	
+	logger.info("Preparing scatter plot of '%s' against '%s'" % (featx.colname, featy.colname))
+	
+	# Getting the data (without masked points):
+	features = [featx, featy]
+	if featc is not None:
+		features.append(featc)
+	data = utils.getdata(cat, features)		
+	
+	# Preparing errorbars
+	xerr = None
+	yerr = None
+	if featx.errcolname != None:
+		xerr = data[featx.errcolname]
+	if featy.errcolname != None:
+		yerr = data[featy.errcolname]
+	
+	# And now, two options:
 	if featc is not None: # We will use scatter(), to have a colorbar
 		
-		logger.debug("Preparing scatter plot of %i points with colorbar" % (len(cat))) # Log it as this might be slow
-		cdata = cat[featc.colname]
+		logger.info("Drawing %i points, with colorbar (using 'scatter')" % (len(data[featx.colname]))) # Log it as this might be slow
 		
 		# We prepare to use scatter, with a colorbar
 		cmap = matplotlib.cm.get_cmap(cmap)
-		mykwargs = {"marker":"o", "lw":0, "s":15, "cmap":cmap, "vmin":featc.low, "vmax":featc.high}
+		mykwargs = {"marker":"o", "lw":0, "s":15, "cmap":cmap, "vmin":featc.low, "vmax":featc.high, "rasterized":rasterized}
 		
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
 		
 		# And make the plot:
-		stuff = ax.scatter(xdata, ydata, c=cdata, **mykwargs)
+		
+		if featx.errcolname != None or featy.errcolname != None:
+			myerrorbarkwargs = {"fmt":"none", "capthick":0, "ecolor":"gray", "zorder":-100, "rasterized":rasterized}
+			myerrorbarkwargs.update(errorbarkwargs)	
+			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **myerrorbarkwargs)
+		
+		stuff = ax.scatter(data[featx.colname], data[featy.colname], c=data[featc.colname], **mykwargs)
 		divider = make_axes_locatable(ax)
 		cax = divider.append_axes("right", "5%", pad="3%")
 		cax = plt.colorbar(stuff, cax)
@@ -82,15 +125,24 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			
 	else: # We will use plot()
 	
-		logger.debug("Preparing plain plot of %i points without colorbar" % (len(cat)))
-		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3}
+		logger.info("Drawing %i points without colorbar (using 'plot')" % (len(data[featx.colname])))
+		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
 		mykwargs.update(kwargs)
-
-		# Plain plot:
-		ax.plot(xdata, ydata, **mykwargs)
-
+		
+		# And we also prepare any errorbarkwargs
+		myerrorbarkwargs = {"capthick":0, "zorder":-100, "rasterized":rasterized} # Different from the defaults for scatter() !
+		myerrorbarkwargs.update(errorbarkwargs)
+		
+		# And now the actual plot:
+		if featx.errcolname == None and featy.errcolname == None:
+			# Plain plot:
+			ax.plot(data[featx.colname], data[featy.colname], **mykwargs)
+		else:
+			mykwargs.update(myerrorbarkwargs)
+			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **mykwargs)
+		
 	
 	# We want minor ticks:
 	ax.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -112,8 +164,6 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		
 		# Same as for kwargs: we first define some defaults, and then update these defaults:
-		if sidehistkwargs is None:
-			sidehistkwargs = {}
 		
 		mysidehistxkwargs = {"histtype":"stepfilled", "bins":100, "ec":"none", "color":"gray", "range":histxrange}
 		mysidehistxkwargs.update(sidehistkwargs)
@@ -126,8 +176,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		# And draw the histograms		
-		axhistx.hist(xdata, **mysidehistxkwargs)
-		axhisty.hist(ydata, orientation='horizontal', **mysidehistykwargs)
+		axhistx.hist(data[featx.colname], **mysidehistxkwargs)
+		axhisty.hist(data[featy.colname], orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -158,16 +208,22 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		# For "low":
 		if featx.low is None or featy.low is None: # We use the data...
-			minid = max(np.min(xdata), np.min(ydata))
+			minid = max(np.min(data[featx.colname]), np.min(data[featy.colname]))
 		else:
 			minid = max(featx.low, featy.low)
 		# Same for "high":
 		if featx.high is None or featy.high is None: # We use the data...
-			maxid = min(np.max(xdata), np.max(ydata))
+			maxid = min(np.max(data[featx.colname]), np.max(data[featy.colname]))
 		else:
 			maxid = min(featx.high, featy.high)
+			
+		if idlinekwargs == None:
+			idlinekwargs = {}
+		myidlinekwargs = {"ls":"--", "color":"gray", "lw":1}
+		myidlinekwargs.update(idlinekwargs)	
+		
 		# And we plot the line:
-		ax.plot((minid, maxid), (minid, maxid), ls="--", color="gray", lw=1)
+		ax.plot((minid, maxid), (minid, maxid), **myidlinekwargs)
 
 
 	ax.set_xlim(featx.low, featx.high)
@@ -180,13 +236,25 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	if text:
 		ax.annotate(text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -8), textcoords='offset points', ha='left', va='top')
 	
+	if metrics:
 	
+		metrics_label = featx.colname
+		metrics_predlabel = featy.colname
+		
+		try:
+			metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
+			metrics_text = "predfrac: %.3f\nRMSD: %.3f\nm*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0)
+			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
+		except:
+			logger.warning("Metrics compuation failed", exc_info = True)
+		
 
 
 
 def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, **kwargs):
 	"""
-	A scatter plot overplotting simulations (in red) and observations (in green).
+	A scatter plot overplotting simulations (in red) and observations (in blue, like the sky).
+	Previously the observations were green (like nature), but blue is better for most colorblind people.
 			
 	:param ax: a matplotlib Axes object
 	:param simcat: simulation catalog
@@ -206,11 +274,21 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# Could we warn the user in case it seems that the catalogs are inverted ?
 	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
+	simdata = utils.getdata(simcat, [featx, featy])
+	obsdata = utils.getdata(obscat, [featx, featy])
+	
+	
+	if len(simcat) > 5000 or len(obscat) > 5000: # We rasterize plot() to avoid millions of vector points.
+		logger.info("Plot will be rasterized, use kwarg rasterized=False if you want to avoid this")
+		rasterized = True
+	else:
+		rasterized = False
+
 	# First we use plot() to get a scatter, directly on the axes:
-	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3}
+	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	plotkwargs.update(kwargs)
-	ax.plot(simcat[featx.colname], simcat[featy.colname], color="red", **plotkwargs)
-	ax.plot(obscat[featx.colname], obscat[featy.colname], color="green", **plotkwargs)
+	ax.plot(simdata[featx.colname], simdata[featy.colname], color="red", **plotkwargs)
+	ax.plot(obsdata[featx.colname], obsdata[featy.colname], color="blue", **plotkwargs)
 	
 	
 	# Now we build the sidehists:
@@ -240,10 +318,13 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		axhistx = divider.append_axes("top", 1.0, pad=0.1, sharex=ax)
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
-		axhistx.hist(simcat[featx.colname], color="red", ec="red", **mysidehistxkwargs)
-		axhistx.hist(obscat[featx.colname], color="green", ec="green", **mysidehistxkwargs)
-		axhisty.hist(simcat[featy.colname], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
-		axhisty.hist(obscat[featy.colname], color="green", ec="green", orientation='horizontal', **mysidehistykwargs)
+		
+		axhistx.hist(simdata[featx.colname], color="red", ec="red", **mysidehistxkwargs)
+		axhistx.hist(obsdata[featx.colname], color="blue", ec="blue", **mysidehistxkwargs)
+		
+		
+		axhisty.hist(simdata[featy.colname], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obsdata[featy.colname], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -274,7 +355,7 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	
 	if legend:
 		ax.annotate("Simulations", color="red", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -8), textcoords='offset points', ha='right', va='top')
-		ax.annotate("Observations", color="green", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
+		ax.annotate("Observations", color="blue", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
 	
 	
 	

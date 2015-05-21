@@ -13,11 +13,40 @@ logger = logging.getLogger(__name__)
 import astropy.table
 import galsim
 
+import utils
 from .. import tools
 from megalut.meas import utils
 
+def measfct(catalog, runon="img", stampsize=None, **kwargs):
+	"""
+	This is a wrapper around galsim_adamom that meets the requirements of a MegaLUT-conform shape measurement function, namely
+	to take only one catalog (astropy table) object containing -- or link to -- all the required data.
+	In other words, this is a function that you could pass to meas.run.general() etc.
+	If you want to combine several shape measurement algorithms into one shot, you would define such a function yourself (not here
+	in megalut, but somewhere in your scripts).
+	The present measfct serves as an example and is a bit long. It could be kept very short.
+	
+	:param catalog: an astropy table, which, in this case, is expected to have catalog.meta["img"] set
+		to be a megalut.tools.imageinfo.ImageInfo object.
+	:param runon: "img" or "psf" or other ImageInfo names to run on.
+	:param kwargs: keyword arguments that will be passed to the lower-level measure() function.
+		These set parameters of the shape measurement, but they do not pass any data.
+		Do not try to specify "img" or "xname" here, it will fail! Set the catalog's meta["img"] instead.
+		So for this particular measfct, you probably want to give at least stampsize as kwarg.
+	
+	"""
+	
+	# We get the stamp size to use:
+	stampsize = catalog.meta[runon].get_stampsize(stampsize)
+	
+	# We load the image:
+	img = catalog.meta[runon].load()
 
-def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, prefix="adamom_"):
+	# And we pass it, with all required kwargs, to the lower-level function:
+	return measure(img, catalog, xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname, stampsize=stampsize, **kwargs)
+
+
+def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"):
 	"""
 	Use the pixel positions provided via the 'catalog' input table to extract
 	postage stamps from the image and measure their shape parameters.
@@ -35,8 +64,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 	:param yname: idem for y
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
-	:param measuresky: set this to False if you don't want me to measure the sky (edge of stamps)
-	:param workdir: path where any possible output files are kept.
 	:param prefix: a string to prefix the field names that I'll write
 	
 	:returns: masked astropy table
@@ -47,17 +74,11 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		logger.debug("You gave me a filepath, and I'm now loading the image...")
 		img = tools.image.loadimg(img)
 	
-	if "stampsize" in catalog.meta:
-		if stampsize != catalog.meta["stampsize"]:
-			logger.warning("Measuring with stampsize=%i, but stamps have been generated with stampsize=%i" %\
-				(stampsize, catalog.meta["stampsize"]))
-			
-
 	if int(stampsize)%2 != 0:
-		raise RuntimeError("stampsize should be even!")
+		raise RuntimeError("The stampsize should be even!")
 
 	starttime = datetime.now()
-	logger.info("Starting shape measurements on %ix%i stamps" % (stampsize, stampsize))
+	logger.info("Starting measurements on %ix%i stamps" % (stampsize, stampsize))
 	
 	# We prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(catalog), masked=True) # Convert the table to a masked table
@@ -74,28 +95,10 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		astropy.table.MaskedColumn(name=prefix+"sigma", dtype=float, length=len(output)),
 		astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output))
 	])
-	# By default, all these entries are masked:
+	# We want to mask all these entries. They will get unmasked when values will be attributed.
 	for col in ["flux", "x", "y", "g1", "g2", "sigma", "rho4"]:
-		output[prefix+col].mask = [True] * len(output)
-	
-	# Similarly, we prepare columns for the sky stats:
-	if measuresky:
-		output.add_columns([
-			astropy.table.MaskedColumn(name=prefix+"skystd", dtype=float, length=len(output)),
-			astropy.table.MaskedColumn(name=prefix+"skymad", dtype=float, length=len(output)),
-			astropy.table.MaskedColumn(name=prefix+"skymean", dtype=float, length=len(output)),
-			astropy.table.MaskedColumn(name=prefix+"skymed", dtype=float, length=len(output))
-		])
-		for col in ["skystd", "skymad", "skymean", "skymed"]:
-			output[prefix+col].mask = [True] * len(output)
-	
-	# Let's save something useful to the meta dict
-	output.meta[prefix + "xname"] = xname
-	output.meta[prefix + "yname"] = yname
-	
-	# We do not store this long string here, as it leads to problems when saving the cat to FITS
-	#output.meta[prefix + "imgfilepath"] = img.origimgfilepath
-	
+		output[prefix+col].mask = [True] * len(output) # "True" means masked !
+		
 	n = len(output)
 	
 	# And loop
@@ -114,17 +117,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 			gal[prefix+"flag"] = flag
 			# We can't do anything, and we just skip this galaxy.
 			continue
-		
-		
-		# If the getting the stamp worked fine, we can for sure 
-		# estimate the sky noise and other stats:
-		if measuresky:
-			out = utils.skystats(gps)
-			gal[prefix + "skystd"] = out["std"]
-			gal[prefix + "skymad"] = out["mad"]
-			gal[prefix + "skymean"] = out["mean"]
-			gal[prefix + "skymed"] = out["med"]
-		
+				
 		# And now we measure the moments... galsim may fail from time to time, hence the try:
 		try:
 			res = galsim.hsm.FindAdaptiveMom(gps)
@@ -145,7 +138,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=100, measuresky=True, 
 		gal[prefix+"sigma"] = res.moments_sigma
 		gal[prefix+"rho4"] = res.moments_rho4
 
-		# If we made it so far, we check that the centroid is roughly ok:
+		# If we made it to this point, we check that the centroid is roughly ok:
 		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 			gal[prefix + "flag"] = 2
 		

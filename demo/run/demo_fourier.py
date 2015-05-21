@@ -1,3 +1,8 @@
+"""
+Demo of the "fourier.py" measurement, mainly to explore its speed.
+
+"""
+
 import os
 import megalut
 import megalut.sim
@@ -11,38 +16,46 @@ basedir = '/tmp/MegaLUT_demo/'
 
 print "Step 1: drawing the sims"
 
-simdir = os.path.join(basedir, "simdir")
+simdir = os.path.join(basedir, "simdir") # Where the simulations should be written
 
-class Flux80(megalut.sim.params.Params):
+class Flux700(megalut.sim.params.Params):
 	def get_flux(self):
-		return 80.0 # Low flux, so that we get some failures in this demo.
+		return 700.0 # Low flux, so that we get some failures in this demo.
 
-simparams = Flux80()
-drawcatkwargs = {"n":10, "stampsize":64}
+simparams = Flux700()
 
-megalut.sim.run.multi(simdir, simparams, drawcatkwargs, ncat=3, nrea=5, ncpu=3)
+
+# We have to prepare a psfcat
+psfcat = megalut.tools.io.readpickle("../generic/psfs/cat_psfgrid.pkl")
+
+# This particular psfcat has no imageinfo yet, so we prepare one from scratch:
+psfcat.meta["img"] = megalut.tools.imageinfo.ImageInfo("../generic/psfs/psfgrid.fits", "psfx", "psfy", 32)
+
+drawcatkwargs = {"n":100, "stampsize":32}
+
+megalut.sim.run.multi(simdir, simparams, drawcatkwargs,
+	psfcat=psfcat, psfselect="random",
+	ncat=1, nrea=1, ncpu=1)
 
 
 print "Step 2, measuring"
 
-measdir = os.path.join(basedir, "measdir")
+measdir = os.path.join(basedir, "measdir") # Where the measurements should be written
+measfct = megalut.meas.fourier.measfct
+measfctkwargs = {}
 
-def measfct(cat, **kwargs):
-	cat = megalut.meas.galsim_adamom.measfct(cat, **kwargs)
-	cat = megalut.meas.skystats.measfct(cat, **kwargs)
-	return cat
-	
-measfctkwargs = {"stampsize":64}
+megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1, skipdone=False)
 
-megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=3)
+
+exit()
 
 
 
 print "Step 3, summarizing measurements accross simulations"
 
 groupcols = [
-	"adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
-	"adamom_sigma", "adamom_rho4", "adamom_flag",
+	"fourier_adamom_flux", "fourier_adamom_x", "fourier_adamom_y", "fourier_adamom_g1", "fourier_adamom_g2",
+	"fourier_adamom_sigma", "fourier_adamom_rho4", "fourier_adamom_flag",
 	"skystd", "skymad", "skymean", "skymed", "skyflag"
 	]
 
@@ -54,8 +67,8 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 	removereas = True
 	)
 
-print mybigmeascat["id", "tru_flux", "adamom_flux_mean", "adamom_flux_med", "adamom_flux_std", "adamom_flux_n"]
-
+print mybigmeascat["id", "tru_flux", "fourier_adamom_flux_mean", "fourier_adamom_flux_med", "fourier_adamom_flux_std", "fourier_adamom_flux_n"]
+print mybigmeascat.meta
 
 
 
@@ -69,7 +82,7 @@ import megalut.meas.sewfunc
 measdir = os.path.join(basedir, "measdir_sextractor")
 measfct = megalut.meas.sewfunc.measfct
 measfctkwargs = {
-	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex", 
 	"prefix":""
 	}
 
