@@ -3,7 +3,7 @@ This files holds a user-defined measfct.
 This way the user has maximum freedom to tweak it, without hardcoding.
 
 It's a very good idea to keep this function in a separate module and not in your
-script, so that it can be imported by the multiprocessing pool workers that will call,
+script, so that it can be imported by the multiprocessing pool workers that will call
 it without causing any trouble!
 """
 
