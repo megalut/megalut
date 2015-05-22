@@ -19,9 +19,10 @@ from megalut import tools
 from megalut.meas import sewfunc
 import sewpy
 from megalut.meas import utils
+from .. import tools
 
 
-def measfct(catalog, **kwargs):
+def measfct(catalog, runon="img", stampsize=None, **kwargs):
         """
         This is a wrapper around FDNT that meets the requirements of a MegaLUT-conformed shape
 	measurement function, namely to take only one catalog (astropy table) object containing
@@ -43,27 +44,20 @@ def measfct(catalog, **kwargs):
 		       as kwarg.
         """
 
-        # We could have some warnings here.
-	# Just to illustrate, an example:
-
-	if catalog.meta["img"].stampsize is not None and "stampsize" in kwargs:
-		if catalog.meta["img"].stampsize != kwargs["stampsize"]:
-			logger.warning("Measuring with stampsize %i, but stamps have been generated with stampsize %i" % (kwargs["stampsize"], catalog.meta["img"].stampsize))
+	# check for stampsize for "img"
+	stampsize = catalog.meta[runon].get_stampsize(stampsize)
 
 	# load the images:
-	img = catalog.meta["img"].load()
-	psfimg = catalog.meta["psf"].load()
+	img = catalog.meta[runon].load()
 
         # And we pass it, with all required kwargs, to the lower-level function:
 	return measure(img, catalog,
-		       xname=catalog.meta["img"].xname, yname=catalog.meta["img"].yname,
-		       psfxname=catalog.meta["psf"].xname, psfyname=catalog.meta["psf"].yname,
-		       stampsize=catalog.meta["img"].stampsize,
-		       psfstampsize=catalog.meta["psf"].stampsize,
+		       xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname,
+		       stampsize=stampsize,
 		       **kwargs)
 
 
-def measure(img, catalog, psfimg, stampsize=128, xname="x", yname="y", prefix="fdnt_",
+def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128,):
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
