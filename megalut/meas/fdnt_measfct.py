@@ -25,10 +25,6 @@ def measfct(img, catalog, psfimg, workdir=None, stampsize=None, psfstampsize=Non
 	outcat = megalut.meas.sewfunc.measure(img, catalog, workdir=workdir, sexpath=sexpath, prefix='')
 
 	# Run SExtractor on PSFs
-	print
-	print "IT BEGINS HERE"
-	print
-
 	outcat = megalut.meas.sewfunc_psf.measure(psfimg, outcat, workdir=workdir, sexpath=sexpath)
 
 	# Run FDNT:

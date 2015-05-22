@@ -15,7 +15,7 @@ import galsim
 
 import utils
 from .. import tools
-from megalut.meas import utils
+
 
 def measfct(catalog, runon="img", stampsize=None, **kwargs):
 	"""
