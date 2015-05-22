@@ -46,12 +46,23 @@ def measfct(catalog, runon="img", stampsize=None, **kwargs):
 
 	# check for stampsize for "img"
 	stampsize = catalog.meta[runon].get_stampsize(stampsize)
-
 	# load the images:
 	img = catalog.meta[runon].load()
 
+	# run SExtractor on galaxies, add info to catalog
+	se_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE",
+		     "THETAWIN_IMAGE", "NITER_WIN", "FLAGS_WIN",
+		     "FLUX_AUTO", "FLUXERR_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
+	outcat = megalut.meas.sewfunc.measfct(catalog, runon="img", params=se_params, prefix="")
+
+	# run SExtractor on PSFs, add info to catalog
+	se_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE",
+		     "THETAWIN_IMAGE", "FLAGS_WIN", "FLUX_RADIUS",
+		     "FLUX_AUTO", "FLUXERR_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
+	outcat = megalut.meas.sewfunc.measfct(outcat, runon="psf", prefix="psf_")
+
         # And we pass it, with all required kwargs, to the lower-level function:
-	return measure(img, catalog,
+	return measure(img, outcat,
 		       xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname,
 		       stampsize=stampsize,
 		       **kwargs)
@@ -65,7 +76,6 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 	
 	:param img: image to be measured
 	:param catalog: astropy table of objects to be measured
-	:param psfimg: PSF image that is convolved into the image
 
 	:param stampsize: img stamp size
 	:param xname: column name containing the x coordinates in pixels
@@ -95,12 +105,10 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 
 		logger.debug("Filepath given, loading the corresponding image...")
 		img = tools.image.loadimg(img)
-		img.setOrigin(0,0)     # for it to work with megalut.tools.image.getstamp()
 
 	if type(psfimg) is str:
 
 		psf_img = tools.image.loadimg(psfimg)
-		psf_img.setOrigin(0,0)  # for it to work with megalut.tools.image.getstamp()
 
 	# Prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(catalog))  #, masked=True) # Convert the table to a masked table
@@ -152,15 +160,20 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 	
 	# Loop over each object
 
+	"""
 	# DEBUG BLOCK
 	count = 0
 	mincount, maxcount = (4, 13)
+	"""
 
 	for obj in output:
 		
+		"""
 		# DEBUG BLOCK
 		count += 1  ## DEBUG
 		if count < mincount: continue  ## DEBUG
+		"""
+
 		# Some simplistic progress indication:
 		if obj.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(obj.index)/float(n),
@@ -235,7 +248,10 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 			logger.debug("GLMoments failed with %s:\n %s" % (m, str(obj)), exc_info=True)
 			#print "GLMoments failed on:\n %s" % (str(gal))
 			obj[prefix + "flag"] = -1
+
+			"""
 			if count >= maxcount:  break   ## DEBUG
+			"""
 			continue
 
 		obj[prefix + "flag"] = res.intrinsic_flags
@@ -271,6 +287,7 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 			print "results not set correctly"  # NOTE: currently no masking is applied
 			pass  # do nothing, this will "mask" the value out from the astropy table.
 
+		"""
 		## DEBUG BLOCK
 		if count >= maxcount:
 			print output[:maxcount]
@@ -280,6 +297,7 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 				         #prefix+'psf_sigma', prefix+'psf_order'
 					 ]
 			return output
+		"""
 
 	endtime = datetime.now()	
 	logger.info("All done")
@@ -291,7 +309,10 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 	logger.info("This measurement took %.3f ms per galaxy" % \
 			    (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
+	"""
 	print output  ## DEBUG
+	"""
+
 	return output
 
 
