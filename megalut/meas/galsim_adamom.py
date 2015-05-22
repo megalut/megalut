@@ -152,5 +152,3 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
 	return output
-
-
