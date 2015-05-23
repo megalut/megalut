@@ -112,7 +112,7 @@ def simobscompa(simcat, obscat):
 	
 	fig = plt.figure(figsize=(23, 11))
 		
-	flux = Feature("adamom_flux", 0, 70000)
+	flux = Feature("adamom_flux")
 	sigma = Feature("adamom_sigma", 0, 25)
 	
 	rho4 = Feature("adamom_rho4", 1.5, 2.5)
@@ -148,7 +148,7 @@ def simobscompa(simcat, obscat):
 	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, snr)
 		
 	ax = fig.add_subplot(2, 4, 5)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, skymad, skystd)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, skystd)
 	
 	ax = fig.add_subplot(2, 4, 6)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, skymed, skymean)

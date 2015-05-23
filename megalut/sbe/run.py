@@ -29,6 +29,8 @@ class Run():
 		
 		self.workobsdir = os.path.join(self.workdir, "obs")
 		self.worksimdir = os.path.join(self.workdir, "sim")
+		self.workmldir = os.path.join(self.workdir, "ml")
+		
 		
 		if not os.path.exists(self.workdir):
 			os.makedirs(self.workdir)
@@ -36,6 +38,11 @@ class Run():
 			os.makedirs(self.workobsdir)
 		if not os.path.exists(self.worksimdir):
 			os.makedirs(self.worksimdir)
+		if not os.path.exists(self.workmldir):
+			os.makedirs(self.workmldir)
+
+		self.groupobspath = os.path.join(self.workobsdir, "groupobs.pkl")
+
 
 	
 	def makecats(self, onlyn = None, sbe_sample_scale=0.05):
@@ -111,7 +118,7 @@ class Run():
 			megalut.tools.io.writepickle(cat, catfilepath)
 		
 
-	def measobs(self, measfct, stampsize=200):
+	def measobs(self, measfct, stampsize=200, skipdone=True):
 		"""
 		Runs the measfct on the observations
 		"""
@@ -123,9 +130,10 @@ class Run():
 	
 		measfctkwargs = {"stampsize":stampsize}
 	
-		megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=True)
+		megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=skipdone)
 		
-
+		
+		
 
 	def plotobscheck(self):
 		"""
@@ -144,14 +152,17 @@ class Run():
 			plot.meascheck(cat, plotfilepath)
 	
 
-	def groupsomeobs(self, nfiles=50):
+	def groupobs(self, nfiles="all"):
 		"""
-		Groups a tractable sample of the obs measurements into a single catalog, handy for testing distributions.
+		Groups either all or some tractable sample of the obs measurements into a single catalog, handy for testing distributions.
 		"""
 		
 		catfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
 		
-		somefiles = random.sample(catfilepaths, nfiles)
+		if nfiles == "all":
+			somefiles = catfilepaths
+		else:
+			somefiles = random.sample(catfilepaths, nfiles)
 		
 		somecats = [megalut.tools.io.readpickle(f) for f in somefiles]
 		for cat in somecats:
@@ -159,17 +170,32 @@ class Run():
 		
 		groupcat = astropy.table.vstack(somecats, join_type="exact", metadata_conflicts="error")
 		
-		megalut.tools.io.writepickle(groupcat, os.path.join(self.workobsdir, "mergedobs.pkl"))
+		megalut.tools.io.writepickle(groupcat, self.groupobspath)
 		
+	
+	def showmeasobsfrac(self, fields = ["skystd", "sewpy_FLUX_AUTO", "adamom_flux"]):
+		"""
+		For testing purposes, computes measurement success fractions.
+		"""
 		
-		
+		cat = megalut.tools.io.readpickle(self.groupobspath)
+		#print cat.colnames
+				
+		for field in fields:
+			nbad = np.sum(cat[field].mask)
+			ntot = len(cat)
+			print "%20s: %.3f%% ( %i / %i are masked)" % (field, 100.0*float(ntot - nbad)/float(ntot), nbad, ntot)
+			
+		#import matplotlib.pyplot as plt
+		#plt.plot(cat["sewpy_FLUX_AUTO"], cat["adamom_flux"], "b.")
+		#plt.show()
 
 	def plotmixobscheck(self):
 		"""
 		One checkplot mixing several SBE files.
 		"""
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "mergedobs.pkl"))
+		cat = megalut.tools.io.readpickle(os.path.join(self.workdir, "someobs.pkl"))
 		plot.meascheck(cat)
 	
 	
@@ -206,21 +232,92 @@ class Run():
 		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, simcatpath))
 				
 		# And a bunch of the obs
-		obscat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "mergedobs.pkl"))
+		obscat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "someobs.pkl"))
 			
 		plot.simobscompa(simcat, obscat)
 		
 
 
+	def avgsimmeas(self, simparams, groupcols, removecols):
+		"""
+		Averages the measurements on the sims accross the different realizations, and writes
+		a single training catalog for the ML.
+		"""	
+	
+		avgmeascat = megalut.meas.avg.onsims(self.worksimdir, simparams,
+			groupcols=groupcols,
+			removecols=removecols,
+			removereas=False,
+			keepfirstrea=True
+		)
+
+		megalut.tools.io.writepickle(avgmeascat, os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
 
 
+	def train(self, simparams, trainparamslist):
+		"""
+		
+		"""
+		
+		# We load the training catalog
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
+		
+		# We reject crap ones
+		ngroupstats = simcat.meta["ngroupstats"]
+		simcat = simcat[simcat["adamom_flux_n"] > float(ngroupstats)/2.0]
+		logger.info("Keeping %i galaxies for training" % (len(simcat)))
+		
+		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
+		#plot.simcheck(simcat)
+		
+		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
+			
+		
+	
+	def predictsims(self, simparams, trainparamslist):
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
+		
+		#cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="all")
+		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="_rea0")
+		
+		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat.pkl"))
+	
+
+
+	
+
+
+
+	def predictobs_indiv(self, trainparamslist):
+		"""
+		Predicts each SBE file separately
+		"""
+		incatfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
+		
+		logger.info("Predicting %i cats..." % len(incatfilepaths))
+	
+		for incatfilepath in incatfilepaths:
+
+			
+			cat = megalut.tools.io.readpickle(incatfilepath)
+			outcatfilepath = os.path.join(self.workmldir, cat.meta["workname"] + "-precat.pkl")
+
+			cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, totweak="_mean", tweakmode="")
+		
+			# The uncertainties:
+			#cat = megalut.learn.run.predict(cat, self.mlworkdir, errtrainparamslist, totweak="_rea0", tweakmode="")
+		
+			megalut.tools.io.writepickle(cat, outcatfilepath)
+	
+		
 
 
 	
 	def writeresults(self):
 		
 		"""
-		catfilepaths = glob.glob(os.path.join(self.workdir, "*-meascat.pkl"))
+		catfilepaths = glob.glob(os.path.join(self.workmldir, "*-precat.pkl"))
 		
 		
 		# Output the result data table
