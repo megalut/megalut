@@ -10,6 +10,8 @@ import galsim
 import logging
 logger = logging.getLogger(__name__)
 
+
+
 def simmeasdict(measdir, simparams):
 	"""
 	Function to help you explore available measurements of simulations obtained by :func:`megalut.meas.run.onsims`
@@ -64,8 +66,9 @@ def simmeasdict(measdir, simparams):
 	
 	logger.info("Found %i catalogs, and %i realizations (%.1f per catalog, on average)" %
 		(len(catnames), len(namereatuples), float(len(namereatuples))/float(len(catnames))))
-	
+
 	return out
+
 
 
 def mad(nparray):

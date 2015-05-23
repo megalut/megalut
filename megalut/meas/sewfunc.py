@@ -44,9 +44,9 @@ def measfct(catalog, runon="img", **kwargs):
 	
 	return measure(
 		imgfilepath, catalog,
-		xname=catalog.meta["img"].xname,
-		yname=catalog.meta["img"].yname,
-		workdir=catalog.meta["img"].workdir,
+		xname=catalog.meta[runon].xname,
+		yname=catalog.meta[runon].yname,
+		workdir=catalog.meta[runon].workdir,
 		**kwargs)
 
 
