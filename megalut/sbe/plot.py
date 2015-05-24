@@ -10,7 +10,9 @@ logger = logging.getLogger(__name__)
 
 
 def meascheck(cat, filepath=None):
-	
+	"""
+	Plots measured things against the SBE truth, to get a first idea and check conventions.
+	"""
 	snr = megalut.plot.feature.Feature("sewpy_snr")
 	
 	cat["astromerrx"] = cat["x"] - cat["adamom_x"]
@@ -105,7 +107,7 @@ def meascheck(cat, filepath=None):
 def simobscompa(simcat, obscat):
 
 	"""
-	In feature space
+	A classic, in feature space
 	"""
 	simcat = megalut.tools.table.shuffle(simcat)
 	obscat = megalut.tools.table.shuffle(obscat)
@@ -128,7 +130,7 @@ def simobscompa(simcat, obscat):
 	psf_sigma = Feature("tru_psf_sigma")
 	
 	
-	snr = megalut.plot.feature.Feature("sewpy_snr")
+	snr =Feature("sewpy_snr")
 	#a = megalut.plot.feature.Feature("sewpy_AWIN_IMAGE", 1.0, 4.0)
 	#fwhm = megalut.plot.feature.Feature("sewpy_FWHM_IMAGE", 1.0, 6.0)
 	#sewpyflags = megalut.plot.feature.Feature("sewpy_FLAGS")
@@ -162,6 +164,70 @@ def simobscompa(simcat, obscat):
 	plt.tight_layout()
 	plt.show()	
 	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+def predscatter(cat):
+	"""
+	First plain old scatter plot of predictions against truth
+	"""
+	rg = 0.8
+	
+	tru_g1 = Feature("tru_g1", -rg, rg)
+	tru_g2 = Feature("tru_g2", -rg, rg)
+	tru_sigma = Feature("tru_sigma")
+	tru_flux = Feature("tru_flux")
+	
+	pre_g1 = Feature("pre_g1", -rg, rg)
+	pre_g2 = Feature("pre_g2", -rg, rg)
+	pre_sigma = Feature("pre_sigma")
+	pre_flux = Feature("pre_flux")
+	
+	snr =Feature("sewpy_snr_mean")
+	
+	fig = plt.figure(figsize=(22, 13))
+	
+	ax = fig.add_subplot(3, 4, 1)	
+	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+		
+	ax = fig.add_subplot(3, 4, 2)	
+	megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+		
+	ax = fig.add_subplot(3, 4, 3)	
+	megalut.plot.scatter.scatter(ax, cat, tru_sigma, pre_sigma, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+
+	ax = fig.add_subplot(3, 4, 4)	
+	megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+
+	ax = fig.add_subplot(3, 4, 5)	
+	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, snr, s=5, metrics=True)
+		
+	ax = fig.add_subplot(3, 4, 6)	
+	megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, snr, s=5, metrics=True)
+		
+	ax = fig.add_subplot(3, 4, 7)	
+	megalut.plot.scatter.scatter(ax, cat, tru_sigma, pre_sigma, snr, s=5, metrics=True)
+
+	ax = fig.add_subplot(3, 4, 8)	
+	megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, snr, s=5, metrics=True)
+
+	#ax = fig.add_subplot(3, 4, 9)	
+	#megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+	
+	#ax = fig.add_subplot(3, 4, 10)	
+	#megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, snr_narrow, s=5, metrics=False)
+	
+	plt.tight_layout()
+	plt.show()
+	
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
 
 
 

@@ -195,7 +195,7 @@ class Run():
 		One checkplot mixing several SBE files.
 		"""
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.workdir, "someobs.pkl"))
+		cat = megalut.tools.io.readpickle(self.groupobspath)
 		plot.meascheck(cat)
 	
 	
@@ -232,7 +232,7 @@ class Run():
 		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, simcatpath))
 				
 		# And a bunch of the obs
-		obscat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "someobs.pkl"))
+		obscat = megalut.tools.io.readpickle(self.groupobspath)
 			
 		plot.simobscompa(simcat, obscat)
 		
@@ -285,13 +285,81 @@ class Run():
 	
 
 
+	def plotpredsims(self):
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
+		plot.predscatter(cat)
+		
+
+
+
+	def predictobs(self, trainparamslist):
+	
+		cat = megalut.tools.io.readpickle(self.groupobspath)
+		
+		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="") # Drop the "_mean" which does not exists for obs
+		
+		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "obsprecat.pkl"))
+
 	
 
 
 
+	def writepredsbe(self, outdir=None):
+		"""
+		
+		Warning, this writes results into the sbedatadir, as does the example script
+		"""
+		
+		# When merging the catalogs, we lost the info about filenames.
+		# It might be that in the following we mix up file names with respect to the original drawing.
+		# But given that each file is equivalent (params randomly drawn from the same distribs)
+		# this will produce exactly the same results.
+		
+		filenames = io.get_filenames(self.sbedatadir)
+		#print "\n".join(filenames)
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
+		
+		# As the SBE scripts are fully self-inconsistent, we have to rename even their own columns here...
+		
+		cat["PSF_shape_angle_degrees"] = cat["PSF_shape_2"]
+		cat["e1_guess"] = cat["pre_g1"]
+		cat["e2_guess"] = cat["pre_g2"]
+		cat["gal_g1"] = cat["Galaxy_g1"]
+		cat["gal_g2"] = cat["Galaxy_g2"]
+		cat["weight"] = np.logical_not(cat["pre_g1"].mask).astype("float")
+		
+		cat.keep_columns(["PSF_shape_angle_degrees", "e1_guess", "e2_guess", "gal_g1", "gal_g2", "weight"])
+		
+		print "For testing, here are a few rows of your catalog:"
+		print cat[:20]
+		
+		
+		
+		for (i, filename) in enumerate(filenames):
+			
+			subcat = cat[i*1024:(i+1)*1024].filled(999.0)
+			assert len(subcat) == 1024
+			
+			#print filename
+			exportpath = filename + "_res.dat"
+			#exportpath = "test.txt"
+			
+			subcat.write(exportpath, format='ascii.commented_header', delimiter="\t")
+			
+			logger.info("Wrote %s" % exportpath)
+
+
+			#exit()
+	
+	
+
+
 	def predictobs_indiv(self, trainparamslist):
 		"""
-		Predicts each SBE file separately
+		Predicts each SBE file separately DO WE NEED THIS
+		"""
 		"""
 		incatfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
 		
@@ -309,7 +377,7 @@ class Run():
 			#cat = megalut.learn.run.predict(cat, self.mlworkdir, errtrainparamslist, totweak="_rea0", tweakmode="")
 		
 			megalut.tools.io.writepickle(cat, outcatfilepath)
-	
+		"""
 		
 
 
