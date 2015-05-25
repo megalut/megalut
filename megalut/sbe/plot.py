@@ -9,14 +9,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def meascheck(cat, filepath=None):
+def meascheck(cat, filepath=None, prefix="adamom_", g12_low=None, g12_high=None):
 	"""
 	Plots measured things against the SBE truth, to get a first idea and check conventions.
 	"""
 	snr = megalut.plot.feature.Feature("sewpy_snr")
 	
-	cat["astromerrx"] = cat["x"] - cat["adamom_x"]
-	cat["astromerry"] = cat["y"] - cat["adamom_y"]
+	cat["astromerrx"] = cat["x"] - cat[prefix+"x"]
+	cat["astromerry"] = cat["y"] - cat[prefix+"y"]
 	cat["sewpyastromerrx"] = cat["x"] - cat["sewpy_XWIN_IMAGE"]
 	cat["sewpyastromerry"] = cat["y"] - cat["sewpy_YWIN_IMAGE"]
 
@@ -44,9 +44,9 @@ def meascheck(cat, filepath=None):
 	Galaxy_g1 = Feature("Galaxy_g1")
 	Galaxy_g2 = Feature("Galaxy_g2")
 	
-	adamom_g1 = Feature("adamom_g1")
-	adamom_g2 = Feature("adamom_g2")
-	adamom_sigma = Feature("adamom_sigma")
+	adamom_g1 = Feature(prefix+"g1", g12_low, g12_high)
+	adamom_g2 = Feature(prefix+"g2", g12_low, g12_high)
+	adamom_sigma = Feature(prefix+"sigma")
 	
 	Sky_level_subtracted = Feature("Sky_level_subtracted")
 	Read_noise = Feature("Read_noise")
@@ -104,7 +104,7 @@ def meascheck(cat, filepath=None):
 
 
 
-def simobscompa(simcat, obscat):
+def simobscompa(simcat, obscat, prefix="adamom_"):
 
 	"""
 	A classic, in feature space
@@ -114,12 +114,12 @@ def simobscompa(simcat, obscat):
 	
 	fig = plt.figure(figsize=(23, 11))
 		
-	flux = Feature("adamom_flux")
-	sigma = Feature("adamom_sigma", 0, 25)
+	flux = Feature(prefix+"flux")
+	sigma = Feature(prefix+"sigma", 0, 25)
 	
-	rho4 = Feature("adamom_rho4", 1.5, 2.5)
-	g1 = Feature("adamom_g1", -0.6, 0.6)
-	g2 = Feature("adamom_g2", -0.6, 0.6)
+	rho4 = Feature(prefix+"rho4", 1.5, 2.5)
+	g1 = Feature(prefix+"g1", -0.6, 0.6)
+	g2 = Feature(prefix+"g2", -0.6, 0.6)
 	skymad = Feature("skymad")
 	skystd = Feature("skystd")
 	skymed = Feature("skymed")

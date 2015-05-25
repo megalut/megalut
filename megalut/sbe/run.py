@@ -135,7 +135,7 @@ class Run():
 		
 		
 
-	def plotobscheck(self):
+	def plotobscheck(self, prefix="adamom_", g12_low=None, g12_high=None):
 		"""
 		One checkplot for every SBE "file"
 		"""
@@ -149,7 +149,7 @@ class Run():
 			
 			plotfilepath = os.path.join(self.workobsdir, cat.meta["workname"] + "-measobscheckplot.png")
 			
-			plot.meascheck(cat, plotfilepath)
+			plot.meascheck(cat, plotfilepath, prefix, g12_low, g12_high)
 	
 
 	def groupobs(self, nfiles="all"):
@@ -222,7 +222,7 @@ class Run():
 		
 
 
-	def plotsimobscompa(self, simparams):
+	def plotsimobscompa(self, simparams, prefix="adamom_"):
 		"""
 		Again, a classic...
 		"""
@@ -234,7 +234,7 @@ class Run():
 		# And a bunch of the obs
 		obscat = megalut.tools.io.readpickle(self.groupobspath)
 			
-		plot.simobscompa(simcat, obscat)
+		plot.simobscompa(simcat, obscat, prefix=prefix)
 		
 
 
