@@ -22,7 +22,25 @@ from megalut.meas import utils
 from .. import tools
 
 
-def measfct(catalog, runon="img", stampsize=None, **kwargs):
+def SBE_make_psf_image(sigma, g, beta, npix=200, pixel_scale=0.1, subsample_scale=0.05):
+
+    psf = galsim.Gaussian(flux=1., sigma=sigma)
+    psf.applyShear(g=g, beta=beta*galsim.degrees)
+
+    # Set up the pixel profile (a top-hat)
+    pix = galsim.Pixel(pixel_scale)
+
+    # Convolve the psf and pixel profile to determine the pixelized psf image
+    pixelized_psf = galsim.Convolve([psf, pix])
+
+    psf_image = galsim.ImageF(npix, npix, scale=subsample_scale)
+
+    pixelized_psf.draw(psf_image, scale=subsample_scale)
+
+    return psf_image
+
+
+def measfct(catalog, runon="img", psf_from=None, stampsize=None, **kwargs):
         """
         This is a wrapper around FDNT that meets the requirements of a MegaLUT-conformed shape
 	measurement function, namely to take only one catalog (astropy table) object containing
@@ -48,28 +66,52 @@ def measfct(catalog, runon="img", stampsize=None, **kwargs):
 	stampsize = catalog.meta[runon].get_stampsize(stampsize)
 	# load the images:
 	img = catalog.meta[runon].load()
+	# initialize psf_stampsize  XXX TODO XXX :: determine a good place to put this
+	psf_stampsize = None
 
 	# run SExtractor on galaxies, add info to catalog
 	se_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE",
 		     "THETAWIN_IMAGE", "NITER_WIN", "FLAGS_WIN",
 		     "FLUX_AUTO", "FLUXERR_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
-	outcat = megalut.meas.sewfunc.measfct(catalog, runon="img", params=se_params, prefix="")
+	outcat = sewfunc.measfct(catalog, runon="img", params=se_params, prefix="")
 
 	# run SExtractor on PSFs, add info to catalog
+	if psf_from == "SBE_cat":
+
+		# get PSF info from the catalog (currently Gaussian PSF)
+		psf_e = catalog["PSF_shape_1"]
+		psf_beta = catalog["PSF_shape_2"]
+		psf_sigma = catalog["PSF_sigma_arcsec"]
+		psf_stampsize = 200  # XXX HARDCODE WARNING XXX
+
+		if( (np.allclose(psf_e,psf_e[0])) and (psf_beta,psf_beta[0])
+		    and (np.allclose(psf_sigma,psf_sigma[0])) ):
+
+			only_one_psf = True
+			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0], psf_stampsize)
+
+		else:
+			# XXX TODO XXX :: deal with more-than-one PSF.  Make psfimg list?
+			only_one_psf = False
+			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0], psf_stampsize)
+
+	"""
 	se_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE",
 		     "THETAWIN_IMAGE", "FLAGS_WIN", "FLUX_RADIUS",
 		     "FLUX_AUTO", "FLUXERR_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
-	outcat = megalut.meas.sewfunc.measfct(outcat, runon="psf", prefix="psf_")
+	outcat = sewfunc.measfct(outcat, runon="psf", prefix="psf_")
+	"""
 
         # And we pass it, with all required kwargs, to the lower-level function:
-	return measure(img, outcat,
+	return measure(img, psfimg, outcat, only_one_psf=only_one_psf, psf_from=psf_from,
 		       xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname,
-		       stampsize=stampsize,
+		       stampsize=stampsize, psf_stampsize=psf_stampsize,
 		       **kwargs)
 
 
-def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
-	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psfstampsize=128,):
+def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=None,
+	    xname="x", yname="y", prefix="fdnt_",
+	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psf_stampsize=128,):
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
 	Return a copy of the given catalog, with new columns appended.
@@ -94,7 +136,12 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 	
 	# Check that the required SExtractor info is in catalog
 	params = ["AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
-		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS", "psf_FLUX_RADIUS"]
+		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS",]
+	"""
+	# XXX TODO XXX :: figure out where to put sextractor measurements of the PSF
+	if psf_from == 'SBE_cat':
+		params += ["psf_FLUX_RADIUS",]
+	"""
 	for param in params:
 		if param not in catalog.colnames:
 			print 'fdntfunc.py: input catalog missing SExtractor measurement info (%s); exiting' % param
@@ -108,7 +155,8 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 
 	if type(psfimg) is str:
 
-		psf_img = tools.image.loadimg(psfimg)
+		psfimg = tools.image.loadimg(psfimg)
+
 
 	# Prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(catalog))  #, masked=True) # Convert the table to a masked table
@@ -151,29 +199,16 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 			astropy.table.Column(name="skymean", dtype=float, length=len(output)),
 			astropy.table.Column(name="skymed", dtype=float, length=len(output))
 			])
-
+	"""
 	# Save something useful to the meta dict
 	output.meta[prefix + "xname"] = xname
 	output.meta[prefix + "yname"] = yname
-	
+	"""
 	n = len(output)
 	
 	# Loop over each object
-
-	"""
-	# DEBUG BLOCK
-	count = 0
-	mincount, maxcount = (4, 13)
-	"""
-
 	for obj in output:
 		
-		"""
-		# DEBUG BLOCK
-		count += 1  ## DEBUG
-		if count < mincount: continue  ## DEBUG
-		"""
-
 		# Some simplistic progress indication:
 		if obj.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(obj.index)/float(n),
@@ -181,19 +216,31 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 
 		# get centroid, size and shear estimates from catalog
 		(x, y) = (obj[xname], obj[yname])  # otherwise it may spill over the edge...
-		(psfx, psfy) = (obj[psfxname], obj[psfyname])
+		if only_one_psf:
+			# the central pixel of the postage stamp
+			(psfx, psfy) = (psfimg.center().x, psfimg.center().y)
+		else:
+			(psfx, psfy) = (obj[psfxname], obj[psfyname])
 		(a,b,theta) = (obj['AWIN_IMAGE'], obj['BWIN_IMAGE'], obj['THETAWIN_IMAGE'])
 		size = np.hypot(a,b)  # in pixels
-		psf_size = obj['psf_FLUX_RADIUS']   # psf_FLUX_RADIUS == psfEE50
+		if psf_from == 'SBE_cat':
+			subsample_scale = 0.05  # arcsec / pixel
+			psf_size = obj['PSF_sigma_arcsec'] / subsample_scale
+		else:
+			psf_size = obj['psf_FLUX_RADIUS']   # psf_FLUX_RADIUS == psfEE50
 
-		# TODO: figure out why some objects are not detected by SExtractor
+		# XXX TODO XXX : figure out why some objects are not detected by SExtractor
 		if obj['assoc_flag'] == False:   # not detected by SExtractor
 			print 'SExtractor failed on this object'
 			continue
 
 		# get the PSF postage stamp image
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
-		(psfstamp, flag) = tools.image.getstamp(psfx, psfy, psf_img, psfstampsize)
+		if only_one_psf:
+			psfstamp = psfimg
+			flag = 0
+		else:
+			(psfstamp, flag) = tools.image.getstamp(psfx, psfy, psfimg, psf_stampsize)
 		psfstamp = psfstamp.copy()   # if I want to move the pixel coords, then I need a copy for RunFDNT() to work
 		if flag != 0:   # postage stamp extraction unsuccessful
 			print 'psfstamp extraction failure'
@@ -232,26 +279,23 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 		galstamp = noise_pad_image
 		galstamp.setCenter(galstamp_center)
 
-		# We measure the moments... GLMoment may fail from time to time, hence the try:
+		# We measure the moments... RunFDNT may fail from time to time, hence the try:
 		try:
 			res = fdnt.RunFDNT(galstamp, psfstamp, x, y, size, psf_size, a, b, theta)
 
 		except RuntimeError, m:
-			# NOTE: should never get here.  If it does, re-write fdnt.GLMoments()
+			# NOTE: should never get here.  If it does, re-write fdnt.RunFDNT()
 			#       such that all exceptions are caught and the failure reasons
 			#       reflected in the flags
 			print m
 			# This is awesome, but clutters the output 
-			#logger.exception("GLMoments failed on: %s" % (str(gal)))
+			#logger.exception("RunFDNT failed on: %s" % (str(gal)))
 			# So insted of logging this as an exception, we use debug, but include
 			# the traceback :
-			logger.debug("GLMoments failed with %s:\n %s" % (m, str(obj)), exc_info=True)
-			#print "GLMoments failed on:\n %s" % (str(gal))
+			logger.debug("RunFDNT failed with %s:\n %s" % (m, str(obj)), exc_info=True)
+			#print "RunFDNT failed on:\n %s" % (str(gal))
 			obj[prefix + "flag"] = -1
 
-			"""
-			if count >= maxcount:  break   ## DEBUG
-			"""
 			continue
 
 		obj[prefix + "flag"] = res.intrinsic_flags
@@ -287,24 +331,13 @@ def measure(img, catalog, stampsize=None, xname="x", yname="y", prefix="fdnt_",
 			print "results not set correctly"  # NOTE: currently no masking is applied
 			pass  # do nothing, this will "mask" the value out from the astropy table.
 
-		"""
-		## DEBUG BLOCK
-		if count >= maxcount:
-			print output[:maxcount]
-			print output[:maxcount][prefix+'g1', prefix+'g2', prefix+'flux', prefix+'x', prefix+'y',
-					 prefix+'sigma', prefix+'flag', prefix+'snratio',
-					 #prefix+'psf_g1', prefix+'psf_g2', prefix+'psf_flags',
-				         #prefix+'psf_sigma', prefix+'psf_order'
-					 ]
-			return output
-		"""
 
 	endtime = datetime.now()	
 	logger.info("All done")
 
-	nfailed = np.sum(output[prefix+"flag"] >= 8)
+	nfailed = np.sum(output[prefix+"flux"] < 0)
 	
-	logger.info("GLMoment() failed on %i out of %i sources (%.1f percent)" % \
+	logger.info("RunFDNT() failed on %i out of %i sources (%.1f percent)" % \
 			    (nfailed, n, 100.0*float(nfailed)/float(n)))
 	logger.info("This measurement took %.3f ms per galaxy" % \
 			    (1e3*(endtime - starttime).total_seconds() / float(n)))
