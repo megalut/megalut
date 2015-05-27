@@ -114,5 +114,6 @@ def skystats(stamp):
 	# And we convert the mad into an estimate of the Gaussian std:
 	return {
 		"std":np.std(edgepixels), "mad": 1.4826 * mad(edgepixels),
-		"mean":np.mean(edgepixels), "med":np.median(edgepixels)
+		"mean":np.mean(edgepixels), "med":np.median(edgepixels),
+		"stampsum":np.sum(a)
 		}
