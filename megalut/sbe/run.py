@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 import io
 import plot
+import analysis
 
 class Run():
 
@@ -290,6 +291,21 @@ class Run():
 		cat = megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
 		plot.predscatter(cat)
 		
+	def analysepredsims(self):
+		"""
+		Measures m and c on the sims.
+		Does not fully work as PSF_shape_2 is not present in the sims catalog. Easy to add, but do we need this ?
+		"""
+		
+		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
+		
+		analysis.analyse(cat, 
+			colname_PSF_ellipticity_angles_degrees="PSF_shape_2",
+			colname_e1_guesses="pre_g1",
+			colname_e2_guesses="pre_g2",
+			colname_gal_g1s="tru_g1",
+			colname_gal_g2s="tru_g2",
+		)
 
 
 
@@ -302,6 +318,20 @@ class Run():
 		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "obsprecat.pkl"))
 
 	
+	def analysepredobs(self):
+		"""
+		Measures m and c directly from the catalog, without havign to write the ascii output files.
+		"""
+		
+		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
+		
+		analysis.analyse(cat, 
+			colname_PSF_ellipticity_angles_degrees="PSF_shape_2",
+			colname_e1_guesses="pre_g1",
+			colname_e2_guesses="pre_g2",
+			colname_gal_g1s="Galaxy_g1",
+			colname_gal_g2s="Galaxy_g2",
+		)
 
 
 
