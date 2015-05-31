@@ -1,10 +1,10 @@
+import matplotlib
+matplotlib.use('Agg')
 
 import megalut.plot
 from megalut.plot.feature import Feature
 
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import logging
