@@ -23,10 +23,10 @@ from megalut.meas import utils
 from .. import tools
 
 
-def SBE_make_psf_image(sigma, g, beta, npix=200, pixel_scale=0.1, subsample_scale=0.05):
+def SBE_make_psf_image(sigma, shear, npix=200, pixel_scale=0.1, subsample_scale=0.05):
 
     psf = galsim.Gaussian(flux=1., sigma=sigma)
-    psf.applyShear(g=g, beta=beta*galsim.degrees)
+    psf.applyShear(shear)
 
     # Set up the pixel profile (a top-hat)
     pix = galsim.Pixel(pixel_scale)
@@ -80,6 +80,7 @@ def measfct(catalog, runon="img", psf_from=None, stampsize=None, se_config_filep
 		# get PSF info from the catalog (currently Gaussian PSF)
 		psf_e = catalog["PSF_shape_1"]
 		psf_beta = catalog["PSF_shape_2"]
+                psf_shear = galsim.Shear(g=psf_e, beta=psf_beta*galsim.degrees)
 		psf_sigma = catalog["PSF_sigma_arcsec"]
 		psf_stampsize = 200  # XXX HARDCODE WARNING XXX
 
@@ -87,14 +88,21 @@ def measfct(catalog, runon="img", psf_from=None, stampsize=None, se_config_filep
 		    and (np.allclose(psf_sigma,psf_sigma[0])) ):
 
 			only_one_psf = True
-			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0],
-                                                    psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear[0], psf_stampsize)
 
 		else:
 			# XXX TODO XXX :: deal with more-than-one PSF.  Make psfimg list?
 			only_one_psf = False
-			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0],
-                                                    psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear[0], psf_stampsize)
+
+	elif psf_from == "megalut_sim":  # XXX TODO XXX  Generalize
+
+		only_one_psf = False
+		psf_g1 = catalog["tru_psf_g1"]
+		psf_g2 = catalog["tru_psf_g2"]
+		psf_sigma = catalog["tru_psf_sigma"]
+		psf_shear = galsim.Shear(g1=psf_g1[0], g2=psf_g2[0])
+		psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear, psf_stampsize)
 
 	"""
         ### PSF shape measurement if *not* SBE_cat ###
@@ -156,7 +164,6 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 
 		psfimg = tools.image.loadimg(psfimg)
 
-
 	# Prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(catalog))  #, masked=True) # Convert the table to a masked table
 	output.add_columns([
@@ -207,14 +214,21 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 		if obj.index%5000 == 0:  # is "index" an astropy table entry?
 			logger.info("%6.2f%% done (%i/%i) " % (100.0*float(obj.index)/float(n),
 							       obj.index, n))
-
-		# get centroid, size and shear estimates from catalog
-		(x, y) = (obj[xname], obj[yname])  # otherwise it may spill over the edge...
-		if only_one_psf:
+                # get PSF info
+		if psf_from == "megalut_sim":   # XXX TODO XXX generalize
+			psf_g1 = obj["tru_psf_g1"]
+			psf_g2 = obj["tru_psf_g2"]
+			psf_shear = galsim.Shear(g1=psf_g1, g2=psf_g2)
+			psf_sigma = obj["tru_psf_sigma"]
+			psfimg = SBE_make_psf_image(psf_sigma, psf_shear, psf_stampsize)
+		if only_one_psf or psf_from=="megalut_sim":
 			# the central pixel of the postage stamp
 			(psfx, psfy) = (psfimg.center().x, psfimg.center().y)
 		else:
 			(psfx, psfy) = (obj[psfxname], obj[psfyname])
+
+		# get centroid, size and shear estimates from catalog
+		(x, y) = (obj[xname], obj[yname])  # otherwise it may spill over the edge...
 		size = obj['native_adamom_sigma'] # in pixels  XXX I HOPE THIS IS CORRECT XXX
                 g1g2 = (obj['native_adamom_g1'], obj['native_adamom_g2'])
                 try:
@@ -225,6 +239,9 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 		if psf_from == 'SBE_cat':
 			subsample_scale = 0.05  # arcsec / pixel  XXX HARDCODING WARNING XXX
 			psf_size = obj['PSF_sigma_arcsec'] / subsample_scale
+		elif psf_from == 'megalut_sim':
+			subsample_scale = 0.05  # arcsec / pixel  XXX HARDCODING WARNING XXX
+			psf_size = obj['tru_psf_sigma'] / subsample_scale
 		else:
 			#psf_size = obj['PSF_sigma_arcsec']  # psf_FLUX_RADIUS == psfEE50
 			pass  # XXX TODO XXX figure out how to deal with this case
@@ -236,7 +253,7 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 
 		# get the PSF postage stamp image
 		# according to megalut.sim.stampgrid, the xy coords are the same as that of galaxies
-		if only_one_psf:
+		if only_one_psf or psf_from=='megalut_sim':
 			psfstamp = psfimg
 			flag = 0
 		else:
