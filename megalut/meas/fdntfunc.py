@@ -16,8 +16,9 @@ from datetime import datetime
 import copy
 import astropy.table
 from megalut import tools
-from megalut.meas import sewfunc
-import sewpy
+
+from megalut.meas import galsim_adamom
+
 from megalut.meas import utils
 from .. import tools
 
@@ -40,7 +41,7 @@ def SBE_make_psf_image(sigma, g, beta, npix=200, pixel_scale=0.1, subsample_scal
     return psf_image
 
 
-def measfct(catalog, runon="img", psf_from=None, stampsize=None, **kwargs):
+def measfct(catalog, runon="img", psf_from=None, stampsize=None, se_config_filepath=None, **kwargs):
         """
         This is a wrapper around FDNT that meets the requirements of a MegaLUT-conformed shape
 	measurement function, namely to take only one catalog (astropy table) object containing
@@ -69,13 +70,11 @@ def measfct(catalog, runon="img", psf_from=None, stampsize=None, **kwargs):
 	# initialize psf_stampsize  XXX TODO XXX :: determine a good place to put this
 	psf_stampsize = None
 
-	# run SExtractor on galaxies, add info to catalog
-	se_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE",
-		     "THETAWIN_IMAGE", "NITER_WIN", "FLAGS_WIN",
-		     "FLUX_AUTO", "FLUXERR_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
-	outcat = sewfunc.measfct(catalog, runon="img", params=se_params, prefix="")
+        # run GalSim's AdaptiveMoment measurement for native size/shape measurements
+        outcat = galsim_adamom.measfct(catalog, runon="img", stampsize=stampsize,
+                                       prefix='native_adamom_')
 
-	# run SExtractor on PSFs, add info to catalog
+	# giet PSF size/shape info, add info to catalog
 	if psf_from == "SBE_cat":
 
 		# get PSF info from the catalog (currently Gaussian PSF)
@@ -88,18 +87,18 @@ def measfct(catalog, runon="img", psf_from=None, stampsize=None, **kwargs):
 		    and (np.allclose(psf_sigma,psf_sigma[0])) ):
 
 			only_one_psf = True
-			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0], psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0],
+                                                    psf_stampsize)
 
 		else:
 			# XXX TODO XXX :: deal with more-than-one PSF.  Make psfimg list?
 			only_one_psf = False
-			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0], psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma[0], psf_e[0], psf_beta[0],
+                                                    psf_stampsize)
 
 	"""
-	se_params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE",
-		     "THETAWIN_IMAGE", "FLAGS_WIN", "FLUX_RADIUS",
-		     "FLUX_AUTO", "FLUXERR_AUTO", "FWHM_IMAGE", "BACKGROUND", "FLAGS"]
-	outcat = sewfunc.measfct(outcat, runon="psf", prefix="psf_")
+        ### PSF shape measurement if *not* SBE_cat ###
+	outcat = galsim_adamom.measfct(outcat, runon="psf", prefix="psf_adamom_")
 	"""
 
         # And we pass it, with all required kwargs, to the lower-level function:
@@ -110,8 +109,9 @@ def measfct(catalog, runon="img", psf_from=None, stampsize=None, **kwargs):
 
 
 def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=None,
-	    xname="x", yname="y", prefix="fdnt_",
-	    sewpy_workdir='sewpy', psfxname="psfx", psfyname="psfy", psf_stampsize=128,):
+	    xname="x", yname="y", prefix="fdnt_", psfxname="psfx", psfyname="psfy",
+            psf_stampsize=128,):
+
 	"""
 	Use the pixel positions provided via the input table to measure their shape parameters.
 	Return a copy of the given catalog, with new columns appended.
@@ -123,7 +123,6 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 	:param xname: column name containing the x coordinates in pixels
 	:param yname: column name containing the y coordinates in pixels
 	:param prefix: a string to prefix the field names that are added to the catalog
-	:param sewpy_workdir: workdir for SExtractor run
 	:param psfxname: column name containing the x coordinates of the PSF in pixels
 	:param psfyname: column name containing the y coordinates of the PSF in pixels
 	:param stampsize: psfimg stamp size
@@ -134,17 +133,17 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 	
 	starttime = datetime.now()
 	
-	# Check that the required SExtractor info is in catalog
-	params = ["AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
-		  "FLAGS_WIN", "FWHM_IMAGE", "BACKGROUND", "FLAGS",]
+        # Check that the required GalSim_AdaptiveMoment info is in catalog
+        params = ['native_adamom_x', 'native_adamom_y',
+                  'native_adamom_g1', 'native_adamom_g2', 'native_adamom_sigma',]
 	"""
 	# XXX TODO XXX :: figure out where to put sextractor measurements of the PSF
-	if psf_from == 'SBE_cat':
+	if psf_from != 'SBE_cat':
 		params += ["psf_FLUX_RADIUS",]
 	"""
 	for param in params:
 		if param not in catalog.colnames:
-			print 'fdntfunc.py: input catalog missing SExtractor measurement info (%s); exiting' % param
+			print 'fdntfunc.py: input catalog missing GalSim AdaptiveMoment measurement info (%s); exiting' % param
 			sys.exit(1)
 
 	# OPEN ALL NECESSARY FILES
@@ -199,11 +198,6 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 			astropy.table.Column(name="skymean", dtype=float, length=len(output)),
 			astropy.table.Column(name="skymed", dtype=float, length=len(output))
 			])
-	"""
-	# Save something useful to the meta dict
-	output.meta[prefix + "xname"] = xname
-	output.meta[prefix + "yname"] = yname
-	"""
 	n = len(output)
 	
 	# Loop over each object
@@ -221,17 +215,23 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 			(psfx, psfy) = (psfimg.center().x, psfimg.center().y)
 		else:
 			(psfx, psfy) = (obj[psfxname], obj[psfyname])
-		(a,b,theta) = (obj['AWIN_IMAGE'], obj['BWIN_IMAGE'], obj['THETAWIN_IMAGE'])
-		size = np.hypot(a,b)  # in pixels
+		size = obj['native_adamom_sigma'] # in pixels  XXX I HOPE THIS IS CORRECT XXX
+                g1g2 = (obj['native_adamom_g1'], obj['native_adamom_g2'])
+                try:
+			(a, b, theta) = fdnt.runfdnt.calculate_a_b_pa(size, g1g2)
+                except ValueError:  # an invalid shear was given (probably)
+			print "AdaptiveMoment failed, results not set correctly"
+			continue  # do nothing, this will "mask" value out from astropy table
 		if psf_from == 'SBE_cat':
-			subsample_scale = 0.05  # arcsec / pixel
+			subsample_scale = 0.05  # arcsec / pixel  XXX HARDCODING WARNING XXX
 			psf_size = obj['PSF_sigma_arcsec'] / subsample_scale
 		else:
-			psf_size = obj['psf_FLUX_RADIUS']   # psf_FLUX_RADIUS == psfEE50
+			#psf_size = obj['PSF_sigma_arcsec']  # psf_FLUX_RADIUS == psfEE50
+			pass  # XXX TODO XXX figure out how to deal with this case
 
-		# XXX TODO XXX : figure out why some objects are not detected by SExtractor
-		if obj['assoc_flag'] == False:   # not detected by SExtractor
-			print 'SExtractor failed on this object'
+		if obj['native_adamom_flag'] > 0:   # not detected by GalSim AdaptiveMoment
+			print 'GalSim AdaptiveMoment failed on native object measurement with flag',
+                        print obj['native_adamom_flag']
 			continue
 
 		# get the PSF postage stamp image
@@ -328,7 +328,7 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 			obj[prefix + "snratio"] = res.observed_significance
 
 		except ValueError:
-			print "results not set correctly"  # NOTE: currently no masking is applied
+			print "RunFDNT() failed, results not set correctly"
 			pass  # do nothing, this will "mask" the value out from the astropy table.
 
 
@@ -342,10 +342,6 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 	logger.info("This measurement took %.3f ms per galaxy" % \
 			    (1e3*(endtime - starttime).total_seconds() / float(n)))
 	
-	"""
-	print output  ## DEBUG
-	"""
-
 	return output
 
 
