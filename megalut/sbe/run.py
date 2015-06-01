@@ -191,13 +191,13 @@ class Run():
 		#plt.plot(cat["sewpy_FLUX_AUTO"], cat["adamom_flux"], "b.")
 		#plt.show()
 
-	def plotmixobscheck(self, prefix='adamom_'):
+	def plotmixobscheck(self, prefix='adamom_', filepath=None):
 		"""
 		One checkplot mixing several SBE files.
 		"""
 		
 		cat = megalut.tools.io.readpickle(self.groupobspath)
-		plot.meascheck(cat, prefix=prefix)
+		plot.meascheck(cat, prefix=prefix, filepath=filepath)
 	
 	
 	
