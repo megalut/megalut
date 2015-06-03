@@ -223,7 +223,7 @@ class Run():
 		
 
 
-	def plotsimobscompa(self, simparams, prefix="adamom_"):
+	def plotsimobscompa(self, simparams, prefix="adamom_", filepath=None):
 		"""
 		Again, a classic...
 		"""
@@ -235,7 +235,7 @@ class Run():
 		# And a bunch of the obs
 		obscat = megalut.tools.io.readpickle(self.groupobspath)
 			
-		plot.simobscompa(simcat, obscat, prefix=prefix)
+		plot.simobscompa(simcat, obscat, prefix=prefix, filepath=filepath)
 		
 
 
