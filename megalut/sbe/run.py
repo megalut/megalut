@@ -334,6 +334,30 @@ class Run():
 		)
 
 
+	def writepredsbe_single(self):
+		
+		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
+		
+		cat["PSF_shape_angle_degrees"] = cat["PSF_shape_2"]
+		cat["e1_guess"] = cat["pre_g1"]
+		cat["e2_guess"] = cat["pre_g2"]
+		cat["gal_g1"] = cat["Galaxy_g1"]
+		cat["gal_g2"] = cat["Galaxy_g2"]
+		cat["weight"] = np.logical_not(cat["pre_g1"].mask).astype("float")
+		
+		cat.keep_columns(["PSF_shape_angle_degrees", "e1_guess", "e2_guess", "gal_g1", "gal_g2", "weight"])
+		cat = cat.filled(999.0)
+		
+		print "For testing, here are a few rows of your catalog:"
+		print cat
+		
+		exportpath = os.path.join(self.workdir, "results.txt")
+		
+		cat.write(exportpath, format='ascii.commented_header', delimiter="\t")
+			
+		logger.info("Wrote %s" % exportpath)
+
+
 
 	def writepredsbe(self, outdir=None):
 		"""

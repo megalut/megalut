@@ -15,7 +15,7 @@ def meascheck(cat, filepath=None, prefix="adamom_", g12_low=None, g12_high=None)
 	"""
 	Plots measured things against the SBE truth, to get a first idea and check conventions.
 	"""
-	snr = megalut.plot.feature.Feature("sewpy_snr")
+	snr = Feature("sewpy_snr")
 	
 	cat["astromerrx"] = cat["x"] - cat[prefix+"x"]
 	cat["astromerry"] = cat["y"] - cat[prefix+"y"]
@@ -96,6 +96,87 @@ def meascheck(cat, filepath=None, prefix="adamom_", g12_low=None, g12_high=None)
 	megalut.plot.scatter.scatter(ax, cat, Read_noise, Gain, sidehists=True)
 	
 	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+def snr(cat, filepath=None):
+	"""
+	Quick check of SNR
+	"""
+	print cat.colnames
+	#exit()
+	
+	tru_flux = Feature("tru_flux")
+	snr = Feature("sewpy_snr")
+	sewpy_flux_auto = Feature("sewpy_FLUX_AUTO")
+	sewpy_flux_win = Feature("sewpy_FLUX_WIN")
+	adamom_flux = Feature("adamom_flux")
+
+	sewpy_flux_50 = Feature("sewpy_FLUX_APER_1")
+	sewpy_fluxerr_50 = Feature("sewpy_FLUXERR_APER_1")
+	
+	cat["snr50"] = cat["sewpy_FLUX_APER_1"] / cat["sewpy_FLUXERR_APER_1"]
+	snr50 = Feature("snr50")
+
+
+	Galaxy_SN = Feature("Galaxy_SN")
+	Galaxy_shape_1 = Feature("Galaxy_shape_1")
+	Galaxy_shape_2 = Feature("Galaxy_shape_2")
+
+	skymed = Feature("skymed")
+	skymean = Feature("skymean")
+	skystampsum = Feature("skystampsum")
+
+	
+	Sky_level_subtracted = Feature("Sky_level_subtracted")
+	Read_noise = Feature("Read_noise")
+	Gain = Feature("Gain")
+	
+	#print cat.colnames
+	
+	fig = plt.figure(figsize=(18, 10))
+
+	ax = fig.add_subplot(2, 3, 1)
+	megalut.plot.scatter.scatter(ax, cat, adamom_flux, sewpy_flux_auto, show_id_line=True)
+
+	ax = fig.add_subplot(2, 3, 2)
+	megalut.plot.scatter.scatter(ax, cat, adamom_flux, sewpy_flux_50, show_id_line=True)
+
+	ax = fig.add_subplot(2, 3, 3)
+	megalut.plot.scatter.scatter(ax, cat, adamom_flux, skystampsum, show_id_line=True)
+	
+	ax = fig.add_subplot(2, 3, 4)
+	megalut.plot.scatter.scatter(ax, cat, adamom_flux, sewpy_flux_win, show_id_line=True)
+	
+	#ax = fig.add_subplot(2, 3, 5)
+	#megalut.plot.scatter.scatter(ax, cat, tru_flux, sewpy_flux_auto , show_id_line=True)
+	
+	#ax = fig.add_subplot(2, 3, 6)
+	#megalut.plot.scatter.scatter(ax, cat, tru_flux, adamom_flux , show_id_line=True)
+	
+	
+	
+	#ax = fig.add_subplot(2, 3, 6)
+	#megalut.plot.scatter.scatter(ax, cat, skymean, skymed, show_id_line=True)
+	
+	
+	
+	
+	#ax = fig.add_subplot(2, 3, 4)
+	#megalut.plot.scatter.scatter(ax, cat, snr50, snr, show_id_line=True, sidehists=True)
+	
+	#ax = fig.add_subplot(2, 3, 5)
+	#megalut.plot.hexbin.hexbin(ax, cat, Galaxy_SN, snr)
+
+	#ax = fig.add_subplot(2, 3, 6)
+	#megalut.plot.scatter.scatter(ax, cat, skymean, skymed, show_id_line=True)
+	
+
 	plt.tight_layout()
 	if filepath:
 		plt.savefig(filepath)
