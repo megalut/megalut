@@ -366,7 +366,7 @@ class Selector:
 		passmasks = np.logical_not(np.column_stack(passmasks)) # "True" means "reject"
 		combimask = np.logical_not(np.sum(passmasks, axis=1).astype(bool)) # ... and "True" means "keep this" again.
 		
-		logger.info("Selector '%s' selects %i/%i rows (%.2f)" %
+		logger.info("Selector '%s' selects %i/%i rows (%.2f %%)" %
 				(self.name, np.sum(combimask), len(cat), 100.0 * float(np.sum(combimask))/float(len(cat))))
 		
 		return cat[combimask]
