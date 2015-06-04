@@ -81,28 +81,29 @@ def measfct(catalog, runon="img", psf_from=None, stampsize=None, se_config_filep
 		psf_e = catalog["PSF_shape_1"]
 		psf_beta = catalog["PSF_shape_2"]
                 psf_shear = galsim.Shear(g=psf_e, beta=psf_beta*galsim.degrees)
-		psf_sigma = catalog["PSF_sigma_arcsec"]
+		psf_sigma_as = catalog["PSF_sigma_arcsec"]
 		psf_stampsize = 200  # XXX HARDCODE WARNING XXX
 
 		if( (np.allclose(psf_e,psf_e[0])) and (psf_beta,psf_beta[0])
-		    and (np.allclose(psf_sigma,psf_sigma[0])) ):
+		    and (np.allclose(psf_sigma_as,psf_sigma_as[0])) ):
 
 			only_one_psf = True
-			psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear[0], psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma_as[0], psf_shear[0], psf_stampsize)
 
 		else:
 			# XXX TODO XXX :: deal with more-than-one PSF.  Make psfimg list?
 			only_one_psf = False
-			psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear[0], psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma_as[0], psf_shear[0], psf_stampsize)
 
 	elif psf_from == "megalut_sim":  # XXX TODO XXX  Generalize
 
 		only_one_psf = False
 		psf_g1 = catalog["tru_psf_g1"]
 		psf_g2 = catalog["tru_psf_g2"]
-		psf_sigma = catalog["tru_psf_sigma"]
+		psf_sigma = catalog["tru_psf_sigma"] * 0.05  # in pixel
 		psf_shear = galsim.Shear(g1=psf_g1[0], g2=psf_g2[0])
-		psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear, psf_stampsize)
+		psfimg = SBE_make_psf_image(psf_sigma[0], psf_shear, psf_stampsize,
+                                            subsample_scale = 1.0)  # sigma is in pixel units
 
 	"""
         ### PSF shape measurement if *not* SBE_cat ###
@@ -207,6 +208,8 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 			])
 	n = len(output)
 	
+	subsample_scale = 0.05  # arcsec / pixel  XXX HARDCODING WARNING XXX
+
 	# Loop over each object
 	for obj in output:
 		
@@ -220,7 +223,9 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 			psf_g2 = obj["tru_psf_g2"]
 			psf_shear = galsim.Shear(g1=psf_g1, g2=psf_g2)
 			psf_sigma = obj["tru_psf_sigma"]
-			psfimg = SBE_make_psf_image(psf_sigma, psf_shear, psf_stampsize)
+			psfimg = SBE_make_psf_image(psf_sigma, psf_shear, psf_stampsize,
+                                                    subsample_scale = 1.0)  # sigma is in pixel units
+
 		if only_one_psf or psf_from=="megalut_sim":
 			# the central pixel of the postage stamp
 			(psfx, psfy) = (psfimg.center().x, psfimg.center().y)
@@ -237,11 +242,9 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 			print "AdaptiveMoment failed, results not set correctly"
 			continue  # do nothing, this will "mask" value out from astropy table
 		if psf_from == 'SBE_cat':
-			subsample_scale = 0.05  # arcsec / pixel  XXX HARDCODING WARNING XXX
-			psf_size = obj['PSF_sigma_arcsec'] / subsample_scale
+			psf_size = obj['PSF_sigma_arcsec'] / subsample_scale  # in pixel units
 		elif psf_from == 'megalut_sim':
-			subsample_scale = 0.05  # arcsec / pixel  XXX HARDCODING WARNING XXX
-			psf_size = obj['tru_psf_sigma'] / subsample_scale
+			psf_size = obj['tru_psf_sigma']   # in pixel units
 		else:
 			#psf_size = obj['PSF_sigma_arcsec']  # psf_FLUX_RADIUS == psfEE50
 			pass  # XXX TODO XXX figure out how to deal with this case
