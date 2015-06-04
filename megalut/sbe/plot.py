@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')
 
 import megalut.plot
 from megalut.plot.feature import Feature
@@ -185,7 +187,7 @@ def snr(cat, filepath=None):
 
 
 
-def simobscompa(simcat, obscat, prefix="adamom_"):
+def simobscompa(simcat, obscat, prefix="adamom_", filepath=None):
 
 	"""
 	A classic, in feature space
@@ -198,7 +200,10 @@ def simobscompa(simcat, obscat, prefix="adamom_"):
 	flux = Feature(prefix+"flux")
 	sigma = Feature(prefix+"sigma", 0, 25)
 	
-	rho4 = Feature(prefix+"rho4", 1.5, 2.5)
+	try:
+		rho4 = Feature(prefix+"rho4", 1.5, 2.5)
+	except:
+		pass
 	g1 = Feature(prefix+"g1", -0.6, 0.6)
 	g2 = Feature(prefix+"g2", -0.6, 0.6)
 	skymad = Feature("skymad")
@@ -222,7 +227,10 @@ def simobscompa(simcat, obscat, prefix="adamom_"):
 	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, sigma, legend=True)
 
 	ax = fig.add_subplot(2, 4, 2)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, sigma, rho4)
+	try:
+		megalut.plot.scatter.simobs(ax, simcat, obscat, sigma, rho4)
+	except:
+		pass
 
 	ax = fig.add_subplot(2, 4, 3)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, g1, g2)
@@ -243,7 +251,10 @@ def simobscompa(simcat, obscat, prefix="adamom_"):
 	megalut.plot.scatter.simobs(ax, simcat, obscat, psf_g1, psf_g2)
 	
 	plt.tight_layout()
-	plt.show()	
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
 	plt.close(fig) # Helps releasing memory when calling in large loops.
 
 

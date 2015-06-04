@@ -191,13 +191,13 @@ class Run():
 		#plt.plot(cat["sewpy_FLUX_AUTO"], cat["adamom_flux"], "b.")
 		#plt.show()
 
-	def plotmixobscheck(self):
+	def plotmixobscheck(self, prefix='adamom_', filepath=None):
 		"""
 		One checkplot mixing several SBE files.
 		"""
 		
 		cat = megalut.tools.io.readpickle(self.groupobspath)
-		plot.meascheck(cat)
+		plot.meascheck(cat, prefix=prefix, filepath=filepath)
 	
 	
 	
@@ -223,7 +223,7 @@ class Run():
 		
 
 
-	def plotsimobscompa(self, simparams, prefix="adamom_"):
+	def plotsimobscompa(self, simparams, prefix="adamom_", filepath=None):
 		"""
 		Again, a classic...
 		"""
@@ -235,7 +235,7 @@ class Run():
 		# And a bunch of the obs
 		obscat = megalut.tools.io.readpickle(self.groupobspath)
 			
-		plot.simobscompa(simcat, obscat, prefix=prefix)
+		plot.simobscompa(simcat, obscat, prefix=prefix, filepath=filepath)
 		
 
 
