@@ -174,7 +174,14 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			psf.applyShift(psf_xjitter,psf_yjitter)
 			psf.draw(psf_stamp)
 
-			galconv = galsim.Convolve([gal,psf])
+			
+			### Hack ###
+			pix = galsim.Pixel(2.0)
+			galconv = galsim.Convolve([gal,psf, pix])
+			
+			#galconv = galsim.Convolve([gal,psf])
+			############
+		
 		
 		elif "loadpsfimg" in todo:
 			
