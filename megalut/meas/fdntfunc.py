@@ -166,7 +166,7 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 		psfimg = tools.image.loadimg(psfimg)
 
 	# Prepare an output table with all the required columns
-	output = astropy.table.Table(copy.deepcopy(catalog))  #, masked=True) # Convert the table to a masked table
+	output = astropy.table.Table(copy.deepcopy(catalog), masked=True) # table is masked table
 	output.add_columns([
 
 		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)),
@@ -198,6 +198,12 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 				            0,     -10.,     -10.,         -1.,        -1.,    -1,
 				           -1,        0.,             0.,         0.,        0]):
 		output[prefix+col][:] = col_fill
+
+	# We want to mask all these entries. They will get unmasked when values will be attributed.
+	for col in ["flux", "x", "y", "g1", "g2", "sigma", "b22", "snratio",
+                    "psf_flags", "psf_g1", "psf_g2", "psf_sigma", "psf_b22", "flag",
+                    "psf_order", "psf_b00", "psf_b00_var", "psf_chisq", "psf_DOF"]:
+		output[prefix+col].mask = [True] * len(output) # "True" means masked !
 
 	# Similarly, we prepare columns for the sky stats:
 	output.add_columns([
@@ -279,6 +285,7 @@ def measure(img, psfimg, catalog, only_one_psf=None, psf_from=None, stampsize=No
 		obj["skymad"] = sky_out["mad"]  # median absolute deviation scaled to std
 		obj["skymean"] = sky_out["mean"]
 		obj["skymed"] = sky_out["med"]
+		obj["skystampsum"] = sky_out["stampsum"]
 
 		# add padding, 2x the stamp size, for FFT purposes
 		safe_pad_margin = 4

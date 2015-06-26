@@ -204,8 +204,8 @@ def simobscompa(simcat, obscat, prefix="adamom_", filepath=None):
 		rho4 = Feature(prefix+"rho4", 1.5, 2.5)
 	except:
 		pass
-	g1 = Feature(prefix+"g1", -0.6, 0.6)
-	g2 = Feature(prefix+"g2", -0.6, 0.6)
+	g1 = Feature(prefix+"g1", -0.7, 0.7)
+	g2 = Feature(prefix+"g2", -0.7, 0.7)
 	skymad = Feature("skymad")
 	skystd = Feature("skystd")
 	skymed = Feature("skymed")
@@ -261,7 +261,7 @@ def simobscompa(simcat, obscat, prefix="adamom_", filepath=None):
 
 
 
-def predscatter(cat):
+def predscatter(cat, filepath=None):
 	"""
 	First plain old scatter plot of predictions against truth
 	"""
@@ -312,7 +312,10 @@ def predscatter(cat):
 	#megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, snr_narrow, s=5, metrics=False)
 	
 	plt.tight_layout()
-	plt.show()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
 	
 	plt.close(fig) # Helps releasing memory when calling in large loops.
 

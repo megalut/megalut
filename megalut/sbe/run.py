@@ -255,7 +255,7 @@ class Run():
 		megalut.tools.io.writepickle(avgmeascat, os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
 
 
-	def train(self, simparams, trainparamslist):
+	def train(self, simparams, trainparamslist, prefix='adamom_'):
 		"""
 		
 		"""
@@ -265,7 +265,7 @@ class Run():
 		
 		# We reject crap ones
 		ngroupstats = simcat.meta["ngroupstats"]
-		simcat = simcat[simcat["adamom_flux_n"] > float(ngroupstats)/2.0]
+		simcat = simcat[simcat[prefix+"flux_n"] > float(ngroupstats)/2.0]
 		logger.info("Keeping %i galaxies for training" % (len(simcat)))
 		
 		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
@@ -286,10 +286,10 @@ class Run():
 	
 
 
-	def plotpredsims(self):
+	def plotpredsims(self, filepath=None):
 		
 		cat = megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
-		plot.predscatter(cat)
+		plot.predscatter(cat, filepath=filepath)
 		
 	def analysepredsims(self):
 		"""
