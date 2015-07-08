@@ -254,6 +254,50 @@ class Run():
 
 		megalut.tools.io.writepickle(avgmeascat, os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
 
+	def groupsimmeas(self, simparams, groupcols, removecols):
+		"""
+		New alternative to avgsimmeas: we just group the catalogs, without computing any stats.
+		Writes a single training catalog for the ML.
+		"""	
+	
+		groupmeascat = megalut.meas.avg.onsims(self.worksimdir, simparams, task="group",
+			groupcols=groupcols,
+			removecols=removecols
+		)
+
+		megalut.tools.io.writepickle(groupmeascat, os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+
+
+
+
+	def traintenbilac(self, simparams, trainparamslist):
+		"""
+		
+		"""
+		
+		# We load the training catalog
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		
+		
+		#print simcat.colnames
+		
+		"""
+		# We reject crap ones
+		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1)
+		simcat = simcat[simcat["goodfortrain"] > float(simcat.meta["ngroup"])/2.0]
+		logger.info("Keeping %i galaxies for training" % (len(simcat)))
+		
+		
+		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
+		#plot.simcheck(simcat)
+		
+		#print simcat.colnames
+		#exit()
+		"""
+		
+		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
+
+
 
 	def train(self, simparams, trainparamslist, prefix='adamom_'):
 		"""
@@ -271,16 +315,29 @@ class Run():
 		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
 		#plot.simcheck(simcat)
 		
+		#print simcat.colnames
+		#exit()
+		
 		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 			
 		
 	
 	def predictsims(self, simparams, trainparamslist):
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		
+		#print cat.colnames
+		#exit()
+		
 		
 		#cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="all")
-		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="_rea0")
+		#cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="_rea0")
+		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)
+		
+		print cat.colnames
+		
+		print cat["pre_sigma"]
 		
 		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat.pkl"))
 	
