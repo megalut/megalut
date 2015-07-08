@@ -104,7 +104,7 @@ def _worker(ws):
 	"""	
 	starttime = datetime.datetime.now()
 	p = multiprocessing.current_process()
-	logger.info("%s is starting to draw %s with PID %s" % (p.name, str(ws), p.pid))
+	logger.info("%s is starting to train %s with PID %s" % (p.name, str(ws), p.pid))
 	
 	# The actual task:
 	ws.ml.train(ws.cat)	
