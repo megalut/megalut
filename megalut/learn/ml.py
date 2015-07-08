@@ -187,7 +187,7 @@ class ML:
 			labelsdata = np.column_stack([np.array(catalog[colname]) for colname in \
 				self.mlparams.labels]).transpose()
 			
-			assert featuresdata.shape[2] == labelsdata.shape[2] # Same number of galaxies!
+			assert featuresdata.shape[2] == labelsdata.shape[1] # Same number of galaxies!
 		
 		else: # FANN or SkyNet etc:
 			# We can only use a row for training if all its features and all labels are unmasked.
