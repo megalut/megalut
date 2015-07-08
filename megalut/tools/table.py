@@ -98,7 +98,92 @@ def shuffle(table):
 	np.random.shuffle(indexes)
 	return table[indexes] # This is a copy
 	
+
+
+
+
+
+def group(incats, groupcols=None, removecols=None, checkcommon=True):
+	"""
+	Turns a list of catalogs (typically representing different realizations of the same galaxies) into a single "3D" catalog.
+	This is somehow similar to groupstats, but here we do not compute any stats, and we don't modify column names.
+		
+	Returns an astropy table in which the groupcols columns are 2D arrays.
 	
+	This is easier to digest for Tenbilac etc than to carry around many columns _rea0, _rea1, ...
+	
+	"""
+	starttime = datetime.datetime.now()
+	
+	if groupcols is None:
+		groupcols = []
+	if removecols is None:
+		removecols = [] 
+
+	# OK I'm taking here a few simple tests from from groupstats, as they are quite helpful.
+
+	colnames = incats[0].colnames # to check colnames
+	
+	for incat in incats:
+		if incat.colnames != colnames:
+			raise RuntimeError("Your input catalogs do not have the same columns: \n\n %s \n\n is not \n\n %s"
+				% (incat.colnames, colnames))
+
+	for groupcol in groupcols:
+		if groupcol not in colnames:
+			raise RuntimeError("The column '%s' which should be grouped is not present in the catalog. The availble column names are %s" % (groupcol, colnames))
+		if groupcol in removecols:
+			raise RuntimeError("Cannot both group and remove column '%s' " % groupcol)
+
+
+	# We make a list of the column names that should stay unaffected:
+	fixedcolnames = [colname for colname in colnames if (colname not in groupcols) and (colname not in removecols)]
+	
+	if len(fixedcolnames) > 0:
+		# We will take those columns from the first incat (we test below that this choice doesn't matter)
+		fixedcat = incats[0][fixedcolnames] # This makes a copy
+	
+		if checkcommon == True:
+			# We test that the columns of these fixedcolnames are the same for all the different incats
+			for incat in incats:
+				if not np.all(incat[fixedcolnames] == fixedcat):
+					raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % fixedcolnames)
+			logger.debug("Done with testing the identity of all the common columns")
+		else:
+			logger.debug("Did not test the identity of all the common columns")
+
+	outputcols = [] # We fill this with the new 2D columns...
+	for groupcol in groupcols:
+		#logger.info("Grouping '%s'" % (groupcol))
+		
+		# We build a masked numpy array with the data of these columns
+		array = np.ma.vstack([incat[groupcol] for incat in incats]).transpose()
+		
+		#print array.shape # With this transpose, first index is galaxy, second is realization
+
+		outputcols.append(astropy.table.MaskedColumn(array, name=groupcol))
+
+	
+	# We now make a table out of the outputcols :
+	outputcat = astropy.table.Table(outputcols)
+	
+	# Finally, we prepend the fixedcolname-columns to the table:
+	if len(fixedcolnames) > 0:
+		outputcat = astropy.table.hstack([fixedcat, outputcat], join_type="exact",
+			table_names=["SHOULD_NOT_BE_SEEN", "SHOULD_NEVER_BE_SEEN"], uniq_col_name="{col_name}_{table_name}", metadata_conflicts="error")
+	
+	# Especially when averaging measurements on realizations, it seems ok to write ngroupstats also into the meta of the catalog itself.
+	# So we keep doing this.
+	outputcat.meta["ngroup"] = len(incats)
+
+	endtime = datetime.datetime.now()
+	logger.info("The grouping took %s" % (str(endtime - starttime)))
+	logger.info("Output table: %i rows and %i columns (%i common, %i grouped)" %
+		(len(outputcat), len(outputcat.colnames), len(fixedcolnames), len(outputcols)))
+	
+	return outputcat
+
+
 	
 def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True, checkcommon=True):
 	"""
@@ -260,7 +345,7 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 
 class Selector:
 	"""
-	Aims at providing a simple way of getting "configurable" sub-selections of rows from a table.
+	Provides a simple way of getting "configurable" sub-selections of rows from a table.
 	"""
 	
 	def __init__(self, name, criteria):
@@ -390,6 +475,9 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	for colname in colnames:
 		if colname not in cat.colnames:
 			raise RuntimeError("The column '%s' is not available among %s" % (colname, str(cat.colnames)))
+		
+		assert cat[colname].ndim == 1 # This function has not been tested for anything else...
+			
 	if len(colnames) != len(list(set(colnames))):
 		raise RuntimeError("Strange, some colnames appear multiple times in %s" % (str(colnames)))
 	
@@ -429,4 +517,9 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	
 	return nomaskcat
 
-	
+
+
+
+
+
+
