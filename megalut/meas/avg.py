@@ -15,17 +15,18 @@ import utils
 import logging
 logger = logging.getLogger(__name__)
 
-def onsims(measdir, simparams, **kwargs):
+def onsims(measdir, simparams, task="groupstats", **kwargs):
 	"""
 	Top-level function to group measurements as obtained from :func:`megalut.meas.run.onsims`.
 	
 	This function first explores the files in your measdir using :func:`simmeasdict`,
-	then uses :func:`groupstats` to "hstack" the different realizations catalog by catalog and compute the statistics,
+	then uses :func:`groupstats` or :func:`group` to "hstack" the different realizations catalog by catalog (and maybe compute some statistics),
 	and finally it "vstacks" all your catalogs to return a single output table.
 
 	:param measdir: See :func:`megalut.meas.run.onsims`
 	:param simparams: idem
-	:param kwargs: any further keyword arguments are passed to :func:`megalut.tools.table.groupstats`
+	:param task: either "groupstats" or "group", depending on what you want to do.
+	:param kwargs: any further keyword arguments are passed to :func:`megalut.tools.table.groupstats` or :func:`megalut.tools.table.group`
 	
 	To learn about the output, see the latter.
 	
@@ -49,10 +50,19 @@ def onsims(measdir, simparams, **kwargs):
 		# We also remove meta["img"] from the first realization, as it does no longer apply after the groupstats.
 		meascats[0].meta.pop("img")
 		
-		# And we call groupstats
-		logger.info("Grouping columns and computing averages for catalog '%s'..." % (catname))
-		grouped = tools.table.groupstats(meascats, **kwargs)
-		outputcats.append(grouped)
+		if task == "groupstats":
+			# And we call groupstats
+			logger.info("Grouping columns and computing averages for catalog '%s'..." % (catname))
+			grouped = tools.table.groupstats(meascats, **kwargs)
+			outputcats.append(grouped)
+		
+		elif task == "group":
+			logger.info("Grouping columns for catalog '%s'..." % (catname))
+			grouped = tools.table.group(meascats, **kwargs)
+			outputcats.append(grouped)
+	
+		else:
+			raise RuntimeError("Unkown task!")	
 	
 	# And finally, we stack all these catalogs "vertically", to get a single one.
 	# This is only to be done if we have several catalogs. In fact, vstack crashes if only 
@@ -61,11 +71,14 @@ def onsims(measdir, simparams, **kwargs):
 	if len(outputcats) > 1:
 	
 		# Before vstacking, we check some meta for compatibility
-		# All catalogs should have the same ngroupstats (== number of realizations)
-		assert "ngroupstats" in outputcats[0].meta # was written by groupstats.
-		ngroupstats = outputcats[0].meta["ngroupstats"]
+		nmetaname = "n" + task # So this is either ngroup or ngroupstats
+		assert nmetaname in outputcats[0].meta
+			
+		# All catalogs should have the same number of realizations
+			
+		ngroupstats = outputcats[0].meta[nmetaname]
 		for outputcat in outputcats:
-			if outputcat.meta["ngroupstats"] != ngroupstats:
+			if outputcat.meta[nmetaname] != ngroupstats:
 				raise RuntimeError("Catalogs with different numbers of realizations should not be merged, clean your measdir accordingly!")
 		
 		# Now that checks are done, we have to remove some of the meta, to avoid conflicts (and keep thinks logical)
