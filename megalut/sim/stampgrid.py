@@ -113,6 +113,9 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	if "loadpsfimg" in todo:
 		psfimg = catalog.meta["psf"].load() # Loading the actual GalSim Image
 	
+	if "tru_pixel" in todo:
+		pix = galsim.Pixel(catalog["tru_pixel"][0]) # We have checked in checkcat that all values are equal.
+		
 	# Galsim random number generators
 	rng = galsim.BaseDeviate()
 	ud = galsim.UniformDeviate() # This gives a random float in [0, 1)
@@ -173,16 +176,13 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			psf_yjitter = ud() - 0.5
 			psf.applyShift(psf_xjitter,psf_yjitter)
 			psf.draw(psf_stamp)
-
+	
+			if "tru_pixel" in todo: # Not sure if this should only apply to gaussian PSFs, but so far this seems OK.
+				galconv = galsim.Convolve([gal, psf, pix])
 			
-			### Hack ###
-			pix = galsim.Pixel(2.0)
-			galconv = galsim.Convolve([gal,psf, pix])
+			else:
+				galconv = galsim.Convolve([gal,psf])
 			
-			#galconv = galsim.Convolve([gal,psf])
-			############
-		
-		
 		elif "loadpsfimg" in todo:
 			
 			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
@@ -273,5 +273,18 @@ def checkcat(cat):
 		else:
 			logger.warning("No or not enough PSF information given, I will NOT convolve the simulated galaxies!")
 			todo.append("nopsf")
+	
+	
+	# Now let's have a look at the extra pixel convolution (added with SBE in mind)
+	
+	if "tru_pixel" in cat.colnames:
+		tru_pixels = list(set(cat["tru_pixel"]))
+		if len(tru_pixels) != 1:
+			raise RuntimeError("You're mixing seveal tru_pixel values, probably a mistake.") # If you ever change this, fix code that currently generates only one pix!
+		tru_pixel = tru_pixels[0]
+		if tru_pixel > 0.0:
+			logger.info("The galaxy profiles will be convolved with an extra {0:.1f} pixels".format(tru_pixel))
+		
+			todo.append("tru_pixel")
 	
 	return todo
