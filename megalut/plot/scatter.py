@@ -100,7 +100,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	# And now, two options:
 	if featc is not None: # We will use scatter(), to have a colorbar
 		
-		logger.info("Drawing %i points, with colorbar (using 'scatter')" % (len(data[featx.colname]))) # Log it as this might be slow
+		logger.info("Drawing %i points, with colorbar (using 'scatter')" % (len(featx.get(data)))) # Log it as this might be slow
 		
 		# We prepare to use scatter, with a colorbar
 		cmap = matplotlib.cm.get_cmap(cmap)
@@ -114,9 +114,9 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		if featx.errcolname != None or featy.errcolname != None:
 			myerrorbarkwargs = {"fmt":"none", "capthick":0, "ecolor":"gray", "zorder":-100, "rasterized":rasterized}
 			myerrorbarkwargs.update(errorbarkwargs)	
-			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **myerrorbarkwargs)
+			ax.errorbar(featx.get(data), featy.get(data), xerr=xerr, yerr=yerr, **myerrorbarkwargs)
 		
-		stuff = ax.scatter(data[featx.colname], data[featy.colname], c=data[featc.colname], **mykwargs)
+		stuff = ax.scatter(featx.get(data), featy.get(data), c=featc.get(data), **mykwargs)
 		divider = make_axes_locatable(ax)
 		cax = divider.append_axes("right", "5%", pad="3%")
 		cax = plt.colorbar(stuff, cax)
@@ -125,7 +125,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			
 	else: # We will use plot()
 	
-		logger.info("Drawing %i points without colorbar (using 'plot')" % (len(data[featx.colname])))
+		logger.info("Drawing %i points without colorbar (using 'plot')" % (len(featx.get(data))))
 		mykwargs = {"marker":".", "ms":5, "color":"black", "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	
 		# We overwrite these mykwargs with any user-specified kwargs:
@@ -138,10 +138,10 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		# And now the actual plot:
 		if featx.errcolname == None and featy.errcolname == None:
 			# Plain plot:
-			ax.plot(data[featx.colname], data[featy.colname], **mykwargs)
+			ax.plot(featx.get(data), featy.get(data), **mykwargs)
 		else:
 			mykwargs.update(myerrorbarkwargs)
-			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **mykwargs)
+			ax.errorbar(featx.get(data), featy.get(data), xerr=xerr, yerr=yerr, **mykwargs)
 		
 	
 	# We want minor ticks:
@@ -176,8 +176,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		# And draw the histograms		
-		axhistx.hist(data[featx.colname], **mysidehistxkwargs)
-		axhisty.hist(data[featy.colname], orientation='horizontal', **mysidehistykwargs)
+		axhistx.hist(featx.get(data), **mysidehistxkwargs)
+		axhisty.hist(featy.get(data), orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -208,12 +208,12 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		
 		# For "low":
 		if featx.low is None or featy.low is None: # We use the data...
-			minid = max(np.min(data[featx.colname]), np.min(data[featy.colname]))
+			minid = max(np.min(featx.get(data)), np.min(featy.get(data)))
 		else:
 			minid = max(featx.low, featy.low)
 		# Same for "high":
 		if featx.high is None or featy.high is None: # We use the data...
-			maxid = min(np.max(data[featx.colname]), np.max(data[featy.colname]))
+			maxid = min(np.max(featx.get(data)), np.max(featy.get(data)))
 		else:
 			maxid = min(featx.high, featy.high)
 			

@@ -26,3 +26,23 @@ class Feature():
 			self.nicename = self.colname
 		else:
 			self.nicename = nicename
+
+
+
+
+	def get(self, cat, rea=0):
+		"""
+		Returns the feature data from the given catalog.
+		The point here is to get nice automatic behaviour even for 2D columns
+		"""
+		
+		if self.colname not in cat.colnames:
+			raise RuntimeError("The column '%s' is not available in %s" % (self.colname, cat.colnames))
+				
+		if cat[self.colname].ndim == 1:
+			return cat[self.colname]
+		
+		if cat[self.colname].ndim == 2:
+			return cat[self.colname][:,rea]
+		
+
