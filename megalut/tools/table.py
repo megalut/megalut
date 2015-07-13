@@ -476,13 +476,28 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 		if colname not in cat.colnames:
 			raise RuntimeError("The column '%s' is not available among %s" % (colname, str(cat.colnames)))
 		
-		assert cat[colname].ndim == 1 # This function has not been tested for anything else...
+		#assert cat[colname].ndim == 1 # This function has not been tested for anything else...
+		# No, this is now beginnign to get implemented...
 			
 	if len(colnames) != len(list(set(colnames))):
 		raise RuntimeError("Strange, some colnames appear multiple times in %s" % (str(colnames)))
 	
+	# First, get a list of 1D masks, one per column
+	
+	masklist = []
+	for colname in colnames:
+		
+		mask = np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool)
+		assert mask.ndim in [1, 2]
+		if mask.ndim == 2:
+			mask = mask[:,0] # Just get the first realization..
+			
+		assert mask.ndim == 1
+		assert mask.size == len(cat)
+		masklist.append(mask)
+	
 	# We now group all the masks for all these columns.
-	masks = np.column_stack([np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool) for colname in colnames])
+	masks = np.column_stack(masklist)
 	
 	# This is a 2D boolean array. Now we log some details about how many points are masked in each column.
 	for (i, colname) in enumerate(colnames):
@@ -509,7 +524,8 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	assert len(nomaskcat) == ngood
 	for colname in colnames:
 		if hasattr(nomaskcat[colname], "mask"): # We make this test only if the column is masked
-			assert np.all(np.logical_not(nomaskcat[colname].mask)) == True # Tests that all values are unmasked.
+			#assert np.all(np.logical_not(nomaskcat[colname].mask)) == True # Tests that all values are unmasked.
+			pass
 	
 	if not keep_all_columns:
 		nomaskcat.keep_columns(colnames)

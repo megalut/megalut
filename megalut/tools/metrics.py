@@ -37,6 +37,9 @@ def metrics(catalog, label, predlabel):
 	lab = metcat[label]
 	pre = metcat[predlabel]
 	
+	assert lab.ndim == 1
+	assert pre.ndim == 1
+	
 	# And we prepare the return dict:
 	ret = {"predfrac":float(len(metcat))/float(len(catalog))}
 	
