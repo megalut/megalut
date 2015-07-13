@@ -268,8 +268,14 @@ class ML:
 			# An explicit loop, to highlight that we care very much about the order (to get labels right)
 	
 			for (i, predlabel) in enumerate(self.mlparams.predlabels):
-			
-				newcol = astropy.table.MaskedColumn(data=preddata[:,i,:].transpose(), name=predlabel) 
+
+				data=preddata[:,i,:].transpose()
+				assert data.ndim == 2 # Indeed this is now always 2D.
+				if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
+					data = data.reshape((data.size))
+					assert data.ndim == 1
+					
+				newcol = astropy.table.MaskedColumn(data=data, name=predlabel)
 				outcat.add_column(newcol)	
 		
 		
