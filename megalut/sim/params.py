@@ -73,6 +73,8 @@ class Params:
 		tru_gain = 1.0
 		tru_read_noise = 3.0
 		
+		tru_pixel = -1.0
+		
 		tru_psf_sigma = 1.0
 		
 		max_psf_g = 0.2
@@ -92,6 +94,8 @@ class Params:
 			"tru_sky_level" : tru_sky_level, # in ADU, just for generating noise, will not remain in the image
 			"tru_gain" : tru_gain, # in photons/ADU. Make this negative to have no Poisson noise
 			"tru_read_noise" : tru_read_noise, # in photons if gain > 0.0, otherwise in ADU.Set this to zero to have no flat Gaussian noise
+			
+			"tru_pixel" : tru_pixel, # If positive, adds an extra convolution by that many pixels to the simulation process
 			
 			"tru_psf_sigma" : tru_psf_sigma, # Gaussian PSFs will only be used if no PSF stamps are given
 			"tru_psf_g1" : tru_psf_g1, # You don't have to provide those parameters if you will use stamps

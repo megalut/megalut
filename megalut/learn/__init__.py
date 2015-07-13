@@ -6,6 +6,7 @@ __all__ = ["fannwrapper", "skynetwrapper", "ml", "run"]
 
 import fannwrapper
 import skynetwrapper
+import tenbilacwrapper
 
 from ml import ML, MLParams
 
