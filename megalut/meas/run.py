@@ -255,7 +255,7 @@ def _run(wslist, ncpu):
 	for modulename in mutemodules:
 		lowlevellogger = logging.getLogger(modulename)
 		#lowlevellogger.propagate = False
-		lowlevellogger.setLevel(logging.WARNING)
+		#lowlevellogger.setLevel(logging.WARNING)
 
 
 	if ncpu == 0:

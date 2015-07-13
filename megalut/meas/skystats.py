@@ -40,9 +40,10 @@ def measfct(cat, runon="img", prefix="", stampsize=None):
 		astropy.table.MaskedColumn(name=prefix+"skystd", dtype=float, length=len(cat)),
 		astropy.table.MaskedColumn(name=prefix+"skymad", dtype=float, length=len(cat)),
 		astropy.table.MaskedColumn(name=prefix+"skymean", dtype=float, length=len(cat)),
-		astropy.table.MaskedColumn(name=prefix+"skymed", dtype=float, length=len(cat))
+		astropy.table.MaskedColumn(name=prefix+"skymed", dtype=float, length=len(cat)),
+		astropy.table.MaskedColumn(name=prefix+"skystampsum", dtype=float, length=len(cat)),
 	])
-	for col in ["skystd", "skymad", "skymean", "skymed"]:
+	for col in ["skystd", "skymad", "skymean", "skymed", "skystampsum"]:
 		cat[prefix+col].mask = [True] * len(cat)
 		
 	
@@ -66,6 +67,7 @@ def measfct(cat, runon="img", prefix="", stampsize=None):
 			gal[prefix + "skymad"] = out["mad"]
 			gal[prefix + "skymean"] = out["mean"]
 			gal[prefix + "skymed"] = out["med"]
+			gal[prefix + "skystampsum"] = out["stampsum"]
 			
 	
 	nfailed = np.sum(cat[prefix + "skyflag"] > 0)

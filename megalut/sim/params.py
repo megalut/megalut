@@ -1,21 +1,17 @@
 import numpy as np
 import math
 
+
+profile_types = ["Gaussian", "Sersic"] # Order defines the numerical codes of the galaxy profile types
+
+
 class Params:
 	"""
 	A container for the distributions describing the parameters of a simulated galaxy.
-	To use it, you inherit this class and override its methods as desired.
-	Only the method "get" gets called by the simulation code. Hence, instead of overriding all the "get_xxx" methods, you can also simply override this "get".
-	
-	The minimal methods implemented here are just examples.	Example how you could inherit and override this:
-	
-	>>> class Flux120(megalut.sim.params.Params):
-	>>> 	def get_flux(self):
-	>>> 		return 120.0
-	>>> 	
-	>>> simparams = Flux120()
-
-	
+	To use it, write your own child class (which inherits from this one) and redefine the
+	"draw" method as you wish.
+	The distributions provided here are really just examples!
+	Of course, you are free to add "correlations" between parameters.
 	"""
 	
 	def __init__(self, name=None):
@@ -33,58 +29,72 @@ class Params:
 		else:	
 			self.name = name
 	
-		self.sig = 1.0 
-		# The sky noise.
-		# If you do now overwrite get_sig, you will have to set this value at some point.
-	
 	def __str__(self):
 		"""
 		The string representation is in fact the name:
 		"""
 		return "%s" % (self.name)
 		
-	def get_sig(self):
-		return self.sig
 	
-	def get_rad(self):
-		return np.random.uniform(0.5, 5.0)
-		
-	def get_flux(self):
-		return np.random.uniform(10.0, 200.0)
-		
-	def get_sersicn(self, ix=0, iy=0, n=1):
+	def draw(self, ix, iy, n):
 		"""
-		This is a bit special: we do not draw sersic indices randomly, as changing it from stamp to stamp significantly slows down galsim ! That's why we need to know the stamp index.
-
+		The method that gets called to draw the random variables, and which you shoud redefine.
+		In the given example, we only draw Sersic profiles, and we do include parameters for Gaussian PSFs.
+		
 		:param ix: x index of the galaxy, going from 0 to n-1
 		:param iy: y index, idem
 		:param n: n x n is the number of stamps
-		
-		"""
-		pseudorand = float(iy)/float(n)
-		return 0.5 + pseudorand * 3.0
-		
-	def get_g(self):
-		return np.random.uniform(low=-0.4, high=0.4, size=2)
-		
-	def get(self, ix, iy, n):
-		"""
-		This is the method that gets called to generate a catalog of simulated galaxies.
-		"""
-		
-		(g1, g2) = self.get_g()
-		
-		return {
-			"tru_sig" : self.get_sig(),
-			"tru_rad" : self.get_rad(),
-			"tru_flux" : self.get_flux(),
-			"tru_sersicn" : self.get_sersicn(ix=ix, iy=iy, n=n),
-			"tru_g1" : g1,
-			"tru_g2" : g2
-		}
-
-
-			
-
 	
+		As you see, this method will know about the "position" of a galaxy on a grid.
+		This allows you to generate non-random distributions, using these grid indexes.
+		For instance, you should not draw sersic indices randomly,
+		as changing it from stamp to stamp significantly slows down galsim !
+		
+		.. note:: Comments on what to return are included in the example code of this method.
+		
+		"""
+		
+		# See the return statement below for comments!
+		
+		tru_type = 1
+		tru_flux =  np.random.uniform(1000.0, 10000.0)
+		
+		#tru_sigma = np.random.uniform(1.0, 4.0) # For sersic, we do not have to provide this.
+		tru_rad = np.random.uniform(1.0, 4.0)
+		
+		max_g = 0.6
+		g = np.random.triangular(0.0, max_g, max_g) # This triangular g gives uniform disk (if you want that)
+		theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+		(tru_g1, tru_g2) = (g * np.cos(2.0 * theta), g * np.sin(2.0 * theta))
+			
+		tru_sersicn =  0.5 + (float(iy)/float(n))**2.0 * 3.0
+		
+		tru_sky_level = 100.0
+		tru_gain = 1.0
+		tru_read_noise = 3.0
+		
+		tru_psf_sigma = 1.0
+		
+		max_psf_g = 0.2
+		psf_g = np.random.triangular(0.0, max_psf_g, max_psf_g)
+		psf_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+		(tru_psf_g1, tru_psf_g2) = (psf_g * np.cos(2.0 * psf_theta), psf_g * np.sin(2.0 * psf_theta))
+			
+		return {
+			"tru_type" : tru_type, # Galaxy profile type. 0 is Gaussian, 1 is Sersic (see sim.params.profile_types)
+			"tru_flux" : tru_flux, # in ADU
+			#"tru_sigma" : tru_sigma, # Size sigma, used for Gaussians
+			"tru_rad" : tru_rad, # Half-light radius, used for Sersics
+			"tru_sersicn" : tru_sersicn, # Lower sersic index = less concentrated = lower adamom_rho4
+			"tru_g1" : tru_g1,
+			"tru_g2" : tru_g2,
+			
+			"tru_sky_level" : tru_sky_level, # in ADU, just for generating noise, will not remain in the image
+			"tru_gain" : tru_gain, # in photons/ADU. Make this negative to have no Poisson noise
+			"tru_read_noise" : tru_read_noise, # in photons if gain > 0.0, otherwise in ADU.Set this to zero to have no flat Gaussian noise
+			
+			"tru_psf_sigma" : tru_psf_sigma, # Gaussian PSFs will only be used if no PSF stamps are given
+			"tru_psf_g1" : tru_psf_g1, # You don't have to provide those parameters if you will use stamps
+			"tru_psf_g2" : tru_psf_g2
+		}
 

@@ -70,10 +70,10 @@ def datafile(filename):
 	return filename + datafile_extension
 
 
-def workprefix(filename, workdir):
+def workname(filename):
 	"""
-	Returns a path to the workdir that can be used as prefix for megalut-internal files
+	Returns a name ("thread_0-sample_image_3") to be used to identify SBE images in megalut-internal files
 	"""
-	return os.path.join(workdir, "-".join(filename.split("/")[-2:]))
+	return "-".join(filename.split("/")[-2:])
 	
 	
