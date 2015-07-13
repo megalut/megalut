@@ -335,9 +335,8 @@ class Run():
 		#cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="_rea0")
 		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)
 		
-		print cat.colnames
-		
-		print cat["pre_sigma"]
+		#print cat.colnames
+		#print cat["pre_sigma"]
 		
 		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat.pkl"))
 	
@@ -370,7 +369,8 @@ class Run():
 	
 		cat = megalut.tools.io.readpickle(self.groupobspath)
 		
-		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="") # Drop the "_mean" which does not exists for obs
+		#cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="") # Drop the "_mean" which does not exists for obs
+		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist, tweakmode="default")
 		
 		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "obsprecat.pkl"))
 
