@@ -278,22 +278,15 @@ class Run():
 		# We load the training catalog
 		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
-		
-		#print simcat.colnames
-		
-		"""
 		# We reject crap ones
 		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1)
 		simcat = simcat[simcat["goodfortrain"] > float(simcat.meta["ngroup"])/2.0]
 		logger.info("Keeping %i galaxies for training" % (len(simcat)))
 		
 		
-		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
-		#plot.simcheck(simcat)
+		simcat = simcat[:1000]
 		
-		#print simcat.colnames
-		#exit()
-		"""
+		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
 		
 		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 
