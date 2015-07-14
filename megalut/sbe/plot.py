@@ -277,9 +277,10 @@ def predscatter(cat, filepath=None):
 	pre_sigma = Feature("pre_sigma")
 	pre_flux = Feature("pre_flux")
 	
-	snr =Feature("sewpy_snr")
+	snr = Feature("snr")
 	
 	fig = plt.figure(figsize=(22, 13))
+	
 	
 	ax = fig.add_subplot(3, 4, 1)	
 	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
@@ -289,7 +290,7 @@ def predscatter(cat, filepath=None):
 		
 	ax = fig.add_subplot(3, 4, 3)	
 	megalut.plot.scatter.scatter(ax, cat, tru_sigma, pre_sigma, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
-
+	
 	#ax = fig.add_subplot(3, 4, 4)	
 	#megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 

@@ -136,21 +136,21 @@ class Run():
 		
 		
 
-	def plotobscheck(self, prefix="adamom_", g12_low=None, g12_high=None):
-		"""
-		One checkplot for every SBE "file"
-		"""
-		
-		catfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
-	
-		for catfilepath in catfilepaths:#[:1]:
-			
-			
-			cat = megalut.tools.io.readpickle(catfilepath)
-			
-			plotfilepath = os.path.join(self.workobsdir, cat.meta["workname"] + "-measobscheckplot.png")
-			
-			plot.meascheck(cat, plotfilepath, prefix, g12_low, g12_high)
+#	def plotobscheck(self, prefix="adamom_", g12_low=None, g12_high=None):
+#		"""
+#		One checkplot for every SBE "file"
+#		"""
+#		
+#		catfilepaths = glob.glob(os.path.join(self.workobsdir, "*-meascat.pkl"))
+#	
+#		for catfilepath in catfilepaths:#[:1]:
+#			
+#			
+#			cat = megalut.tools.io.readpickle(catfilepath)
+#			
+#			plotfilepath = os.path.join(self.workobsdir, cat.meta["workname"] + "-measobscheckplot.png")
+#			
+#			plot.meascheck(cat, plotfilepath, prefix, g12_low, g12_high)
 	
 
 	def groupobs(self, nfiles="all"):
@@ -174,7 +174,7 @@ class Run():
 		megalut.tools.io.writepickle(groupcat, self.groupobspath)
 		
 	
-	def showmeasobsfrac(self, fields = ["skystd", "sewpy_FLUX_AUTO", "adamom_flux"]):
+	def showmeasobsfrac(self, fields = ["skystd", "adamom_flux"]):
 		"""
 		For testing purposes, computes measurement success fractions.
 		"""
@@ -191,13 +191,14 @@ class Run():
 		#plt.plot(cat["sewpy_FLUX_AUTO"], cat["adamom_flux"], "b.")
 		#plt.show()
 
-	def plotmixobscheck(self, prefix='adamom_', filepath=None):
-		"""
-		One checkplot mixing several SBE files.
-		"""
-		
-		cat = megalut.tools.io.readpickle(self.groupobspath)
-		plot.meascheck(cat, prefix=prefix, filepath=filepath)
+
+#	def plotmixobscheck(self, prefix='adamom_', filepath=None):
+#		"""
+#		One checkplot mixing several SBE files.
+#		"""
+#		
+#		cat = megalut.tools.io.readpickle(self.groupobspath)
+#		plot.meascheck(cat, prefix=prefix, filepath=filepath)
 	
 	
 	
@@ -221,21 +222,6 @@ class Run():
 		measfctkwargs = {"stampsize":stampsize}
 		megalut.meas.run.onsims(self.worksimdir, simparams, self.worksimdir, measfct, measfctkwargs, ncpu=self.ncpu)
 		
-
-
-	def plotsimobscompa(self, simparams, prefix="adamom_", filepath=None):
-		"""
-		Again, a classic...
-		"""
-		
-		# We read the first rea of the sims
-		simcatpath = megalut.meas.utils.simmeasdict(self.worksimdir, simparams).values()[0][0]
-		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, simcatpath))
-				
-		# And a bunch of the obs
-		obscat = megalut.tools.io.readpickle(self.groupobspath)
-			
-		plot.simobscompa(simcat, obscat, prefix=prefix, filepath=filepath)
 		
 
 
@@ -285,6 +271,7 @@ class Run():
 		
 		
 		simcat = simcat[:1000]
+		print "only training on 1000 gals hack"
 		
 		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
 		
@@ -335,10 +322,6 @@ class Run():
 	
 
 
-	def plotpredsims(self, filepath=None):
-		
-		cat = megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
-		plot.predscatter(cat, filepath=filepath)
 		
 	def analysepredsims(self):
 		"""
