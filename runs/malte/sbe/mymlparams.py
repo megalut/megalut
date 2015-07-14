@@ -41,6 +41,10 @@ trainparamslist = [
 ]
 
 
+trainparamslist = [(sizemlparams, simpleten), (gmlparams, simpleten)]
+trainparamslist = [(sizemlparams, simpleten_msb), (gmlparams, simpleten_msb)]
+trainparamslist = [(sizemlparams, doubleten), (gmlparams, doubleten)]
+
 
 # Before Tenbilac:
 """

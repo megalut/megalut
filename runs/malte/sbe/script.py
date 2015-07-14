@@ -6,7 +6,7 @@ import myplots
 
 import logging
 #logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
-logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
+logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
 
 
 ####### Configuration #######
@@ -23,7 +23,7 @@ run = megalut.sbe.run.Run(
 
 	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/test_low",
 	
-	ncpu = 6
+	ncpu = 8
 	)
 
 
@@ -31,8 +31,8 @@ simparams = mysimparams.SBE_v1()
 #simparams.set_high_sn() # This has only to be set when drawing simulations
 simparams.set_low_sn()
 
-#simparams.name = "SBE_tenbilac"
-simparams.name = "SBE_tenbilac_1000"
+simparams.name = "SBE_tenbilac"
+#simparams.name = "SBE_tenbilac_1000"
 #simparams.name = "SBE_tenbilac_test"
 
 
@@ -43,8 +43,10 @@ mlparams = mymlparams.trainparamslist
 ####### Steps #######
 
 
-#run.makecats(onlyn=4, sbe_sample_scale=0.05)
+#run.makecats(onlyn=None, sbe_sample_scale=0.05)
 #run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsize of 200 seems exagerated!
+
+
 #run.groupobs()
 #run.showmeasobsfrac()
 
@@ -56,15 +58,14 @@ mlparams = mymlparams.trainparamslist
 
 #run.drawsims(simparams, n=50, ncat=2, nrea=10, stampsize=150) # SBE_tenbilac_test
 
-run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150) # SBE_tenbilac_1000
+#run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150) # SBE_tenbilac_1000
 
-run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
 
 
+myplots.simobscompa(run, simparams)
 
-#####
 
-#run.plotsimobscompa(simparams)
 
 
 ####run.avgsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
@@ -78,6 +79,9 @@ run.meassims(simparams, mymeasfct.default, stampsize=150)
 
 
 #run.predictsims(simparams, mlparams)
+
+
+#myplots.predsims(run)
 
 #run.plotpredsims()
 
