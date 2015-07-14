@@ -26,18 +26,28 @@ class TenbilacParams:
 	"""
 	
 	
-	def __init__(self, hidden_nodes, max_iterations=100, name="default"):
+	def __init__(self, hidden_nodes, max_iterations=100, errfct="msrb", normtype="-11", actfct="tanh", verbose=False, name="default"):
 		"""
+		
+		:param hidden_nodes: list giving the number of nodes per hidden layer
+		:param max_itrations: 
+		:param errfct: either "msb" or "msrb"
+		:param normtype:
+		:param actfct: either "sig" or "tanh"
+		:param name:
 		
 		"""
 		self.hidden_nodes = hidden_nodes 
 		self.max_iterations = max_iterations
+		self.errfct = errfct
+		self.normtype = normtype
+		self.actfct = actfct
+		self.verbose = verbose
 		self.name = name
 		
 		
 	def __str__(self):
-		return "Tenbilac parameters \"%s\": hidden_nodes=%s, max_iterations=%i" % \
-		    (self.name, str(self.hidden_nodes), self.max_iterations)
+		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfct}, self.errfct)".format(self=self)
 		
 
 class TenbilacWrapper:
@@ -81,25 +91,26 @@ class TenbilacWrapper:
 		nhs = self.params.hidden_nodes
 		no = labels.shape[0]
 		
-		ann = tenbilac.net.Tenbilac(ni, nhs, no)
+		
+		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfct=self.params.actfct)
 		
 		# Now we normalize the features and labels, and save the Normers for later denormalizing.
 		logger.info("{0}: normalizing training features...".format((str(self))))
-		self.feature_normer = tenbilac.utils.Normer(features, type="-11")
+		self.feature_normer = tenbilac.utils.Normer(features, type=self.params.normtype)
 		normfeatures = self.feature_normer(features)
 		
 		logger.info("{0}: normalizing training labels...".format((str(self))))
-		self.label_normer = tenbilac.utils.Normer(labels, type="-11")
+		self.label_normer = tenbilac.utils.Normer(labels, type=self.params.normtype)
 		normlabels = self.label_normer(labels)
 
 		ann.setidentity()
 		ann.addnoise(wscale=0.1, bscale=0.1)
 
-		logger.info("{0}: starting the training".format((str(self))))		
-						
-		ann.train(normfeatures, normlabels, tenbilac.err.msb, maxiter=self.params.max_iterations, itersavefilepath=self.netpath, verbose=False)
-		
 
+		logger.info("{0}: starting the training".format((str(self))))
+						
+		ann.train(normfeatures, normlabels, errfct=self.params.errfct, maxiter=self.params.max_iterations, itersavefilepath=self.netpath, verbose=self.params.verbose)
+		
 		ann.save(self.netpath)
 	
 		
