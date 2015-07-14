@@ -2,7 +2,7 @@
 A module to connect the shape measurement stuff (astropy.table catalogs...) to the machine learning
 (ml) wrappers.
 It also takes care of masked columns, so that the underlying ml wrappers do not have to deal with
-masked arrays.
+masked arrays (except for Tenbilac, as Tenbilac uses masked arrays).
 """
 
 import numpy as np
@@ -194,7 +194,11 @@ class ML:
 			# So we build such a "combined mask", to extract these rows.
 			# We do not want this to fail on unmasked astropy tables, and so to make it easy
 			# we convert everything to masked arrays.
-		
+			
+			
+			for colname in self.mlparams.features + self.mlparams.labels:
+				assert catalog[colname].ndim == 1 # This code was not desinged for 2D columns.
+			
 			masks = np.column_stack([
 				np.array(np.ma.getmaskarray(np.ma.array(catalog[colname])), dtype=bool) \
 				for colname in self.mlparams.features + self.mlparams.labels])
