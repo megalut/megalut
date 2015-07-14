@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def getdata(cat, features):
 	"""
-	Extracts the data that can be plotted, skipping all rows with masked content.
+	Prepares a copy of cat containing only those rows for which none of the features is masked.
 	
 	:param cat: an astropy table
 	:param features: a list of Feature objects

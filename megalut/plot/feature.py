@@ -32,8 +32,8 @@ class Feature():
 
 	def get(self, cat, rea=0):
 		"""
-		Returns the feature data from the given catalog.
-		The point here is to get nice automatic behaviour even for 2D columns
+		Returns the feature data from the given catalog, including its masks.
+		The point here is to get nice automatic behaviour even for 2D columns.
 		"""
 		
 		if self.colname not in cat.colnames:

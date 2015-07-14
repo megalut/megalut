@@ -13,6 +13,7 @@ from matplotlib.lines import Line2D
 import utils
 from .. import tools
 
+import astropy
 
 import logging
 logger = logging.getLogger(__name__)
@@ -241,8 +242,18 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		metrics_label = featx.colname
 		metrics_predlabel = featy.colname
 		
+		print "Terrible hack in scatter.py!"
+
+		# Hack hack hack
+		label_data = cat[metrics_label]
+		predlabel_data = cat[metrics_predlabel][:,0]
+		
+		minicat = astropy.table.Table((label_data, predlabel_data))
+		
 		try:
-			metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
+			#metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
+			metrics = tools.metrics.metrics(minicat, metrics_label, metrics_predlabel)
+			
 			metrics_text = "predfrac: %.3f\nRMSD: %.3f\nm*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0)
 			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
 		except:
