@@ -188,6 +188,7 @@ def group(incats, groupcols=None, removecols=None, checkcommon=True):
 def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True, checkcommon=True):
 	"""
 	This function computes simple statistics "across" corresponding columns from the list of input catalogs (incats).
+	Instead of producing 2D columns (i.e., a 3D table), it puts all the data into extra columns with custom names ("_rea0"...).
 	
 	:param incats: list of input catalogs (astropy tables, usually masked).
 		They must all have identical order and column names (this will be checked).
@@ -485,6 +486,9 @@ def cutmasked(cat, colnames, keep_all_columns=True):
 	# First, get a list of 1D masks, one per column
 	
 	masklist = []
+	
+	print "Terrible hack, just uses mask of first rea if 2D !"
+	
 	for colname in colnames:
 		
 		mask = np.array(np.ma.getmaskarray(np.ma.array(cat[colname])), dtype=bool)
