@@ -26,7 +26,9 @@ class TenbilacParams:
 	"""
 	
 	
-	def __init__(self, hidden_nodes, max_iterations=100, errfct="msrb", normtype="-11", actfct="tanh", verbose=False, name="default"):
+	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, 
+		valfrac=0.5, shuffle=True, mbsize=None, mbloops=1,
+		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True):
 		"""
 		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
@@ -36,18 +38,25 @@ class TenbilacParams:
 		:param actfct: either "sig" or "tanh"
 		:param name:
 		
+		:param reuse: if True, will start the training from the existing state (if available)
+		
 		"""
 		self.hidden_nodes = hidden_nodes 
 		self.max_iterations = max_iterations
-		self.errfct = errfct
+		self.errfctname = errfctname
+		self.valfrac = valfrac
+		self.shuffle = shuffle
+		self.mbsize = mbsize
+		self.mbloops = mbloops
 		self.normtype = normtype
-		self.actfct = actfct
+		self.actfctname = actfctname
 		self.verbose = verbose
 		self.name = name
+		self.reuse = reuse
 		
 		
 	def __str__(self):
-		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfct}, self.errfct)".format(self=self)
+		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, self.errfctname)".format(self=self)
 		
 
 class TenbilacWrapper:
@@ -65,53 +74,77 @@ class TenbilacWrapper:
 		
 		
 	def __str__(self):
-		return "Tenbilac in %s" % (os.path.basename(self.workdir))
+		return "Tenbilac '%s' in %s" % (self.params.name, os.path.basename(self.workdir))
 
 	
 	def train(self, features, labels):
 		"""
+		But we might reuse the network from an existing previous training.
 		
 		:param features: a 3D numpy array, possibly masked, with indices (rea, feature, galaxy)
 		:param labels: a 2D array, with indices (label, galaxy)
 		
 		"""
+		starttime = datetime.now()
 		
+		# Some tests to start with
 		assert features.ndim == 3
 		assert labels.ndim == 2
 		
+		oldtrain = None
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
 		else:
-			logger.warning("Tenbilac workdir %s already exists, I will overwrite stuff !" % \
-				self.workdir)
-
-		starttime = datetime.now()
-		
+			logger.info("Tenbilac workdir %s already exists" % self.workdir)
+			if os.path.exists(self.netpath) and self.params.reuse:
+				# Then we try to read the existing network and start the training from it's parameters.
+				logger.info("Reading in existing network... ")
+				oldtrain = tenbilac.utils.readpickle(self.netpath)			
+	
 		ni = features.shape[1]
 		nhs = self.params.hidden_nodes
 		no = labels.shape[0]
 		
-		
-		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfct=self.params.actfct)
-		
+		# We prep the network:	
+		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname)
+		if oldtrain is not None:
+			if not ann.nparams() == oldtrain.net.nparams():
+				logger.warning("Old network is not compatible, starting from scratch!")
+				oldtrain = None
+		if oldtrain is None:
+			ann.setidentity()
+			ann.addnoise(wscale=0.1, bscale=0.1)
+		else:
+			logger.info("Reusing previous network")
+			ann = oldtrain.net
+	
 		# Now we normalize the features and labels, and save the Normers for later denormalizing.
 		logger.info("{0}: normalizing training features...".format((str(self))))
-		self.feature_normer = tenbilac.utils.Normer(features, type=self.params.normtype)
+		self.feature_normer = tenbilac.data.Normer(features, type=self.params.normtype)
 		normfeatures = self.feature_normer(features)
 		
 		logger.info("{0}: normalizing training labels...".format((str(self))))
-		self.label_normer = tenbilac.utils.Normer(labels, type=self.params.normtype)
+		self.label_normer = tenbilac.data.Normer(labels, type=self.params.normtype)
 		normlabels = self.label_normer(labels)
 
-		ann.setidentity()
-		ann.addnoise(wscale=0.1, bscale=0.1)
+		# And prep the data
+		dat = tenbilac.data.Traindata(normfeatures, normlabels, valfrac=self.params.valfrac, shuffle=self.params.shuffle)
 
+		# Now we can assemble the Training
+		
+		#trainname = os.path.split(self.workdir)[-1]
+		trainname = self.params.name
+		
+		training = tenbilac.train.Training(ann, dat, 
+			errfctname=self.params.errfctname, itersavepath=self.netpath, verbose=self.params.verbose, name=trainname)
 
 		logger.info("{0}: starting the training".format((str(self))))
-						
-		ann.train(normfeatures, normlabels, errfct=self.params.errfct, maxiter=self.params.max_iterations, itersavefilepath=self.netpath, verbose=self.params.verbose)
 		
-		ann.save(self.netpath)
+		#training.bfgs(maxiter=self.params.max_iterations)
+		
+		training.minibatch_bfgs(mbsize=self.params.mbsize, mbloops=self.params.mbloops, maxiter=self.params.max_iterations)
+		
+		training.save(self.netpath)
 	
 		
 	
@@ -119,7 +152,8 @@ class TenbilacWrapper:
 	def predict(self, features):
 			
 		# We read the Tenbilac:
-		ann = tenbilac.utils.readpickle(self.netpath)
+		training = tenbilac.utils.readpickle(self.netpath)
+		ann = training.net
 		
 		logger.info("{0}: normalizing features for prediction...".format((str(self))))
 		normfeatures = self.feature_normer(features)
