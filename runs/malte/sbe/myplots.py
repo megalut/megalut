@@ -103,19 +103,19 @@ def predsims(run, filepath=None):
 	tru_sigma = Feature("tru_sigma")
 	tru_flux = Feature("tru_flux")
 	
-	pre_g1 = Feature("pre_g1", -rg, rg)
-	pre_g2 = Feature("pre_g2", -rg, rg)
-	pre_sigma = Feature("pre_sigma")
-	pre_flux = Feature("pre_flux")
+	pre_g1 = Feature("pre_g1", -rg, rg, rea=0)
+	pre_g2 = Feature("pre_g2", -rg, rg, rea=0)
+	pre_sigma = Feature("pre_sigma", rea=0)
+	pre_flux = Feature("pre_flux", rea=0)
 	
-	snr = Feature("snr")
+	snr = Feature("snr", rea=0)
 	
 	fig = plt.figure(figsize=(22, 13))
 	
 	
 	ax = fig.add_subplot(3, 4, 1)	
 	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
-		
+	
 	ax = fig.add_subplot(3, 4, 2)	
 	megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, show_id_line=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 		
