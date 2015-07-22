@@ -28,7 +28,7 @@ class TenbilacParams:
 	
 	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, 
 		valfrac=0.5, shuffle=True, mbsize=None, mbloops=1,
-		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True):
+		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True, keepdata=False):
 		"""
 		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
@@ -39,6 +39,9 @@ class TenbilacParams:
 		:param name:
 		
 		:param reuse: if True, will start the training from the existing state (if available)
+		
+		:param keepdata: if True, the data is kept in the final pickle saved once the training is done.
+			Can be useful for plots and debugging, but is huge.
 		
 		"""
 		self.hidden_nodes = hidden_nodes 
@@ -53,6 +56,7 @@ class TenbilacParams:
 		self.verbose = verbose
 		self.name = name
 		self.reuse = reuse
+		self.keepdata = keepdata
 		
 		
 	def __str__(self):
@@ -79,7 +83,7 @@ class TenbilacWrapper:
 	
 	def train(self, features, labels):
 		"""
-		But we might reuse the network from an existing previous training.
+		Note that we might take over a previous training.
 		
 		:param features: a 3D numpy array, possibly masked, with indices (rea, feature, galaxy)
 		:param labels: a 2D array, with indices (label, galaxy)
@@ -87,38 +91,17 @@ class TenbilacWrapper:
 		"""
 		starttime = datetime.now()
 		
-		# Some tests to start with
-		assert features.ndim == 3
-		assert labels.ndim == 2
-		
-		oldtrain = None
+		# Setting up the workdir:
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
 		else:
 			logger.info("Tenbilac workdir %s already exists" % self.workdir)
-			if os.path.exists(self.netpath) and self.params.reuse:
-				# Then we try to read the existing network and start the training from it's parameters.
-				logger.info("Reading in existing network... ")
-				oldtrain = tenbilac.utils.readpickle(self.netpath)			
-	
-		ni = features.shape[1]
-		nhs = self.params.hidden_nodes
-		no = labels.shape[0]
+			
+		# Some tests to start with
+		assert features.ndim == 3
+		assert labels.ndim == 2
 		
-		# We prep the network:	
-		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname)
-		if oldtrain is not None:
-			if not ann.nparams() == oldtrain.net.nparams():
-				logger.warning("Old network is not compatible, starting from scratch!")
-				oldtrain = None
-		if oldtrain is None:
-			ann.setidentity()
-			ann.addnoise(wscale=0.1, bscale=0.1)
-		else:
-			logger.info("Reusing previous network")
-			ann = oldtrain.net
-	
-		# Now we normalize the features and labels, and save the Normers for later denormalizing.
+		# We normalize the features and labels, and save the Normers for later denormalizing.
 		logger.info("{0}: normalizing training features...".format((str(self))))
 		self.feature_normer = tenbilac.data.Normer(features, type=self.params.normtype)
 		normfeatures = self.feature_normer(features)
@@ -127,16 +110,42 @@ class TenbilacWrapper:
 		self.label_normer = tenbilac.data.Normer(labels, type=self.params.normtype)
 		normlabels = self.label_normer(labels)
 
-		# And prep the data
+		# We can prep the traindata object:
 		dat = tenbilac.data.Traindata(normfeatures, normlabels, valfrac=self.params.valfrac, shuffle=self.params.shuffle)
 
-		# Now we can assemble the Training
+
+		# Now we take care of setting up the network (even if we might reuse an existing one)
+		ni = features.shape[1]
+		nhs = self.params.hidden_nodes
+		no = labels.shape[0]
+		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname)
 		
-		#trainname = os.path.split(self.workdir)[-1]
-		trainname = self.params.name
-		
+		# And set up the training object:
 		training = tenbilac.train.Training(ann, dat, 
-			errfctname=self.params.errfctname, itersavepath=self.netpath, verbose=self.params.verbose, name=trainname)
+				errfctname=self.params.errfctname,
+				itersavepath=self.netpath,
+				verbose=self.params.verbose,
+				name=self.params.name)
+
+
+		# Let's see if an existing training is available
+		oldtrain = None
+		if os.path.exists(self.netpath) and self.params.reuse:
+			# Then we try to read the existing training and start the training from it's parameters.
+			logger.info("Reading in existing training... ")
+			oldtrain = tenbilac.utils.readpickle(self.netpath)			
+
+	
+		# And now see if we take over the previous trainign or not:
+		if oldtrain is None:
+			training.net.setidentity()
+			training.net.addnoise(wscale=0.1, bscale=0.1)
+						
+		else:
+			logger.info("Reusing previous network!")
+			training.takeover(oldtrain)
+
+		# Ready!
 
 		logger.info("{0}: starting the training".format((str(self))))
 		
@@ -144,7 +153,7 @@ class TenbilacWrapper:
 		
 		training.minibatch_bfgs(mbsize=self.params.mbsize, mbloops=self.params.mbloops, maxiter=self.params.max_iterations)
 		
-		training.save(self.netpath)
+		training.save(self.netpath, self.params.keepdata)
 	
 		
 	
