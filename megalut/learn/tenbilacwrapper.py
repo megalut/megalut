@@ -60,7 +60,7 @@ class TenbilacParams:
 		
 		
 	def __str__(self):
-		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, self.errfctname)".format(self=self)
+		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, {self.errfctname})".format(self=self)
 		
 
 class TenbilacWrapper:
@@ -81,7 +81,7 @@ class TenbilacWrapper:
 		return "Tenbilac '%s' in %s" % (self.params.name, os.path.basename(self.workdir))
 
 	
-	def train(self, features, labels):
+	def train(self, features, labels, featurenames=None, labelnames=None):
 		"""
 		Note that we might take over a previous training.
 		
@@ -118,23 +118,23 @@ class TenbilacWrapper:
 		ni = features.shape[1]
 		nhs = self.params.hidden_nodes
 		no = labels.shape[0]
-		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname)
+		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname,
+			inames=featurenames, onames=labelnames)
 		
+		
+		# Let's see if an existing training is available (before the init of the new training writes its file...)
+		oldtrain = None
+		if os.path.exists(self.netpath) and self.params.reuse:
+			# Then we try to read the existing training and start the training from it's parameters.
+			logger.info("Reading in existing training... ")
+			oldtrain = tenbilac.utils.readpickle(self.netpath)			
+			
 		# And set up the training object:
 		training = tenbilac.train.Training(ann, dat, 
 				errfctname=self.params.errfctname,
 				itersavepath=self.netpath,
 				verbose=self.params.verbose,
 				name=self.params.name)
-
-
-		# Let's see if an existing training is available
-		oldtrain = None
-		if os.path.exists(self.netpath) and self.params.reuse:
-			# Then we try to read the existing training and start the training from it's parameters.
-			logger.info("Reading in existing training... ")
-			oldtrain = tenbilac.utils.readpickle(self.netpath)			
-
 	
 		# And now see if we take over the previous trainign or not:
 		if oldtrain is None:
