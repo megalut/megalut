@@ -23,7 +23,7 @@ run = megalut.sbe.run.Run(
 
 	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/test_low",
 	
-	ncpu = 8
+	ncpu = 5
 	)
 
 
@@ -31,8 +31,8 @@ simparams = mysimparams.SBE_v1()
 #simparams.set_high_sn() # This has only to be set when drawing simulations
 simparams.set_low_sn()
 
-simparams.name = "SBE_tenbilac"
-#simparams.name = "SBE_tenbilac_1000"
+#simparams.name = "SBE_tenbilac"
+simparams.name = "SBE_tenbilac_1000"
 #simparams.name = "SBE_tenbilac_test"
 
 
@@ -63,7 +63,7 @@ mlparams = mymlparams.trainparamslist
 #run.meassims(simparams, mymeasfct.default, stampsize=150)
 
 
-myplots.simobscompa(run, simparams)
+#myplots.simobscompa(run, simparams)
 
 
 
@@ -75,7 +75,8 @@ myplots.simobscompa(run, simparams)
 
 
 #run.train(simparams, mlparams)
-#run.traintenbilac(simparams, mlparams)
+
+run.traintenbilac(simparams, mlparams)
 
 
 #run.predictsims(simparams, mlparams)
@@ -88,15 +89,14 @@ myplots.simobscompa(run, simparams)
 
 #run.predictobs(mlparams)
 
+#run.fakepredictobs()
 
 #run.analysepredobs()
+
+
 #run.writepredsbe_single()
 
-
 #myplots.simbias(run)  #, "bias_high_sn_sims.pdf")
-
 #myplots.sbebias(run, "bias_low_sn_sbe.pdf")
-
 #run.analysepredsims()
-
 #run.writepredsbe()
