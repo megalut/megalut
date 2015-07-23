@@ -28,7 +28,7 @@ class TenbilacParams:
 	
 	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, 
 		valfrac=0.5, shuffle=True, mbsize=None, mbloops=1,
-		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True, keepdata=False):
+		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
 		"""
 		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
@@ -56,6 +56,7 @@ class TenbilacParams:
 		self.verbose = verbose
 		self.name = name
 		self.reuse = reuse
+		self.autoplot = autoplot
 		self.keepdata = keepdata
 		
 		
@@ -133,7 +134,9 @@ class TenbilacWrapper:
 		training = tenbilac.train.Training(ann, dat, 
 				errfctname=self.params.errfctname,
 				itersavepath=self.netpath,
+				autoplotdirpath=self.workdir,
 				verbose=self.params.verbose,
+				autoplot=self.params.autoplot,
 				name=self.params.name)
 	
 		# And now see if we take over the previous trainign or not:
@@ -155,6 +158,7 @@ class TenbilacWrapper:
 		
 		training.save(self.netpath, self.params.keepdata)
 	
+		logger.info("{0}: done with the training".format((str(self))))
 		
 	
 	
