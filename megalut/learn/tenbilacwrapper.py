@@ -28,7 +28,7 @@ class TenbilacParams:
 	
 	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, 
 		valfrac=0.5, shuffle=True, mbsize=None, mbloops=1,
-		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True, keepdata=False):
+		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
 		"""
 		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
@@ -56,11 +56,12 @@ class TenbilacParams:
 		self.verbose = verbose
 		self.name = name
 		self.reuse = reuse
+		self.autoplot = autoplot
 		self.keepdata = keepdata
 		
 		
 	def __str__(self):
-		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, self.errfctname)".format(self=self)
+		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, {self.errfctname})".format(self=self)
 		
 
 class TenbilacWrapper:
@@ -81,7 +82,7 @@ class TenbilacWrapper:
 		return "Tenbilac '%s' in %s" % (self.params.name, os.path.basename(self.workdir))
 
 	
-	def train(self, features, labels):
+	def train(self, features, labels, featurenames=None, labelnames=None):
 		"""
 		Note that we might take over a previous training.
 		
@@ -118,23 +119,25 @@ class TenbilacWrapper:
 		ni = features.shape[1]
 		nhs = self.params.hidden_nodes
 		no = labels.shape[0]
-		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname)
+		ann = tenbilac.net.Tenbilac(ni, nhs, no, actfctname=self.params.actfctname,
+			inames=featurenames, onames=labelnames)
 		
-		# And set up the training object:
-		training = tenbilac.train.Training(ann, dat, 
-				errfctname=self.params.errfctname,
-				itersavepath=self.netpath,
-				verbose=self.params.verbose,
-				name=self.params.name)
-
-
-		# Let's see if an existing training is available
+		
+		# Let's see if an existing training is available (before the init of the new training writes its file...)
 		oldtrain = None
 		if os.path.exists(self.netpath) and self.params.reuse:
 			# Then we try to read the existing training and start the training from it's parameters.
 			logger.info("Reading in existing training... ")
 			oldtrain = tenbilac.utils.readpickle(self.netpath)			
-
+			
+		# And set up the training object:
+		training = tenbilac.train.Training(ann, dat, 
+				errfctname=self.params.errfctname,
+				itersavepath=self.netpath,
+				autoplotdirpath=self.workdir,
+				verbose=self.params.verbose,
+				autoplot=self.params.autoplot,
+				name=self.params.name)
 	
 		# And now see if we take over the previous trainign or not:
 		if oldtrain is None:
@@ -155,6 +158,7 @@ class TenbilacWrapper:
 		
 		training.save(self.netpath, self.params.keepdata)
 	
+		logger.info("{0}: done with the training".format((str(self))))
 		
 	
 	

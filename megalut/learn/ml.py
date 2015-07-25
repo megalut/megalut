@@ -188,6 +188,14 @@ class ML:
 				self.mlparams.labels]).transpose()
 			
 			assert featuresdata.shape[2] == labelsdata.shape[1] # Same number of galaxies!
+
+			# And we call the tool's train method:
+			self.tool.train(features=featuresdata, labels=labelsdata,
+				featurenames=self.mlparams.features,
+				labelnames=self.mlparams.labels
+				)
+	
+
 		
 		else: # FANN or SkyNet etc:
 			# We can only use a row for training if all its features and all labels are unmasked.
@@ -226,8 +234,8 @@ class ML:
 		
 		
 		
-		# And we call the tool's train method:
-		self.tool.train(features=featuresdata, labels=labelsdata)
+			# And we call the tool's train method:
+			self.tool.train(features=featuresdata, labels=labelsdata)
 		
 		endtime = datetime.now()
 		logger.info("Done! This training took %s" % (str(endtime - starttime)))
