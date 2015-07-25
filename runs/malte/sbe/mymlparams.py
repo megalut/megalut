@@ -18,7 +18,12 @@ g1mlparams = megalut.learn.MLParams(name = "g1",
 	labels = ["tru_g1"],
 	predlabels = ["pre_g1"])
 
+g2mlparams = megalut.learn.MLParams(name = "g2",
+	features = ["adamom_g2", "adamom_g1", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	labels = ["tru_g2"],
+	predlabels = ["pre_g2"])
 
+"""
 simpleten = megalut.learn.tenbilacwrapper.TenbilacParams(name = "simpleten", hidden_nodes = [10], max_iterations = 500, errfctname="msrb", normtype="-11", actfctname="tanh")
 simpleten_msb = megalut.learn.tenbilacwrapper.TenbilacParams(name = "simpleten_msb", hidden_nodes = [10], max_iterations = 500, errfctname="msb", normtype="-11", actfctname="tanh")
 simpleten_sig = megalut.learn.tenbilacwrapper.TenbilacParams(name = "simpleten_sig", hidden_nodes = [10], max_iterations = 500, errfctname="msrb", normtype="-11", actfctname="sig")
@@ -66,6 +71,8 @@ trainparamslist = [
 	(g1mlparams, simpletest20), 
 	(g1mlparams, simpletest2020)	
 	]
+"""	
+
 """
 test7 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7", hidden_nodes = [7],
 	errfctname="msrb", valfrac=0.2, shuffle=True,
@@ -84,25 +91,41 @@ test7 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7", hidden_node
 """
 
 test7fast1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7fast1", hidden_nodes = [7],
-	errfctname="msrb", valfrac=0.1, shuffle=True,
+	errfctname="msrb", valfrac=0.25, shuffle=True,
 	mbsize=100, mbloops=10, max_iterations=30, 
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True)
 	
 test7fast2 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7fast2", hidden_nodes = [7],
-	errfctname="msrb", valfrac=0.1, shuffle=True,
-	mbsize=200, mbloops=10, max_iterations=30, 
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=200, mbloops=20, max_iterations=50, 
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True)
 
 test7fast5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7fast5", hidden_nodes = [7],
-	errfctname="msrb", valfrac=0.1, shuffle=True,
-	mbsize=500, mbloops=5, max_iterations=30, 
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=15, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True)
+
+test7fast10 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7fast10", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=1000, mbloops=10, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True)
+
+test15fast5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test15fast5", hidden_nodes = [15],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=15, max_iterations=30, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True)
+
+test15fast10 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test15fast10", hidden_nodes = [15],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=1000, mbloops=15, max_iterations=30, 
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True)
 
 
+
 test7mini = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test7mini", hidden_nodes = [7],
-	errfctname="msrb", valfrac=0.1, shuffle=True,
-	mbsize=100, mbloops=1, max_iterations=10, 
-	normtype="-11", actfctname="tanh", verbose=False, reuse=False, keepdata=True)
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=100, mbloops=1, max_iterations=5, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=False, keepdata=True, autoplot=True)
 
 
 
@@ -125,13 +148,41 @@ test20 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "test20", hidden_no
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True)
 """
 
+nh7mb10 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb10", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=1000, mbloops=10, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+nh7mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=15, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+
+
 
 trainparamslist = [
-	(g1mlparams, test7fast1),
-	(g1mlparams, test7fast2),
-	(g1mlparams, test7fast5)
+	(g1mlparams, nh7mb10),
+	(g1mlparams, nh7mb5),
+	(g2mlparams, nh7mb10),
+	(g2mlparams, nh7mb5),
+	(sizemlparams, nh7mb10),
+	(sizemlparams, nh7mb5),
 ]
 
+
+trainparamslist = [
+	(g1mlparams, nh7mb5),
+	(g2mlparams, nh7mb5),
+	(sizemlparams, nh7mb5)
+]
+
+
+"""
+trainparamslist = [
+	(g1mlparams, test7mini),
+]
+"""
 
 
 # Before Tenbilac:
