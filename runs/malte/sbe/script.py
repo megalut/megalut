@@ -28,7 +28,7 @@ run = megalut.sbe.run.Run(
 
 	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/test_low",
 	
-	ncpu = 6
+	ncpu = 10
 	)
 
 
@@ -87,7 +87,7 @@ mlparams = mymlparams.trainparamslist
 #run.predictsims(simparams, mlparams)
 
 
-#myplots.predsims(run)
+myplots.predsims(run)
 
 
 #run.analysepredsims()
@@ -97,7 +97,7 @@ mlparams = mymlparams.trainparamslist
 
 #run.fakepredictobs()
 
-run.analysepredobs()
+#run.analysepredobs()
 
 
 #run.writepredsbe_single()

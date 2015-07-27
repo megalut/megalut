@@ -158,6 +158,27 @@ nh7mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5", hidden_no
 	mbsize=500, mbloops=15, max_iterations=50, 
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
+nh77mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh77mb5", hidden_nodes = [7, 7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=20, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+nh7mb5_msb = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5_msb", hidden_nodes = [7],
+	errfctname="msb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=20, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+nh7mb5_mse = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5_mse", hidden_nodes = [7],
+	errfctname="mse", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=20, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+nh7mb5_msre = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5_msre", hidden_nodes = [7],
+	errfctname="msre", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=20, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+
 
 
 
@@ -172,12 +193,26 @@ trainparamslist = [
 
 
 trainparamslist = [
-	(g1mlparams, nh7mb5),
-	(g2mlparams, nh7mb5),
-	(sizemlparams, nh7mb5)
+	(g1mlparams, nh7mb5_msb),
+	(g2mlparams, nh7mb5_msb),
+	(sizemlparams, nh7mb5_msb),
+	(g1mlparams, nh7mb5_mse),
+	(g2mlparams, nh7mb5_mse),
+	(sizemlparams, nh7mb5_mse),
+	(g1mlparams, nh7mb5_msre),
+	(g2mlparams, nh7mb5_msre),
+	(sizemlparams, nh7mb5_msre)	
 ]
 
+trainparamslist = [
+	(g1mlparams, nh77mb5)
+]
 
+trainparamslist = [
+	(g1mlparams, nh7mb10),
+	(g2mlparams, nh7mb10),
+	(sizemlparams, nh7mb10)
+]
 """
 trainparamslist = [
 	(g1mlparams, test7mini),
