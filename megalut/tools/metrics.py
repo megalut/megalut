@@ -5,19 +5,20 @@ import numpy as np
 
 import calc
 import table
+import feature
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-def metrics(catalog, label, predlabel):
+def metrics(catalog, labelfeature, predlabelfeature):
 	"""
 	Returns a dict with some simple standard metrics compareing a "label"-column (truth) to the corresponding predictions.
-	This function explicitly takes care of masked columns, only unmasked data will be used.
+	This function explicitly takes care of masked columns, only unmasked data will be used and also handles 2D columns.
 	
 	:param catalog: an astropy table containing both label and predlabel. It can be masked.
-	:param label: column name of the label
-	:param predlabel: column name of the predlabel
+	:param labelfeature: Feature object describing the label
+	:param predlabelfeature: idem for predlabel
 	
 	:returns: a dict containing
 		
@@ -30,12 +31,14 @@ def metrics(catalog, label, predlabel):
 
 	"""
 	
-	logger.debug("Computing metrics for label = %s and predlabel = %s" % (label, predlabel))
+	logger.debug("Computing metrics for label = %s and predlabel = %s" % (labelfeature.colname, predlabelfeature.colname))
 	
-	# We get the unmasked points :
-	metcat = table.cutmasked(catalog, colnames=[label, predlabel])	
-	lab = metcat[label]
-	pre = metcat[predlabel]
+	#features = [feature.Feature(colname=label, rea=None), feature.Feature(colname=predlabel, rea="full")]
+	
+	metcat = feature.get1Ddata(catalog, [labelfeature, predlabelfeature], keepmasked=False)
+	
+	lab = metcat[labelfeature.colname]
+	pre = metcat[predlabelfeature.colname]
 	
 	assert lab.ndim == 1
 	assert pre.ndim == 1
