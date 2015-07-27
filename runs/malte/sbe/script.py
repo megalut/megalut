@@ -1,8 +1,13 @@
+
+#import matplotlib
+#matplotlib.use("AGG")
+
 import megalut.sbe
 import mymeasfct
 import mysimparams
 import mymlparams
 import myplots
+
 
 import logging
 #logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
@@ -23,7 +28,7 @@ run = megalut.sbe.run.Run(
 
 	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/test_low",
 	
-	ncpu = 5
+	ncpu = 6
 	)
 
 
@@ -76,7 +81,7 @@ mlparams = mymlparams.trainparamslist
 
 #run.train(simparams, mlparams)
 
-run.traintenbilac(simparams, mlparams)
+#run.traintenbilac(simparams, mlparams)
 
 
 #run.predictsims(simparams, mlparams)
@@ -84,14 +89,15 @@ run.traintenbilac(simparams, mlparams)
 
 #myplots.predsims(run)
 
-#run.plotpredsims()
+
+#run.analysepredsims()
 
 
 #run.predictobs(mlparams)
 
 #run.fakepredictobs()
 
-#run.analysepredobs()
+run.analysepredobs()
 
 
 #run.writepredsbe_single()
