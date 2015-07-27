@@ -62,7 +62,7 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	features = [featx, featy]
 	if featc is not None:
 		features.append(featc)
-	data = tools.feature.get1Ddata(cat, features)		
+	data = tools.feature.get1Ddata(cat, features, keepmasked=False)		
 	
 	if featx.low is not None and featx.high is not None and featy.low is not None and featy.high is not None: 
 		extent = (featx.low, featx.high, featy.low, featy.high) # xmin xmax ymin ymax
