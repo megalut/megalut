@@ -11,14 +11,14 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.lines import Line2D
 
 
-import utils
+from .. import tools
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts", title=None, text=None, **kwargs):
+def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts", title=None, text=None, showidline=False, idlinekwargs=None, **kwargs):
 	"""
 	Plots hexbin tiles on the axes.
 	
@@ -62,7 +62,7 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	features = [featx, featy]
 	if featc is not None:
 		features.append(featc)
-	data = utils.getdata(cat, features)		
+	data = tools.feature.get1Ddata(cat, features, keepmasked=False)		
 	
 	if featx.low is not None and featx.high is not None and featy.low is not None and featy.high is not None: 
 		extent = (featx.low, featx.high, featy.low, featy.high) # xmin xmax ymin ymax
@@ -90,6 +90,32 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 			cb.set_label(cblabel)
 		else:
 			cb.set_label(featc.nicename)
+
+	if showidline: # Show the "diagonal" identity line
+	
+		# It would be nice to get this working with less code
+		# (usign get_lims and axes transforms, for instance)
+		# But in the meantime this seems to work fine.
+		# It has to be so complicated to keep the automatic ranges working if low and high are None !
+		
+		# For "low":
+		if featx.low is None or featy.low is None: # We use the data...
+			minid = max(np.min(data[featx.colname]), np.min(data[featy.colname]))
+		else:
+			minid = max(featx.low, featy.low)
+		# Same for "high":
+		if featx.high is None or featy.high is None: # We use the data...
+			maxid = min(np.max(data[featx.colname]), np.max(data[featy.colname]))
+		else:
+			maxid = min(featx.high, featy.high)
+			
+		if idlinekwargs == None:
+			idlinekwargs = {}
+		myidlinekwargs = {"ls":"--", "color":"gray", "lw":1}
+		myidlinekwargs.update(idlinekwargs)	
+		
+		# And we plot the line:
+		ax.plot((minid, maxid), (minid, maxid), **myidlinekwargs)
 
 	# The usual axes limit setting :
 	ax.set_xlim(featx.low, featx.high)
