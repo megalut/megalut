@@ -181,7 +181,7 @@ nh7mb5_msre = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5_msre",
 
 
 
-
+"""
 trainparamslist = [
 	(g1mlparams, nh7mb10),
 	(g1mlparams, nh7mb5),
@@ -214,10 +214,12 @@ trainparamslist = [
 	(sizemlparams, nh7mb5_msrb)
 ]
 """
+"""
 trainparamslist = [
 	(g1mlparams, test7mini),
 ]
 """
+
 
 
 # Before Tenbilac:

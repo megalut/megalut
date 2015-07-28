@@ -15,9 +15,15 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None):
 	Classic comparision between obs and sims
 	"""
 	
-	simcatpath = megalut.meas.utils.simmeasdict(run.worksimdir, simparams).values()[0][0]
+	#simcatpath = megalut.meas.utils.simmeasdict(run.worksimdir, simparams).values()[0][0]
+	simcatpath = "groupmeascat.pkl"
+	
 	simcat = megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, simcatpath))
-				
+	
+	#print simcat
+	
+	#exit()
+	
 	# And a bunch of the obs
 	obscat = megalut.tools.io.readpickle(run.groupobspath)
 			
@@ -27,26 +33,26 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None):
 	
 	fig = plt.figure(figsize=(23, 11))
 		
-	flux = Feature(prefix+"flux")
-	sigma = Feature(prefix+"sigma", 0, 25)
+	flux = Feature(prefix+"flux", rea=0)
+	sigma = Feature(prefix+"sigma", 0, 25, rea=0)
 	
 	try:
-		rho4 = Feature(prefix+"rho4", 1.5, 2.5)
+		rho4 = Feature(prefix+"rho4", 1.5, 2.5, rea=0)
 	except:
 		pass
-	g1 = Feature(prefix+"g1", -0.7, 0.7)
-	g2 = Feature(prefix+"g2", -0.7, 0.7)
-	skymad = Feature("skymad")
-	skystd = Feature("skystd")
-	skymed = Feature("skymed")
-	skymean = Feature("skymean")
+	g1 = Feature(prefix+"g1", -0.7, 0.7, rea=0)
+	g2 = Feature(prefix+"g2", -0.7, 0.7, rea=0)
+	skymad = Feature("skymad", rea=0)
+	skystd = Feature("skystd", rea=0)
+	skymed = Feature("skymed", rea=0)
+	skymean = Feature("skymean", rea=0)
 	
-	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06)
-	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06)
-	psf_sigma = Feature("tru_psf_sigma")
+	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06, rea=0)
+	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06, rea=0)
+	psf_sigma = Feature("tru_psf_sigma", rea=0)
 	
 	
-	snr =Feature("snr")
+	snr =Feature("snr", rea=0)
 	#a = megalut.plot.feature.Feature("sewpy_AWIN_IMAGE", 1.0, 4.0)
 	#fwhm = megalut.plot.feature.Feature("sewpy_FWHM_IMAGE", 1.0, 6.0)
 	#sewpyflags = megalut.plot.feature.Feature("sewpy_FLAGS")
