@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, show_id_line=False, idlinekwargs=None,
+def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, showidline=False, idlinekwargs=None,
 	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
@@ -40,7 +40,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	:param text: some text to be written in the figure (top left corner)
 		As we frequently want to do this, here is a simple way to do it.
 		For more complicated things, add the text yourself to the axes.
-	:param show_id_line: draws an "identity" diagonal line
+	:param showidline: draws an "identity" diagonal line
 	:param idlinekwargs: a dict of kwargs that will be passed to plot() to draw the idline
 	:param metrics: if True, assumes that featx is a label ("tru") and featy is the corresponding predlabel ("pre"), and
 		writes the RMSD and other metrics on the plot.
@@ -201,7 +201,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		if title:
 			ax.set_title(title)
 	
-	if show_id_line: # Show the "diagonal" identity line
+	if showidline: # Show the "diagonal" identity line
 	
 		# It would be nice to get this working with less code
 		# (usign get_lims and axes transforms, for instance)
@@ -285,8 +285,8 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# Could we warn the user in case it seems that the catalogs are inverted ?
 	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
-	simdata = utils.getdata(simcat, [featx, featy])
-	obsdata = utils.getdata(obscat, [featx, featy])
+	simdata = tools.feature.get1Ddata(simcat, [featx, featy], keepmasked=False)
+	obsdata = tools.feature.get1Ddata(obscat,[featx, featy] , keepmasked=False)
 	
 	
 	if len(simcat) > 5000 or len(obscat) > 5000: # We rasterize plot() to avoid millions of vector points.
