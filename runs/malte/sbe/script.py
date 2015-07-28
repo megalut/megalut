@@ -86,14 +86,22 @@ mlparams = mymlparams.trainparamslist
 
 #run.predictsims(simparams, mlparams)
 
+### Test plots
 
-myplots.predsims(run)
+
+name = "nh7mb5_msrb"
+
+run.predictsims(simparams, mlparams)
+myplots.predsims(run, filepath="predsims_{name}.png".format(name=name))
+myplots.simbias(run, filepath="simbias_{name}.png".format(name=name))
+
+run.predictobs(mlparams)
+myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
+
+
 
 
 #run.analysepredsims()
-
-
-#run.predictobs(mlparams)
 
 #run.fakepredictobs()
 

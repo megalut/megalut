@@ -209,9 +209,9 @@ trainparamslist = [
 ]
 
 trainparamslist = [
-	(g1mlparams, nh7mb10),
-	(g2mlparams, nh7mb10),
-	(sizemlparams, nh7mb10)
+	(g1mlparams, nh7mb5_msrb),
+	(g2mlparams, nh7mb5_msrb),
+	(sizemlparams, nh7mb5_msrb)
 ]
 """
 trainparamslist = [
