@@ -163,6 +163,9 @@ class TenbilacWrapper:
 	
 	
 	def predict(self, features):
+		"""
+		This works with 3D arrays.
+		"""
 			
 		# We read the Tenbilac:
 		training = tenbilac.utils.readpickle(self.netpath)
@@ -182,64 +185,3 @@ class TenbilacWrapper:
 		return preds
 	
 		
-
-if __name__ == "__main__":
-	"""
-	A little demo and test !
-	"""
-	
-	"""
-	import matplotlib.pyplot as plt
-	import logging
-	logging.basicConfig(level=logging.DEBUG)
-
-	# Simple 1D case : we predict y(x) from noisy data points.
-	
-	
-	n = 100
-	x = np.random.uniform(0, 10, n)
-	y = np.sin(x)*x + 0.3*np.random.randn(len(x))
-	
-	#x = np.random.uniform(-5, 10, n)
-	#y = np.sin(x)*x + 0.3*np.random.randn(len(x))
-	#y[x<=0] += 5
-	
-	
-	
-	# x and y are 1D arrays. But our SkyNet wrapper works only with 2D arrays.
-	# First index = datapoint, sedond index : the different features.
-	
-	features = x.reshape(n, 1)
-	labels = y.reshape(n, 1)
-	
-	
-	for nhid in [10]:
-	
-		plt.clf()
-		params = FANNParams(hidden_nodes = [nhid], learning_rate=0.5,
-				    max_iterations=1000, activation_steepness_hidden=0.5)
-	
-		obj = FANNWrapper(params)
-		obj.train(features, labels)
-	
-		# Let's make some predictions on a fine grid of points :
-		pred_features = np.linspace(-2, 12, 1000).reshape(1000, 1)
-		pred_labels = obj.predict(pred_features)
-	
-		#print pred_labels.shape
-		#print pred_features.shape
-	
-		plt.plot(x, y, "r.")
-		plt.plot(pred_features, pred_labels, "b-")
-		plt.xlabel("x")
-		plt.ylabel("y")
-		#plt.xlim(-7, 12)
-		plt.xlim(-2, 12)
-		
-		plt.ylim(-10, 10)
-		#plt.show()
-		#plt.title("%i hidden nodes" % (nhid))
-		#plt.savefig("%i.pdf" % (nhid))
-		plt.show()
-
-	"""
