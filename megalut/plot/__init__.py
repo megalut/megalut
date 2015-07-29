@@ -9,6 +9,7 @@ import utils
 import scatter
 import hist
 import hexbin
+import contour
 
 
 import exp
