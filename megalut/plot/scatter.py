@@ -262,7 +262,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 
 
 
-def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, **kwargs):
+def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, pale=False, **kwargs):
 	"""
 	A scatter plot overplotting simulations (in red) and observations (in blue, like the sky).
 	Previously the observations were green (like nature), but blue is better for most colorblind people.
@@ -277,6 +277,7 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	:param title: the title to place on top of the axis.
 		The reason why we do not leave this to the user is that the placement changes when sidehists is True.
 	:param legend: if True, it writes a self-styled non-invasive "legend" in the top right corner
+	:param pale: if True, points are plotted in pale colours so that contours can be overplotted.
 	
 	All further **kwargs** are passed to axes.plot() to make the scatter plot.
 		
@@ -286,8 +287,17 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# (not implemented -- maybe by detecting the precens of some typical "sim" fields in the obscat ?)
 	
 	simdata = tools.feature.get1Ddata(simcat, [featx, featy], keepmasked=False)
-	obsdata = tools.feature.get1Ddata(obscat,[featx, featy] , keepmasked=False)
+	obsdata = tools.feature.get1Ddata(obscat, [featx, featy] , keepmasked=False)
 	
+	
+	simcolor="red"
+	obscolor="blue"
+	if pale:
+		simcolor_points = '#FF9999'
+		obscolor_points = '#9999FF'
+	else:
+		simcolor_points = simcolor
+		obscolor_points = obscolor
 	
 	if len(simcat) > 5000 or len(obscat) > 5000: # We rasterize plot() to avoid millions of vector points.
 		logger.info("Plot will be rasterized, use kwarg rasterized=False if you want to avoid this")
@@ -298,8 +308,8 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# First we use plot() to get a scatter, directly on the axes:
 	plotkwargs = {"marker":".", "ms":5, "ls":"None", "alpha":0.3, "rasterized":rasterized}
 	plotkwargs.update(kwargs)
-	ax.plot(simdata[featx.colname], simdata[featy.colname], color="red", **plotkwargs)
-	ax.plot(obsdata[featx.colname], obsdata[featy.colname], color="blue", **plotkwargs)
+	ax.plot(simdata[featx.colname], simdata[featy.colname], color=simcolor_points, **plotkwargs)
+	ax.plot(obsdata[featx.colname], obsdata[featy.colname], color=obscolor_points, **plotkwargs)
 	
 	
 	# Now we build the sidehists:
@@ -330,12 +340,12 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 		axhisty = divider.append_axes("right", 1.0, pad=0.1, sharey=ax)
 		
 		
-		axhistx.hist(simdata[featx.colname], color="red", ec="red", **mysidehistxkwargs)
-		axhistx.hist(obsdata[featx.colname], color="blue", ec="blue", **mysidehistxkwargs)
+		axhistx.hist(simdata[featx.colname], color=simcolor, ec=simcolor, **mysidehistxkwargs)
+		axhistx.hist(obsdata[featx.colname], color=obscolor, ec=obscolor, **mysidehistxkwargs)
 		
 		
-		axhisty.hist(simdata[featy.colname], color="red", ec="red", orientation='horizontal', **mysidehistykwargs)
-		axhisty.hist(obsdata[featy.colname], color="blue", ec="blue", orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(simdata[featy.colname], color=simcolor, ec=simcolor, orientation='horizontal', **mysidehistykwargs)
+		axhisty.hist(obsdata[featy.colname], color=obscolor, ec=obscolor, orientation='horizontal', **mysidehistykwargs)
 		
 		# Hiding the ticklabels
 		for tl in axhistx.get_xticklabels():
@@ -365,8 +375,8 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 	
 	if legend:
-		ax.annotate("Simulations", color="red", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -8), textcoords='offset points', ha='right', va='top')
-		ax.annotate("Observations", color="blue", xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
+		ax.annotate("Simulations", color=simcolor, xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -8), textcoords='offset points', ha='right', va='top')
+		ax.annotate("Observations", color=obscolor, xy=(1.0, 1.0), xycoords='axes fraction', xytext=(-8, -24), textcoords='offset points', ha='right', va='top')
 	
 	
 	
