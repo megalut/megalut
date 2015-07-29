@@ -1,14 +1,14 @@
 #import matplotlib
 #matplotlib.use('Agg') # Don't do this here, do this at the very top of your script!
-
-import megalut.plot
-from megalut.plot.feature import Feature
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-import logging
-logger = logging.getLogger(__name__)
+#
+#import megalut.plot
+#from megalut.plot.feature import Feature
+#
+#import numpy as np
+#import matplotlib.pyplot as plt
+#
+#import logging
+#logger = logging.getLogger(__name__)
 
 
 #def meascheck(cat, filepath=None, prefix="adamom_", g12_low=None, g12_high=None):
