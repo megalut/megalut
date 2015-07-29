@@ -3,7 +3,7 @@ Histogram helper functions
 """
 
 import utils
-import feature
+from .. import tools
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -94,7 +94,7 @@ def errhist(ax, cat, prefeat, trufeat, normrad=3.0, **kwargs):
 		
 		data["err"] = data[prefeat.colname] - data[trufeat.colname]
 		
-		err = feature.Feature("err", nicename = "%s - %s" % (prefeat.nicename, trufeat.nicename))
+		err = tools.feature.Feature("err", nicename = "%s - %s" % (prefeat.nicename, trufeat.nicename))
 		hist(ax, data, err, normed=True, **kwargs)
 	
 	else:
@@ -102,7 +102,7 @@ def errhist(ax, cat, prefeat, trufeat, normrad=3.0, **kwargs):
 		
 		data["err"] = (data[prefeat.colname] - data[trufeat.colname]) / data[prefeat.errcolname]
 		
-		err = feature.Feature("err", -normrad, normrad, nicename = "(%s - %s) / %s" % (prefeat.colname, trufeat.colname, prefeat.errcolname))
+		err = tools.feature.Feature("err", -normrad, normrad, nicename = "(%s - %s) / %s" % (prefeat.colname, trufeat.colname, prefeat.errcolname))
 		
 	
 		hist(ax, data, err, normed=True, label = "Residuals normalized by uncertainty", **kwargs)
