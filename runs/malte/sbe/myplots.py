@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def simobscompa(run, simparams, prefix="adamom_", filepath=None):
+def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	"""
 	Classic comparision between obs and sims
 	"""
@@ -20,71 +20,60 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None):
 	
 	simcat = megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, simcatpath))
 	
-	#print simcat
-	
-	#exit()
-	
 	# And a bunch of the obs
 	obscat = megalut.tools.io.readpickle(run.groupobspath)
 			
-	
 	simcat = megalut.tools.table.shuffle(simcat)
 	obscat = megalut.tools.table.shuffle(obscat)
-	
+		
+	flux = Feature(prefix+"flux", 0, 3200, rea=rea)
+	sigma = Feature(prefix+"sigma", 0, 30, rea=rea)
+	rho4 = Feature(prefix+"rho4", 1.3, 2.6, rea=rea)
+	g1 = Feature(prefix+"g1", -0.8, 0.8, rea=rea)
+	g2 = Feature(prefix+"g2", -0.8, 0.8, rea=rea)
+	skymad = Feature("skymad", rea=rea)
+	skystd = Feature("skystd", rea=rea)
+	skymed = Feature("skymed", rea=rea)
+	skymean = Feature("skymean", rea=rea)
+	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06, rea=rea)
+	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06, rea=rea)
+	psf_sigma = Feature("tru_psf_sigma", rea=rea)
+	snr =Feature("snr", 0, 70, rea=rea)
+
 	fig = plt.figure(figsize=(23, 11))
 		
-	flux = Feature(prefix+"flux", rea=0)
-	sigma = Feature(prefix+"sigma", 0, 25, rea=0)
-	
-	try:
-		rho4 = Feature(prefix+"rho4", 1.5, 2.5, rea=0)
-	except:
-		pass
-	g1 = Feature(prefix+"g1", -0.7, 0.7, rea=0)
-	g2 = Feature(prefix+"g2", -0.7, 0.7, rea=0)
-	skymad = Feature("skymad", rea=0)
-	skystd = Feature("skystd", rea=0)
-	skymed = Feature("skymed", rea=0)
-	skymean = Feature("skymean", rea=0)
-	
-	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06, rea=0)
-	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06, rea=0)
-	psf_sigma = Feature("tru_psf_sigma", rea=0)
-	
-	
-	snr =Feature("snr", rea=0)
-	#a = megalut.plot.feature.Feature("sewpy_AWIN_IMAGE", 1.0, 4.0)
-	#fwhm = megalut.plot.feature.Feature("sewpy_FWHM_IMAGE", 1.0, 6.0)
-	#sewpyflags = megalut.plot.feature.Feature("sewpy_FLAGS")
-	#flags = megalut.plot.feature.Feature("Flag")
-	
-		
 	ax = fig.add_subplot(2, 4, 1)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, sigma, legend=True)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, flux, sigma, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, flux, sigma, legend=True)
 
 	ax = fig.add_subplot(2, 4, 2)
-	try:
-		megalut.plot.scatter.simobs(ax, simcat, obscat, sigma, rho4)
-	except:
-		pass
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, sigma, rho4, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, sigma, rho4)
 
 	ax = fig.add_subplot(2, 4, 3)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, g1, g2)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, g1, g2, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, g1, g2)
 	
 	ax = fig.add_subplot(2, 4, 4)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, snr)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, flux, snr, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, flux, snr)
 		
 	ax = fig.add_subplot(2, 4, 5)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, flux, skystd)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, flux, skystd, sidehists=False, legend=False, pale=True)	
+	megalut.plot.contour.simobs(ax, simcat, obscat, skymad, skystd)
 	
 	ax = fig.add_subplot(2, 4, 6)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, skymed, skymean)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, skymed, skymean, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, skymed, flux)
 	
 	ax = fig.add_subplot(2, 4, 7)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, psf_sigma, sigma)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, psf_sigma, sigma, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, psf_sigma, sigma)
 	
 	ax = fig.add_subplot(2, 4, 8)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, psf_g1, psf_g2)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, psf_g1, psf_g2, sidehists=False, legend=False, pale=True)
+	megalut.plot.contour.simobs(ax, simcat, obscat, psf_g1, psf_g2)
+	
 	
 	plt.tight_layout()
 	if filepath:
@@ -96,7 +85,7 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None):
 	
 	
 
-def predsims(run, filepath=None):
+def predsims(run, filepath=None, rea="full"):
 	"""
 	Simple comparision between predictions and truth, based on the training data.
 	"""
@@ -109,7 +98,6 @@ def predsims(run, filepath=None):
 	tru_sigma = Feature("tru_sigma")
 	tru_flux = Feature("tru_flux")
 	
-	rea = "full"
 	
 	pre_g1 = Feature("pre_g1", -rg, rg, rea=rea)
 	pre_g2 = Feature("pre_g2", -rg, rg, rea=rea)
@@ -164,7 +152,7 @@ def predsims(run, filepath=None):
 
 
 
-def simbias(run, filepath=None):
+def simbias(run, filepath=None, rea="full"):
 
 	
 	#cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "obsprecat.pkl"))
@@ -177,9 +165,6 @@ def simbias(run, filepath=None):
 	mincnt = 100
 	gerrrad = 0.02
 	sigmaerrrad = 0.2
-	
-	rea = -100
-	rea = "full"
 	
 	cmap = matplotlib.cm.get_cmap("rainbow")
 	
@@ -246,8 +231,8 @@ def simbias(run, filepath=None):
 	
 	
 	ax = fig.add_subplot(3, 4, 9)
-	#megalut.plot.hexbin.hexbin(ax, cat, g1, g2, **counthexbinkwargs)
-	megalut.plot.scatter.scatter(ax, cat, snr, sigma, sidehists=True, ms=2)
+	megalut.plot.hexbin.hexbin(ax, cat, g1, g2, **counthexbinkwargs)
+	#megalut.plot.scatter.scatter(ax, cat, snr, sigma, sidehists=True, ms=2)
 	
 	ax = fig.add_subplot(3, 4, 10)
 	megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, **counthexbinkwargs)
