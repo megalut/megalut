@@ -202,17 +202,20 @@ class Run():
 	
 	
 	
-	def drawsims(self, simparams, n=10, ncat=1, nrea=1, stampsize=200):
+	def drawsims(self, simparams, n=100, nc=10, ncat=1, nrea=1, stampsize=200):
 		"""
 		Draws many sims on several cpus, in the standard MegaLUT style.
+		
+		n is number of galaxies
+		nc is number of columns
 		"""
 		
-		drawcatkwargs = {"n":n, "stampsize":stampsize}
+		drawcatkwargs = {"n":n, "nc":nc, "stampsize":stampsize}
 		drawimgkwargs = {}
 		
 		megalut.sim.run.multi(self.worksimdir, simparams, drawcatkwargs, drawimgkwargs, 
 			psfcat = None, ncat=ncat, nrea=nrea, ncpu=self.ncpu,
-			savepsfimg=True, savetrugalimg=True)
+			savepsfimg=False, savetrugalimg=False)
 
 
 	def meassims(self, simparams, measfct, stampsize=200):
