@@ -7,6 +7,7 @@ import math
 import random
 import os
 import sys
+import copy
 
 import logging
 logger = logging.getLogger(__name__)
@@ -19,16 +20,25 @@ from .. import tools
 from . import params
 
 
-def drawcat(params, n=10, stampsize=64, idprefix=""):
+def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
 	:param params: a sim.Params instance that defines the distributions of parameters
-	:param n: sqrt(number): I will generate n x n galaxies, on a grid !
-	:type n: int	
+	:param n: number of galaxies (must be a multiple of nc)
+		
+	:type n: int
+	:param nc: number of "columns" on which I should place these galaxies
+		Note that the effective number of "columns" (called nx in the code) might get inflated if you use shape noise cancelation!
+	:type nc: int
 	:param stampsize: width = height of desired stamps, in pixels
 	:type stampsize: int
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
+	
+	The ix index moves faster than the iy index when iterating over the output catalog.
+	So if you want a parameter to change seldomly, link it to the iy index.
+	Different SNC-versions of a galaxy are placed directly one after the other, with consecutive ix indices but same iy.
+	(however for the purpose of drawing the parameters, the SNC-versions *all* have the same ix as well, of course)
 	
 	:returns: A catalog (astropy table). The stampsize is stored in meta.
 	
@@ -36,21 +46,65 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	if int(stampsize)%2 != 0:
 		raise RuntimeError("stampsize should be even!")
 
-	logger.info("Drawing a catalog of %i x %i galaxies using params '%s'..." % (n, n, params))
+	if n % nc != 0 or n < nc:
+		raise RuntimeError("n must be a multiple of nc!")
+
+	logger.info("Drawing a catalog of %i truely different galaxies using params '%s'..." % (n, params))
+	statparams = params.stat() # We call this only *once*
+	logger.info("The params '{params.name}' have stat '{0}'".format(statparams, params=params))
+	
+	ny = int(int(n)/int(nc)) # number of lines does not change with SNC.
+	if statparams["snc_type"] == 0:	
+		nsnc = 1 # the number of SNC versions
+	elif statparams["snc_type"] == 1:
+		nsnc = 8 # the number of SNC versions
+	else:
+		raise RuntimeError("Unknown snc_type")
+	nx = nsnc * nc
+	
+	logger.info("The grid will be %i x %i" % (nx, ny))
+	
+	rows = [] # The "table"
+	for i in range(n): # We loop over all "truely different" galaxies (not all SNC galaxies)
 		
-	# This explicit loop is kept for the sake of clarity.
-	rows = []
-	for iy in range(n):
-		for ix in range(n):
+		# The indices used to draw parameters for each of these truely different galaxies:
+		(piy, pix) = divmod(i, nc)		
+		assert pix < nc and piy < ny
+	
+		# And draw one:
+		gal = params.draw(pix, piy, nc, ny)
 		
-			gal = params.draw(ix, iy, n) # "gal" is a dict, whose values contain parameters for the galaxy
-			gal["ix"] = ix
-			gal["iy"] = iy
-			gal["id"] = idprefix + str(ix + n*iy)
-			gal["x"] = ix*stampsize + stampsize/2.0 + 0.5 # I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
-			gal["y"] = iy*stampsize + stampsize/2.0 + 0.5
+		# Now things get different depending on SNC
+		if statparams["snc_type"] == 0:	# No SNC, so we simply add this galaxy to the list.
+		
+			gal["ix"] = pix
+			gal["iy"] = piy
+			
+			gal.update(statparams) # This would overwrite any of the "draw" params.
 			rows.append(gal) # So rows will be a list of dicts
 		
+		
+		elif statparams["snc_type"] == 1: # SNC with 8 versions rotated by 22.5 deg
+		
+			for roti in range(8):
+				rotgal = copy.deepcopy(gal)
+				(rotgal["tru_g1"], rotgal["tru_g2"]) = tools.calc.rotg(gal["tru_g1"], gal["tru_g2"], roti*22.5)
+				
+				# And now each of the SNC versions gets a consecutive ix but the same iy:
+				rotgal["ix"] = pix * nsnc + roti
+				rotgal["iy"] = piy
+				
+				rotgal.update(statparams)
+				rows.append(rotgal)
+		
+		
+	# A second loop simply adds the pixel positions and ids, for all galaxies (not just truely different ones):
+	for (i, gal) in enumerate(rows):
+		gal["id"] = idprefix + str(i)
+		gal["x"] = gal["ix"]*stampsize + stampsize/2.0 + 0.5 # I'm not calling this tru_x, as it will be jittered, and also as a simple x is default.
+		gal["y"] = gal["iy"]*stampsize + stampsize/2.0 + 0.5
+			
+				
 	# There are many ways to build a new astropy.table
 	# One of them directly uses a list of dicts...
 	
@@ -58,8 +112,15 @@ def drawcat(params, n=10, stampsize=64, idprefix=""):
 	logger.info("Drawing of catalog done")
 	
 	# The following is aimed at drawimg:
-	catalog.meta["n"] = n
 	catalog.meta["stampsize"] = stampsize
+	
+	# Checking the catalog length
+	assert len(catalog) == nsnc * n
+	
+	# Adding some useful stuff to the meta:
+	catalog.meta["nx"] = nx
+	catalog.meta["ny"] = ny
+	catalog.meta["nsnc"] = nsnc
 	
 	return catalog
 	
@@ -96,15 +157,16 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	"""
 	starttime = datetime.now()	
 	
-	if "n" not in catalog.meta.keys():
-		raise RuntimeError("Provide n in the meta data of the input catalog to drawimg.")
+	if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
+		raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
 	if "stampsize" not in catalog.meta.keys():
 		raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")	
 	
-	n = catalog.meta["n"]
+	nx = catalog.meta["nx"]
+	ny = catalog.meta["ny"]
 	stampsize = catalog.meta["stampsize"] # The stamps I'm going to draw
 		
-	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), n, n))
+	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), nx, ny))
 	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 
 	# A special function checks the combination of settings in the provided catalog:
@@ -121,9 +183,9 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	ud = galsim.UniformDeviate() # This gives a random float in [0, 1)
 
 	# We prepare the big images :
-	gal_image = galsim.ImageF(stampsize * n , stampsize * n)
-	trugal_image = galsim.ImageF(stampsize * n , stampsize * n)
-	psf_image = galsim.ImageF(stampsize * n , stampsize * n)
+	gal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
+	trugal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
+	psf_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 
 	gal_image.scale = 1.0 # These pixel scales make things easier. If you change them, be careful to also adapt the jitter scale!
 	trugal_image.scale = 1.0
@@ -140,26 +202,34 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
 		ix = int(row["ix"])
 		iy = int(row["iy"])
-		assert ix < n and iy < n
+		assert ix < nx and iy < ny
 		bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
 		gal_stamp = gal_image[bounds]
 		trugal_stamp = trugal_image[bounds]
 		psf_stamp = psf_image[bounds]
 	
 		# We draw the desired profile
-		
 		profile_type = params.profile_types[row["tru_type"]]
 		if profile_type == "Sersic":
 			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]))
 		elif profile_type == "Gaussian":
 			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]))
-			
-		gal.applyShear(g1=row["tru_g1"], g2=row["tru_g2"]) # This combines shear AND the ellipticity of the galaxy
+		
+		# We make this profile elliptical
+		gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+		
+		# And now we add lensing, if s1, s2 and mu are different from no lensing...
+		if row["tru_s1"] != 0 or row["tru_s2"] != 0 or row["tru_mu"] != 1:
+			gal = gal.lens(float(row["tru_s1"]), float(row["tru_s2"]), float(row["tru_mu"]))
+		else:
+			pass
+			#logger.info("No lensing!")
+		
 		
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
 		yjitter = ud() - 0.5
-		gal.applyShift(xjitter,yjitter)
+		gal = gal.shift(xjitter,yjitter)
 		
 		# We draw the pure unconvolved galaxy
 		gal.draw(trugal_stamp)
@@ -170,11 +240,11 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			
 			psf = galsim.Gaussian(flux=1., sigma=row["tru_psf_sigma"])
 			
-			psf.applyShear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
+			psf = psf.shear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
 			# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
 			psf_xjitter = ud() - 0.5
 			psf_yjitter = ud() - 0.5
-			psf.applyShift(psf_xjitter,psf_yjitter)
+			psf = psf.shift(psf_xjitter,psf_yjitter)
 			psf.draw(psf_stamp)
 	
 			if "tru_pixel" in todo: # Not sure if this should only apply to gaussian PSFs, but so far this seems OK.

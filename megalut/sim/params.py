@@ -28,22 +28,47 @@ class Params:
 			self.name = self.__class__.__name__
 		else:	
 			self.name = name
+				
 	
 	def __str__(self):
 		"""
 		The string representation is in fact the name:
 		"""
 		return "%s" % (self.name)
+
+	
+	def stat(self):
+		"""
+		This method returns the "stationnary" parameters, it gets called only *once* per catalog creation.
+		
+		If you want to override any of the parameters returned by draw() with some stationnary values, just include
+		them in the output of this stat()!
+		"""
+		
+		tru_s1 = 0 # Leaving these to the integers 0 0 1 means that the "lens" method will not get called.
+		tru_s2 = 0
+		tru_mu = 1
+		
+		snc_type = 0 # 0 means no shape noise cancellation
+		
+		return {
+			"tru_s1" : tru_s1, # shear component 1, in "g" convention
+			"tru_s2" : tru_s2, # component 2
+			"tru_mu" : tru_mu, # magnification
+			"snc_type" : snc_type, # The type of shape noise cancellation. 0 means none.
+		}
+		
 		
 	
-	def draw(self, ix, iy, n):
+	def draw(self, ix, iy, nx, ny):
 		"""
 		The method that gets called to draw the random variables, and which you shoud redefine.
 		In the given example, we only draw Sersic profiles, and we do include parameters for Gaussian PSFs.
 		
-		:param ix: x index of the galaxy, going from 0 to n-1
-		:param iy: y index, idem
-		:param n: n x n is the number of stamps
+		:param ix: x index of the galaxy, going from 0 to nx-1
+		:param iy: idem for y
+		:param nx: number of x indexes
+		:param ny: idem for y
 	
 		As you see, this method will know about the "position" of a galaxy on a grid.
 		This allows you to generate non-random distributions, using these grid indexes.
@@ -67,7 +92,7 @@ class Params:
 		theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 		(tru_g1, tru_g2) = (g * np.cos(2.0 * theta), g * np.sin(2.0 * theta))
 			
-		tru_sersicn =  0.5 + (float(iy)/float(n))**2.0 * 3.0
+		tru_sersicn =  0.5 + (float(iy)/float(ny))**2.0 * 3.0
 		
 		tru_sky_level = 100.0
 		tru_gain = 1.0
