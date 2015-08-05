@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 def metrics(catalog, labelfeature, predlabelfeature):
 	"""
 	Returns a dict with some simple standard metrics compareing a "label"-column (truth) to the corresponding predictions.
-	This function explicitly takes care of masked columns, only unmasked data will be used and also handles 2D columns.
+	This function explicitly takes care of masked columns, only unmasked data will be used and also handles 2D columns,
+	via the fact that Feature objects have to be given.
 	
 	:param catalog: an astropy table containing both label and predlabel. It can be masked.
 	:param labelfeature: Feature object describing the label
-	:param predlabelfeature: idem for predlabel
+	:param predlabelfeature: idem for predlabel (set Feature.rea as you feel appropriate, if 2D)
 	
 	:returns: a dict containing
 		
