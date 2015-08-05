@@ -44,6 +44,7 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	Commonly used kwargs:
 	
 	- gridsize = 15
+	- mincnt = 30
 	- cmap = "Blues" # add "_r" to reverse...
 	- reduce_C_function = np.mean (default), tools.calc.rmsd_delta (to compute RMSD from prediction errors)
 		
