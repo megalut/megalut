@@ -94,7 +94,7 @@ class Feature():
 					output = cat[self.colname][:,0:-self.rea]
 					logger.info("Using the first {nrea}/{totrea} reas of 2D colum '{self.colname}'".format(self=self, nrea=-self.rea, totrea=cat[self.colname].shape[1]))
 				
-			elif self.rea == "full":
+			elif self.rea in ["full", "Full", "All", "all"]:
 				
 				output = cat[self.colname]
 				assert output.ndim == 2
@@ -115,8 +115,8 @@ class Feature():
 def get1Ddata(cat, features, keepmasked=True):
 	"""
 	Prepares 1D arrays of the same length, one for each feature.
-	If features contains both 2D and 1D stuff, this is done by reapeating the 1D stuff.
-	We don't do anything special about masks, they get carried arround as expected. Except if keepmasked is False, than we keep only unmasked points.
+	If features contains both 2D and 1D stuff, this is done by reapeating the 1D stuff. In other words, it intelligently flattens realizations.
+	We don't do anything special about masks, they get carried arround as expected. Except if keepmasked is False, than we keep only unmasked points at the end.
 	This is the function that you want to use when preparing plots or computing metrics...
 	"""
 	
