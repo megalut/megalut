@@ -25,7 +25,7 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
-	ncpu = 10
+	ncpu = 12
 	)
 
 
@@ -38,15 +38,15 @@ simparams.set_low_sn()
 #simparams.name = "SBE_tenbilac_test"
 
 
-#mlparams = mymlparams.trainparamslist
+mlparams = mymlparams.trainparamslist
 
 
 
 ####### Steps #######
 
 
-run.makecats(onlyn=None, sbe_sample_scale=0.05)
-run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsize of 200 seems exagerated!
+#run.makecats(onlyn=None, sbe_sample_scale=0.05)
+#run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsize of 200 seems exagerated!
 
 
 #run.groupobs()
@@ -56,18 +56,17 @@ run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsiz
 #run.plotobscheck() # This ones saves one png per file... not needed.
 
 
-#run.drawsims(simparams, n=10, ncat=10, nrea=1, stampsize=150)
+#run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150)
 #run.meassims(simparams, mymeasfct.default, stampsize=150)
 #run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-#myplots.simobscompa(run, simparams)
+
+#myplots.simobscompa(run, simparams, filepath="simobs.pdf")
+#myplots.simobscompa(run, simparams, rea=-10)
 
 
 
 
 ####run.avgsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-
-
-#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
 
 #run.train(simparams, mlparams)
@@ -79,16 +78,18 @@ run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsiz
 
 ### Test plots
 
-"""
-name = "nh7mb5_msrb"
+
+name = "nh7mb5"
 
 run.predictsims(simparams, mlparams)
-myplots.predsims(run, filepath="predsims_{name}.png".format(name=name))
-myplots.simbias(run, filepath="simbias_{name}.png".format(name=name))
+myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
+myplots.simbias(run, filepath="simbias_{name}.png".format(name=name), rea=-100)
+
 
 run.predictobs(mlparams)
 myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
-"""
+
+run.analysepredobs()
 
 
 
