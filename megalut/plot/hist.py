@@ -39,7 +39,7 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	
 	logger.debug("Preparing hist of '%s'" % (feat.colname))
 	
-	data = utils.getdata(cat, [feat])
+	data = tools.feature.get1Ddata(cat, [feat])
 	
 	# By default, we want to limit the "binning" of the actual histogram (not just their display) to the specified range.
 	# However, this fails when the "low" or "high" are set to None. Hence some explicit code:
