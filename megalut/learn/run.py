@@ -176,7 +176,9 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 			# We now check that newmlobj has the same params as the one used for training.
 			# This should be the case, we do not want to allow for any "hacking" here.
 			if not newmlobj.looks_same(trainedmlobj):
-				raise RuntimeError("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
+				pass
+				logger.critical("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
+				#raise RuntimeError("Looks like the parameters for %s are not the ones used for the training." % (str(newmlobj)))
 	
 			# And now that we know that the params are fine, we tweak things according to the mode
 			tweakedmlobj = copy.deepcopy(trainedmlobj)
