@@ -25,11 +25,13 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
-	ncpu = 12
+	ncpu = 10
 	)
 
 
 simparams = mysimparams.SBE_v2()
+simparams.name = "SBE_v2_uni-s1"
+
 #simparams.set_high_sn() # This has only to be set when drawing simulations
 simparams.set_low_sn()
 
@@ -55,6 +57,10 @@ mlparams = mymlparams.trainparamslist
 #run.plotmixobscheck()
 #run.plotobscheck() # This ones saves one png per file... not needed.
 
+#run.drawsims(simparams, n=20, nc=20, ncat=1, nrea=1, stampsize=150)
+
+run.drawsims(simparams, n=2000, nc=20, ncat=22, nrea=1, stampsize=150)
+
 
 #run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150)
 #run.meassims(simparams, mymeasfct.default, stampsize=150)
@@ -79,16 +85,18 @@ mlparams = mymlparams.trainparamslist
 ### Test plots
 
 
-name = "nh7mb5"
+#name = "nh7mb5"
 
 #run.predictsims(simparams, mlparams)
 #myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
 #myplots.simbias(run, filepath="simbias_{name}.png".format(name=name), rea=-100)
+#myplots.simbias(run, rea=-100)
+#myplots.predsims(run, rea=-200)
 
 
 #run.predictobs(mlparams)
 #myplots.predsbe(run, filepath="predsbe_{name}.png".format(name=name))
-myplots.predsbe(run)
+#myplots.predsbe(run)
 
 
 #myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
