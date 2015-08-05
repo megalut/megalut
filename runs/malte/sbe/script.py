@@ -81,15 +81,19 @@ mlparams = mymlparams.trainparamslist
 
 name = "nh7mb5"
 
-run.predictsims(simparams, mlparams)
-myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
-myplots.simbias(run, filepath="simbias_{name}.png".format(name=name), rea=-100)
+#run.predictsims(simparams, mlparams)
+#myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
+#myplots.simbias(run, filepath="simbias_{name}.png".format(name=name), rea=-100)
 
 
-run.predictobs(mlparams)
-myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
+#run.predictobs(mlparams)
+#myplots.predsbe(run, filepath="predsbe_{name}.png".format(name=name))
+myplots.predsbe(run)
 
-run.analysepredobs()
+
+#myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
+
+#run.analysepredobs()
 
 
 

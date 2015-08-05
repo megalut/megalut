@@ -273,6 +273,129 @@ def simbias(run, filepath=None, rea="full"):
 
 
 
+def predsbe(run, filepath=None):
+	
+	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "obsprecat.pkl"))
+		
+	print cat.colnames
+	#print len(cat)
+	
+	cat = megalut.tools.table.shuffle(cat)#[:100000]
+	
+	
+	cat["tru_e"] = np.hypot(cat["Galaxy_e1"], cat["Galaxy_e2"])
+	cat["tru_g"] = np.hypot(cat["Galaxy_g1"], cat["Galaxy_g2"])
+	cat["psf_g"] = np.hypot(cat["tru_psf_g1"], cat["tru_psf_g2"])
+	
+	cat["g1res"] = cat["pre_g1"] - cat["Galaxy_g1"]
+	cat["g2res"] = cat["pre_g2"] - cat["Galaxy_g2"]
+
+
+	cmap = matplotlib.cm.get_cmap("rainbow")
+
+	gresrad = 1.0		
+	
+	pre_g1 = Feature("pre_g1", -1, 1.5)
+	pre_g2 = Feature("pre_g2", -1, 1.5)
+	
+	tru_g = Feature("tru_g")
+	tru_e = Feature("tru_e")
+	psf_g = Feature("psf_g")
+	g1res = Feature("g1res", -gresrad, gresrad)
+	g2res = Feature("g2res", -gresrad, gresrad)
+	
+	gal_e1 =  Feature("Galaxy_e1")
+	gal_e2 =  Feature("Galaxy_e2")
+	gal_g1 =  Feature("Galaxy_g1", -0.033, 0.033)
+	gal_g2 =  Feature("Galaxy_g2")
+	gal_size =  Feature("Galaxy_sigma_arcsec")
+	psf_size =  Feature("tru_psf_sigma")
+	
+	gal_sn = Feature("Galaxy_SN")
+	
+	fig = plt.figure(figsize=(21, 12))
+	"""
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.scatter.scatter(ax, cat, gal_e1, pre_g1, showidline=True, idlinekwargs={"color":"red", "lw":2}, metrics=True)
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, gal_e2, pre_g2, showidline=True, idlinekwargs={"color":"red", "lw":2}, metrics=True)
+	"""
+	ax = fig.add_subplot(3, 4, 3)
+	megalut.plot.scatter.scatter(ax, cat, gal_g1, pre_g1, showidline=True, idlinekwargs={"color":"red", "lw":2}, metrics=True)
+	ax = fig.add_subplot(3, 4, 4)
+	megalut.plot.scatter.scatter(ax, cat, gal_g2, pre_g2, showidline=True, idlinekwargs={"color":"red", "lw":2}, metrics=True)
+	
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.hist.hist(ax, cat, psf_g)
+	
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.hist.hist(ax, cat, psf_size)
+	
+	"""
+	hexbinkwargs = {"mincnt":50}
+	
+	ax = fig.add_subplot(3, 4, 1)
+	#megalut.plot.scatter.scatter(ax, cat, gal_e1, pre_g1, tru_e)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_e1, pre_g1, tru_e, **hexbinkwargs)
+	
+	ax = fig.add_subplot(3, 4, 2)
+	#megalut.plot.scatter.scatter(ax, cat, gal_e2, pre_g2, tru_e)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_e2, pre_g2, tru_e, **hexbinkwargs)
+
+	ax = fig.add_subplot(3, 4, 3)
+	#megalut.plot.scatter.scatter(ax, cat, gal_g1, pre_g1, tru_e)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_g1, pre_g1, tru_e, **hexbinkwargs)
+	
+	
+	ax = fig.add_subplot(3, 4, 4)
+	#megalut.plot.scatter.scatter(ax, cat, gal_g2, pre_g2, tru_e)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_g2, pre_g2, tru_e, **hexbinkwargs)
+	"""
+	"""	
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_g1, g1res)
+
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_g1, g1res, gal_size, cmap=cmap)
+	
+	ax = fig.add_subplot(3, 4, 3)
+	megalut.plot.hexbin.hexbin(ax, cat, gal_g1, g1res, psf_size, cmap=cmap)
+	"""
+	
+	#("in", "Galaxy_sigma_arcsec", 0.2, 0.4)("in", "Galaxy_SN", 1500, 3000)
+	
+	#("in", "tru_psf_sigma", 1.69, 1.71)
+	s = megalut.tools.table.Selector("test",[
+		("in", "psf_g", 0.0, 0.01)
+		]) 
+	
+	selcat = s.select(cat)
+	ax = fig.add_subplot(3, 4, 5)
+	megalut.plot.hist.hist(ax, selcat, psf_g)
+	
+	ax = fig.add_subplot(3, 4, 6)
+	megalut.plot.hist.hist(ax, selcat, psf_size)
+	
+
+	ax = fig.add_subplot(3, 4, 7)
+	megalut.plot.scatter.scatter(ax, selcat, gal_g1, pre_g1, showidline=True, idlinekwargs={"color":"red", "lw":2}, metrics=True)
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, selcat, gal_g2, pre_g2, showidline=True, idlinekwargs={"color":"red", "lw":2}, metrics=True)
+	
+	
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+
 def sbebias(run, filepath=None):
 
 	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "obsprecat.pkl"))
