@@ -31,8 +31,8 @@ def analyse(cat,
 	"""
 	
 	# As a quick comparision, our own way of measureing m and c:
-	e1m = tools.metrics.metrics(cat, label=colname_gal_g1s, predlabel=colname_e1_guesses)
-	e2m = tools.metrics.metrics(cat, label=colname_gal_g2s, predlabel=colname_e2_guesses)
+	e1m = tools.metrics.metrics(cat, labelfeature=tools.feature.Feature(colname_gal_g1s), predlabelfeature=tools.feature.Feature(colname_e1_guesses, rea="Full"))
+	e2m = tools.metrics.metrics(cat, labelfeature=tools.feature.Feature(colname_gal_g2s), predlabelfeature=tools.feature.Feature(colname_e2_guesses, rea="Full"))
 	
 	print "MegaLUT metrics in pixel frame:"
 	print "e1: m/100 = %.4f +/- %.4f, c/100 = %.4f +/- %.4f, predfrac = %.2f %%" % (e1m["m"]*100.0, e1m["merr"]*100.0, e1m["c"]*100.0, e1m["cerr"]*100.0, e1m["predfrac"]*100.0)
