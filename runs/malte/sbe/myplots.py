@@ -95,19 +95,22 @@ def predsims(run, filepath=None, rea="full"):
 	
 	tru_g1 = Feature("tru_g1", -rg, rg)
 	tru_g2 = Feature("tru_g2", -rg, rg)
-	tru_sigma = Feature("tru_sigma")
+	tru_sigma = Feature("tru_sigma", 0, 20)
 	tru_flux = Feature("tru_flux")
 	
 	
 	pre_g1 = Feature("pre_g1", -rg, rg, rea=rea)
 	pre_g2 = Feature("pre_g2", -rg, rg, rea=rea)
-	pre_sigma = Feature("pre_sigma", rea=rea)
+	pre_sigma = Feature("pre_sigma", 0, 20, rea=rea)
 	pre_flux = Feature("pre_flux", rea=rea)
 	
-	snr = Feature("snr", rea=rea)
+	snr = Feature("snr", 5, 40, rea=rea)
 	
 	fig = plt.figure(figsize=(22, 13))
+	cmap = matplotlib.cm.get_cmap("rainbow")
 	
+	sckws = {"cmap":cmap}
+	idkws={"color":"black", "lw":2}
 	
 	ax = fig.add_subplot(3, 4, 1)
 	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, showidline=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
@@ -123,13 +126,13 @@ def predsims(run, filepath=None, rea="full"):
 	#megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, showidline=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
 
 	ax = fig.add_subplot(3, 4, 5)	
-	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, snr, s=5, metrics=True)
+	megalut.plot.scatter.scatter(ax, cat, tru_g1, pre_g1, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
 		
 	ax = fig.add_subplot(3, 4, 6)	
-	megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, snr, s=5, metrics=True)
+	megalut.plot.scatter.scatter(ax, cat, tru_g2, pre_g2, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
 		
-	ax = fig.add_subplot(3, 4, 7)	
-	megalut.plot.scatter.scatter(ax, cat, tru_sigma, pre_sigma, snr, s=5, metrics=True)
+	ax = fig.add_subplot(3, 4, 7)
+	megalut.plot.scatter.scatter(ax, cat, tru_sigma, pre_sigma, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
 
 	#ax = fig.add_subplot(3, 4, 8)	
 	#megalut.plot.scatter.scatter(ax, cat, tru_flux, pre_flux, snr, s=5, metrics=True)
@@ -370,6 +373,7 @@ def predsbe(run, filepath=None):
 		]) 
 	
 	selcat = s.select(cat)
+	
 	ax = fig.add_subplot(3, 4, 5)
 	megalut.plot.hist.hist(ax, selcat, psf_g)
 	

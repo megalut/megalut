@@ -2,6 +2,8 @@ import megalut.sim
 import numpy as np
 import random # np.random.choice is only available for newer numpys...
 
+import itertools
+
 class SBE_v1(megalut.sim.params.Params):
 	
 	
@@ -87,6 +89,11 @@ class SBE_v1(megalut.sim.params.Params):
 class SBE_v2(megalut.sim.params.Params):
 	
 	
+	def __init__(self):
+		megalut.sim.params.Params.__init__(self)
+		
+		self.tru_s1_vals = itertools.cycle(np.linspace(-0.05, 0.05, 11))
+	
 	def set_high_sn(self):
 		self.flux_fact = 10.0
 		self.galaxy_flux_or_SN_dist_params = (4.1, 0.1)
@@ -96,7 +103,31 @@ class SBE_v2(megalut.sim.params.Params):
 		self.flux_fact = 1.0
 		self.galaxy_flux_or_SN_dist_params = (3.1, 0.1)
 	
-	def draw(self, ix, iy, n):
+	
+	
+	def stat(self):
+		"""
+		Simple shears and some first SNC experiments
+		"""
+		
+		# Leaving these to the integers 0 0 1 means that the "lens" method will not get called.
+		tru_s1 = next(self.tru_s1_vals)
+		tru_s2 = 0.0
+		tru_mu = 1.0
+		
+		snc_type = 1 # 0 means no shape noise cancellation
+	
+		return {
+			"tru_s1" : tru_s1, # shear component 1, in "g" convention
+			"tru_s2" : tru_s2, # component 2
+			"tru_mu" : tru_mu, # magnification
+			"snc_type" : snc_type, # The type of shape noise cancellation. 0 means none.
+		}
+	
+	
+	
+	
+	def draw(self, ix, iy, nx, ny):
 		"""
 		Gaussian galaxies with gaussian PSFs.
 		"""
