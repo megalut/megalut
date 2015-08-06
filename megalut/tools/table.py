@@ -184,6 +184,7 @@ def group(incats, groupcols=None, removecols=None, checkcommon=True):
 	return outputcat
 
 
+
 	
 def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfirstrea=True, checkcommon=True):
 	"""
@@ -342,6 +343,133 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 	
 	return outputcat
 
+
+
+
+def collapse(cat):
+	"""
+	Transforms a table into a new table with a single row, all the data being flattenend into the second dimension of each column.
+	"""
+	
+	cols = []
+	for colname in cat.colnames:
+		
+		data = np.ma.array(cat[colname]).flatten()
+		assert data.ndim == 1
+		data = data.reshape((1, data.size))
+		cols.append(data)
+		#print data.shape
+	
+	return astropy.table.Table(cols, names=cat.colnames)
+	
+
+def keepunique(cat, colnames=None, skipuniquetest=False):
+	"""
+	For each col in colnames, if the column is 2D (and the contents of each cell is identical),
+	makes the column 1D by keeping only one of the identical values in each cell.
+	If colnames is not specified, this is applied on all columns.
+	"""
+	
+	
+	if colnames == None:
+		proccolnames = cat.colnames # We will just run on all of them
+	else:
+		proccolnames = colnames
+		
+	for colname in proccolnames:
+		
+		if colnames != None:
+			logger.info("Processing column '{}'...".format(colname))
+		
+		if cat[colname].ndim == 2:
+			
+			#if skipuniquetest: # Then we do not check the cell contents, just pick the first elements:
+			#else: # we do check the cell contents for uniqueness
+			
+			aresame = True
+			if skipuniquetest == False:
+				firstvals = cat[colname][:,0].data # All rows, but just first element of the second index
+				tests = cat[colname].data.transpose() == firstvals			
+				if not np.all(tests):
+					aresame = False
+			
+			if aresame == True: # We just keep the first element in each cell:
+				newcol = cat[colname][:,0]
+				cat.remove_column(colname)
+				cat[colname] = newcol # Is a bit weird, but otherwise it complains about non-matching shapes
+				
+			else: # We do not keepunique it, but warn the user
+				if colnames != None: # So if the user did explicitly specify colnames:
+					logger.warning("Cells of column '{}' do not contain identical values, cannot keepunique it!".format(colname))
+	
+		else:
+			if colnames != None: # So if the user did explicitly specify colnames:
+				logger.warning("Column '{}' is not 2D, cannot keepunique it!".format(colname))
+		
+
+
+def binreshape(cat, bincolnames):
+	"""
+	Rearranges the data in the table so to have only one row per different value combination of the diffcolnames.
+	For each of these rows, all the data is collected in the second dimension.
+	
+	Ideally these bincolanmes would not contain floats, but integers.
+	
+	"""
+	
+	# Start by inspecting how many different rows we should build. 
+	logger.info("Determining bins for {}...".format(bincolnames))
+	
+	# Check that bincolnames are 1D columns
+	for colname in bincolnames:
+		if cat[colname].ndim != 1:
+			raise RuntimeError("Only 1D columns are allowed as bincolnames! '{}' is not.".format(colname))
+	
+	# Use the table group functionality
+	groupcat = cat.group_by(bincolnames)
+	
+	ngroups = len(groupcat.groups.indices) -1
+	logger.info("Reshaping data in {} groups...".format(ngroups))
+	
+	
+	collapsedgroups = []
+	for group in groupcat.groups:
+		#print len(group)
+		collapsedgroup = collapse(group) # This is a Table
+		assert len(collapsedgroup) == 1
+		
+		collapsedgroups.append(collapsedgroup)
+	
+	# Some assert checks
+	# Columns should have exactly the same dimensions in all of the collapsedgroups:
+	colshapes = [collapsedgroups[0][col].shape for col in collapsedgroups[0].colnames]
+	for t in collapsedgroups:
+		assert t.colnames == collapsedgroups[0].colnames
+		assert [t[col].shape for col in t.colnames] == colshapes
+	
+	
+	# Now we can simply vstack this stuff.
+	logger.info("Done with reshaping, now stacking...")
+	outcat = astropy.table.vstack(collapsedgroups, join_type=u'exact', metadata_conflicts=u'error')
+	assert len(outcat) == ngroups
+	
+	print outcat#["ix", "tru_s1"]
+	
+	keepunique(outcat)
+	
+	print outcat#["ix", "tru_s1"]
+	
+	exit()
+	
+	return outcat
+		
+		
+	
+	#print groupcat.groups.keys
+	#print groupcat.groups.indices
+	
+	
+	
 
 
 class Selector:
