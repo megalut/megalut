@@ -7,7 +7,7 @@ import mymeasfct
 import mysimparams
 import mymlparams
 import myplots
-
+import mytests
 
 import logging
 #logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
@@ -30,7 +30,7 @@ run = megalut.sbe.run.Run(
 
 
 simparams = mysimparams.SBE_v2()
-simparams.name = "SBE_v2_uni-s1"
+simparams.name = "SBE_v2_uni-s"
 
 #simparams.set_high_sn() # This has only to be set when drawing simulations
 simparams.set_low_sn()
@@ -59,12 +59,13 @@ mlparams = mymlparams.trainparamslist
 
 #run.drawsims(simparams, n=20, nc=20, ncat=1, nrea=1, stampsize=150)
 
-run.drawsims(simparams, n=2000, nc=20, ncat=22, nrea=1, stampsize=150)
+run.drawsims(simparams, n=5000, nc=20, ncat=242, nrea=1, stampsize=150)
 
 
 #run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150)
-#run.meassims(simparams, mymeasfct.default, stampsize=150)
-#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
+run.meassims(simparams, mymeasfct.default, stampsize=150)
+run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
 #myplots.simobscompa(run, simparams, filepath="simobs.pdf")
 #myplots.simobscompa(run, simparams, rea=-10)
@@ -81,6 +82,9 @@ run.drawsims(simparams, n=2000, nc=20, ncat=22, nrea=1, stampsize=150)
 
 
 #run.predictsims(simparams, mlparams)
+
+
+#mytests.shearbias(run)
 
 ### Test plots
 
