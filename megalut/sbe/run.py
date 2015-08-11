@@ -257,6 +257,48 @@ class Run():
 		megalut.tools.io.writepickle(groupmeascat, os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 
 
+	def prepbatches(self, simparams, bincolnames):
+		"""
+		Reshapes the simmeas data in batches with identical tru_s, ready for tenbilac shear-style training.
+		
+		"""
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		logger.info("Preparing batches for catlog of length {}".format(len(cat)))
+		
+		
+		# To make nice batches, we will add a temporary helper column to the catalog.
+		n = 5000
+		nsnc = 8
+		
+		batchsize = 1000*nsnc
+		
+		assert n*nsnc % batchsize == 0
+		assert len(cat) % batchsize == 0
+		
+		inds = np.arange(0, len(cat)/batchsize)
+		tmpcolvals = np.repeat(inds, batchsize)
+		
+		cat["prepbatchtmp"] = tmpcolvals
+		
+		logger.warning("If your sersic indices are not random, what I do here needs to be improved!")
+		
+		cat = megalut.tools.table.groupreshape(cat, groupcolnames = bincolnames + ["prepbatchtmp"])
+		
+		cat.remove_column("prepbatchtmp")
+		
+		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_binreshape.pkl"))
+
+
+	def traintenbilacshear(self, simparams, trainparamslist):
+		"""
+		
+		"""
+		
+		# We load the training catalog
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_binreshape.pkl"))
+			
+		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 
 
 	def traintenbilac(self, simparams, trainparamslist):
@@ -309,6 +351,7 @@ class Run():
 		
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_binreshape.pkl"))
 		
 		#print cat.colnames
 		#exit()
@@ -321,6 +364,7 @@ class Run():
 		#print cat.colnames
 		#print cat["pre_sigma"]
 		
+		#megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat_binreshape.pkl"))
 		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat.pkl"))
 	
 
@@ -334,12 +378,22 @@ class Run():
 		
 		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
 		
-		analysis.analyse(cat, 
+		print len(cat)
+		
+		cat["tru_s"] = np.hypot(cat["tru_s1"], cat["tru_s2"])
+		
+		sel = megalut.tools.table.Selector("test",[
+		("in", "tru_s", 0.01, 0.02)
+		]) 
+	
+		selcat = sel.select(cat)
+				
+		analysis.analyse(selcat, 
 			colname_PSF_ellipticity_angles_degrees="tru_g1",
-			colname_e1_guesses="pre_g1",
-			colname_e2_guesses="pre_g2",
-			colname_gal_g1s="tru_g1",
-			colname_gal_g2s="tru_g2",
+			colname_e1_guesses="pre_s1",
+			colname_e2_guesses="pre_s2",
+			colname_gal_g1s="tru_s1",
+			colname_gal_g2s="tru_s2",
 		)
 		
 
@@ -377,8 +431,8 @@ class Run():
 		
 		analysis.analyse(cat, 
 			colname_PSF_ellipticity_angles_degrees="PSF_shape_2",
-			colname_e1_guesses="pre_g1",
-			colname_e2_guesses="pre_g2",
+			colname_e1_guesses="pre_s1",
+			colname_e2_guesses="pre_s2",
 			colname_gal_g1s="Galaxy_g1",
 			colname_gal_g2s="Galaxy_g2",
 		)
