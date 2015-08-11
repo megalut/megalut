@@ -91,8 +91,19 @@ class SBE_v2(megalut.sim.params.Params):
 	
 	def __init__(self):
 		megalut.sim.params.Params.__init__(self)
+				
+		sr = 0.05
+		mur = 0.1
+		steps = 11
+		(self.tru_s1_vals, self.tru_s2_vals) = np.meshgrid(
+			np.linspace(-sr, sr, steps),
+			np.linspace(-sr, sr, steps)
+			)
+
+		self.tru_s1_vals = self.tru_s1_vals.flatten()
+		self.tru_s2_vals = self.tru_s2_vals.flatten()
+		self.tru_s_ids = itertools.cycle(np.arange(steps**2)) # The index number we will use to query the values.
 		
-		self.tru_s1_vals = itertools.cycle(np.linspace(-0.05, 0.05, 11))
 	
 	def set_high_sn(self):
 		self.flux_fact = 10.0
@@ -107,17 +118,22 @@ class SBE_v2(megalut.sim.params.Params):
 	
 	def stat(self):
 		"""
-		Simple shears and some first SNC experiments
+		stat: called for each catalog (stat is for stationnary)
+		Simple shears, on a grid, instead of picking at random.
 		"""
 		
 		# Leaving these to the integers 0 0 1 means that the "lens" method will not get called.
-		tru_s1 = next(self.tru_s1_vals)
-		tru_s2 = 0.0
+		
+		tru_s_id = next(self.tru_s_ids)
+		
+		tru_s1 = self.tru_s1_vals[tru_s_id]
+		tru_s2 = self.tru_s2_vals[tru_s_id]
 		tru_mu = 1.0
 		
 		snc_type = 1 # 0 means no shape noise cancellation
 	
 		return {
+			"tru_s_id" : tru_s_id,
 			"tru_s1" : tru_s1, # shear component 1, in "g" convention
 			"tru_s2" : tru_s2, # component 2
 			"tru_mu" : tru_mu, # magnification
@@ -129,6 +145,7 @@ class SBE_v2(megalut.sim.params.Params):
 	
 	def draw(self, ix, iy, nx, ny):
 		"""
+		draw: called for each galaxy
 		Gaussian galaxies with gaussian PSFs.
 		"""
 		
