@@ -378,6 +378,7 @@ class Run():
 		
 		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "selfprecat.pkl"))
 		
+		"""
 		print len(cat)
 		
 		cat["tru_s"] = np.hypot(cat["tru_s1"], cat["tru_s2"])
@@ -387,8 +388,9 @@ class Run():
 		]) 
 	
 		selcat = sel.select(cat)
-				
-		analysis.analyse(selcat, 
+		"""
+			
+		analysis.analyse(cat, 
 			colname_PSF_ellipticity_angles_degrees="tru_g1",
 			colname_e1_guesses="pre_s1",
 			colname_e2_guesses="pre_s2",
