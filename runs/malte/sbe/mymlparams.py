@@ -1,3 +1,10 @@
+"""
+This is for the shape-training
+See the other file for shear-training !
+
+"""
+
+
 import megalut.learn
 
 # What to train:
