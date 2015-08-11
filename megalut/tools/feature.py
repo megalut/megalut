@@ -76,7 +76,12 @@ class Feature():
 		
 		elif cat[self.colname].ndim == 2:
 		
-			if self.rea is None:
+			
+			if cat[self.colname].shape[1] == 1: # Then in fact it's a 1D column, with just one value per cell...
+				# We simply return the data from this colum, no need to care for rea.
+				output = cat[self.colname] #.flatten() # Not sure if would be logic to flatten it here.
+			
+			elif self.rea is None:
 				raise RuntimeError("The column {self.colname} is 2D, please specify a rea for this feature!".format(self=self))
 			
 			elif type(self.rea) == int:
