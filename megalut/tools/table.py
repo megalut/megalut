@@ -379,7 +379,7 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 	for colname in proccolnames:
 		
 		if colnames != None:
-			logger.info("Processing column '{}'...".format(colname))
+			logger.info("Keepuniquing column '{}'...".format(colname))
 		
 		if cat[colname].ndim == 2:
 			
@@ -408,33 +408,34 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 		
 
 
-def binreshape(cat, bincolnames):
+def groupreshape(cat, groupcolnames):
 	"""
 	Rearranges the data in the table so to have only one row per different value combination of the diffcolnames.
 	For each of these rows, all the data is collected in the second dimension.
 	
-	Ideally these bincolanmes would not contain floats, but integers.
+	Ideally these groupcolanmes would not contain floats, but integers. But it seems to work with simple floats as well.
 	
 	"""
 	
-	# Start by inspecting how many different rows we should build. 
-	logger.info("Determining bins for {}...".format(bincolnames))
+	# Start
+	logger.info("Determining bins for {}...".format(groupcolnames))
 	
-	# Check that bincolnames are 1D columns
-	for colname in bincolnames:
+	# Check that groupcolnames are 1D columns
+	for colname in groupcolnames:
 		if cat[colname].ndim != 1:
-			raise RuntimeError("Only 1D columns are allowed as bincolnames! '{}' is not.".format(colname))
+			raise RuntimeError("Only 1D columns are allowed as groupcolnames! '{}' is not.".format(colname))
 	
 	# Use the table group functionality
-	groupcat = cat.group_by(bincolnames)
+	groupcat = cat.group_by(groupcolnames)
 	
 	ngroups = len(groupcat.groups.indices) -1
 	logger.info("Reshaping data in {} groups...".format(ngroups))
 	
-	
 	collapsedgroups = []
-	for group in groupcat.groups:
-		#print len(group)
+	for (i, group) in enumerate(groupcat.groups):
+		
+		if i%10 == 0:
+			logger.info("Working on group {}/{} of length {}...".format(i+1, len(groupcat.groups), len(group)))
 		collapsedgroup = collapse(group) # This is a Table
 		assert len(collapsedgroup) == 1
 		
@@ -447,27 +448,43 @@ def binreshape(cat, bincolnames):
 		assert t.colnames == collapsedgroups[0].colnames
 		assert [t[col].shape for col in t.colnames] == colshapes
 	
-	
 	# Now we can simply vstack this stuff.
 	logger.info("Done with reshaping, now stacking...")
 	outcat = astropy.table.vstack(collapsedgroups, join_type=u'exact', metadata_conflicts=u'error')
 	assert len(outcat) == ngroups
 	
-	print outcat#["ix", "tru_s1"]
-	
-	keepunique(outcat)
-	
-	print outcat#["ix", "tru_s1"]
-	
-	exit()
+	# At least for the groupcolnames, we only want to keep single values:
+	keepunique(outcat, groupcolnames)
 	
 	return outcat
 		
 		
+
+def addstats(cat, col, outcolprefix=None):
+	"""
+	Adds columns containing some statistics of the values in each cell of col.
+	So this is for 2D columns. Togheter this the function "group", this replaces the old-style "groupstats".
 	
-	#print groupcat.groups.keys
-	#print groupcat.groups.indices
+	:param col: name of the (2D) column containing the data for which stats should be computed
 	
+	"""
+	if outcolprefix == None:
+		outcolprefix = col
+		
+	outcolnames = [outcolprefix + suffix for suffix in ["_mean", "_med", "_std", "_n"]]
+	for outcolname in outcolnames:
+		if outcolname in cat.colnames:
+			raise RuntimeError("Column {} already exists, refusing to overwrite.".format(outcol))
+	
+	if cat[col].ndim != 2:
+		raise RuntimeError("Column '{}' is not 2-dimensional, stats do not make sense!".format(col))
+		
+	logger.info("Adding stats for column {} of shape {}...".format(col, cat[col].shape))
+	
+	cat[outcolprefix + "_mean"] = np.ma.mean(cat[col], axis=1)
+	cat[outcolprefix + "_med"] = np.ma.median(cat[col], axis=1)
+	cat[outcolprefix + "_std"] = np.ma.std(cat[col], axis=1)
+	cat[outcolprefix + "_n"] = np.ma.count(cat[col], axis=1)
 	
 	
 
