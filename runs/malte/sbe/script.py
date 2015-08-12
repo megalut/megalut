@@ -6,6 +6,7 @@ import megalut.sbe
 import mymeasfct
 import mysimparams
 import mymlparams
+import mymlparamsshear
 import myplots
 import mytests
 
@@ -25,7 +26,7 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
-	ncpu = 10
+	ncpu = 1
 	)
 
 
@@ -40,7 +41,7 @@ simparams.set_low_sn()
 #simparams.name = "SBE_tenbilac_test"
 
 
-mlparams = mymlparams.trainparamslist
+mlparams = mymlparamsshear.trainparamslist
 
 
 
@@ -59,17 +60,19 @@ mlparams = mymlparams.trainparamslist
 
 #run.drawsims(simparams, n=20, nc=20, ncat=1, nrea=1, stampsize=150)
 
-run.drawsims(simparams, n=5000, nc=20, ncat=242, nrea=1, stampsize=150)
+#run.drawsims(simparams, n=5000, nc=20, ncat=242, nrea=1, stampsize=150)
 
 
 #run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150)
 
-run.meassims(simparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
 #myplots.simobscompa(run, simparams, filepath="simobs.pdf")
 #myplots.simobscompa(run, simparams, rea=-10)
 
+
+#run.prepbatches(simparams, bincolnames = ["tru_s1", "tru_s2"])
 
 
 
@@ -80,6 +83,8 @@ run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_remov
 
 #run.traintenbilac(simparams, mlparams)
 
+#run.traintenbilacshear(simparams, mlparams)
+
 
 #run.predictsims(simparams, mlparams)
 
@@ -89,7 +94,7 @@ run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_remov
 ### Test plots
 
 
-#name = "nh7mb5"
+name = "shear1"
 
 #run.predictsims(simparams, mlparams)
 #myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
@@ -103,13 +108,16 @@ run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_remov
 #myplots.predsbe(run)
 
 
+#mytests.newshearbias(run)
+#mytests.groupshearbias(run)
+
 #myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
 
 #run.analysepredobs()
 
 
 
-#run.analysepredsims()
+run.analysepredsims()
 
 #run.fakepredictobs()
 

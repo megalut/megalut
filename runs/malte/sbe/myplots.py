@@ -20,6 +20,12 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	
 	simcat = megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, simcatpath))
 	
+	
+	print simcat
+	
+	exit()
+	
+	
 	# And a bunch of the obs
 	obscat = megalut.tools.io.readpickle(run.groupobspath)
 			
@@ -290,16 +296,16 @@ def predsbe(run, filepath=None):
 	cat["tru_g"] = np.hypot(cat["Galaxy_g1"], cat["Galaxy_g2"])
 	cat["psf_g"] = np.hypot(cat["tru_psf_g1"], cat["tru_psf_g2"])
 	
-	cat["g1res"] = cat["pre_g1"] - cat["Galaxy_g1"]
-	cat["g2res"] = cat["pre_g2"] - cat["Galaxy_g2"]
+	#cat["g1res"] = cat["pre_g1"] - cat["Galaxy_g1"]
+	#cat["g2res"] = cat["pre_g2"] - cat["Galaxy_g2"]
 
 
 	cmap = matplotlib.cm.get_cmap("rainbow")
 
 	gresrad = 1.0		
 	
-	pre_g1 = Feature("pre_g1", -1, 1.5)
-	pre_g2 = Feature("pre_g2", -1, 1.5)
+	pre_g1 = Feature("pre_s1", -1, 1.5)
+	pre_g2 = Feature("pre_s2", -1, 1.5)
 	
 	tru_g = Feature("tru_g")
 	tru_e = Feature("tru_e")
