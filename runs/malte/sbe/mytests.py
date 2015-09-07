@@ -71,14 +71,16 @@ def shearbias(run, filepath=None, rea="full"):
 
 
 def groupshearbias(run, filepath=None):
-	
-	indicat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat.pkl"))
+
 	tru_g1 = Feature("tru_g1")
 	tru_g2 = Feature("tru_g2")
 	pre_s1 = Feature("pre_s1")
 	pre_s2 = Feature("pre_s2")
 	tru_s1 = Feature("tru_s1", -0.06, 0.06)
 	tru_s2 = Feature("tru_s2", -0.06, 0.06)
+	
+	
+	indicat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat.pkl"))
 
 	print "Shear estimates:"
 	print megalut.tools.metrics.metrics(indicat, tru_s1, pre_s1)
@@ -89,7 +91,15 @@ def groupshearbias(run, filepath=None):
 	megalut.tools.table.addstats(cat, "pre_s1")
 	megalut.tools.table.addstats(cat, "pre_s2")
 	
-
+	#temporarily saving this as it took some time...
+	megalut.tools.io.writepickle((cat, indicat), os.path.join(run.workmldir, "tmp.pkl"))
+	
+	
+	#exit()
+	
+	#(cat, indicat) = megalut.tools.io.readpickle(os.path.join(run.workmldir, "tmp.pkl"))
+	
+	
 	cat["bias_s1"] = cat["pre_s1_mean"] - cat["tru_s1"]
 	cat["bias_s2"] = cat["pre_s2_mean"] - cat["tru_s2"]
 	
@@ -97,8 +107,8 @@ def groupshearbias(run, filepath=None):
 	cat["bias_s2_err"] = cat["pre_s2_std"] / cat["pre_s2_n"]
 	
 		
-	bias_s1 = Feature("bias_s1", errcolname="bias_s1_err")
-	bias_s2 = Feature("bias_s2", errcolname="bias_s2_err")
+	bias_s1 = Feature("bias_s1", -0.003, 0.003, errcolname="bias_s1_err")
+	bias_s2 = Feature("bias_s2", -0.003, 0.003, errcolname="bias_s2_err")
 	bias_s1_err = Feature("bias_s1_err")
 	bias_s2_err = Feature("bias_s2_err")
 	pre_s1_mean = Feature("pre_s1_mean", errcolname="bias_s1_err")
@@ -111,26 +121,40 @@ def groupshearbias(run, filepath=None):
 	tru_s1 = Feature("tru_s1", -0.06, 0.06)
 	tru_s2 = Feature("tru_s2", -0.06, 0.06)
 
+	cmap = matplotlib.cm.get_cmap("rainbow")
 	
-	fig = plt.figure(figsize=(18, 10))
+	fig = plt.figure(figsize=(23, 8))
 
-	ax = fig.add_subplot(2, 3, 1)
+	ax = fig.add_subplot(2, 5, 1)
 	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, metrics=True)
-
-	ax = fig.add_subplot(2, 3, 4)
-	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, metrics=True)
-
-	ax = fig.add_subplot(2, 3, 2)
+	
+	ax = fig.add_subplot(2, 5, 2)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, bias_s1, tru_s2, metrics=False, s=50, cmap=cmap)
+	
+	ax = fig.add_subplot(2, 5, 3)
 	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s1, s=90)
+
+	ax = fig.add_subplot(2, 5, 4)
+	megalut.plot.hexbin.hexbin(ax, indicat, tru_g1, pre_s1, snr, cmap=cmap, showidline=True)
+
+	ax = fig.add_subplot(2, 5, 5)
+	megalut.plot.hexbin.hexbin(ax, indicat, tru_g1, pre_s1, showidline=True)
+
 	
-	ax = fig.add_subplot(2, 3, 5)
+	ax = fig.add_subplot(2, 5, 6)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, metrics=True)
+	
+	ax = fig.add_subplot(2, 5, 7)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, bias_s2, tru_s1, metrics=False, s=50, cmap=cmap)
+
+	ax = fig.add_subplot(2, 5, 8)
 	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s2, s=90)
-	
-	ax = fig.add_subplot(2, 3, 3)
-	megalut.plot.hexbin.hexbin(ax, indicat, tru_g1, pre_s1)
-	
-	ax = fig.add_subplot(2, 3, 6)
-	megalut.plot.hexbin.hexbin(ax, indicat, tru_g2, pre_s2)
+		
+	ax = fig.add_subplot(2, 5, 9)
+	megalut.plot.hexbin.hexbin(ax, indicat, tru_g2, pre_s2, snr, cmap=cmap, showidline=True)
+
+	ax = fig.add_subplot(2, 5, 10)
+	megalut.plot.hexbin.hexbin(ax, indicat, tru_g2, pre_s2, showidline=True)
 
 
 	plt.tight_layout()

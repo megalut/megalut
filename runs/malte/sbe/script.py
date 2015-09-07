@@ -96,7 +96,7 @@ mlparams = mymlparamsshear.trainparamslist
 
 name = "shear1"
 
-#run.predictsims(simparams, mlparams)
+run.predictsims(simparams, mlparams)
 #myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
 #myplots.simbias(run, filepath="simbias_{name}.png".format(name=name), rea=-100)
 #myplots.simbias(run, rea=-100)
@@ -109,7 +109,7 @@ name = "shear1"
 
 
 #mytests.newshearbias(run)
-#mytests.groupshearbias(run)
+mytests.groupshearbias(run, "groupshearbias.pdf")
 
 #myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
 
@@ -117,7 +117,7 @@ name = "shear1"
 
 
 
-run.analysepredsims()
+#run.analysepredsims()
 
 #run.fakepredictobs()
 
