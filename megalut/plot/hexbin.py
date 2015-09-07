@@ -112,7 +112,7 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 			
 		if idlinekwargs == None:
 			idlinekwargs = {}
-		myidlinekwargs = {"ls":"--", "color":"gray", "lw":1}
+		myidlinekwargs = {"ls":"--", "color":"black", "lw":1}
 		myidlinekwargs.update(idlinekwargs)	
 		
 		# And we plot the line:
