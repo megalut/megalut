@@ -5,7 +5,7 @@ I/O stuff adapted from example script
 import os
 
 image_extension = ".fits"
-datafile_extension = ".dat"
+datafile_extension = "_details.dat"
 
 
 def get_filenames(path):
