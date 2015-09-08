@@ -45,7 +45,7 @@ class Params:
 		them in the output of this stat()!
 		"""
 		
-		tru_s1 = 0 # Leaving these to the integers 0 0 1 means that the "lens" method will not get called.
+		tru_s1 = 0 # Leaving these lensing parameters to the integers 0 0 1 means that the "lens" method will not get called.
 		tru_s2 = 0
 		tru_mu = 1
 		
