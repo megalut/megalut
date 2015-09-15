@@ -266,7 +266,7 @@ class Run():
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		logger.info("Preparing batches for catlog of length {}".format(len(cat)))
 		
-		
+		"""
 		# To make nice batches, we will add a temporary helper column to the catalog.
 		n = 5000
 		nsnc = 8
@@ -286,6 +286,10 @@ class Run():
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames = bincolnames + ["prepbatchtmp"])
 		
 		cat.remove_column("prepbatchtmp")
+		"""
+		
+		cat = megalut.tools.table.groupreshape(cat, groupcolnames = bincolnames)
+		
 		
 		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_binreshape.pkl"))
 
@@ -411,6 +415,53 @@ class Run():
 
 
 
+	def writepredsbe(self):
+		"""
+		
+		From Bryan's mail:
+		
+		FITS format table (empty primary header, binary table in first	extension)
+		-Keyword SHE_FMT in header describing specific format (which will be
+		incremented/changed when the required output columns are changed).
+		Present value to be '0.1'
+		-The following columns, with each row representing one galaxy:
+		--GAL_ID (64-bit integer, format code 'K' - unique ID for each galaxy)
+		--GAL_G1 (32-bit float, format code 'E' - "shear" component 1 estimate)
+		--GAL_G2 (32-bit float, format code 'E' - "shear" component 2 estimate)
+		--GAL_G1_ERR (32-bit float, format code 'E' - "shear" component 1 error)
+		--GAL_G2_ERR (32-bit float, format code 'E' - "shear" component 2 error)
+		
+		
+		"""
+	
+	
+		
+		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
+		
+		print cat.colnames
+		
+		cat["GAL_ID"] = cat["ID"]
+		cat["GAL_G1"] = cat["pre_s1"]
+		cat["GAL_G2"] = cat["pre_s2"]
+		cat["GAL_G1_ERR"] = 0.0*cat["pre_s1"] + 1.0
+		cat["GAL_G2_ERR"] = 0.0*cat["pre_s1"] + 1.0
+		
+		cat.keep_columns(["GAL_ID", "GAL_G1", "GAL_G2", "GAL_G1_ERR", "GAL_G2_ERR"])
+		cat = cat.filled(999.0)
+		cat.meta = {"SHE_FMT":"0.1"}
+		
+		print "For testing, here are a few rows of your catalog:"
+		print cat
+		
+		
+		print cat.meta
+		
+		
+		#cat.write("test.fits", format='fits')
+		
+
+
+
 	def fakepredictobs(self):
 		"""
 		cat = megalut.tools.io.readpickle(self.groupobspath)
@@ -431,6 +482,9 @@ class Run():
 		
 		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
 		
+		print cat.colnames
+		
+		
 		analysis.analyse(cat, 
 			colname_PSF_ellipticity_angles_degrees="PSF_shape_2",
 			colname_e1_guesses="pre_s1",
@@ -440,29 +494,29 @@ class Run():
 		)
 
 
-	def writepredsbe_single(self):
-		
-		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
-		
-		cat["PSF_shape_angle_degrees"] = cat["PSF_shape_2"]
-		cat["e1_guess"] = cat["pre_g1"]
-		cat["e2_guess"] = cat["pre_g2"]
-		cat["gal_g1"] = cat["Galaxy_g1"]
-		cat["gal_g2"] = cat["Galaxy_g2"]
-		cat["weight"] = np.logical_not(cat["pre_g1"].mask).astype("float")
-		
-		cat.keep_columns(["PSF_shape_angle_degrees", "e1_guess", "e2_guess", "gal_g1", "gal_g2", "weight"])
-		cat = cat.filled(999.0)
-		
-		print "For testing, here are a few rows of your catalog:"
-		print cat
-		
-		exportpath = os.path.join(self.workdir, "results.txt")
-		
-		cat.write(exportpath, format='ascii.commented_header', delimiter="\t")
-			
-		logger.info("Wrote %s" % exportpath)
-
+#	def writepredsbe_single(self):
+#		
+#		cat =  megalut.tools.io.readpickle(os.path.join(self.workmldir, "obsprecat.pkl"))
+#		
+#		cat["PSF_shape_angle_degrees"] = cat["PSF_shape_2"]
+#		cat["e1_guess"] = cat["pre_g1"]
+#		cat["e2_guess"] = cat["pre_g2"]
+#		cat["gal_g1"] = cat["Galaxy_g1"]
+#		cat["gal_g2"] = cat["Galaxy_g2"]
+#		cat["weight"] = np.logical_not(cat["pre_g1"].mask).astype("float")
+#		
+#		cat.keep_columns(["PSF_shape_angle_degrees", "e1_guess", "e2_guess", "gal_g1", "gal_g2", "weight"])
+#		cat = cat.filled(999.0)
+#		
+#		print "For testing, here are a few rows of your catalog:"
+#		print cat
+#		
+#		exportpath = os.path.join(self.workdir, "results.txt")
+#		
+#		cat.write(exportpath, format='ascii.commented_header', delimiter="\t")
+#			
+#		logger.info("Wrote %s" % exportpath)
+#
 
 #
 #	def writepredsbe(self, outdir=None):
