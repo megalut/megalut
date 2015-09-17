@@ -21,9 +21,9 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	simcat = megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, simcatpath))
 	
 	
-	print simcat
+	#print simcat
 	
-	exit()
+	#exit()
 	
 	
 	# And a bunch of the obs

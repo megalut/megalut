@@ -9,9 +9,32 @@ from megalut.tools.feature import Feature
 import logging
 logger = logging.getLogger(__name__)
 
+
+
+
+
+def tru_s(run, simparams):
+
+	simcatpath = "groupmeascat.pkl"
+	simcat = megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, simcatpath))
+	
+	
+	s1 = Feature("tru_s1", -0.06, 0.06)
+	s2 = Feature("tru_s2", -0.06, 0.06)
+	
+	
+	fig = plt.figure(figsize=(23, 11))
+		
+	ax = fig.add_subplot(2, 4, 1)
+	megalut.plot.scatter.scatter(ax, simcat, s1, s2)
+	
+	plt.show()
+
+
+
 def shearbias(run, filepath=None, rea="full"):
 
-	"""
+	
 	#cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "obsprecat.pkl"))
 	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat.pkl"))
 	
@@ -22,10 +45,8 @@ def shearbias(run, filepath=None, rea="full"):
 	
 	cat = megalut.tools.table.groupreshape(cat, bincolnames=["tru_s1", "tru_s2", "tru_mu"])
 	
-	megalut.tools.io.writepickle(cat, os.path.join(run.workmldir, "test.pkl"))
-	"""
-	
-	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "test.pkl"))
+	#megalut.tools.io.writepickle(cat, os.path.join(run.workmldir, "test.pkl"))
+	#cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "test.pkl"))
 	
 	
 	megalut.tools.table.addstats(cat, "pre_g1")

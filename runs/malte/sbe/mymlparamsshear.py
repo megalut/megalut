@@ -19,15 +19,26 @@ g2mlparams = megalut.learn.MLParams(name = "g2",
 	predlabels = ["pre_s2"])
 
 
+# What was working ok in Leiden (v2):
 
 # Tenbilac settings:
 
 shear1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear1", hidden_nodes = [7],
 	errfctname="msrb", valfrac=0.25, shuffle=True,
-	mbsize=50, mbloops=5, max_iterations=50, startidentity=True,
+	mbsize=50, mbloops=10, max_iterations=50, startidentity=True,
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+# hmm, fast convergence, then overfits. Trying a larger mbsize:
+
+shear2 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear2", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=100, mbloops=10, max_iterations=50, startidentity=True,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
 
+
+
+"""
 # Taking over a previous shape training:
 # Nope, did not work for some reason... maybe the very differnent normers ?
 shear1to = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear1to", hidden_nodes = [7],
@@ -39,26 +50,13 @@ shear1msb = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear1msb", hid
 	errfctname="msb", valfrac=0.25, shuffle=True,
 	mbsize=50, mbloops=5, max_iterations=50, startidentity=True,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
-
+"""
 
 # Combining this:
 
-"""
-trainparamslist = [
-	(g1mlparams, shear1)
-]
 
 trainparamslist = [
-	(g2mlparams, shear1)
-]
-"""
-"""
-trainparamslist = [
-	(g1mlparams, shear1msb)
-]
-"""
-trainparamslist = [
-	(g1mlparams, shear1),
-	(g2mlparams, shear1)
+	(g1mlparams, shear2),
+	(g2mlparams, shear2)
 ]
 

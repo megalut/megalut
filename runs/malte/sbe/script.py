@@ -1,6 +1,6 @@
 
-#import matplotlib
-#matplotlib.use("AGG")
+import matplotlib
+matplotlib.use("AGG")
 
 import megalut.sbe
 import mymeasfct
@@ -23,15 +23,19 @@ run = megalut.sbe.run.Run(
 	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN",
 	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_workdir",
 
-	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
-	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
+	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
+	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
-	ncpu = 1
+	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
+	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
+	
+	ncpu = 6
 	)
 
 
-simparams = mysimparams.SBE_v2()
-simparams.name = "SBE_v2_uni-s"
+simparams = mysimparams.SBE_v3_shapes()
+
+#simparams.name = "SBE_v2_uni-s"
 
 #simparams.set_high_sn() # This has only to be set when drawing simulations
 simparams.set_low_sn()
@@ -49,6 +53,10 @@ mlparams = mymlparamsshear.trainparamslist
 
 
 #run.makecats(onlyn=None, sbe_sample_scale=0.05)
+
+#run.makecats(onlyn=1, sbe_sample_scale=0.05)
+
+
 #run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsize of 200 seems exagerated!
 
 
@@ -58,19 +66,27 @@ mlparams = mymlparamsshear.trainparamslist
 #run.plotmixobscheck()
 #run.plotobscheck() # This ones saves one png per file... not needed.
 
-#run.drawsims(simparams, n=20, nc=20, ncat=1, nrea=1, stampsize=150)
+run.drawsims(simparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
+
 
 #run.drawsims(simparams, n=5000, nc=20, ncat=242, nrea=1, stampsize=150)
+
+#run.drawsims(simparams, n=100, nc=10, ncat=20, nrea=1, stampsize=150)
+
+#run.drawsims(simparams, n=1000, nc=10, ncat=500, nrea=1, stampsize=150)
 
 
 #run.drawsims(simparams, n=50, ncat=4, nrea=1000, stampsize=150)
 
 #run.meassims(simparams, mymeasfct.default, stampsize=150)
+
 #run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
 #myplots.simobscompa(run, simparams, filepath="simobs.pdf")
+
 #myplots.simobscompa(run, simparams, rea=-10)
 
+#mytests.tru_s(run, simparams)
 
 #run.prepbatches(simparams, bincolnames = ["tru_s1", "tru_s2"])
 
@@ -88,15 +104,26 @@ mlparams = mymlparamsshear.trainparamslist
 
 #run.predictsims(simparams, mlparams)
 
+#run.analysepredsims()
+
+
+#run.predictobs(mlparams)
+
+#run.analysepredobs()
+
+#run.writepredsbe()
+
+
+
 
 #mytests.shearbias(run)
 
 ### Test plots
 
 
-name = "shear1"
+#name = "shear1"
 
-run.predictsims(simparams, mlparams)
+#run.predictsims(simparams, mlparams)
 #myplots.predsims(run, filepath="predsims_{name}.png".format(name=name), rea=-100)
 #myplots.simbias(run, filepath="simbias_{name}.png".format(name=name), rea=-100)
 #myplots.simbias(run, rea=-100)
@@ -109,7 +136,7 @@ run.predictsims(simparams, mlparams)
 
 
 #mytests.newshearbias(run)
-mytests.groupshearbias(run, "groupshearbias.pdf")
+#mytests.groupshearbias(run, "groupshearbias.pdf")
 
 #myplots.sbebias(run, filepath="sbebias_{name}.png".format(name=name))
 

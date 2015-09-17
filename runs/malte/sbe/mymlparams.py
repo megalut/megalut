@@ -8,7 +8,7 @@ See the other file for shear-training !
 import megalut.learn
 
 # What to train:
-
+"""
 
 sizemlparams = megalut.learn.MLParams(name = "size",
 	features = ["adamom_sigma", "adamom_flux", "adamom_g1", "adamom_g2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
@@ -31,7 +31,13 @@ g2mlparams = megalut.learn.MLParams(name = "g2",
 	predlabels = ["pre_g2"])
 
 
+nh7mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=10, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
+
+"""
 
 # First run :
 """
@@ -67,12 +73,12 @@ nh7mb5noid = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5noid", h
 
 # Updates:
 
-
+"""
 nh7mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5", hidden_nodes = [7],
 	errfctname="msrb", valfrac=0.25, shuffle=True,
 	mbsize=500, mbloops=10, max_iterations=50, 
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
-"""
+	
 nh7mb5sige = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5sige", hidden_nodes = [7],
 	errfctname="msrb", valfrac=0.25, shuffle=True,
 	mbsize=500, mbloops=5, max_iterations=50, 
@@ -105,12 +111,13 @@ trainparamslist = [
 ]
 
 """
-
+"""
 trainparamslist = [
 	(g1mlparams, nh7mb5),
 	(g2mlparams, nh7mb5),
 	(sizemlparams, nh7mb5)
 ]
+"""
 """
 
 trainparamslist = [
