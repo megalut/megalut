@@ -30,7 +30,7 @@ g2wmlparams = megalut.learn.MLParams(name = "g2w",
 
 shear1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear1", hidden_nodes = [7],
 	errfctname="msbw", valfrac=0.25, shuffle=True,
-	mbsize=50, mbloops=10, max_iterations=50, gtol=1e-15, startidentity=False, normtargets=False,
+	mbsize=None, mbfrac=0.1, mbloops=10, max_iterations=50, gtol=1e-15, startidentity=False, normtargets=False,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
 

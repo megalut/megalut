@@ -26,7 +26,7 @@ sigmamlparams = megalut.learn.MLParams(name = "sigma",
 
 shape1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shape1", hidden_nodes = [7],
 	errfctname="msrb", valfrac=0.25, shuffle=True,
-	mbsize=1000, mbloops=3, max_iterations=50, startidentity=True, normtargets=True,
+	mbsize=1000, mbloops=6, max_iterations=50, startidentity=True, normtargets=True,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
 

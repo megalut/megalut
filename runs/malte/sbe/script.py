@@ -55,8 +55,8 @@ run = megalut.sbe.run.Run(
 
 # Simulations for shape training:
 
-"""
 
+"""
 simparams = mysimparams.SBE_v3_shapes()
 simparams.set_low_sn()
 
@@ -67,6 +67,7 @@ simparams.set_low_sn()
 mlparams = mymlparamsshape.trainparamslist
 
 run.traintenbilac(simparams, mlparams)
+
 
 
 #run.selfpredict(simparams, mlparams)
@@ -85,18 +86,16 @@ run.traintenbilac(simparams, mlparams)
 simparams = mysimparams.SBE_v3_shears()
 simparams.set_low_sn()
 
-"""
+
 #run.drawsims(simparams, n=2500, nc=50, ncat=500, nrea=1, stampsize=150)  # Orignial try, with random psfs for each rea
 #run.drawsims(simparams, n=400, nc=10, ncat=10, nrea=1, stampsize=150) # -> test
-run.drawsims(simparams, n=500, nc=10, ncat=1000, nrea=1, stampsize=150)
+#run.drawsims(simparams, n=500, nc=10, ncat=1000, nrea=1, stampsize=150)
 
 
-run.meassims(simparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
-"""
 
-simparams.name = "SBE_v3_shears_varipsfcases"
 
 # Up to here its independent from the other sims. Now the shapes are predicted.
 
@@ -113,7 +112,6 @@ simparams.name = "SBE_v3_shears_varipsfcases"
 mlparams = mymlparamsshear.trainparamslist
 
 run.traintenbilacshear(simparams, mlparams)
-
 
 
 
