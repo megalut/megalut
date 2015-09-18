@@ -140,11 +140,30 @@ class SBE_v3_shears(SBE_v3_shapes):
 		snc_type = 1 # 0 means no shape noise cancellation
 		
 		
+		# We also want a single PSF per case. So we define the PSF parameters here as well, the
+		# overwrite the "drawn" ones.
+		
+		sample_scale = 0.05
+	
+		# Size: the true SBE distribution ("LogNormal-Mean")
+		psf_stddev_arcsec_dist_params = (-1.07, 0.005)
+		tru_psf_sigma = (1.0/sample_scale) * 10 ** (np.random.randn() * psf_stddev_arcsec_dist_params[1] + psf_stddev_arcsec_dist_params[0]) * np.exp(-((psf_stddev_arcsec_dist_params[1] * np.log(10)) ** 2) / 2)
+		
+		# Ellipticty the true SBE distrib ("contracted Rayleigh")
+		psf_g = contracted_rayleigh(0.01, 0.9, 4)
+		psf_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+		(tru_psf_g1, tru_psf_g2) = (psf_g * np.cos(2.0 * psf_theta), psf_g * np.sin(2.0 * psf_theta))
+		
+		
+		
 		return {
 			"tru_s1" : tru_s1, # shear component 1, in "g" convention
 			"tru_s2" : tru_s2, # component 2
 			"tru_mu" : tru_mu, # magnification
 			"snc_type" : snc_type, # The type of shape noise cancellation. 0 means none.
+			"tru_psf_sigma" : tru_psf_sigma,
+			"tru_psf_g1" : tru_psf_g1,
+			"tru_psf_g2" : tru_psf_g2
 		}
 	
 	
