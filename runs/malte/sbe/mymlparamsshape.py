@@ -9,26 +9,31 @@ import megalut.learn
 
 
 g1mlparams = megalut.learn.MLParams(name = "g1",
-	features = ["adamom_g1", "adamom_g2", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
-	labels = ["tru_g1"],
-	predlabels = ["pre_g1"])
+	inputs = ["adamom_g1", "adamom_g2", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	targets = ["tru_g1"],
+	predictions = ["pre_g1"])
 
 g2mlparams = megalut.learn.MLParams(name = "g2",
-	features = ["adamom_g2", "adamom_g1", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
-	labels = ["tru_g2"],
-	predlabels = ["pre_g2"])
+	inputs = ["adamom_g2", "adamom_g1", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	targets = ["tru_g2"],
+	predictions = ["pre_g2"])
+
+sigmamlparams = megalut.learn.MLParams(name = "sigma",
+	inputs = ["adamom_sigma", "tru_psf_sigma", "adamom_flux", "adamom_g2", "adamom_g1", "tru_psf_g1", "tru_psf_g2"],
+	targets = ["tru_sigma"],
+	predictions = ["pre_sigma"])
 
 
-
-nh7mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5", hidden_nodes = [7],
+shape1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shape1", hidden_nodes = [7],
 	errfctname="msrb", valfrac=0.25, shuffle=True,
-	mbsize=500, mbloops=10, max_iterations=50, 
+	mbsize=1000, mbloops=3, max_iterations=50, startidentity=True, normtargets=True,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
 
 trainparamslist = [
-	(g1mlparams, nh7mb5),
-	(g2mlparams, nh7mb5)
+	(g1mlparams, shape1),
+	(g2mlparams, shape1),
+	(sigmamlparams, shape1)
 ]
 
 

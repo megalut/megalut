@@ -5,7 +5,7 @@ matplotlib.use("AGG")
 import megalut.sbe
 import mymeasfct
 import mysimparams
-import mymlparams
+import mymlparamsshape
 import mymlparamsshear
 import myplots
 import mytests
@@ -52,47 +52,54 @@ run = megalut.sbe.run.Run(
 
 
 #######
-"""
+
 # Simulations for shape training:
+
+
 
 simparams = mysimparams.SBE_v3_shapes()
 simparams.set_low_sn()
 
 #run.drawsims(simparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
+mlparams = mymlparamsshape.trainparamslist
+
+run.traintenbilac(simparams, mlparams)
 
 
+#run.selfpredict(simparams, mlparams)
+#myplots.simbias(run, rea=-10)
 
-run.meassims(simparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-
-
-running up to here
-
-#mlparams = mymlparamsshear.trainparamslist
+#run.othersimpredict(mysimparams.SBE_v3_shears(), mlparams)
 
 
-"""
 
 
 #######
 
+"""
 # Simulations for shear training:
 
 simparams = mysimparams.SBE_v3_shears()
 simparams.set_low_sn()
 
-run.drawsims(simparams, n=2500, nc=50, ncat=500, nrea=1, stampsize=150)
+#run.drawsims(simparams, n=2500, nc=50, ncat=500, nrea=1, stampsize=150)
 #run.drawsims(simparams, n=400, nc=10, ncat=10, nrea=1, stampsize=150) -> test
 
-run.meassims(simparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
-#done, I am here
+
+
+
+run.inspect(simparams)
 
 #mlparams = mymlparamsshear.trainparamslist
 
 
-
+"""
 
 
 

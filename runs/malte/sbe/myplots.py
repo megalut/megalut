@@ -184,14 +184,14 @@ def simbias(run, filepath=None, rea="full"):
 	
 	cat["g1err"] = np.transpose(cat["pre_g1"].T - cat["tru_g1"].T) # those T are the price to pay for having the rea as second index.
 	cat["g2err"] = np.transpose(cat["pre_g2"].T - cat["tru_g2"].T)
-	cat["sigmaerr"] = np.transpose(cat["pre_sigma"].T - cat["tru_sigma"].T)
+	#cat["sigmaerr"] = np.transpose(cat["pre_sigma"].T - cat["tru_sigma"].T)
 	
 	cat["adamomg1err"] = np.transpose(cat["adamom_g1"].T - cat["tru_g1"].T)
 	cat["adamomg2err"] = np.transpose(cat["adamom_g2"].T - cat["tru_g2"].T)
 	
 	g1err = Feature("g1err", -gerrrad, gerrrad, nicename="Bias on g1", rea=rea)
 	g2err = Feature("g2err",-gerrrad, gerrrad, nicename="Bias on g2", rea=rea)
-	sigmaerr = Feature("sigmaerr",-sigmaerrrad, sigmaerrrad, nicename="Bias on sigma", rea=rea)
+	#sigmaerr = Feature("sigmaerr",-sigmaerrrad, sigmaerrrad, nicename="Bias on sigma", rea=rea)
 	
 	
 	adamomg1err = Feature("adamomg1err", -5.0*gerrrad, 5.0*gerrrad, nicename="Bias on g1 (adamom only)", rea=rea)
@@ -212,8 +212,8 @@ def simbias(run, filepath=None, rea="full"):
 	fig = plt.figure(figsize=(21, 12))
 
 	
-	ax = fig.add_subplot(3, 4, 1)
-	megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, g1err, **hexbinkwargs)
+	#ax = fig.add_subplot(3, 4, 1)
+	#megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, g1err, **hexbinkwargs)
 
 	ax = fig.add_subplot(3, 4, 2)
 	megalut.plot.hexbin.hexbin(ax, cat, snr, g1, g1err, **hexbinkwargs)
@@ -243,15 +243,15 @@ def simbias(run, filepath=None, rea="full"):
 	megalut.plot.hexbin.hexbin(ax, cat, g1, g2, **counthexbinkwargs)
 	#megalut.plot.scatter.scatter(ax, cat, snr, sigma, sidehists=True, ms=2)
 	
-	ax = fig.add_subplot(3, 4, 10)
-	megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, **counthexbinkwargs)
+	#ax = fig.add_subplot(3, 4, 10)
+	#megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, **counthexbinkwargs)
 	
 	
 	ax = fig.add_subplot(3, 4, 11)
 	megalut.plot.hexbin.hexbin(ax, cat, g1, g2, adamomg1err, **hexbinkwargs)
 	
-	ax = fig.add_subplot(3, 4, 12)
-	megalut.plot.hexbin.hexbin(ax, cat, sigma, snr, sigmaerr, **hexbinkwargs)
+	#ax = fig.add_subplot(3, 4, 12)
+	#megalut.plot.hexbin.hexbin(ax, cat, sigma, snr, sigmaerr, **hexbinkwargs)
 	
 	"""
 	psfselector = megalut.tools.table.Selector("Particular PSF",
