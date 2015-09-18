@@ -7,6 +7,37 @@ This is for the shear-training !
 import megalut.learn
 
 # What to train:
+"""
+
+put normtargets to False !!
+
+
+g1wmlparams = megalut.learn.MLParams(name = "g1w",
+	features = ["adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	labels = ["tru_s1"],
+	predlabels = ["pre_g1_w"])
+
+g2wmlparams = megalut.learn.MLParams(name = "g2w",
+	features = ["adamom_g2", "adamom_g1", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	labels = ["tru_s2"],
+	predlabels = ["pre_g2_w"])
+
+
+
+
+
+trainparamslist = [
+	(g1wmlparams, shear2),
+	(g2wmlparams, shear2)
+]
+
+"""
+
+
+
+
+# What was working ok in Leiden (v2):
+"""
 
 g1mlparams = megalut.learn.MLParams(name = "g1",
 	features = ["adamom_g1", "adamom_g2", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
@@ -19,7 +50,9 @@ g2mlparams = megalut.learn.MLParams(name = "g2",
 	predlabels = ["pre_s2"])
 
 
-# What was working ok in Leiden (v2):
+
+
+
 
 # Tenbilac settings:
 
@@ -35,7 +68,7 @@ shear2 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear2", hidden_no
 	mbsize=100, mbloops=10, max_iterations=50, startidentity=True,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
-
+"""
 
 
 """
@@ -52,11 +85,4 @@ shear1msb = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear1msb", hid
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 """
 
-# Combining this:
-
-
-trainparamslist = [
-	(g1mlparams, shear2),
-	(g2mlparams, shear2)
-]
 

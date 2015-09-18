@@ -7,6 +7,32 @@ See the other file for shear-training !
 
 import megalut.learn
 
+
+g1mlparams = megalut.learn.MLParams(name = "g1",
+	features = ["adamom_g1", "adamom_g2", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	labels = ["tru_g1"],
+	predlabels = ["pre_g1"])
+
+g2mlparams = megalut.learn.MLParams(name = "g2",
+	features = ["adamom_g2", "adamom_g1", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"],
+	labels = ["tru_g2"],
+	predlabels = ["pre_g2"])
+
+
+
+nh7mb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "nh7mb5", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=500, mbloops=10, max_iterations=50, 
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+
+trainparamslist = [
+	(g1mlparams, nh7mb5),
+	(g2mlparams, nh7mb5)
+]
+
+
+
 # What to train:
 """
 

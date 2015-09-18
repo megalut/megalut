@@ -33,21 +33,6 @@ run = megalut.sbe.run.Run(
 	)
 
 
-simparams = mysimparams.SBE_v3_shapes()
-
-#simparams.name = "SBE_v2_uni-s"
-
-#simparams.set_high_sn() # This has only to be set when drawing simulations
-simparams.set_low_sn()
-
-#simparams.name = "SBE_tenbilac"
-#simparams.name = "SBE_tenbilac_1000"
-#simparams.name = "SBE_tenbilac_test"
-
-
-mlparams = mymlparamsshear.trainparamslist
-
-
 
 ####### Steps #######
 
@@ -55,7 +40,6 @@ mlparams = mymlparamsshear.trainparamslist
 #run.makecats(onlyn=None, sbe_sample_scale=0.05)
 
 #run.makecats(onlyn=1, sbe_sample_scale=0.05)
-
 
 #run.measobs(mymeasfct.default, stampsize=150, skipdone=False) # The SBE stampsize of 200 seems exagerated!
 
@@ -66,7 +50,54 @@ mlparams = mymlparamsshear.trainparamslist
 #run.plotmixobscheck()
 #run.plotobscheck() # This ones saves one png per file... not needed.
 
-run.drawsims(simparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
+
+#######
+"""
+# Simulations for shape training:
+
+simparams = mysimparams.SBE_v3_shapes()
+simparams.set_low_sn()
+
+#run.drawsims(simparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
+
+
+
+run.meassims(simparams, mymeasfct.default, stampsize=150)
+run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
+
+running up to here
+
+#mlparams = mymlparamsshear.trainparamslist
+
+
+"""
+
+
+#######
+
+# Simulations for shear training:
+
+simparams = mysimparams.SBE_v3_shears()
+simparams.set_low_sn()
+
+run.drawsims(simparams, n=2500, nc=50, ncat=500, nrea=1, stampsize=150)
+#run.drawsims(simparams, n=400, nc=10, ncat=10, nrea=1, stampsize=150) -> test
+
+run.meassims(simparams, mymeasfct.default, stampsize=150)
+run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
+#done, I am here
+
+#mlparams = mymlparamsshear.trainparamslist
+
+
+
+
+
+
+
+
 
 
 #run.drawsims(simparams, n=5000, nc=20, ncat=242, nrea=1, stampsize=150)
