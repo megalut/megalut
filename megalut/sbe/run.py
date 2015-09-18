@@ -228,20 +228,20 @@ class Run():
 		
 
 
-	def avgsimmeas(self, simparams, groupcols, removecols):
-		"""
-		Averages the measurements on the sims accross the different realizations, and writes
-		a single training catalog for the ML.
-		"""	
-	
-		avgmeascat = megalut.meas.avg.onsims(self.worksimdir, simparams,
-			groupcols=groupcols,
-			removecols=removecols,
-			removereas=False,
-			keepfirstrea=True
-		)
-
-		megalut.tools.io.writepickle(avgmeascat, os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
+#	def avgsimmeas(self, simparams, groupcols, removecols):
+#		"""
+#		Averages the measurements on the sims accross the different realizations, and writes
+#		a single training catalog for the ML.
+#		"""	
+#	
+#		avgmeascat = megalut.meas.avg.onsims(self.worksimdir, simparams,
+#			groupcols=groupcols,
+#			removecols=removecols,
+#			removereas=False,
+#			keepfirstrea=True
+#		)
+#
+#		megalut.tools.io.writepickle(avgmeascat, os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
 
 	def groupsimmeas(self, simparams, groupcols, removecols):
 		"""
@@ -257,16 +257,80 @@ class Run():
 		megalut.tools.io.writepickle(groupmeascat, os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 
 
+
+	def traintenbilac(self, simparams, trainparamslist):
+		"""
+		
+		"""
+		
+		# We load the training catalog
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		
+		#print simcat.colnames
+		#print simcat
+		#print simcat.meta
+		
+		# We reject crap ones
+		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1) # How many hsm sucesses per case
+		simcat = simcat[simcat["goodfortrain"] > float(simcat.meta["ngroup"])/2.0] # keeping only if half of the reas could be measured
+		logger.info("Keeping %i galaxies for training" % (len(simcat)))
+		
+		
+		#simcat = simcat[:100]
+		#print "only training on 1000 gals hack"
+		
+		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
+		
+		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
+
+
+
+	def selfpredict(self, simparams, trainparamslist):
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		
+		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)		
+		
+		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat.pkl"))
+
+
+
+	def othersimpredict(self, othersimparams, trainparamslist):
+		
+
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, othersimparams.name, "groupmeascat.pkl"))		
+		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)
+
+		megalut.tools.io.writepickle(cat, os.path.join(self.workdir, "shearmeascat.pkl"))
+
+
+
+	def inspect(self, simparams=None):
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+
+		
+		#cat = megalut.tools.io.readpickle(os.path.join(self.workdir, "shearmeascat.pkl"))
+
+		print cat.colnames
+		print cat["tru_flux", "tru_g1", "tru_psf_g1", "tru_s1"]
+		
+		print cat.meta
+		
+
+
 	def prepbatches(self, simparams, bincolnames):
 		"""
 		Reshapes the simmeas data in batches with identical tru_s, ready for tenbilac shear-style training.
 		
 		"""
+		cat = megalut.tools.io.readpickle(os.path.join(self.workdir, "shearmeascat.pkl"))
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
-		logger.info("Preparing batches for catlog of length {}".format(len(cat)))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
-		"""
+		logger.info("Preparing batches for catalog of length {}".format(len(cat)))
+		
+		""" # This code was usefull to "split" catalogs into even more batches
 		# To make nice batches, we will add a temporary helper column to the catalog.
 		n = 5000
 		nsnc = 8
@@ -305,49 +369,27 @@ class Run():
 		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 
 
-	def traintenbilac(self, simparams, trainparamslist):
-		"""
-		
-		"""
-		
-		# We load the training catalog
-		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
-		
-		# We reject crap ones
-		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1)
-		simcat = simcat[simcat["goodfortrain"] > float(simcat.meta["ngroup"])/2.0]
-		logger.info("Keeping %i galaxies for training" % (len(simcat)))
-		
-		
-		#simcat = simcat[:100]
-		#print "only training on 1000 gals hack"
-		
-		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
-		
-		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
-
-
-
-	def train(self, simparams, trainparamslist, prefix='adamom_'):
-		"""
-		
-		"""
-		
-		# We load the training catalog
-		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
-		
-		# We reject crap ones
-		ngroupstats = simcat.meta["ngroupstats"]
-		simcat = simcat[simcat[prefix+"flux_n"] > float(ngroupstats)/2.0]
-		logger.info("Keeping %i galaxies for training" % (len(simcat)))
-		
-		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
-		#plot.simcheck(simcat)
-		
-		#print simcat.colnames
-		#exit()
-		
-		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
+#
+#	def train(self, simparams, trainparamslist, prefix='adamom_'):
+#		"""
+#		
+#		"""
+#		
+#		# We load the training catalog
+#		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "avgmeascat.pkl"))
+#		
+#		# We reject crap ones
+#		ngroupstats = simcat.meta["ngroupstats"]
+#		simcat = simcat[simcat[prefix+"flux_n"] > float(ngroupstats)/2.0]
+#		logger.info("Keeping %i galaxies for training" % (len(simcat)))
+#		
+#		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
+#		#plot.simcheck(simcat)
+#		
+#		#print simcat.colnames
+#		#exit()
+#		
+#		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 			
 		
 	
