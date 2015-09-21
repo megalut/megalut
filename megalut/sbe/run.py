@@ -279,7 +279,7 @@ class Run():
 		#simcat = simcat[:100]
 		#print "only training on 1000 gals hack"
 		
-		megalut.tools.io.writepickle(simcat, os.path.join(self.workmldir, "traincat.pkl"))
+		megalut.tools.io.writepickle(simcat, os.path.join(self.worksimdir, simparams.name, "traincat.pkl"))
 		
 		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 
@@ -301,34 +301,30 @@ class Run():
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, othersimparams.name, "groupmeascat.pkl"))		
 		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)
 
-		megalut.tools.io.writepickle(cat, os.path.join(self.workdir, "shearmeascat.pkl"))
+		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, othersimparams.name, "groupmeascat_predshapes.pkl"))
 
 
 
 	def inspect(self, simparams=None):
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
-
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		
-		#cat = megalut.tools.io.readpickle(os.path.join(self.workdir, "shearmeascat.pkl"))
-
 		print cat.colnames
 		print cat["tru_flux", "tru_g1", "tru_psf_g1", "tru_s1"]
-		
 		print cat.meta
 		
 
 
-	def prepbatches(self, simparams, bincolnames):
+	def prepcases(self, simparams, bincolnames):
 		"""
-		Reshapes the simmeas data in batches with identical tru_s, ready for tenbilac shear-style training.
+		Reshapes the simmeas data in rows of different cases, ready for tenbilac shear-style training.
 		
 		"""
-		cat = megalut.tools.io.readpickle(os.path.join(self.workdir, "shearmeascat.pkl"))
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
-		logger.info("Preparing batches for catalog of length {}".format(len(cat)))
+		logger.info("Preparing cases for catalog of length {}".format(len(cat)))
 		
 		""" # This code was usefull to "split" catalogs into even more batches
 		# To make nice batches, we will add a temporary helper column to the catalog.
@@ -355,7 +351,8 @@ class Run():
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames = bincolnames)
 		
 		
-		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_binreshape.pkl"))
+		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+
 
 
 	def traintenbilacshear(self, simparams, trainparamslist):
@@ -364,7 +361,7 @@ class Run():
 		"""
 		
 		# We load the training catalog
-		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_binreshape.pkl"))
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
 			
 		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
 

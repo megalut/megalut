@@ -30,6 +30,17 @@ def loadimg(imgfilepath):
     
     return img
 
+
+def getheader(imgfilepath, **kwargs):
+	"""
+	Uses GalSim to quickly load the header
+	"""
+	logger.info("Getting FITS header from %s..." % (os.path.basename(imgfilepath)))
+	header = galsim.FitsHeader(imgfilepath, **kwargs)
+	return header
+
+
+
 def getstamp(x, y, img, stampsize, getfrom=None):
     """
     I prepare a image stamp "centered" at position (x, y) of your input image.
