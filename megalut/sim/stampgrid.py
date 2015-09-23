@@ -174,7 +174,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	
 	if "loadpsfimg" in todo:
 		psfimg = catalog.meta["psf"].load() # Loading the actual GalSim Image
-	
+		psfinfo = catalog.meta["psf"]
+
 	if "tru_pixel" in todo:
 		pix = galsim.Pixel(catalog["tru_pixel"][0]) # We have checked in checkcat that all values are equal.
 		
@@ -326,7 +327,7 @@ def checkcat(cat):
 	
 	if "psf" in cat.meta: # The user provided some PSFs in form of stamps
 		logger.info("I will use provided PSF stamps (from '%s')" % (str(cat.meta["psf"])))
-		cat.meta["psf"].checkcolumns(catalog) # Check that the ImageInfo object matches to the catalog.
+		cat.meta["psf"].checkcolumns(cat) # Check that the ImageInfo object matches to the catalog.
 		
 		todo.append("loadpsfimg")
 				
