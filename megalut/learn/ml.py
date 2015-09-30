@@ -71,7 +71,7 @@ class MLParams:
 		txt = "ML parameters \"%s\":\n" % (self.name) + \
 			"Inputs:    %s\n" % (", ".join(self.inputs)) + \
 			"Targets:      %s\n" % (", ".join(self.targets)) + \
-			"Predictions: %s" % (", ".join(self.predictions)) + \
+			"Predictions: %s\n" % (", ".join(self.predictions)) + \
 			"Auxinputs: %s" % (", ".join(self.auxinputs))
 		return txt
 
@@ -195,7 +195,7 @@ class ML:
 			# Change this so that it also works for masked targets? No, probably we never need this.
 			for colname in self.mlparams.targets:
 				if not np.all(np.logical_not(np.ma.getmaskarray(catalog[colname]))): # No element should be masked.
-					raise RuntimeError("targets should not be masked")
+					raise RuntimeError("Targets should not be masked, but '{}' is!".format(colname))
 					
 			targetsdata = np.column_stack([np.array(catalog[colname]) for colname in \
 				self.mlparams.targets]).transpose()
