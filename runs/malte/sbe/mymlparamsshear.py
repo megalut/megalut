@@ -58,13 +58,29 @@ g2wmlparams3 = megalut.learn.MLParams(name = "g2w3",
 	predictions = ["pre_g2_w3"])
 
 
+# v4 : making it easier again:
+
+g1wmlparams4 = megalut.learn.MLParams(name = "g1w4",
+	inputs = ["adamom_flux", "adamom_sigma"],
+	auxinputs = ["pre_g1"],
+	targets = ["tru_s1"],
+	predictions = ["pre_g1_w4"])
+
+g2wmlparams4 = megalut.learn.MLParams(name = "g2w4",
+	inputs = ["adamom_flux", "adamom_sigma"],
+	auxinputs = ["pre_g2"],
+	targets = ["tru_s2"],
+	predictions = ["pre_g2_w3"])
+
+
 shear1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shear1", hidden_nodes = [7],
 	errfctname="msbw", valfrac=0.25, shuffle=True,
 	mbsize=None, mbfrac=0.1, mbloops=5, max_iterations=50, gtol=1e-15, startidentity=False, normtargets=False,
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=False, autoplot=True)
 
 trainparamslist = [
-	(g1wmlparams3, shear1),
+	(g1wmlparams4, shear1),
+	(g2wmlparams4, shear1),
 ]
 
 

@@ -29,7 +29,7 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
 	
-	ncpu = 1
+	ncpu = 4
 	)
 
 
@@ -101,12 +101,13 @@ shearmlparams = mymlparamsshear.trainparamslist
 
 #myplots.shearsimbias(run, shearsimparams, rea="full") # -> no_weights_bias # OK, now we predict the weights.
 
-#run.traintenbilacshear(shearsimparams, shearmlparams)
+run.traintenbilacshear(shearsimparams, shearmlparams)
 
 
 #run.selfpredictshear(shearsimparams, shearmlparams)
 
-myplots.shearsimbias2(run, rea="full")
+#myplots.shearsimbias2(run, rea="full")
+#myplots.shearsimbias2(run, rea=-10)
 
 
 ######## Predicting and anylysing sbe
