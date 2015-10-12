@@ -33,8 +33,19 @@ run = megalut.sbe.run.Run(
 	)
 
 
+shapesimparams = mysimparams.SBE_v3_shapes()
+shapesimparams.set_low_sn()
 
-####### Steps #######
+shapemlparams = mymlparamsshape.trainparamslist
+
+shearsimparams = mysimparams.SBE_v3_shears()
+shearsimparams.set_low_sn()
+
+shearsimparams.name = "SBE_v3_shears_morerea"
+
+shearmlparams = mymlparamsshear.trainparamslist
+
+####### Steps to measure SBE
 
 
 #run.makecats(onlyn=None, sbe_sample_scale=0.05)
@@ -51,76 +62,64 @@ run = megalut.sbe.run.Run(
 #run.plotobscheck() # This ones saves one png per file... not needed.
 
 
-#######
-
-# Simulations for shape training:
+######## Simulations and shape training:
 
 
-"""
-simparams = mysimparams.SBE_v3_shapes()
-simparams.set_low_sn()
+#run.drawsims(shapesimparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
+#run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 
-#run.drawsims(simparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
-#run.meassims(simparams, mymeasfct.default, stampsize=150)
-#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.traintenbilac(shapesimparams, shapemlparams)
 
-mlparams = mymlparamsshape.trainparamslist
-
-run.traintenbilac(simparams, mlparams)
+#run.selfpredict(shapesimparams, shapemlparams)
+#myplots.shapesimbias(run, rea=-10)
+#myplots.shapesimbias2(run, rea=-10)
 
 
-
-#run.selfpredict(simparams, mlparams)
-#myplots.simbias(run, rea=-10)
-
-#run.othersimpredict(mysimparams.SBE_v3_shears(), mlparams)
-
-"""
+######## Simulations and shear training:
 
 
-#######
+#run.drawsims(shearsimparams, n=2500, nc=50, ncat=500, nrea=1, stampsize=150)  # Orignial try, with random psfs for each rea
+#run.drawsims(shearsimparams, n=400, nc=10, ncat=10, nrea=1, stampsize=150) # -> test
+#run.drawsims(shearsimparams, n=500, nc=10, ncat=1000, nrea=1, stampsize=150) # done
 
 
-# Simulations for shear training:
-
-simparams = mysimparams.SBE_v3_shears()
-simparams.set_low_sn()
-
-
-#run.drawsims(simparams, n=2500, nc=50, ncat=500, nrea=1, stampsize=150)  # Orignial try, with random psfs for each rea
-#run.drawsims(simparams, n=400, nc=10, ncat=10, nrea=1, stampsize=150) # -> test
-#run.drawsims(simparams, n=500, nc=10, ncat=1000, nrea=1, stampsize=150)
-
-
-#run.meassims(simparams, mymeasfct.default, stampsize=150)
-#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.drawsims(shearsimparams, n=5000, nc=25, ncat=500, nrea=1, stampsize=150) # this is "_morerea"
 
 
 
-# Up to here its independent from the other sims. Now the shapes are predicted.
+#run.meassims(shearsimparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(shearsimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
+
+# Up to here its independent from the other sims. Now you have to predict the shapes before going on, using the other sims.
+#run.othersimpredict(shearsimparams, shapemlparams)
+
+
+#run.inspect(shearsimparams)
+#run.prepcases(shearsimparams, bincolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
+
+#myplots.shearsimbias(run, shearsimparams, rea="full") # -> no_weights_bias # OK, now we predict the weights.
+
+#run.traintenbilacshear(shearsimparams, shearmlparams)
+
+
+#run.selfpredictshear(shearsimparams, shearmlparams)
+
+myplots.shearsimbias2(run, rea="full")
+
+
+######## Predicting and anylysing sbe
+
+#run.predictsbe(shapemlparams, shearmlparams)
+
+#run.analysepredsbe()
 
 
 
-#run.inspect(simparams)
-#run.prepbatches(simparams, bincolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
 
-
-simparams.name = "SBE_v3_shears_varipsfcases"
+#simparams.name = "SBE_v3_shears_varipsfcases"
 #run.prepbatches(simparams, bincolnames = ["tru_s1", "tru_s2"])
-
-
-mlparams = mymlparamsshear.trainparamslist
-
-run.traintenbilacshear(simparams, mlparams)
-
-
-
-
-
-
-
-
-
 
 
 

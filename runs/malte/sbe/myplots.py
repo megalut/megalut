@@ -91,7 +91,7 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	
 	
 
-def predsims(run, filepath=None, rea="full"):
+def shapesimbias(run, filepath=None, rea="full"):
 	"""
 	Simple comparision between predictions and truth, based on the training data.
 	"""
@@ -108,7 +108,7 @@ def predsims(run, filepath=None, rea="full"):
 	pre_g1 = Feature("pre_g1", -rg, rg, rea=rea)
 	pre_g2 = Feature("pre_g2", -rg, rg, rea=rea)
 	pre_sigma = Feature("pre_sigma", 0, 20, rea=rea)
-	pre_flux = Feature("pre_flux", rea=rea)
+	#pre_flux = Feature("pre_flux", rea=rea)
 	
 	snr = Feature("snr", 5, 40, rea=rea)
 	
@@ -161,7 +161,7 @@ def predsims(run, filepath=None, rea="full"):
 
 
 
-def simbias(run, filepath=None, rea="full"):
+def shapesimbias2(run, filepath=None, rea="full"):
 
 	
 	#cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "obsprecat.pkl"))
@@ -184,14 +184,14 @@ def simbias(run, filepath=None, rea="full"):
 	
 	cat["g1err"] = np.transpose(cat["pre_g1"].T - cat["tru_g1"].T) # those T are the price to pay for having the rea as second index.
 	cat["g2err"] = np.transpose(cat["pre_g2"].T - cat["tru_g2"].T)
-	#cat["sigmaerr"] = np.transpose(cat["pre_sigma"].T - cat["tru_sigma"].T)
+	cat["sigmaerr"] = np.transpose(cat["pre_sigma"].T - cat["tru_sigma"].T)
 	
 	cat["adamomg1err"] = np.transpose(cat["adamom_g1"].T - cat["tru_g1"].T)
 	cat["adamomg2err"] = np.transpose(cat["adamom_g2"].T - cat["tru_g2"].T)
 	
 	g1err = Feature("g1err", -gerrrad, gerrrad, nicename="Bias on g1", rea=rea)
 	g2err = Feature("g2err",-gerrrad, gerrrad, nicename="Bias on g2", rea=rea)
-	#sigmaerr = Feature("sigmaerr",-sigmaerrrad, sigmaerrrad, nicename="Bias on sigma", rea=rea)
+	sigmaerr = Feature("sigmaerr",-sigmaerrrad, sigmaerrrad, nicename="Bias on sigma", rea=rea)
 	
 	
 	adamomg1err = Feature("adamomg1err", -5.0*gerrrad, 5.0*gerrrad, nicename="Bias on g1 (adamom only)", rea=rea)
@@ -212,8 +212,8 @@ def simbias(run, filepath=None, rea="full"):
 	fig = plt.figure(figsize=(21, 12))
 
 	
-	#ax = fig.add_subplot(3, 4, 1)
-	#megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, g1err, **hexbinkwargs)
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, g1err, **hexbinkwargs)
 
 	ax = fig.add_subplot(3, 4, 2)
 	megalut.plot.hexbin.hexbin(ax, cat, snr, g1, g1err, **hexbinkwargs)
@@ -243,15 +243,15 @@ def simbias(run, filepath=None, rea="full"):
 	megalut.plot.hexbin.hexbin(ax, cat, g1, g2, **counthexbinkwargs)
 	#megalut.plot.scatter.scatter(ax, cat, snr, sigma, sidehists=True, ms=2)
 	
-	#ax = fig.add_subplot(3, 4, 10)
-	#megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, **counthexbinkwargs)
+	ax = fig.add_subplot(3, 4, 10)
+	megalut.plot.hexbin.hexbin(ax, cat, flux, sigma, **counthexbinkwargs)
 	
 	
 	ax = fig.add_subplot(3, 4, 11)
 	megalut.plot.hexbin.hexbin(ax, cat, g1, g2, adamomg1err, **hexbinkwargs)
 	
-	#ax = fig.add_subplot(3, 4, 12)
-	#megalut.plot.hexbin.hexbin(ax, cat, sigma, snr, sigmaerr, **hexbinkwargs)
+	ax = fig.add_subplot(3, 4, 12)
+	megalut.plot.hexbin.hexbin(ax, cat, sigma, snr, sigmaerr, **hexbinkwargs)
 	
 	"""
 	psfselector = megalut.tools.table.Selector("Particular PSF",
@@ -278,6 +278,280 @@ def simbias(run, filepath=None, rea="full"):
 	else:
 		plt.show()
 	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+
+
+def shearsimbias(run, simparams, filepath=None, rea="full"):
+	"""
+	Compares predicted *shapes* with true shear (i.e., before any weight correction).
+	"""
+
+	cat =  megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+	
+	#print cat.colnames
+	#print cat
+	#print cat.meta
+	
+	rs = 0.03
+	rg = 0.7
+	cat["pre_s1"] = cat["pre_g1"]
+	cat["pre_s2"] = cat["pre_g2"]
+
+	pre_s1 = Feature("pre_s1", -rg, rg, rea=rea)
+	pre_s2 = Feature("pre_s2", -rg, rg, rea=rea)
+	
+	tru_s1 = Feature("tru_s1", -rs, rs)
+	tru_s2 = Feature("tru_s2", -rs, rs)
+	tru_psf_g1 = Feature("tru_psf_g1", -rs, rs)
+	tru_psf_g2 = Feature("tru_psf_g2", -rs, rs)
+	
+	megalut.tools.table.addstats(cat, "pre_s1")
+	megalut.tools.table.addstats(cat, "pre_s2")
+	
+	snr = Feature("snr", 5, 40, rea=rea)
+	
+	
+	cat["bias_s1"] = cat["pre_s1_mean"] - cat["tru_s1"]
+	cat["bias_s2"] = cat["pre_s2_mean"] - cat["tru_s2"]
+	
+	cat["bias_s1_err"] = cat["pre_s1_std"] / cat["pre_s1_n"]
+	cat["bias_s2_err"] = cat["pre_s2_std"] / cat["pre_s2_n"]
+	
+		
+	bias_s1 = Feature("bias_s1", -0.003, 0.003, errcolname="bias_s1_err")
+	bias_s2 = Feature("bias_s2", -0.003, 0.003, errcolname="bias_s2_err")
+	bias_s1_err = Feature("bias_s1_err")
+	bias_s2_err = Feature("bias_s2_err")
+	pre_s1_mean = Feature("pre_s1_mean", errcolname="bias_s1_err")
+	pre_s2_mean = Feature("pre_s2_mean", errcolname="bias_s2_err")
+
+	
+	fig = plt.figure(figsize=(22, 13))
+	cmap = matplotlib.cm.get_cmap("rainbow")
+	
+	sckws = {"cmap":cmap}
+	idkws={"color":"black", "lw":2}
+	
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, tru_psf_g1, s=10, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, tru_psf_g2, s=10, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	
+	ax = fig.add_subplot(3, 4, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s1, s=10, **sckws)
+
+	ax = fig.add_subplot(3, 4, 6)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s2, s=10, **sckws)
+	
+	ax = fig.add_subplot(3, 4, 7)
+	megalut.plot.scatter.scatter(ax, cat, tru_psf_g1, tru_psf_g2, bias_s1, s=10, **sckws)
+
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, cat, tru_psf_g1, tru_psf_g2, bias_s2, s=10, **sckws)
+	
+
+	"""
+	ax = fig.add_subplot(2, 3, 4)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	ax = fig.add_subplot(2, 3, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+	"""
+
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+
+def shearsimbias2(run, filepath=None, rea="full"):
+	"""
+	Compares weighted predicted shapes with true shear, what should work.
+	"""
+
+	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat_shear.pkl"))
+	
+	print cat.colnames
+	for w in ["pre_g1_w2", "pre_g2_w2"]:
+	#for w in ["pre_g1_w1", "pre_g2_w1", "pre_g1_w2", "pre_g2_w2"]:
+		cat[w] = 10**cat[w]
+	
+	rs = 0.03
+	rg = 0.7
+
+	#pre_g1_w1 = Feature("pre_g1_w1", rea=rea)
+	#pre_g2_w1 = Feature("pre_g2_w1", rea=rea)
+	pre_g1_w2 = Feature("pre_g1_w2", rea=rea)
+	pre_g2_w2 = Feature("pre_g2_w2", rea=rea)
+	
+	flux = Feature("adamom_flux", rea=rea)
+	sigma = Feature("adamom_sigma", rea=rea)
+	
+	cat["pre_s1"] = cat["pre_g1"] * cat["pre_g1_w2"]
+	cat["pre_s2"] = cat["pre_g2"] * cat["pre_g2_w2"]
+	
+	megalut.tools.table.addstats(cat, "pre_s1")
+	megalut.tools.table.addstats(cat, "pre_s2")
+	megalut.tools.table.addstats(cat, "pre_g1_w2")
+	megalut.tools.table.addstats(cat, "pre_g2_w2")
+	#megalut.tools.table.addstats(cat, "pre_g1_w1")
+	#megalut.tools.table.addstats(cat, "pre_g2_w1")
+	
+	cat["pre_s1_nmean"] = cat["pre_s1_mean"] / cat["pre_g1_w2_mean"]
+	cat["pre_s2_nmean"] = cat["pre_s2_mean"] / cat["pre_g2_w2_mean"]
+	
+
+	pre_s1 = Feature("pre_s1_nmean", -rs, rs, rea=rea)
+	pre_s2 = Feature("pre_s2_nmean", -rs, rs, rea=rea)
+	
+	tru_s1 = Feature("tru_s1", -rs, rs)
+	tru_s2 = Feature("tru_s2", -rs, rs)
+	
+	snr = Feature("snr", 5, 40, rea=rea)
+	
+	
+	fig = plt.figure(figsize=(22, 13))
+	cmap = matplotlib.cm.get_cmap("rainbow")
+	
+	sckws={"cmap":cmap}
+	idkws={"color":"black", "lw":2}
+	
+	
+	#ax = fig.add_subplot(3, 4, 1)
+	#megalut.plot.scatter.scatter(ax, cat, flux, sigma, pre_g1_w1)
+	#ax = fig.add_subplot(3, 4, 2)
+	#megalut.plot.scatter.scatter(ax, cat, flux, sigma, pre_g2_w1)
+	ax = fig.add_subplot(3, 4, 3)
+	megalut.plot.scatter.scatter(ax, cat, flux, sigma, pre_g1_w2)
+	ax = fig.add_subplot(3, 4, 4)
+	megalut.plot.scatter.scatter(ax, cat, flux, sigma, pre_g2_w2)
+	
+	
+	ax = fig.add_subplot(3, 4, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1, metrics=True, showidline=True, idlinekwargs=idkws)
+	ax = fig.add_subplot(3, 4, 6)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2, metrics=True, showidline=True, idlinekwargs=idkws)
+	
+	"""
+	ax = fig.add_subplot(3, 4, 7)
+	megalut.plot.scatter.scatter(ax, cat, pre_g1_w1, pre_g2_w1, metrics=True, showidline=True, idlinekwargs=idkws)
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, cat, pre_g1_w2, pre_g2_w2, metrics=True, showidline=True, idlinekwargs=idkws)
+	"""
+
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+	
+	exit()
+	
+	megalut.tools.table.addstats(cat, "pre_s1")
+	
+	rs = 0.03
+	rg = 0.7
+
+	pre_s1 = Feature("pre_s1", -rg, rg, rea=rea)
+	pre_s2 = Feature("pre_s2", -rg, rg, rea=rea)
+	
+	tru_s1 = Feature("tru_s1", -rs, rs)
+	tru_s2 = Feature("tru_s2", -rs, rs)
+	tru_psf_g1 = Feature("tru_psf_g1", -rs, rs)
+	tru_psf_g2 = Feature("tru_psf_g2", -rs, rs)
+	
+	megalut.tools.table.addstats(cat, "pre_s1")
+	megalut.tools.table.addstats(cat, "pre_s2")
+	
+	snr = Feature("snr", 5, 40, rea=rea)
+	
+	
+	cat["bias_s1"] = cat["pre_s1_mean"] - cat["tru_s1"]
+	cat["bias_s2"] = cat["pre_s2_mean"] - cat["tru_s2"]
+	
+	cat["bias_s1_err"] = cat["pre_s1_std"] / cat["pre_s1_n"]
+	cat["bias_s2_err"] = cat["pre_s2_std"] / cat["pre_s2_n"]
+	
+		
+	bias_s1 = Feature("bias_s1", -0.003, 0.003, errcolname="bias_s1_err")
+	bias_s2 = Feature("bias_s2", -0.003, 0.003, errcolname="bias_s2_err")
+	bias_s1_err = Feature("bias_s1_err")
+	bias_s2_err = Feature("bias_s2_err")
+	pre_s1_mean = Feature("pre_s1_mean", errcolname="bias_s1_err")
+	pre_s2_mean = Feature("pre_s2_mean", errcolname="bias_s2_err")
+
+	
+	fig = plt.figure(figsize=(22, 13))
+	cmap = matplotlib.cm.get_cmap("rainbow")
+	
+	sckws = {"cmap":cmap}
+	idkws={"color":"black", "lw":2}
+	
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, tru_psf_g1, s=10, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, tru_psf_g2, s=10, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	
+	ax = fig.add_subplot(3, 4, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s1, s=10, **sckws)
+
+	ax = fig.add_subplot(3, 4, 6)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s2, s=10, **sckws)
+	
+	ax = fig.add_subplot(3, 4, 7)
+	megalut.plot.scatter.scatter(ax, cat, tru_psf_g1, tru_psf_g2, bias_s1, s=10, **sckws)
+
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, cat, tru_psf_g1, tru_psf_g2, bias_s2, s=10, **sckws)
+	
+
+	"""
+	ax = fig.add_subplot(2, 3, 4)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	ax = fig.add_subplot(2, 3, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+	"""
+
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
