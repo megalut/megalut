@@ -117,10 +117,10 @@ class SBE_v4_shapes(megalut.sim.params.Params):
 
 
 
-class SBE_v4_shears(SBE_v3_shapes):
+class SBE_v4_1(SBE_v4_shapes):
 	"""
-	v3 : drawing the shears from a meaningful distrib, not a grid.
-	As for v2, we use shape noise cancellation.
+	v4 : use shape noise cancellation type 3 to get reas that differ only in orientation and noise.
+	This is for step 1, to train the shear estimates.
 	"""
 	
 	#def __init__(self):
@@ -138,7 +138,7 @@ class SBE_v4_shears(SBE_v3_shapes):
 		(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_s_theta), tru_s * np.sin(2.0 * tru_s_theta))
 		
 		tru_mu = 1.0
-		snc_type = 2 # 0 means no shape noise cancellation
+		snc_type = 3 # 0 means no shape noise cancellation
 		
 		
 		# We also want a single PSF per case. So we define the PSF parameters here as well, the

@@ -1,12 +1,13 @@
 
-import matplotlib
-matplotlib.use("AGG")
+#import matplotlib
+#matplotlib.use("AGG")
 
 import megalut.sbe
 import mymeasfct
 import mysimparams
 import mymlparamsshape
 import mymlparamsshear
+import myplots3p4
 import myplots
 import mytests
 
@@ -29,21 +30,47 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
 	
-	ncpu = 4
+	ncpu = 6
 	)
 
 
-shapesimparams = mysimparams.SBE_v3_shapes()
-shapesimparams.set_low_sn()
 
-shapemlparams = mymlparamsshape.trainparamslist
-
-shearsimparams = mysimparams.SBE_v3_shears()
+shearsimparams = mysimparams.SBE_v4_1()
 shearsimparams.set_low_sn()
 
-shearsimparams.name = "SBE_v3_shears_morerea"
-
 shearmlparams = mymlparamsshear.trainparamslist
+
+
+# v4 : reas differ only in orientation and noise.
+
+### Step 1 : sims and training for the shear estimates ###
+
+#run.drawsims(shearsimparams, n=1, nc=1, ncat=1000, nrea=1, stampsize=150)
+
+#run.meassims(shearsimparams, mymeasfct.default, stampsize=150)
+
+#run.groupsimmeas(shearsimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
+#run.prepcases(shearsimparams, groupcolnames=['tru_sigma', 'tru_flux', 'tru_s1', 'tru_s2', 'tru_psf_g1', 'tru_psf_g2', 'tru_psf_sigma']) # any should work, as these are random floats...
+
+#run.traintenbilacshear(shearsimparams, shearmlparams)
+
+
+
+
+run.selfpredictshear(shearsimparams, shearmlparams)
+
+myplots3p4.shearsimbias(run, rea="full")
+
+
+
+
+
+
+
+#shearsimparams.name = "SBE_v3_shears_morerea"
+
+#shearmlparams = mymlparamsshear.trainparamslist
 
 ####### Steps to measure SBE
 
@@ -101,7 +128,7 @@ shearmlparams = mymlparamsshear.trainparamslist
 
 #myplots.shearsimbias(run, shearsimparams, rea="full") # -> no_weights_bias # OK, now we predict the weights.
 
-run.traintenbilacshear(shearsimparams, shearmlparams)
+#run.traintenbilacshear(shearsimparams, shearmlparams)
 
 
 #run.selfpredictshear(shearsimparams, shearmlparams)
