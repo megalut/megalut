@@ -27,8 +27,9 @@ class TenbilacParams:
 	
 	
 	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, gtol=1e-8,
-		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1, startidentity=True, normtargets=True,
-		normtype="-11", actfctname="tanh", verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
+		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1, startidentity=True,
+		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden",
+		verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
 		"""
 		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
@@ -62,6 +63,7 @@ class TenbilacParams:
 		self.normtargets = normtargets
 		self.normtype = normtype
 		self.actfctname = actfctname
+		self.oactfctname = oactfctname
 		self.verbose = verbose
 		self.name = name
 		self.reuse = reuse
@@ -138,7 +140,7 @@ class TenbilacWrapper:
 		ni = inputs.shape[1]
 		nhs = self.params.hidden_nodes
 		no = targets.shape[0]
-		ann = tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname,
+		ann = tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
 			inames=inputnames, onames=targetnames)
 		
 		
