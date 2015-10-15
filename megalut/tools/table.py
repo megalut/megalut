@@ -418,7 +418,7 @@ def groupreshape(cat, groupcolnames):
 	"""
 	
 	# Start
-	logger.info("Determining bins for {}...".format(groupcolnames))
+	logger.info("Determining groups for {}...".format(groupcolnames))
 	
 	# Check that groupcolnames are 1D columns
 	for colname in groupcolnames:
