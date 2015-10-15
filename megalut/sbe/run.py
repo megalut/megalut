@@ -266,9 +266,13 @@ class Run():
 		# We load the training catalog
 		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
-		#print simcat.colnames
-		#print simcat
-		#print simcat.meta
+		print simcat.colnames
+		print simcat
+		print simcat.meta
+		
+		name = "with_" + simparams.name
+		traindir = os.path.join(self.workmldir, name)
+		#exit()
 		
 		# We reject crap ones
 		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1) # How many hsm sucesses per case
@@ -279,27 +283,37 @@ class Run():
 		#simcat = simcat[:100]
 		#print "only training on 1000 gals hack"
 		
-		megalut.tools.io.writepickle(simcat, os.path.join(self.worksimdir, simparams.name, "traincat.pkl"))
+		#megalut.tools.io.writepickle(simcat, os.path.join(traindir, simparams.name, "traincat.pkl"))
 		
-		megalut.learn.run.train(simcat, self.workmldir, trainparamslist, ncpu=self.ncpu)
+		megalut.learn.run.train(simcat, traindir, trainparamslist, ncpu=self.ncpu)
 
 
 
 	def selfpredict(self, simparams, trainparamslist):
 		
+		
+		name = "with_" + simparams.name
+		traindir = os.path.join(self.workmldir, name)
+	
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
-		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)		
+		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)		
 		
-		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat.pkl"))
+		megalut.tools.io.writepickle(cat, os.path.join(traindir, "selfprecat.pkl"))
 
 
 
-	def othersimpredict(self, othersimparams, trainparamslist):
+	def othersimpredict(self, othersimparams, simparams, trainparamslist):
+		"""
+		simparams and triainparamslist have been used for the training.
+		othersimpredict is another simparams for which you want the preds.	
+		"""
 		
+		name = "with_" + simparams.name
+		traindir = os.path.join(self.workmldir, name)
 
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, othersimparams.name, "groupmeascat.pkl"))		
-		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)
+		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
 
 		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, othersimparams.name, "groupmeascat_predshapes.pkl"))
 
@@ -315,13 +329,13 @@ class Run():
 		
 
 
-	def prepcases(self, simparams, bincolnames):
+	def prepcases(self, simparams, groupcolnames):
 		"""
 		Reshapes the simmeas data in rows of different cases, ready for tenbilac shear-style training.
 		
 		"""
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
 		logger.info("Preparing cases for catalog of length {}".format(len(cat)))
@@ -348,7 +362,7 @@ class Run():
 		cat.remove_column("prepbatchtmp")
 		"""
 		
-		cat = megalut.tools.table.groupreshape(cat, groupcolnames = bincolnames)
+		cat = megalut.tools.table.groupreshape(cat, groupcolnames = groupcolnames)
 		
 		
 		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
@@ -371,11 +385,15 @@ class Run():
 
 
 	def selfpredictshear(self, simparams, trainparamslist):
+	
+		
+		name = "with_" + simparams.name
+		traindir = os.path.join(self.workmldir, name)
 		
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
 		
-		cat = megalut.learn.run.predict(cat, self.workmldir, trainparamslist)
+		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
 		
 		#print cat.colnames
 		
