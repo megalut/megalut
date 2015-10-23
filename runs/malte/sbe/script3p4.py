@@ -1,6 +1,6 @@
 
-import matplotlib
-matplotlib.use("AGG")
+#import matplotlib
+#matplotlib.use("AGG")
 
 import megalut.sbe
 import mymeasfct
@@ -30,96 +30,37 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
 	
-	ncpu = 1
+	ncpu = 6
 	)
 
 
 
-
-### v 3.5: going back to stuff similar than 
-
-
-shapesimparams = mysimparams.SBE_v3_shapes()
-shapesimparams.set_low_sn()
-shapemlparams = mymlparamsshape.trainparamslist
-
-
-shearsimparams = mysimparams.SBE_v3_shears()
-#shearsimparams.name = "SBE_v3_shears_morerea"  # Warning, this is huge (and not necessary, it seems)
+shearsimparams = mysimparams.SBE_v4_1()
 shearsimparams.set_low_sn()
-
-shearsimparams.name = "SBE_v3_shears_morecase"
 
 shearmlparams = mymlparamsshear.trainparamslist
 
 
-# First, the shapes
+# v4 : reas differ only in orientation and noise.
 
+### Step 1 : sims and training for the shear estimates ###
 
-#run.drawsims(shapesimparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
-#run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
-#run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-
-#run.traintenbilac(shapesimparams, shapemlparams)
-
-#run.selfpredict(shapesimparams, shapemlparams)
-#myplots.shapesimbias(run, shapesimparams, rea=-10)
-#myplots.shapesimbias2(run, shapesimparams, rea=-10)
-
-
-# Now, the shears
-
-#run.drawsims(shearsimparams, n=500, nc=10, ncat=1000, nrea=1, stampsize=150) # done
-#run.drawsims(shearsimparams, n=5000, nc=25, ncat=500, nrea=1, stampsize=150) # this is "_morerea"
-#run.drawsims(shearsimparams, n=500, nc=10, ncat=5000, nrea=1, stampsize=150) # this is "_morecase"
-
-
-
-#run.meassims(shearsimparams, mymeasfct.default, stampsize=150)
-#run.groupsimmeas(shearsimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-
-# Those two guys are currently running with morecase... done
-
-# Up to here its independent from the other sims. Now you have to predict the shapes before going on, using the other sims.
-#run.othersimpredict(shearsimparams, shapesimparams, shapemlparams)
-
-
-#run.inspect(shearsimparams)
-#run.prepcases(shearsimparams, groupcolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
-
-run.traintenbilacshear(shearsimparams, shearmlparams)
-
-#run.selfpredictshear(shearsimparams, shearmlparams)
-
-#myplots.shearsimbias2(run, shearsimparams, rea=-10)
-
-#run.inspectshear(shearsimparams, shearmlparams)
-
-
-
-
-
-#run.predictsbe(shapesimparams, shapemlparams, shearsimparams, shearmlparams)
-#run.analysepredsbe()
-
-
-
-
-
-"""
-
-### v3.4 : reas differ only in orientation and noise.###
-### v3.4: sims and training for the shear estimates ###
-#shearsimparams = mysimparams.SBE_v4_1()
-#shearsimparams.set_low_sn()
-#shearmlparams = mymlparamsshear.trainparamslist
 #run.drawsims(shearsimparams, n=1, nc=1, ncat=1000, nrea=1, stampsize=150)
+
 #run.meassims(shearsimparams, mymeasfct.default, stampsize=150)
+
 #run.groupsimmeas(shearsimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+
 #run.prepcases(shearsimparams, groupcolnames=['tru_sigma', 'tru_flux', 'tru_s1', 'tru_s2', 'tru_psf_g1', 'tru_psf_g2', 'tru_psf_sigma']) # any should work, as these are random floats...
+
 #run.traintenbilacshear(shearsimparams, shearmlparams)
-#run.selfpredictshear(shearsimparams, shearmlparams)
-#myplots3p4.shearsimbias(run, rea="full")
+
+
+
+
+run.selfpredictshear(shearsimparams, shearmlparams)
+
+myplots3p4.shearsimbias(run, rea="full")
 
 
 
@@ -298,4 +239,3 @@ run.traintenbilacshear(shearsimparams, shearmlparams)
 #myplots.sbebias(run, "bias_low_sn_sbe.pdf")
 #run.analysepredsims()
 #run.writepredsbe()
-"""

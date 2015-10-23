@@ -91,11 +91,15 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	
 	
 
-def shapesimbias(run, filepath=None, rea="full"):
+def shapesimbias(run, simparams, filepath=None, rea="full"):
 	"""
 	Simple comparision between predictions and truth, based on the training data.
 	"""
-	cat = megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat.pkl"))
+	
+	name = "with_" + simparams.name
+	traindir = os.path.join(run.workmldir, name)
+	
+	cat = megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat.pkl"))
 	
 	rg = 0.8
 	
@@ -161,11 +165,13 @@ def shapesimbias(run, filepath=None, rea="full"):
 
 
 
-def shapesimbias2(run, filepath=None, rea="full"):
+def shapesimbias2(run, simparams, filepath=None, rea="full"):
 
-	
+	name = "with_" + simparams.name
+	traindir = os.path.join(run.workmldir, name)
+
 	#cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "obsprecat.pkl"))
-	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat.pkl"))
+	cat =  megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat.pkl"))
 	
 	print cat.colnames
 	#print len(cat)
@@ -377,52 +383,66 @@ def shearsimbias(run, simparams, filepath=None, rea="full"):
 
 
 
-def shearsimbias2(run, filepath=None, rea="full"):
+def shearsimbias2(run, simparams, filepath=None, rea="full"):
 	"""
 	Compares weighted predicted shapes with true shear, what should work.
 	"""
-
-	cat =  megalut.tools.io.readpickle(os.path.join(run.workmldir, "selfprecat_shear.pkl"))
+	
+	name = "with_" + simparams.name
+	traindir = os.path.join(run.workmldir, name)
+	cat =  megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat_shear.pkl"))
 	
 	
-	print "WARNING: HACK"
-	cat["pre_g2_w2"] = cat["pre_g1_w2"]
 	
-	print cat.colnames
-	for w in ["pre_g1_w2", "pre_g2_w2"]:
+	#print cat.colnames
+	#for w in ["pre_g1_w3", "pre_g2_w3"]:
 	#for w in ["pre_g1_w1", "pre_g2_w1", "pre_g1_w2", "pre_g2_w2"]:
-		cat[w] = 10**cat[w]
+		#cat[w] = 10**cat[w]
+		#cat[w] = 1.0*cat[w]
+		#cat[w] = 1.07
+	
+	
+	#cat["pre_g1_w"] = 1.0*cat["pre_g1_w3"]
+	#cat["pre_g2_w"] = 1.0*cat["pre_g2_w3"]
+	
+	#cat["pre_g1_w"] = np.clip(cat["pre_g1_w3"], 1e-6, 1e15)
+	#cat["pre_g2_w"] = np.clip(cat["pre_g2_w3"], 1e-6, 1e15)
+	
+	#cat["pre_g1_w"] = 1.0/cat["pre_g1_w3"]**2
+	#cat["pre_g2_w"] = 1.0/cat["pre_g2_w3"]**2
+	
+	cat["pre_g1_w"] = 10.*cat["pre_g1_w3"]
+	cat["pre_g2_w"] = 10.*cat["pre_g2_w3"]
+	
 	
 	rs = 0.03
 	rg = 0.7
 
-	#pre_g1_w1 = Feature("pre_g1_w1", rea=rea)
-	#pre_g2_w1 = Feature("pre_g2_w1", rea=rea)
-	pre_g1_w2 = Feature("pre_g1_w2", rea=rea)
-	pre_g2_w2 = Feature("pre_g2_w2", rea=rea)
+	pre_g1_wraw = Feature("pre_g1_w3", rea=rea)
+	pre_g2_wraw = Feature("pre_g2_w3", rea=rea)
+	
+	
+	
+	pre_g1_w = Feature("pre_g1_w", -1.0, 5.0, rea=rea)
+	pre_g2_w = Feature("pre_g2_w", -1.0, 5.0, rea=rea)
 	
 	flux = Feature("adamom_flux", rea=rea)
 	sigma = Feature("adamom_sigma", rea=rea)
 	
-	cat["pre_s1"] = cat["pre_g1"] * cat["pre_g1_w2"]
-	cat["pre_s2"] = cat["pre_g2"] * cat["pre_g2_w2"]
+	cat["pre_s1"] = cat["pre_g1"] * cat["pre_g1_w"]
+	cat["pre_s2"] = cat["pre_g2"] * cat["pre_g2_w"]
 	
 	megalut.tools.table.addstats(cat, "pre_s1")
 	megalut.tools.table.addstats(cat, "pre_s2")
-	megalut.tools.table.addstats(cat, "pre_g1_w2")
-	megalut.tools.table.addstats(cat, "pre_g2_w2")
+	megalut.tools.table.addstats(cat, "pre_g1_w")
+	megalut.tools.table.addstats(cat, "pre_g2_w")
 	megalut.tools.table.addstats(cat, "pre_g1")
 	megalut.tools.table.addstats(cat, "pre_g2")
 	
-	#megalut.tools.table.addstats(cat, "pre_g1_w1")
-	#megalut.tools.table.addstats(cat, "pre_g2_w1")
-	
-	cat["pre_s1_nmean"] = cat["pre_s1_mean"] / cat["pre_g1_w2_mean"]
-	cat["pre_s2_nmean"] = cat["pre_s2_mean"] / cat["pre_g2_w2_mean"]
 	
 
-	pre_s1 = Feature("pre_s1_nmean", -rs, rs, rea=rea)
-	pre_s2 = Feature("pre_s2_nmean", -rs, rs, rea=rea)
+	pre_s1_mean = Feature("pre_s1_mean", -rs, rs, rea=rea)
+	pre_s2_mean = Feature("pre_s2_mean", -rs, rs, rea=rea)
 	
 	pre_g1_mean = Feature("pre_g1_mean", -rs, rs, rea=rea)
 	pre_g2_mean = Feature("pre_g2_mean", -rs, rs, rea=rea)
@@ -430,9 +450,15 @@ def shearsimbias2(run, filepath=None, rea="full"):
 	
 	tru_s1 = Feature("tru_s1", -rs, rs)
 	tru_s2 = Feature("tru_s2", -rs, rs)
+
+	tru_flux = Feature("tru_flux", rea=rea)
+	tru_sigma =  Feature("tru_sigma", rea=rea)
 	
 	snr = Feature("snr", 5, 40, rea=rea)
-	
+	tru_psf_g1 = Feature("tru_psf_g1", -rs, rs, rea=rea)
+	tru_psf_g2 = Feature("tru_psf_g2", -rs, rs, rea=rea)
+	tru_psf_sigma = Feature("tru_psf_sigma", rea=rea)
+
 	
 	fig = plt.figure(figsize=(22, 13))
 	cmap = matplotlib.cm.get_cmap("rainbow")
@@ -452,21 +478,37 @@ def shearsimbias2(run, filepath=None, rea="full"):
 	
 	
 	ax = fig.add_subplot(3, 4, 1)
-	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_g1_mean, metrics=True, showidline=True, idlinekwargs=idkws)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_g1_mean, tru_psf_g1, metrics=True, showidline=True, idlinekwargs=idkws)
 	ax = fig.add_subplot(3, 4, 2)
-	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_g2_mean, metrics=True, showidline=True, idlinekwargs=idkws)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_g2_mean, tru_psf_g2, metrics=True, showidline=True, idlinekwargs=idkws)
 	
 	ax = fig.add_subplot(3, 4, 5)
-	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1, metrics=True, showidline=True, idlinekwargs=idkws)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, tru_psf_g2, metrics=True, showidline=True, idlinekwargs=idkws)
 	ax = fig.add_subplot(3, 4, 6)
-	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2, metrics=True, showidline=True, idlinekwargs=idkws)
-	
-	"""
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, tru_psf_sigma, metrics=True, showidline=True, idlinekwargs=idkws)
+
+	ax = fig.add_subplot(3, 4, 3)
+	megalut.plot.scatter.scatter(ax, cat, tru_flux, tru_sigma, pre_g1_w)
+	ax = fig.add_subplot(3, 4, 4)
+	megalut.plot.scatter.scatter(ax, cat, tru_flux, tru_sigma, pre_g2_w)
+
 	ax = fig.add_subplot(3, 4, 7)
-	megalut.plot.scatter.scatter(ax, cat, pre_g1_w1, pre_g2_w1, metrics=True, showidline=True, idlinekwargs=idkws)
+	megalut.plot.scatter.scatter(ax, cat, snr, pre_g1_w)
 	ax = fig.add_subplot(3, 4, 8)
-	megalut.plot.scatter.scatter(ax, cat, pre_g1_w2, pre_g2_w2, metrics=True, showidline=True, idlinekwargs=idkws)
-	"""
+	megalut.plot.scatter.scatter(ax, cat, snr, pre_g2_w)
+	
+	
+	ax = fig.add_subplot(3, 4, 9)
+	megalut.plot.hist.hist(ax, cat, pre_g1_wraw)
+	ax = fig.add_subplot(3, 4, 10)
+	megalut.plot.hist.hist(ax, cat, pre_g2_wraw)
+	ax = fig.add_subplot(3, 4, 11)
+	megalut.plot.hist.hist(ax, cat, pre_g1_w)
+	ax = fig.add_subplot(3, 4, 12)
+	megalut.plot.hist.hist(ax, cat, pre_g2_w)
+
+
+
 
 	plt.tight_layout()
 	if filepath:

@@ -30,11 +30,59 @@ shape1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "shape1", hidden_no
 	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
 
 
+msb7 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb7", hidden_nodes = [7],
+	errfctname="msb", valfrac=0.25, shuffle=True,
+	mbsize=None, mbfrac=0.1, mbloops=6, max_iterations=50, startidentity=True, normtargets=True,
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+mab7 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "mab7", hidden_nodes = [7],
+	errfctname="mab", valfrac=0.25, shuffle=True,
+	mbsize=None, mbfrac=0.1, mbloops=6, max_iterations=50, startidentity=True, normtargets=True,
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+mab4 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "mab4", hidden_nodes = [4],
+	errfctname="mab", valfrac=0.25, shuffle=True,
+	mbsize=None, mbfrac=0.1, mbloops=6, max_iterations=50, startidentity=True, normtargets=True,
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+
+msrb7 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msrb7", hidden_nodes = [7],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=None, mbfrac=0.1, mbloops=6, max_iterations=50, startidentity=True, normtargets=True,
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+msrb4 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msrb4", hidden_nodes = [4],
+	errfctname="msrb", valfrac=0.25, shuffle=True,
+	mbsize=None, mbfrac=0.1, mbloops=6, max_iterations=50, startidentity=True, normtargets=True,
+	normtype="-11", actfctname="tanh", verbose=False, reuse=True, keepdata=True, autoplot=True)
+
+
+
+"""
 trainparamslist = [
-	(g1mlparams, shape1),
-	(g2mlparams, shape1),
-	(sigmamlparams, shape1)
+	(g1mlparams, mab4),
+	(g2mlparams, mab4),
+	(sigmamlparams, mab4),
+	(g1mlparams, mab7),
+	(g2mlparams, mab7),
+	(sigmamlparams, mab7),
+	(g1mlparams, msb7),
+	(g2mlparams, msb7),
+	(sigmamlparams, msb7),
+	(g1mlparams, msrb7),
+	(g2mlparams, msrb7),
+	(sigmamlparams, msrb7),
+	(g1mlparams, msrb4),
+	(g2mlparams, msrb4),
+	(sigmamlparams, msrb4),
 ]
+"""
+trainparamslist = [
+	(g1mlparams, msrb4),
+	(g2mlparams, msrb4),
+	(sigmamlparams, msrb4)
+]
+
 
 
 

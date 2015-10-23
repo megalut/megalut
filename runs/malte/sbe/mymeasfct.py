@@ -15,7 +15,7 @@ def default(catalog, stampsize):
 	# And snr
 	
 	print "wait why is this gain 1.7"
-	exit()
+	#exit()
 	catalog = megalut.meas.snr.measfct(catalog, gain=1.7)
 	
 	return catalog
