@@ -223,7 +223,7 @@ class Run():
 		Idem
 		"""
 		measfctkwargs = {"stampsize":stampsize}
-		megalut.meas.run.onsims(self.worksimdir, simparams, self.worksimdir, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=False)
+		megalut.meas.run.onsims(self.worksimdir, simparams, self.worksimdir, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=True)
 		
 		
 
@@ -268,9 +268,9 @@ class Run():
 		# We load the training catalog
 		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
-		print simcat.colnames
-		print simcat
-		print simcat.meta
+		#print simcat.colnames
+		#print simcat
+		#print simcat.meta
 		
 		name = "with_" + simparams.name
 		traindir = os.path.join(self.workmldir, name)
@@ -339,8 +339,8 @@ class Run():
 		
 		"""
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
-		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 		
 		logger.info("Preparing cases for catalog of length {}".format(len(cat)))
 		
@@ -375,7 +375,7 @@ class Run():
 
 	def traintenbilacshear(self, simparams, trainparamslist):
 		"""
-		Trains for predicting weights
+		Trains for predicting shear or weights
 		"""
 		
 		# We load the training catalog
