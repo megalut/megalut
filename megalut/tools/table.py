@@ -554,6 +554,9 @@ class Selector:
 		
 		passmasks = []
 		for crit in self.criteria:
+		
+			if cat[crit[1]].ndim != 1:
+				logger.critical("Using Selector with multidimensional columns... at your own risk.")
 			
 			if crit[0] == "in":
 				if len(crit) != 4: raise RuntimeError("Expected 4 elements in criterion %s" % (str(crit)))
