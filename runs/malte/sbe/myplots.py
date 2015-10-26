@@ -10,6 +10,65 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+
+
+def measfails(run, simparams, filepath=None, rea="full"):
+	"""
+	On the sims, we study what kind of galaxies are missed...
+	"""
+	
+	cat = megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, "groupmeascat.pkl"))
+	
+	#print cat
+	#print cat.colnames
+	
+	#exit()
+	
+	
+	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06)
+	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06)
+	psf_sigma = Feature("tru_psf_sigma")
+	
+	tru_flux = Feature("tru_flux")
+	tru_sigma = Feature("tru_sigma")
+	
+	tru_g1 = Feature("tru_g1")
+	tru_g2 = Feature("tru_g2")
+	
+	
+	ix = Feature("ix")
+	iy = Feature("iy")
+
+	selector = megalut.tools.table.Selector("Failed", [("mask", "adamom_sigma")]) 
+	failcat = selector.select(cat)
+
+	#print failcat
+	
+	fig = plt.figure(figsize=(23, 11))
+		
+	ax = fig.add_subplot(2, 4, 1)
+	megalut.plot.scatter.scatter(ax, cat, tru_flux, tru_sigma, sidehists=False, color="gray")
+	megalut.plot.scatter.scatter(ax, failcat, tru_flux, tru_sigma, sidehists=True, color="red")
+	
+	ax = fig.add_subplot(2, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, ix, iy, sidehists=False, color="gray")
+	megalut.plot.scatter.scatter(ax, failcat, ix, iy, sidehists=True, color="red")
+	
+	ax = fig.add_subplot(2, 4, 3)
+	megalut.plot.scatter.scatter(ax, cat, tru_g1, tru_g2, sidehists=False, color="gray")
+	megalut.plot.scatter.scatter(ax, failcat, tru_g1, tru_g2, sidehists=True, color="red")
+	
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
 def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	"""
 	Classic comparision between obs and sims
@@ -32,7 +91,7 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	simcat = megalut.tools.table.shuffle(simcat)
 	obscat = megalut.tools.table.shuffle(obscat)
 		
-	flux = Feature(prefix+"flux", 0, 3200, rea=rea)
+	flux = Feature(prefix+"flux", rea=rea)
 	sigma = Feature(prefix+"sigma", 0, 30, rea=rea)
 	rho4 = Feature(prefix+"rho4", 1.3, 2.6, rea=rea)
 	g1 = Feature(prefix+"g1", -0.8, 0.8, rea=rea)
@@ -44,7 +103,7 @@ def simobscompa(run, simparams, prefix="adamom_", filepath=None, rea="full"):
 	psf_g1 = Feature("tru_psf_g1", -0.06, 0.06, rea=rea)
 	psf_g2 = Feature("tru_psf_g2", -0.06, 0.06, rea=rea)
 	psf_sigma = Feature("tru_psf_sigma", rea=rea)
-	snr =Feature("snr", 0, 70, rea=rea)
+	snr =Feature("snr", rea=rea)
 
 	fig = plt.figure(figsize=(23, 11))
 		
@@ -288,6 +347,97 @@ def shapesimbias2(run, simparams, filepath=None, rea="full"):
 
 
 
+def shapeasshear(run, simparams, filepath=None, rea="full"):
+	"""
+	Compares predicted *shapes* with true shear (i.e., before any weight correction).
+	"""
+	name = "with_" + simparams.name
+	traindir = os.path.join(run.workmldir, name)
+	cat =  megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat.pkl"))
+	
+	rs = 0.03
+	rg = 0.7
+
+	print cat.colnames
+	
+
+	cat["pre_s1"] = cat["pre_g1"]
+	cat["pre_s2"] = cat["pre_g2"]
+
+	pre_s1 = Feature("pre_s1", -rg, rg, rea=rea)
+	pre_s2 = Feature("pre_s2", -rg, rg, rea=rea)
+	
+	tru_s1 = Feature("tru_s1", -rs, rs)
+	tru_s2 = Feature("tru_s2", -rs, rs)
+	tru_psf_g1 = Feature("tru_psf_g1", -rs, rs)
+	tru_psf_g2 = Feature("tru_psf_g2", -rs, rs)
+	
+	megalut.tools.table.addstats(cat, "pre_s1")
+	megalut.tools.table.addstats(cat, "pre_s2")
+	
+	snr = Feature("snr", 5, 40, rea=rea)
+	
+	
+	cat["bias_s1"] = cat["pre_s1_mean"] - cat["tru_s1"]
+	cat["bias_s2"] = cat["pre_s2_mean"] - cat["tru_s2"]
+	
+	cat["bias_s1_err"] = cat["pre_s1_std"] / cat["pre_s1_n"]
+	cat["bias_s2_err"] = cat["pre_s2_std"] / cat["pre_s2_n"]
+	
+		
+	bias_s1 = Feature("bias_s1", -0.003, 0.003, errcolname="bias_s1_err")
+	bias_s2 = Feature("bias_s2", -0.003, 0.003, errcolname="bias_s2_err")
+	bias_s1_err = Feature("bias_s1_err")
+	bias_s2_err = Feature("bias_s2_err")
+	pre_s1_mean = Feature("pre_s1_mean", errcolname="bias_s1_err")
+	pre_s2_mean = Feature("pre_s2_mean", errcolname="bias_s2_err")
+
+	
+	fig = plt.figure(figsize=(22, 13))
+	cmap = matplotlib.cm.get_cmap("rainbow")
+	
+	sckws = {"cmap":cmap}
+	idkws={"color":"black", "lw":2}
+	
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, tru_psf_g1, s=10, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, tru_psf_g2, s=10, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	
+	ax = fig.add_subplot(3, 4, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s1, s=10, **sckws)
+
+	ax = fig.add_subplot(3, 4, 6)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, bias_s2, s=10, **sckws)
+	
+	ax = fig.add_subplot(3, 4, 7)
+	megalut.plot.scatter.scatter(ax, cat, tru_psf_g1, tru_psf_g2, bias_s1, s=10, **sckws)
+
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, cat, tru_psf_g1, tru_psf_g2, bias_s2, s=10, **sckws)
+	
+
+	"""
+	ax = fig.add_subplot(2, 3, 4)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+
+	ax = fig.add_subplot(2, 3, 5)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2, snr, s=5, metrics=True, showidline=True, idlinekwargs=idkws, **sckws)
+	"""
+
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
+
+
 
 
 
@@ -295,7 +445,8 @@ def shearsimbias(run, simparams, filepath=None, rea="full"):
 	"""
 	Compares predicted *shapes* with true shear (i.e., before any weight correction).
 	"""
-
+	
+	#cat =  megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, "groupmeascat.pkl"))
 	cat =  megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
 	
 	#print cat.colnames
@@ -402,8 +553,8 @@ def shearsimbias2(run, simparams, filepath=None, rea="full"):
 		#cat[w] = 1.07
 	
 	
-	#cat["pre_g1_w"] = 1.0*cat["pre_g1_w3"]
-	#cat["pre_g2_w"] = 1.0*cat["pre_g2_w3"]
+	cat["pre_g1_w"] = 1.0*cat["pre_g1_w2"]
+	cat["pre_g2_w"] = 1.0*cat["pre_g2_w2"]
 	
 	#cat["pre_g1_w"] = np.clip(cat["pre_g1_w3"], 1e-6, 1e15)
 	#cat["pre_g2_w"] = np.clip(cat["pre_g2_w3"], 1e-6, 1e15)
@@ -411,15 +562,15 @@ def shearsimbias2(run, simparams, filepath=None, rea="full"):
 	#cat["pre_g1_w"] = 1.0/cat["pre_g1_w3"]**2
 	#cat["pre_g2_w"] = 1.0/cat["pre_g2_w3"]**2
 	
-	cat["pre_g1_w"] = 10.*cat["pre_g1_w3"]
-	cat["pre_g2_w"] = 10.*cat["pre_g2_w3"]
+	#cat["pre_g1_w"] = 10.*cat["pre_g1_w3"]
+	#cat["pre_g2_w"] = 10.*cat["pre_g2_w3"]
 	
 	
 	rs = 0.03
 	rg = 0.7
 
-	pre_g1_wraw = Feature("pre_g1_w3", rea=rea)
-	pre_g2_wraw = Feature("pre_g2_w3", rea=rea)
+	pre_g1_wraw = Feature("pre_g1_w2", rea=rea)
+	pre_g2_wraw = Feature("pre_g2_w2", rea=rea)
 	
 	
 	

@@ -7,16 +7,16 @@ def default(catalog, stampsize):
 	"""	
 	
 	# HSM adamom
-	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=stampsize)
+	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=stampsize, variant="wider")
 	
 	# And skystats
 	catalog = megalut.meas.skystats.measfct(catalog, stampsize=stampsize)
 	
 	# And snr
 	
-	print "wait why is this gain 1.7"
+	#print "wait why is this gain 1.7" # No idea, just a copy and past of some default value ?
 	#exit()
-	catalog = megalut.meas.snr.measfct(catalog, gain=1.7)
+	catalog = megalut.meas.snr.measfct(catalog, gain=3.5)
 	
 	return catalog
 	

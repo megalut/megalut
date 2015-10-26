@@ -82,6 +82,11 @@ msbwplain4 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msbwplain4", h
 	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
 	verbose=False, reuse=True, keepdata=False, autoplot=True)
 
+msbwplain8 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msbwplain8", hidden_nodes = [8],
+	errfctname="msbwsig", valfrac=0.25, shuffle=True,
+	mbsize=None, mbfrac=0.1, mbloops=3, max_iterations=50, gtol=1e-15, startidentity=False,
+	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
+	verbose=False, reuse=True, keepdata=False, autoplot=True)
 
 msbwsigtwo4 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msbwsigtwo4", hidden_nodes = [4],
 	errfctname="msbwsigtwo", valfrac=0.25, shuffle=True,
@@ -198,8 +203,8 @@ trainparamslist = [
 
 """
 trainparamslist = [
-	(g1wmlparams3, msbwplain4),
-	(g2wmlparams3, msbwplain4),	
+	(g1wmlparams2, msbwplain8),
+	(g2wmlparams2, msbwplain8),	
 ]
 
 """

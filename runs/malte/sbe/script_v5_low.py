@@ -4,63 +4,73 @@
 
 import megalut.sbe
 import mymeasfct
-import mysimparams
-import mymlparamsshape
-import mymlparamsshear
-import myplots3p4
+import mysimparams_v5 as mysimparams
+import mymlparams_v5 as mymlparams
 import myplots
-import mytests
 
 import logging
-logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
-#logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
+
+#logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
+logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
 
 
 ####### Configuration #######
 
 run = megalut.sbe.run.Run(
-	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN",
-	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_workdir",
-	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN",
-	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_workdir",
-
-	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
-	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
 	
-	ncpu = 1
+	ncpu = 4
 	)
 
 
+simparams = mysimparams.SBE_v5()
+simparams.set_low_sn()
+
+mlparams = mymlparams.trainparamslist
 
 
-### v 3.5: going back to stuff similar than 
-
-
-shapesimparams = mysimparams.SBE_v3_shapes()
-shapesimparams.set_low_sn()
-shapemlparams = mymlparamsshape.trainparamslist
-
-
-shearsimparams = mysimparams.SBE_v3_shears()
+#shearsimparams = mysimparams.SBE_v3_shears()
 #shearsimparams.name = "SBE_v3_shears_morerea"  # Warning, this is huge (and not necessary, it seems)
-shearsimparams.set_low_sn()
-
-shearsimparams.name = "SBE_v3_shears_morecase"
-
-shearmlparams = mymlparamsshear.trainparamslist
+#shearsimparams.set_low_sn()
+#shearsimparams.name = "SBE_v3_shears_morecase"
+#shearmlparams = mymlparamsshear.trainparamslist
 
 
-# Testing the 
-shapesimparams.name = "quicktest"
-#run.drawsims(shapesimparams, n=2500, nc=50, ncat=1, nrea=1, stampsize=150)
-run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-myplots.measfails(run, shapesimparams)
+# Testing the v5 sims
+
+"""
+simparams.name = "quicktest"
+run.drawsims(simparams, n=100, nc=50, ncat=6, nrea=1, stampsize=150)
+run.meassims(simparams, mymeasfct.default, stampsize=150)
+run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#myplots.measfails(run, simparams)
+myplots.simobscompa(run, simparams, rea=1)
+"""
+
+#run.drawsims(simparams, n=50, nc=10, ncat=5000, nrea=1, stampsize=150) # An attempt with not that many galaxies per case. # DONE
+
+#simparams.name = "SBE_v3_shears_morecase" # corresponds to run.drawsims(simparams, n=500, nc=10, ncat=5000, nrea=1, stampsize=150)
+# but slow, 12 gigs of ram...
+
+
+run.meassims(simparams, mymeasfct.default, stampsize=150)
+run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+run.prepcases(simparams, groupcolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
+
+
+
+
+#run.traintenbilacshear(simparams, mlparams)
+
+
+
+
+
+
+"""
 #myplots.simobscompa(run, shapesimparams, rea=1)
-
 # First, the shapes
 
 
@@ -114,7 +124,7 @@ myplots.measfails(run, shapesimparams)
 
 
 
-
+"""
 
 """
 

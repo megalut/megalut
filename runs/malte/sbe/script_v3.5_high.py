@@ -12,8 +12,8 @@ import myplots
 import mytests
 
 import logging
-logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
-#logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
+#logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
+logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
 
 
 ####### Configuration #######
@@ -27,10 +27,10 @@ run = megalut.sbe.run.Run(
 	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
 	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
-	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
-	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
+	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3",
+	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3_workdir",
 	
-	ncpu = 1
+	ncpu = 6
 	)
 
 
@@ -40,39 +40,53 @@ run = megalut.sbe.run.Run(
 
 
 shapesimparams = mysimparams.SBE_v3_shapes()
-shapesimparams.set_low_sn()
+shapesimparams.set_high_sn()
 shapemlparams = mymlparamsshape.trainparamslist
 
 
 shearsimparams = mysimparams.SBE_v3_shears()
 #shearsimparams.name = "SBE_v3_shears_morerea"  # Warning, this is huge (and not necessary, it seems)
-shearsimparams.set_low_sn()
+shearsimparams.set_high_sn()
 
-shearsimparams.name = "SBE_v3_shears_morecase"
+#shearsimparams.name = "SBE_v3_shears_morecase"
 
 shearmlparams = mymlparamsshear.trainparamslist
 
 
-# Testing the 
-shapesimparams.name = "quicktest"
+
+######  start here for new run on high_SN   ######
+
+#run.makecats(onlyn=None, sbe_sample_scale=0.05)
+#run.measobs(mymeasfct.default, stampsize=150, skipdone=False)
+#run.groupobs()
+
+# running...
+
+#run.showmeasobsfrac()
+
+# Testing if sims are right:
 #run.drawsims(shapesimparams, n=2500, nc=50, ncat=1, nrea=1, stampsize=150)
-run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-myplots.measfails(run, shapesimparams)
+#run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#myplots.measfails(run, shapesimparams)
 #myplots.simobscompa(run, shapesimparams, rea=1)
 
-# First, the shapes
 
+# First, the shapes
 
 #run.drawsims(shapesimparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
 #run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
 #run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#myplots.simobscompa(run, shapesimparams, rea=1)
+
 
 #run.traintenbilac(shapesimparams, shapemlparams)
 
 #run.selfpredict(shapesimparams, shapemlparams)
 #myplots.shapesimbias(run, shapesimparams, rea=-10)
 #myplots.shapesimbias2(run, shapesimparams, rea=-10)
+myplots.shapeasshear(run, shapesimparams, rea=-10)
+
 
 
 # Now, the shears
