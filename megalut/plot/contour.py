@@ -23,10 +23,14 @@ logger = logging.getLogger(__name__)
 
 
 
-def contour(ax, x, y, color="black", bins=10, minline=0.5, maxline=4.0, nlines=3, **kwargs):
-
+def _contour(ax, x, y, color="black", bins=10, minline=0.5, maxline=4.0, nlines=3, **kwargs):
+    """
+    Note that this accepts numpy arrays, not a catalog and features.
+    Write a contour wrapper that accepts same input as the others!
+    """
+    
     range = [[x.min(), x.max()], [y.min(), y.max()]]
-
+    
     # Choose the default "sigma" contour levels.
     levels = 1.0 - np.exp(-0.5 * np.linspace(minline, maxline, nlines) ** 2)
 
@@ -118,8 +122,8 @@ def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None
 	# And the contours:
 	contourkwargs = {"bins":50, "minline":0.5, "maxline":4.0, "nlines":8, "zorder":100}
 	contourkwargs.update(kwargs)
-	contour(ax, simdata[featx.colname], simdata[featy.colname], color="red", **contourkwargs)
-	contour(ax, obsdata[featx.colname], obsdata[featy.colname], color="blue", **contourkwargs)
+	_contour(ax, simdata[featx.colname], simdata[featy.colname], color="red", **contourkwargs)
+	_contour(ax, obsdata[featx.colname], obsdata[featy.colname], color="blue", **contourkwargs)
 	
 	# Now we build the sidehists:
 	if sidehists:

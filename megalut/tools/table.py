@@ -418,7 +418,7 @@ def groupreshape(cat, groupcolnames):
 	"""
 	
 	# Start
-	logger.info("Determining bins for {}...".format(groupcolnames))
+	logger.info("Determining groups for {}...".format(groupcolnames))
 	
 	# Check that groupcolnames are 1D columns
 	for colname in groupcolnames:
@@ -474,7 +474,7 @@ def addstats(cat, col, outcolprefix=None):
 	outcolnames = [outcolprefix + suffix for suffix in ["_mean", "_med", "_std", "_n"]]
 	for outcolname in outcolnames:
 		if outcolname in cat.colnames:
-			raise RuntimeError("Column {} already exists, refusing to overwrite.".format(outcol))
+			raise RuntimeError("Column {} already exists, refusing to overwrite.".format(outcolname))
 	
 	if cat[col].ndim != 2:
 		raise RuntimeError("Column '{}' is not 2-dimensional, stats do not make sense!".format(col))

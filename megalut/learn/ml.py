@@ -27,44 +27,52 @@ logger = logging.getLogger(__name__)
 class MLParams:
 	"""
 	A container for the general parameters describing the machine learning:
-	what features should I use to predict what labels ?
+	what inputs should I use to predict what targets ?
 	"""
 	
-	def __init__(self, name, features, labels, predlabels):
+	def __init__(self, name, inputs, targets, predictions, auxinputs=None):
 		"""
-		Features, labels, and predlabels are lists of strings, with the names of the columns of
-		the catalog to use.
+		inputs, targets, and predictions are lists of strings, with the names of the columns of
+		the catalog to use. Idem for auxinputs, which is optional.
 
 		:param name: pick a short string describing these machine learning params.
 			It will be used within filenames to store ML data.
-		:param features: the list of column names to be used as input, i.e. "features", for
+		:param inputs: the list of column names to be used as input, i.e. "inputs", for
 			the machine learning
-		:param labels: the list of column names that the machine should learn to predict (that is, the "truth")
-		:param predlabels: the corresponding list of column names where predictions should be written,
+		:param targets: the list of column names that the machine should aim at (that is, the "truth")
+		:param predictions: the corresponding list of column names where predictions should be written,
 			in the returned catalog.
+		:param auxinputs: further inputs, for special cost functions (so far only used by Tenbilac).
 		
-		To give a minimal example, to predict shear you could use something like::
+		To give a minimal example, to predict ellipticity you could use something like::
 			
 			name = "simpleshear"
-			features = ["mes_g1", "mes_g2", "mes_size", "mes_flux"]
-			labels = ["tru_g1", "tru_g2"]
-			predlabels = ["pre_g1", "pre_g2"]
+			inputs = ["mes_g1", "mes_g2", "mes_size", "mes_flux"]
+			targets = ["tru_g1", "tru_g2"]
+			predictions = ["pre_g1", "pre_g2"]
 		
 		"""
 		
 		self.name = name
-		self.features = features
-		self.labels = labels
-		self.predlabels = predlabels
+		self.inputs = inputs
+		self.targets = targets
+		self.predictions = predictions
+		
+		if auxinputs is None:
+			auxinputs = []
+		
+		self.auxinputs = auxinputs
 
-		assert len(self.labels) == len(self.predlabels)
+		# This is no longer the case with Tenbilac:
+		#assert len(self.targets) == len(self.predictions)
 		
 
 	def __str__(self):
 		txt = "ML parameters \"%s\":\n" % (self.name) + \
-			"Features:    %s\n" % (", ".join(self.features)) + \
-			"Labels:      %s\n" % (", ".join(self.labels)) + \
-			"Predictions: %s" % (", ".join(self.predlabels))
+			"Inputs:    %s\n" % (", ".join(self.inputs)) + \
+			"Targets:      %s\n" % (", ".join(self.targets)) + \
+			"Predictions: %s\n" % (", ".join(self.predictions)) + \
+			"Auxinputs: %s" % (", ".join(self.auxinputs))
 		return txt
 
 
@@ -156,9 +164,9 @@ class ML:
 		The main part is to translate the (masked) catalog columns into a single appropriate numpy array
 		that serves as input to the wrappers.
 		
-		:param catalog: an input astropy table. Has to contain the features and the labels.
+		:param catalog: an input astropy table. Has to contain the inputs and the targets.
 			It can well be masked. Only those rows for which all the required
-			features and labels are unmasked will be used for the training.
+			inputs and targets are unmasked will be used for the training.
 			When using Tenbilac, masked realizations stay in!
 		
 		"""	
@@ -175,67 +183,76 @@ class ML:
 		
 		if isinstance(self.toolparams, tenbilacwrapper.TenbilacParams): # Tenbilac
 			
-						
-			featuresdata = get3Ddata(catalog, self.mlparams.features)
+				
+			inputsdata = get3Ddata(catalog, self.mlparams.inputs)
 			
-			# Now we prepare the labels, in a similar way.
-			# Change this so that it also works for masked labels? Probably we never need this.
-			for colname in self.mlparams.labels:
+			if len(self.mlparams.auxinputs) != 0:
+				auxinputsdata = get3Ddata(catalog, self.mlparams.auxinputs)
+			else:
+				auxinputsdata = None
+			
+			# Now we prepare the targets, in a similar way.
+			# Change this so that it also works for masked targets? No, probably we never need this.
+			for colname in self.mlparams.targets:
 				if not np.all(np.logical_not(np.ma.getmaskarray(catalog[colname]))): # No element should be masked.
-					raise RuntimeError("Labels should not be masked")
+					raise RuntimeError("Targets should not be masked, but '{}' is!".format(colname))
 					
-			labelsdata = np.column_stack([np.array(catalog[colname]) for colname in \
-				self.mlparams.labels]).transpose()
+			targetsdata = np.column_stack([np.array(catalog[colname]) for colname in \
+				self.mlparams.targets]).transpose()
 			
-			assert featuresdata.shape[2] == labelsdata.shape[1] # Same number of galaxies!
+			assert inputsdata.shape[2] == targetsdata.shape[1] # Same number of galaxies!
 
 			# And we call the tool's train method:
-			self.tool.train(features=featuresdata, labels=labelsdata,
-				featurenames=self.mlparams.features,
-				labelnames=self.mlparams.labels
+			self.tool.train(inputs=inputsdata, targets=targetsdata, auxinputs=auxinputsdata,
+				inputnames=self.mlparams.inputs,
+				targetnames=self.mlparams.targets
 				)
 	
 
 		
-		else: # FANN or SkyNet etc:
-			# We can only use a row for training if all its features and all labels are unmasked.
+		else: # FANN or SkyNet etc
+		
+			if len(self.mlparams.auxinputs) != 0:
+				raise RuntimeError("Something fishy, auxinputs cannot be used with FANN or SkyNet.")
+		
+			# We can only use a row for training if all its inputs and all targets are unmasked.
 			# So we build such a "combined mask", to extract these rows.
 			# We do not want this to fail on unmasked astropy tables, and so to make it easy
 			# we convert everything to masked arrays.
 			
 			
-			for colname in self.mlparams.features + self.mlparams.labels:
+			for colname in self.mlparams.inputs + self.mlparams.targets:
 				assert catalog[colname].ndim == 1 # This code was not desinged for 2D columns.
 			
 			masks = np.column_stack([
 				np.array(np.ma.getmaskarray(np.ma.array(catalog[colname])), dtype=bool) \
-				for colname in self.mlparams.features + self.mlparams.labels])
+				for colname in self.mlparams.inputs + self.mlparams.targets])
 			combimask = np.sum(masks, axis=1).astype(bool)
 			assert combimask.size == len(catalog)
 		
-			logger.info("%i out of %i (%.2f %%) rows have masked features or labels and will not be used" \
+			logger.info("%i out of %i (%.2f %%) rows have masked inputs or targets and will not be used" \
 				% (np.sum(combimask), combimask.size, 100.0 * float(np.sum(combimask)) / float(combimask.size)))
 		
 			# Now we turn the relevant rows and columns of the catalog into unmasked 2D numpy arrays.
 			# There are several ways of turning astropy.tables into plain numpy arrays.
 			# The shortest is np.array(table...)
 			# I use the following one, as I find it the most explicit (in terms of respecting
-			# the order of features and labels).
+			# the order of inputs and targets).
 			# We could add dtype control, but the automatic way should work fine.
 		
-			featuresdata = np.column_stack([np.array(catalog[colname])[np.logical_not(combimask)] for colname in \
-				self.mlparams.features])	
-			labelsdata = np.column_stack([np.array(catalog[colname])[np.logical_not(combimask)] for colname in \
-				self.mlparams.labels])
+			inputsdata = np.column_stack([np.array(catalog[colname])[np.logical_not(combimask)] for colname in \
+				self.mlparams.inputs])	
+			targetsdata = np.column_stack([np.array(catalog[colname])[np.logical_not(combimask)] for colname in \
+				self.mlparams.targets])
 		
-			assert featuresdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
-			assert labelsdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
+			assert inputsdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
+			assert targetsdata.shape[0] == np.sum(np.logical_not(combimask)) # Number of good (unmasked) rows
 		
 		
 		
 		
 			# And we call the tool's train method:
-			self.tool.train(features=featuresdata, labels=labelsdata)
+			self.tool.train(features=inputsdata, labels=targetsdata)
 		
 		endtime = datetime.now()
 		logger.info("Done! This training took %s" % (str(endtime - starttime)))
@@ -244,17 +261,17 @@ class ML:
 
 	def predict(self, catalog):
 		"""
-		Computes the prediction(s) based on the features in the given catalog.
-		Of course it will return a new astropy.table to which the new "predlabels" columns are added,
+		Computes the prediction(s) based on the inputs in the given catalog.
+		Of course it will return a new astropy.table to which the new "predictions" columns are added,
 		instead of changing your catalog in place.
 		If any feature values of your catalog are masked, the corresponding rows will not be predicted,
-		and the predlabels columns will get masked accordingly.
+		and the predictions columns will get masked accordingly.
 		
 		"""
-		logger.info("Predicting %s with %s using features %s..." % (self.mlparams.predlabels, str(self), self.mlparams.features))
+		logger.info("Predicting %s with %s using inputs %s..." % (self.mlparams.predictions, str(self), self.mlparams.inputs))
 		
-		# First let's check that the predlabels do not yet exist
-		for predlabel in self.mlparams.predlabels:
+		# First let's check that the predictions do not yet exist
+		for predlabel in self.mlparams.predictions:
 			if predlabel in catalog.colnames:
 				raise RuntimeError("The predlabel '%s' already exists in the catalog, refusing to overwrite" % predlabel)
 		
@@ -264,9 +281,9 @@ class ML:
 
 			# We do not care about removing masks by hand here, as Tenbilac can deal with this.
 			
-			featuresdata = get3Ddata(catalog, self.mlparams.features)
+			inputsdata = get3Ddata(catalog, self.mlparams.inputs)
 			
-			preddata = self.tool.predict(features=featuresdata)
+			preddata = self.tool.predict(inputs=inputsdata)
 			
 			# This is an appropriatedly masked 3D numpy array
 			
@@ -277,9 +294,9 @@ class ML:
 			outcat = astropy.table.Table(copy.deepcopy(catalog), masked=True)
 			
 			# ... to which we add the preddata.
-			# An explicit loop, to highlight that we care very much about the order (to get labels right)
+			# An explicit loop, to highlight that we care very much about the order (to get targets right)
 	
-			for (i, predlabel) in enumerate(self.mlparams.predlabels):
+			for (i, predlabel) in enumerate(self.mlparams.predictions):
 
 				data=preddata[:,i,:].transpose()
 				assert data.ndim == 2 # Indeed this is now always 2D.
@@ -293,28 +310,28 @@ class ML:
 		
 		else: # FANN or SkyNet etc:	
 		
-			# We rather manually build a mask for the features. A row is masked whenever one or more features ar masked.
+			# We rather manually build a mask for the inputs. A row is masked whenever one or more inputs ar masked.
 		
-			featuresmask = np.column_stack([
+			inputsmask = np.column_stack([
 				np.array(np.ma.getmaskarray(np.ma.array(catalog[feature])), dtype=bool) \
-				for feature in self.mlparams.features])
-			allfeaturesmask = np.sum(featuresmask, axis=1).astype(bool)
-			assert allfeaturesmask.size == len(catalog)
+				for feature in self.mlparams.inputs])
+			allinputsmask = np.sum(inputsmask, axis=1).astype(bool)
+			assert allinputsmask.size == len(catalog)
 		
-			logger.info("%i out of %i (%.2f %%) rows have masked features and will not be predicted" \
-				% (np.sum(allfeaturesmask), allfeaturesmask.size, 100.0 * float(np.sum(allfeaturesmask)) / float(allfeaturesmask.size)))
+			logger.info("%i out of %i (%.2f %%) rows have masked inputs and will not be predicted" \
+				% (np.sum(allinputsmask), allinputsmask.size, 100.0 * float(np.sum(allinputsmask)) / float(allinputsmask.size)))
 			
-			# Now we get the array of unmasked features:
-			featuresdata = np.column_stack([np.array(catalog[colname])[np.logical_not(allfeaturesmask)] for colname in self.mlparams.features])
-			assert featuresdata.shape[0] == np.sum(np.logical_not(allfeaturesmask)) # Number of good (unmasked) rows
-			assert featuresdata.shape[1] == len(self.mlparams.features) # Number of features
+			# Now we get the array of unmasked inputs:
+			inputsdata = np.column_stack([np.array(catalog[colname])[np.logical_not(allinputsmask)] for colname in self.mlparams.inputs])
+			assert inputsdata.shape[0] == np.sum(np.logical_not(allinputsmask)) # Number of good (unmasked) rows
+			assert inputsdata.shape[1] == len(self.mlparams.inputs) # Number of inputs
 			
 			# We can run the prediction tool, it doesn't have to worry about any masks:
-			preddata = self.tool.predict(features=featuresdata)
+			preddata = self.tool.predict(features=inputsdata)
 			
 			# Let's check that the output looks good:
-			assert preddata.shape[0] == np.sum(np.logical_not(allfeaturesmask)) # Number of good (unmasked) rows
-			assert preddata.shape[1] == len(self.mlparams.predlabels) # Number of predlabels
+			assert preddata.shape[0] == np.sum(np.logical_not(allinputsmask)) # Number of good (unmasked) rows
+			assert preddata.shape[1] == len(self.mlparams.predictions) # Number of predictions
  	 
   			# Finally, we build a catalog containing the predicted data.
 			# We'll work on and return a **masked** copy of the input catalog
@@ -322,14 +339,14 @@ class ML:
 			outcat = astropy.table.Table(copy.deepcopy(catalog), masked=True)
 			
 			# ... to which we add masked columns.
-			# An explicit loop, to highlight that we care very much about the order (to get labels right).
-			for (i, predlabel) in enumerate(self.mlparams.predlabels):
+			# An explicit loop, to highlight that we care very much about the order (to get targets right).
+			for (i, predlabel) in enumerate(self.mlparams.predictions):
 			
 				newcoldata = np.ma.masked_all(len(outcat)) # All entries masked
-				newcoldata[np.logical_not(allfeaturesmask)] = preddata[:,i] # Automatically unmasks entries
+				newcoldata[np.logical_not(allinputsmask)] = preddata[:,i] # Automatically unmasks entries
 				newcol = astropy.table.MaskedColumn(data=newcoldata, name=predlabel) 
 				assert len(newcol) == len(outcat) # OK, hard to imagine how this can fail
-				assert np.all(newcol.mask == allfeaturesmask) # This checks that the newcol was correctly created
+				assert np.all(newcol.mask == allinputsmask) # This checks that the newcol was correctly created
 				
 				outcat.add_column(newcol)
 
@@ -348,6 +365,9 @@ def get3Ddata(catalog, colnames):
 	The 3D output array has shape (realization, feature, galaxy).
 
 	"""
+	
+	if len(colnames) == 0:
+		raise RuntimeError("No colnames to get data from!")
 	
 	# Check for exotic catalogs (do they even exist ?)
 	for colname in colnames:

@@ -58,11 +58,16 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 		nsnc = 1 # the number of SNC versions
 	elif statparams["snc_type"] == 1:
 		nsnc = 8 # the number of SNC versions
+	elif statparams["snc_type"] == 2:
+		nsnc = 80
+	elif statparams["snc_type"] == 3:
+		nsnc = 800
 	else:
 		raise RuntimeError("Unknown snc_type")
 	nx = nsnc * nc
+	sncrot = 180.0/float(nsnc) # Rotation for SNC, in degrees. For example, 22.5 for snc_type == 1
 	
-	logger.info("The grid will be %i x %i" % (nx, ny))
+	logger.info("The grid will be %i x %i, and the number of SNC rotations is %i." % (nx, ny, nsnc))
 	
 	rows = [] # The "table"
 	for i in range(n): # We loop over all "truely different" galaxies (not all SNC galaxies)
@@ -84,11 +89,11 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 			rows.append(gal) # So rows will be a list of dicts
 		
 		
-		elif statparams["snc_type"] == 1: # SNC with 8 versions rotated by 22.5 deg
+		else: # SNC with nsnc different versions rotated by sncrot degrees
 		
-			for roti in range(8):
+			for roti in range(nsnc):
 				rotgal = copy.deepcopy(gal)
-				(rotgal["tru_g1"], rotgal["tru_g2"]) = tools.calc.rotg(gal["tru_g1"], gal["tru_g2"], roti*22.5)
+				(rotgal["tru_g1"], rotgal["tru_g2"]) = tools.calc.rotg(gal["tru_g1"], gal["tru_g2"], roti*sncrot)
 				
 				# And now each of the SNC versions gets a consecutive ix but the same iy:
 				rotgal["ix"] = pix * nsnc + roti
@@ -174,7 +179,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	
 	if "loadpsfimg" in todo:
 		psfimg = catalog.meta["psf"].load() # Loading the actual GalSim Image
-	
+		psfinfo = catalog.meta["psf"]
+
 	if "tru_pixel" in todo:
 		pix = galsim.Pixel(catalog["tru_pixel"][0]) # We have checked in checkcat that all values are equal.
 		
@@ -326,7 +332,7 @@ def checkcat(cat):
 	
 	if "psf" in cat.meta: # The user provided some PSFs in form of stamps
 		logger.info("I will use provided PSF stamps (from '%s')" % (str(cat.meta["psf"])))
-		cat.meta["psf"].checkcolumns(catalog) # Check that the ImageInfo object matches to the catalog.
+		cat.meta["psf"].checkcolumns(cat) # Check that the ImageInfo object matches to the catalog.
 		
 		todo.append("loadpsfimg")
 				

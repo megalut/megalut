@@ -153,11 +153,11 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 	logger.debug("Predicting with tweakmode '%s' and totweak '%s'..." % (tweakmode, totweak))
 	
 	# We check that the MLs do not predict the same predlabels, as otherwise we can't merge the predictions into a single catalog.
-	predlabels = []
+	predictions = []
 	for (mlparams, toolparams) in paramslist:
-		predlabels.extend(mlparams.predlabels)
-	if len(predlabels) != len(set(predlabels)):
-		raise RuntimeError("Your predlabels are not unique.")
+		predictions.extend(mlparams.predictions)
+	if len(predictions) != len(set(predictions)):
+		raise RuntimeError("Your predictions are not unique.")
 
 	
 	# And now we make the predictions one after the other, always reusing the same catalog.

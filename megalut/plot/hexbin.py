@@ -47,6 +47,7 @@ def hexbin(ax, cat, featx, featy, featc=None, makecolorbar=True, cblabel="Counts
 	- mincnt = 30
 	- cmap = "Blues" # add "_r" to reverse... (one of my favs for residuals is "rainbow", "gnuplot2",)
 	- reduce_C_function = np.mean (default), tools.calc.rmsd_delta (to compute RMSD from prediction errors)
+	- bins = "log" (works only for "counts", so without a featc. Otherwise, specify the reduce_C_function...
 		
 	More info at http://matplotlib.org/api/axes_api.html?highlight=hexbin#matplotlib.axes.Axes.hexbin
 	

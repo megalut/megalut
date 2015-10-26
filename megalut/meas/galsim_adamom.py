@@ -46,7 +46,7 @@ def measfct(catalog, runon="img", stampsize=None, **kwargs):
 	return measure(img, catalog, xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname, stampsize=stampsize, **kwargs)
 
 
-def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"):
+def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_", variant="default"):
 	"""
 	Use the pixel positions provided via the 'catalog' input table to extract
 	postage stamps from the image and measure their shape parameters.
@@ -65,6 +65,10 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 	:param stampsize: width = height of stamps, has to be even
 	:type stampsize: int
 	:param prefix: a string to prefix the field names that I'll write
+	:param variant: a switch for different variants of parameters for this method. 'default' uses defaults,
+		'wider' starts failed default-measurements again with a larger sigma and more iterations.
+	:type variant: string
+	
 	
 	:returns: masked astropy table
 	
@@ -78,7 +82,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 		raise RuntimeError("The stampsize should be even!")
 
 	starttime = datetime.now()
-	logger.info("Starting measurements on %ix%i stamps" % (stampsize, stampsize))
+	logger.info("Starting measurements on %ix%i stamps, with variant='%s'" % (stampsize, stampsize, variant))
 	
 	# We prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(catalog), masked=True) # Convert the table to a masked table
@@ -119,17 +123,35 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 			continue
 				
 		# And now we measure the moments... galsim may fail from time to time, hence the try:
-		try:
-			res = galsim.hsm.FindAdaptiveMom(gps)
-			
-		except:
-			# This is awesome, but clutters the output 
-			#logger.exception("GalSim failed on: %s" % (str(gal)))
-			# So insted of logging this as an exception, we use debug, but include the tarceback :
-			logger.debug("GalSim failed on:\n %s" % (str(gal)), exc_info = True)	
-			gal[prefix + "flag"] = 3	
-			continue
+		if variant == "default":
+			try: # We simply try defaults:
+				res = galsim.hsm.FindAdaptiveMom(gps)
+			except:
+				# This is awesome, but clutters the output 
+				#logger.exception("GalSim failed on: %s" % (str(gal)))
+				# So insted of logging this as an exception, we use debug, but include the tarceback :
+				logger.debug("HSM with default settings failed on:\n %s" % (str(gal)), exc_info = True)	
+				gal[prefix + "flag"] = 3	
+				continue # skip to next stamp !
 		
+		elif variant == "wider":
+		
+			try:
+				try: # First we try defaults:
+					res = galsim.hsm.FindAdaptiveMom(gps)
+				except: # We change a bit the settings:
+					logger.debug("HSM defaults failed, retrying with larger sigma...")
+					hsmparams = galsim.hsm.HSMParams(max_mom2_iter=1000)
+					res = galsim.hsm.FindAdaptiveMom(gps, guess_sig=15.0, hsmparams=hsmparams)			
+
+			except: # If this also fails, we give up:
+				logger.debug("Even the retry failed on:\n %s" % (str(gal)), exc_info = True)	
+				gal[prefix + "flag"] = 3	
+				continue
+		
+		else:
+			raise RuntimeError("Unknown variant setting '{variant}'!".format(variant=variant))
+	
 		gal[prefix+"flux"] = res.moments_amp
 		gal[prefix+"x"] = res.moments_centroid.x + 1.0 # Not fully clear why this +1 is needed. Maybe it's the setOrigin(0, 0).
 		gal[prefix+"y"] = res.moments_centroid.y + 1.0 # But I would expect that GalSim would internally keep track of these origin issues.
