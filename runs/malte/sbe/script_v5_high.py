@@ -4,14 +4,12 @@
 
 import megalut.sbe
 import mymeasfct
-import mysimparams
-import mymlparamsshape
-import mymlparamsshear
-import myplots3p4
+import mysimparams_v5 as mysimparams
+import mymlparams_v5 as mymlparams
 import myplots
-import mytests
 
 import logging
+
 #logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
 logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
 
@@ -19,75 +17,71 @@ logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcNam
 ####### Configuration #######
 
 run = megalut.sbe.run.Run(
-	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN",
-	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_workdir",
-	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN",
-	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_workdir",
-
-	#sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2",
-	#workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v2_workdir",
 	
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3_workdir",
 	
-	ncpu = 6
+	ncpu = 4
 	)
 
 
 
 
-### v 3.5: going back to stuff similar than 
+simparams = mysimparams.SBE_v5()
+simparams.set_high_sn()
+
+mlparams = mymlparams.trainparamslist
 
 
-shapesimparams = mysimparams.SBE_v3_shapes()
-shapesimparams.set_high_sn()
-shapemlparams = mymlparamsshape.trainparamslist
-
-
-shearsimparams = mysimparams.SBE_v3_shears()
+#shearsimparams = mysimparams.SBE_v3_shears()
 #shearsimparams.name = "SBE_v3_shears_morerea"  # Warning, this is huge (and not necessary, it seems)
-shearsimparams.set_high_sn()
-
-shearsimparams.name = "SBE_v3_shears_morecase"
-
-shearmlparams = mymlparamsshear.trainparamslist
+#shearsimparams.set_low_sn()
+#shearsimparams.name = "SBE_v3_shears_morecase"
+#shearmlparams = mymlparamsshear.trainparamslist
 
 
+run.drawsims(simparams, n=50, nc=10, ncat=5000, nrea=1, stampsize=150) # An attempt with not that many galaxies per case.
 
-######  start here for new run on high_SN   ######
+#running...
 
-#run.makecats(onlyn=None, sbe_sample_scale=0.05)
-#run.measobs(mymeasfct.default, stampsize=150, skipdone=False)
-#run.groupobs()
+#simparams.name = SBE_v5_morerea
+#run.drawsims(simparams, n=1000, nc=10, ncat=500, nrea=2, stampsize=150) # few cases, mut higher precision (4 times larger)
 
-# running...
 
-#run.showmeasobsfrac()
 
-# Testing if sims are right:
-#run.drawsims(shapesimparams, n=2500, nc=50, ncat=1, nrea=1, stampsize=150)
-#run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
-#run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-#myplots.measfails(run, shapesimparams)
+
+
+
+
+"""
+#simparams.name = "SBE_v3_shears_morecase" # corresponds to run.drawsims(simparams, n=500, nc=10, ncat=5000, nrea=1, stampsize=150)
+
+
+# but slow, 12 gigs of ram...
+
+
+run.meassims(simparams, mymeasfct.default, stampsize=150)
+run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+run.prepcases(simparams, groupcolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
+
+
+
+
+#run.traintenbilacshear(simparams, mlparams)
+
+"""
+
+
+
+
+"""
 #myplots.simobscompa(run, shapesimparams, rea=1)
-
-
 # First, the shapes
+
 
 #run.drawsims(shapesimparams, n=2500, nc=50, ncat=10, nrea=200, stampsize=150)
 #run.meassims(shapesimparams, mymeasfct.default, stampsize=150)
 #run.groupsimmeas(shapesimparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-
-#myplots.simobscompa(run, shapesimparams, rea=1)
-
-# todo:
-# check simobscompa, if nothing weird happendend due to the new measfct
-
-
-
-
-
-
 
 #run.traintenbilac(shapesimparams, shapemlparams)
 
@@ -135,7 +129,7 @@ shearmlparams = mymlparamsshear.trainparamslist
 
 
 
-
+"""
 
 """
 
