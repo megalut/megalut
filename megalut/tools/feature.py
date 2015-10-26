@@ -197,7 +197,8 @@ def cutmasked(cat, features):
 	
 	"""
 	
-
+	if len(cat) == 0:
+		raise RuntimeError("Give me a non-empty catalog.")
 	# The first objective is to get a list of 1D masks, one per column.
 	
 	masklist = []
