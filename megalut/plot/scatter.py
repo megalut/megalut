@@ -262,7 +262,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			#metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
 			metrics = tools.metrics.metrics(cat, featx, featy)
 			
-			metrics_text = "predfrac: %.3f\nRMSD: %.3f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
 		except:
 			logger.warning("Metrics compuation failed", exc_info = True)
