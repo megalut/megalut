@@ -223,7 +223,7 @@ class Run():
 		Idem
 		"""
 		measfctkwargs = {"stampsize":stampsize}
-		megalut.meas.run.onsims(self.worksimdir, simparams, self.worksimdir, measfct, measfctkwargs, ncpu=self.ncpu)
+		megalut.meas.run.onsims(self.worksimdir, simparams, self.worksimdir, measfct, measfctkwargs, ncpu=self.ncpu, skipdone=False)
 		
 		
 
@@ -256,7 +256,9 @@ class Run():
 
 		megalut.tools.io.writepickle(groupmeascat, os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
 
-
+		
+		
+	
 
 	def traintenbilac(self, simparams, trainparamslist):
 		"""
@@ -321,6 +323,8 @@ class Run():
 
 	def inspect(self, simparams=None):
 		
+		
+		
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		
 		print cat.colnames
@@ -369,7 +373,7 @@ class Run():
 
 
 
-	def traintenbilacshear(self, simparams, trainparamslist, name=None):
+	def traintenbilacshear(self, simparams, trainparamslist):
 		"""
 		Trains for predicting weights
 		"""
@@ -377,8 +381,7 @@ class Run():
 		# We load the training catalog
 		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
 		
-		if name is None:
-			name = "with_" + simparams.name
+		name = "with_" + simparams.name
 		traindir = os.path.join(self.workmldir, name)
 		
 		megalut.learn.run.train(simcat, traindir, trainparamslist, ncpu=self.ncpu)
@@ -397,19 +400,71 @@ class Run():
 		
 		#print cat.colnames
 		
-		megalut.tools.io.writepickle(cat, os.path.join(self.workmldir, "selfprecat_shear.pkl"))
+		megalut.tools.io.writepickle(cat, os.path.join(traindir, "selfprecat_shear.pkl"))
+	
+	def inspectshear(self, simparams, trainparamslist):
+	
+		
+		name = "with_" + simparams.name
+		traindir = os.path.join(self.workmldir, name)
+	
+		cat = megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat_shear.pkl"))
+	
+		
+		#data = megalut.learn.ml.get3Ddata(cat, ["pre_g1", "pre_g1_w3"])
+		
+		tru_s = cat["tru_s1"]
+		pre_g = cat["pre_g1"]
+		pre_w = cat["pre_g1_w3"]
+		
+		print tru_s.shape, pre_g.shape, pre_w.shape
+		
+		wgs = np.mean(pre_g * pre_w, axis=1) * 0.95
+		biases = wgs - tru_s
+		
+		print np.mean(np.square(biases))
+			
+		ret = megalut.tools.calc.linreg(tru_s, wgs)
+		print ret
+		
+		#exit()
+		
+		#import matplotlib.pyplot as plt
+		
+		#plt.plot(tru_s, bias, "r.")
+		#plt.show()
+		
+		
+	
+		"""
+		import matplotlib.pyplot as plt
+		
+		dat = cat["pre_g1_w1"][0]#.filled(-0.1)
+		
+		print dat
+		
+		print np.clip(dat, 1, 5)
+		
+		#print dat.shape
+		
+		#plt.hist(dat, bins=100)
+		#plt.show()
+		"""
 	
 	
-	
-	
-	def predictsbe(self, shapeml, shearml):
+	def predictsbe(self, shapesimparams, shapeml, shearsimparams, shearml):
 	
 		cat = megalut.tools.io.readpickle(self.groupobspath)
 		#print cat.colnames
 		#print len(cat)
 		
-		cat = megalut.learn.run.predict(cat, self.workmldir, shapeml)
-		cat = megalut.learn.run.predict(cat, self.workmldir, shearml)
+		
+		shapetraindir = os.path.join(self.workmldir, "with_" + shapesimparams.name)
+		sheartraindir = os.path.join(self.workmldir, "with_" + shearsimparams.name)
+		
+		
+		cat = megalut.learn.run.predict(cat, shapetraindir, shapeml)
+		cat = megalut.learn.run.predict(cat, sheartraindir, shearml)
 		
 		#print cat.colnames
 		#exit()
@@ -424,8 +479,8 @@ class Run():
 		
 		cat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "predgroupobs.pkl"))
 		
-		cat["pre_s1"] = cat["pre_g1"] * 10**cat["pre_g1_w2"]
-		cat["pre_s2"] = cat["pre_g2"] * 10**cat["pre_g2_w2"]
+		cat["pre_s1"] = cat["pre_g1"] * 1.0*cat["pre_g1_w3"]
+		cat["pre_s2"] = cat["pre_g2"] * 1.0*cat["pre_g2_w3"]
 		
 		
 		print cat.colnames
