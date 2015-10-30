@@ -6,9 +6,11 @@ import megalut.sbe
 import mymeasfct
 import mysimparams_v5 as mysimparams
 import mymlparams_v5 as mymlparams
-import myplots
+import myplots_v5 as myplots
+import mysbeana_v5 as mysbeana
 
 import logging
+
 
 #logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
 logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.INFO)
@@ -18,13 +20,11 @@ logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcNam
 
 run = megalut.sbe.run.Run(
 	
-	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3",
+	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3bis",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_high_SN_v3_workdir",
 	
-	ncpu = 4
+	ncpu = 2
 	)
-
-
 
 
 simparams = mysimparams.SBE_v5()
@@ -33,23 +33,28 @@ simparams.set_high_sn()
 mlparams = mymlparams.trainparamslist
 
 
-#shearsimparams = mysimparams.SBE_v3_shears()
-#shearsimparams.name = "SBE_v3_shears_morerea"  # Warning, this is huge (and not necessary, it seems)
-#shearsimparams.set_low_sn()
-#shearsimparams.name = "SBE_v3_shears_morecase"
-#shearmlparams = mymlparamsshear.trainparamslist
+# SBE_v5 :
+#run.drawsims(simparams, n=50, nc=10, ncat=5000, nrea=1, stampsize=150) # An attempt with not that many galaxies per case.
 
-
-run.drawsims(simparams, n=50, nc=10, ncat=5000, nrea=1, stampsize=150) # An attempt with not that many galaxies per case.
-
-#running...
-
-#simparams.name = SBE_v5_morerea
+simparams.name = "SBE_v5_morerea"
 #run.drawsims(simparams, n=1000, nc=10, ncat=500, nrea=2, stampsize=150) # few cases, mut higher precision (4 times larger)
 
 
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.prepcases(simparams, groupcolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
 
 
+#run.traintenbilacshear(simparams, mlparams)
+
+#run.selfpredictshear(simparams, mlparams)
+#myplots.shearsimbias(run, simparams, mode="high")
+
+
+run.predictsbe_v5(simparams, mlparams)
+run.analysepredsbe()
+run.writepredsbe()
+mysbeana.analyse(run)
 
 
 
