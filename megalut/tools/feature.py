@@ -60,6 +60,8 @@ class Feature():
 		We don't do anything about the mask here.
 		The point here is to get nice automatic behaviour even for 2D columns.
 		If flatten is True, 2D columns are returned as flattened to 1D.
+		Note that we use the default "C" order for this flattening. One could use "F", so that the output starts with the first realization of all the rows, then the second realization, etc.
+		But any "inconsistency" in the catalog would already be done before. Switching to F only helps if we also change the way meas.avg.onsims stacks its stuff.
 		
 		"""
 		
@@ -79,7 +81,7 @@ class Feature():
 			
 			if cat[self.colname].shape[1] == 1: # Then in fact it's a 1D column, with just one value per cell...
 				# We simply return the data from this colum, no need to care for rea.
-				output = cat[self.colname] #.flatten() # Not sure if would be logic to flatten it here.
+				output = cat[self.colname] #.flatten() # Not sure if would be logic to flatten it here. No, why would you do that ?
 			
 			elif self.rea is None:
 				raise RuntimeError("The column {self.colname} is 2D, please specify a rea for this feature!".format(self=self))
@@ -112,7 +114,7 @@ class Feature():
 			raise RuntimeError("Weird column shape!")
 		
 		if output.ndim != 1 and flatten:
-			return output.T.flatten()			
+			return output.T.flatten()	
 		else:
 			return output
 				
@@ -149,7 +151,7 @@ def get1Ddata(cat, features, keepmasked=True):
 		if mod != 0:
 			raise RuntimeError("Cannot work with lengths %i and %i" % (large, small))
 		
-		logger.info("Some of the columns need to be tiled {0} times...".format(div))
+		logger.warning("Mild warning: some of the columns need to be tiled {0} times, and at this stage we cannot verify if the ordering of this tiling is as intended.".format(div))
 		
 		# We repeat the smaller column div times...
 		for d in data:
