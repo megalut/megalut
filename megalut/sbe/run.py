@@ -15,6 +15,8 @@ import io
 import plot
 import analysis
 
+import subprocess
+
 class Run():
 
 
@@ -259,77 +261,83 @@ class Run():
 		
 		
 	
-
-	def traintenbilac(self, simparams, trainparamslist):
-		"""
-		
-		"""
-		
-		# We load the training catalog
-		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
-		
-		#print simcat.colnames
-		#print simcat
-		#print simcat.meta
-		
-		name = "with_" + simparams.name
-		traindir = os.path.join(self.workmldir, name)
-		#exit()
-		
-		# We reject crap ones
-		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1) # How many hsm sucesses per case
-		simcat = simcat[simcat["goodfortrain"] > float(simcat.meta["ngroup"])/2.0] # keeping only if half of the reas could be measured
-		logger.info("Keeping %i galaxies for training" % (len(simcat)))
-		
-		
-		#simcat = simcat[:100]
-		#print "only training on 1000 gals hack"
-		
-		#megalut.tools.io.writepickle(simcat, os.path.join(traindir, simparams.name, "traincat.pkl"))
-		
-		megalut.learn.run.train(simcat, traindir, trainparamslist, ncpu=self.ncpu)
-
-
-
-	def selfpredict(self, simparams, trainparamslist):
-		
-		
-		name = "with_" + simparams.name
-		traindir = os.path.join(self.workmldir, name)
-	
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
-		
-		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)		
-		
-		megalut.tools.io.writepickle(cat, os.path.join(traindir, "selfprecat.pkl"))
+#
+#	def traintenbilac(self, simparams, trainparamslist):
+#		"""
+#		
+#		"""
+#		
+#		# We load the training catalog
+#		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+#		
+#		#print simcat.colnames
+#		#print simcat
+#		#print simcat.meta
+#		
+#		name = "with_" + simparams.name
+#		traindir = os.path.join(self.workmldir, name)
+#		#exit()
+#		
+#		# We reject crap ones
+#		simcat["goodfortrain"] = np.ma.count(simcat["adamom_flux"], axis=1) # How many hsm sucesses per case
+#		simcat = simcat[simcat["goodfortrain"] > float(simcat.meta["ngroup"])/2.0] # keeping only if half of the reas could be measured
+#		logger.info("Keeping %i galaxies for training" % (len(simcat)))
+#		
+#		
+#		#simcat = simcat[:100]
+#		#print "only training on 1000 gals hack"
+#		
+#		#megalut.tools.io.writepickle(simcat, os.path.join(traindir, simparams.name, "traincat.pkl"))
+#		
+#		megalut.learn.run.train(simcat, traindir, trainparamslist, ncpu=self.ncpu)
+#
 
 
+#	def selfpredict(self, simparams, trainparamslist):
+#		
+#		
+#		name = "with_" + simparams.name
+#		traindir = os.path.join(self.workmldir, name)
+#	
+#		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+#		
+#		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)		
+#		
+#		megalut.tools.io.writepickle(cat, os.path.join(traindir, "selfprecat.pkl"))
+#
 
-	def othersimpredict(self, othersimparams, simparams, trainparamslist):
-		"""
-		simparams and triainparamslist have been used for the training.
-		othersimpredict is another simparams for which you want the preds.	
-		"""
-		
-		name = "with_" + simparams.name
-		traindir = os.path.join(self.workmldir, name)
 
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, othersimparams.name, "groupmeascat.pkl"))		
-		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
-
-		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, othersimparams.name, "groupmeascat_predshapes.pkl"))
-
+#	def othersimpredict(self, othersimparams, simparams, trainparamslist):
+#		"""
+#		simparams and triainparamslist have been used for the training.
+#		othersimpredict is another simparams for which you want the preds.	
+#		"""
+#		
+#		name = "with_" + simparams.name
+#		traindir = os.path.join(self.workmldir, name)
+#
+#		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, othersimparams.name, "groupmeascat.pkl"))		
+#		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
+#
+#		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, othersimparams.name, "groupmeascat_predshapes.pkl"))
+#
 
 
 	def inspect(self, simparams=None):
 		
 		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
+		out = megalut.learn.ml.get3Ddata(cat, ["adamom_g1", "adamom_g2", "adamom_sigma", "adamom_flux", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
+		print out.shape
 		
-		print cat.colnames
-		print cat["tru_flux", "tru_g1", "tru_psf_g1", "tru_s1"]
-		print cat.meta
+		
+		
+		
+		#print cat.colnames
+		#print cat["tru_flux", "tru_g1", "tru_psf_g1", "tru_s1", "adamom_flux"]
+		#print cat.meta
 		
 
 
@@ -375,7 +383,7 @@ class Run():
 
 	def traintenbilacshear(self, simparams, trainparamslist):
 		"""
-		Trains for predicting shear or weights
+		Trains for predicting shear
 		"""
 		
 		# We load the training catalog
@@ -395,12 +403,48 @@ class Run():
 		
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
 		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		
 		
 		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
 		
 		#print cat.colnames
 		
 		megalut.tools.io.writepickle(cat, os.path.join(traindir, "selfprecat_shear.pkl"))
+		#megalut.tools.io.writepickle(cat, os.path.join(traindir, "selfprecat_shear_nocases.pkl"))
+	
+	
+	
+	def otherpredictshear(self, othersimname, simparams, trainparamslist):
+		"""
+		
+		"""
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, othersimname, "groupmeascat_cases.pkl"))		
+		
+		name = "with_" + simparams.name
+		traindir = os.path.join(self.workmldir, name)
+		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
+
+		megalut.tools.io.writepickle(cat, os.path.join(traindir, "otherprecat_shear.pkl"))
+	
+		
+	def traintenbilacweight(self, simparams, trainparamslist):
+		"""
+		Trains for predicting weights
+		"""
+		
+		# We load the shear-predicted catalog
+		
+		traindir = os.path.join(self.workmldir, "with_" + simparams.name)
+		#simcat = megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat_shear.pkl"))
+		simcat = megalut.tools.io.readpickle(os.path.join(traindir, "otherprecat_shear.pkl"))
+		
+		
+		megalut.learn.run.train(simcat, traindir, trainparamslist, ncpu=self.ncpu)
+
+		
+		
 	
 	def inspectshear(self, simparams, trainparamslist):
 	
@@ -451,25 +495,39 @@ class Run():
 		#plt.show()
 		"""
 	
-	
-	def predictsbe(self, shapesimparams, shapeml, shearsimparams, shearml):
+	def predictsbe_v5(self, simparams, mlparams):
 	
 		cat = megalut.tools.io.readpickle(self.groupobspath)
 		#print cat.colnames
 		#print len(cat)
-		
-		
-		shapetraindir = os.path.join(self.workmldir, "with_" + shapesimparams.name)
-		sheartraindir = os.path.join(self.workmldir, "with_" + shearsimparams.name)
-		
-		
-		cat = megalut.learn.run.predict(cat, shapetraindir, shapeml)
-		cat = megalut.learn.run.predict(cat, sheartraindir, shearml)
-		
-		#print cat.colnames
 		#exit()
 		
+		traindir = os.path.join(self.workmldir, "with_" + simparams.name)
+		
+		cat = megalut.learn.run.predict(cat, traindir, mlparams)
+			
 		megalut.tools.io.writepickle(cat, os.path.join(self.workobsdir, "predgroupobs.pkl"))
+	
+	
+	
+#	def predictsbe(self, shapesimparams, shapeml, shearsimparams, shearml):
+#	
+#		cat = megalut.tools.io.readpickle(self.groupobspath)
+#		#print cat.colnames
+#		#print len(cat)
+#		
+#		
+#		shapetraindir = os.path.join(self.workmldir, "with_" + shapesimparams.name)
+#		sheartraindir = os.path.join(self.workmldir, "with_" + shearsimparams.name)
+#		
+#		
+#		cat = megalut.learn.run.predict(cat, shapetraindir, shapeml)
+#		cat = megalut.learn.run.predict(cat, sheartraindir, shearml)
+#		
+#		#print cat.colnames
+#		#exit()
+#		
+#		megalut.tools.io.writepickle(cat, os.path.join(self.workobsdir, "predgroupobs.pkl"))
 
 	
 	def analysepredsbe(self):
@@ -479,8 +537,8 @@ class Run():
 		
 		cat = megalut.tools.io.readpickle(os.path.join(self.workobsdir, "predgroupobs.pkl"))
 		
-		cat["pre_s1"] = cat["pre_g1"] * 1.0*cat["pre_g1_w3"]
-		cat["pre_s2"] = cat["pre_g2"] * 1.0*cat["pre_g2_w3"]
+		#cat["pre_s1"] = cat["pre_g1"] * 1.0*cat["pre_g1_w3"]
+		#cat["pre_s2"] = cat["pre_g2"] * 1.0*cat["pre_g2_w3"]
 		
 		
 		print cat.colnames
@@ -497,7 +555,89 @@ class Run():
 
 
 	
+	def writepredsbe(self):
+		"""
+		
+		From Bryan's mail:
+		
+		FITS format table (empty primary header, binary table in first	extension)
+		-Keyword SHE_FMT in header describing specific format (which will be
+		incremented/changed when the required output columns are changed).
+		Present value to be '0.1'
+		-The following columns, with each row representing one galaxy:
+		--GAL_ID (64-bit integer, format code 'K' - unique ID for each galaxy)
+		--GAL_G1 (32-bit float, format code 'E' - "shear" component 1 estimate)
+		--GAL_G2 (32-bit float, format code 'E' - "shear" component 2 estimate)
+		--GAL_G1_ERR (32-bit float, format code 'E' - "shear" component 1 error)
+		--GAL_G2_ERR (32-bit float, format code 'E' - "shear" component 2 error)
+		
+		
+		"""
 	
+		cat =  megalut.tools.io.readpickle(os.path.join(self.workobsdir, "predgroupobs.pkl"))
+		
+		print cat.colnames
+		
+		cat["GAL_ID"] = cat["ID"]
+		cat["GAL_G1"] = cat["pre_s1"]
+		cat["GAL_G2"] = cat["pre_s2"]
+		cat["GAL_G1_ERR"] = 0.0*cat["pre_s1"] + 1.0 # this way we get masked values if no shear was estimated.
+		cat["GAL_G2_ERR"] = 0.0*cat["pre_s1"] + 1.0
+		
+		cat.keep_columns(["GAL_ID", "GAL_G1", "GAL_G2", "GAL_G1_ERR", "GAL_G2_ERR"])
+		
+		
+		# Now we have to deal with masked entries. Three options, either fill, or remove.
+		
+		#cat = cat.filled(999.0) # this might not be ok for the latest script
+		
+		# Second attemps, putting high errors on masked points...
+		#mask = cat["GAL_G1"].mask
+		#print np.sum(mask), np.size(mask)
+		#cat["GAL_G1"][mask] = 0.0
+		#cat["GAL_G2"][mask] = 0.0
+		#cat["GAL_G1_ERR"][mask] = 1.0e15
+		#cat["GAL_G2_ERR"][mask] = 1.0e15
+		
+		# In fact, we need negative values for the errors:
+		mask = cat["GAL_G1"].mask
+		print np.sum(mask), np.size(mask)
+		cat["GAL_G1"][mask] = 0.0
+		cat["GAL_G2"][mask] = 0.0
+		cat["GAL_G1_ERR"][mask] = -1e120
+		cat["GAL_G2_ERR"][mask] = -1e120
+		
+		
+		#maskremover = megalut.tools.table.Selector("maskremover", [("nomask", "GAL_G1"), ("nomask", "GAL_G2")])
+		#cat = maskremover.select(cat)
+		
+		cat.meta = {"SHE_FMT":"0.1"}
+		
+		cat.sort("GAL_ID") # Testing if this has an influence (of course it should not...)
+		
+		print "For testing, here are a few rows of your catalog:"
+		print cat
+		
+		print cat.meta
+		
+		fitspath = os.path.join(self.workmldir, "obsprecat.fits")
+		if os.path.exists(fitspath):
+			os.remove(fitspath)
+		
+		cat.write(fitspath, format='fits')
+		
+		logger.info("Wrote '{}'.".format(fitspath))
+		
+	
+	
+	def runsbeana(self):
+		"""
+		Just to avoid messing up on the last meter, we script this step as well.
+
+		--> Not done here, but in the script.
+		"""
+		
+		
 	
 
 
