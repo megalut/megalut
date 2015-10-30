@@ -200,7 +200,10 @@ class ML:
 			targetsdata = np.column_stack([np.array(catalog[colname]) for colname in \
 				self.mlparams.targets]).transpose()
 			
-			assert inputsdata.shape[2] == targetsdata.shape[1] # Same number of galaxies!
+			assert inputsdata.shape[2] == targetsdata.shape[1] #  Number of cases must match!
+			if auxinputsdata is not None:
+				assert auxinputsdata.shape[2] == targetsdata.shape[1] #  Number of cases must match!
+				# note that these tests are repeated withing tenbilac, of course.			
 
 			# And we call the tool's train method:
 			self.tool.train(inputs=inputsdata, targets=targetsdata, auxinputs=auxinputsdata,
@@ -376,6 +379,7 @@ def get3Ddata(catalog, colnames):
 	
 	# Let's check the depths of the 2D colums to see what size we need.
 	nreas = list(set([catalog[colname].shape[1] for colname in colnames if catalog[colname].ndim == 2]))
+	#logger.info("We have the following nreas different from one in there: {}".format(nreas))
 	if len(nreas) > 1:
 		raise RuntimeError("The columns have incompatible depths!")
 
