@@ -6,7 +6,8 @@ import megalut.sbe
 import mymeasfct
 import mysimparams_v5 as mysimparams
 import mymlparams_v5 as mymlparams
-import myplots
+import myplots_v5 as myplots
+import mysbeana_v5 as mysbeana
 
 import logging
 
@@ -21,7 +22,7 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
 	
-	ncpu = 4
+	ncpu = 1
 	)
 
 
@@ -31,38 +32,68 @@ simparams.set_low_sn()
 mlparams = mymlparams.trainparamslist
 
 
-#shearsimparams = mysimparams.SBE_v3_shears()
-#shearsimparams.name = "SBE_v3_shears_morerea"  # Warning, this is huge (and not necessary, it seems)
-#shearsimparams.set_low_sn()
-#shearsimparams.name = "SBE_v3_shears_morecase"
-#shearmlparams = mymlparamsshear.trainparamslist
+# Measureing obs
+"""
+run.makecats(onlyn=None, sbe_sample_scale=0.05)
+run.measobs(mymeasfct.default, stampsize=150, skipdone=False)
+run.groupobs()
+run.showmeasobsfrac()
+"""
 
 
 # Testing the v5 sims
-
 """
 simparams.name = "quicktest"
-run.drawsims(simparams, n=100, nc=50, ncat=6, nrea=1, stampsize=150)
+run.drawsims(simparams, n=1000, nc=50, ncat=1, nrea=1, stampsize=150)
 run.meassims(simparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
 #myplots.measfails(run, simparams)
-myplots.simobscompa(run, simparams, rea=1)
+#myplots.simobscompa(run, simparams, rea=1)
 """
 
+
+# Drawing the sims
+
+# SBE_v5 :
 #run.drawsims(simparams, n=50, nc=10, ncat=5000, nrea=1, stampsize=150) # An attempt with not that many galaxies per case. # DONE
+
+simparams.name = "SBE_v5_morerea"
+#run.drawsims(simparams, n=1000, nc=10, ncat=500, nrea=2, stampsize=150) # few cases, but higher precision (4 times larger)
+
 
 #simparams.name = "SBE_v3_shears_morecase" # corresponds to run.drawsims(simparams, n=500, nc=10, ncat=5000, nrea=1, stampsize=150)
 # but slow, 12 gigs of ram...
 
+#run.meassims(simparams, mymeasfct.default, stampsize=150)
+#run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
+#run.prepcases(simparams, groupcolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
 
-run.meassims(simparams, mymeasfct.default, stampsize=150)
-run.groupsimmeas(simparams, mymeasfct.default_groupcols, mymeasfct.default_removecols)
-run.prepcases(simparams, groupcolnames = ["tru_s1", "tru_s2", "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma"])
-
-
+#run.inspect(simparams)
 
 
 #run.traintenbilacshear(simparams, mlparams)
+
+#run.selfpredictshear(simparams, mlparams)
+#myplots.shearsimbias(run, simparams, mode="low", rea="full")
+
+myplots.shearsimbias2(run, simparams, rea="full")
+
+
+"""
+# Did not work
+#run.otherpredictshear("SBE_v5", simparams, mlparams)
+#wmlparams = mymlparams.wtrainparamslist
+#run.traintenbilacweight(simparams, wmlparams)
+"""
+
+
+
+#run.predictsbe_v5(simparams, mlparams)
+#run.analysepredsbe()
+#run.writepredsbe()
+#mysbeana.analyse(run)
+
+
 
 
 
