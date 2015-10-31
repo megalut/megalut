@@ -27,7 +27,8 @@ class TenbilacParams:
 	
 	
 	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, gtol=1e-8,
-		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1, startidentity=True,
+		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1,
+		startidentity=True, ininoisewscale=0.1, ininoisebscale=0.1,
 		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden",
 		verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
 		"""
@@ -60,6 +61,8 @@ class TenbilacParams:
 		self.mbfrac = mbfrac
 		self.mbloops = mbloops
 		self.startidentity = startidentity
+		self.ininoisewscale = ininoisewscale
+		self.ininoisebscale = ininoisebscale
 		self.normtargets = normtargets
 		self.normtype = normtype
 		self.actfctname = actfctname
@@ -164,7 +167,7 @@ class TenbilacWrapper:
 		if oldtrain is None:
 			if self.params.startidentity:
 				training.net.setidentity()
-			training.net.addnoise(wscale=0.1, bscale=0.1)
+			training.net.addnoise(wscale=self.params.ininoisewscale, bscale=self.params.ininoisebscale)
 						
 		else:
 			logger.info("Reusing previous network!")
