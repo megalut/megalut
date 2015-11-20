@@ -10,6 +10,7 @@ import scatter
 import hist
 import hexbin
 import contour
+import bin
 
 
 import exp
