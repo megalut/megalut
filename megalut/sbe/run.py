@@ -380,6 +380,20 @@ class Run():
 		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
 
 
+	def addpreweights(self, simparams):
+		"""
+		
+		"""
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+		
+		cat["pw"] = cat["snr"]**2
+		#cat["pw"] = np.clip(cat["snr"], 8.0, 10000.0) - 8.0
+		
+		megalut.tools.io.writepickle(cat, os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases_pw.pkl"))
+
+		
+
+
 
 	def traintenbilacshear(self, simparams, trainparamslist):
 		"""
@@ -387,7 +401,8 @@ class Run():
 		"""
 		
 		# We load the training catalog
-		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+		#simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+		simcat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases_pw.pkl"))
 		
 		name = "with_" + simparams.name
 		traindir = os.path.join(self.workmldir, name)
@@ -402,8 +417,10 @@ class Run():
 		traindir = os.path.join(self.workmldir, name)
 		
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_predshapes.pkl"))
-		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
 		#cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat.pkl"))
+		
+		cat = megalut.tools.io.readpickle(os.path.join(self.worksimdir, simparams.name, "groupmeascat_cases_pw.pkl"))
 		
 		
 		cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
@@ -501,6 +518,8 @@ class Run():
 		#print cat.colnames
 		#print len(cat)
 		#exit()
+		
+		cat["pw"] = cat["snr"]**2 # does not harm for non-pw trainings...
 		
 		traindir = os.path.join(self.workmldir, "with_" + simparams.name)
 		
@@ -628,6 +647,51 @@ class Run():
 		
 		logger.info("Wrote '{}'.".format(fitspath))
 		
+
+
+	def writepredsbe_pw(self):
+		"""
+		
+		"""
+	
+		cat =  megalut.tools.io.readpickle(os.path.join(self.workobsdir, "predgroupobs.pkl"))
+		
+		print cat.colnames
+		
+		cat["GAL_ID"] = cat["ID"]
+		cat["GAL_G1"] = cat["pre_s1pw"]
+		cat["GAL_G2"] = cat["pre_s2pw"]
+		
+		cat["GAL_G1_ERR"] = np.sqrt(((10000.0/cat["pw"]) - 0.25**2) / 2.0)
+		cat["GAL_G2_ERR"] = cat["GAL_G1_ERR"]
+		
+		cat.keep_columns(["GAL_ID", "GAL_G1", "GAL_G2", "GAL_G1_ERR", "GAL_G2_ERR"])
+				
+		# In fact, we need negative values for the errors:
+		mask = cat["GAL_G1"].mask
+		print np.sum(mask), np.size(mask)
+		cat["GAL_G1"][mask] = 0.0
+		cat["GAL_G2"][mask] = 0.0
+		cat["GAL_G1_ERR"][mask] = -1e120
+		cat["GAL_G2_ERR"][mask] = -1e120
+		
+			
+		cat.meta = {"SHE_FMT":"0.1"}
+		
+		cat.sort("GAL_ID") # Testing if this has an influence (of course it should not...)
+		
+		print "For testing, here are a few rows of your catalog:"
+		print cat
+		
+		print cat.meta
+		
+		fitspath = os.path.join(self.workmldir, "obsprecat.fits")
+		if os.path.exists(fitspath):
+			os.remove(fitspath)
+		
+		cat.write(fitspath, format='fits')
+		
+		logger.info("Wrote '{}'.".format(fitspath))
 	
 	
 	def runsbeana(self):
