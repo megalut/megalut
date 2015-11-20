@@ -159,6 +159,11 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	# We now attribute PSFs to each source in these catalogs. That's a little bit of work.
 	if psfcat is not None:
 	
+		if "psf_adamom_flux" in psfcat.colnames:
+			logger.warning("Special hack: we kick out PSFs that could not be measured!")
+			psfcat = psfcat[psfcat["psf_adamom_flux"].mask == False]
+		
+	
 		# First we check that the PSF stuff looks fine:
 		if "img" not in psfcat.meta:
 			raise RuntimeError("ImageInfo of psfcat is missing, put it into psfcat.meta['img']")
@@ -256,7 +261,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		pickle.dump(catalog, catfile) # We directly use this open file object.
 		catfile.close()
 		logger.info("Wrote catalog '%s'" % catalog.meta["catname"])
-			
+		
 	
 	# And now we draw the image realizations for those catalogs.
 	# This is done with multiprocessing.
