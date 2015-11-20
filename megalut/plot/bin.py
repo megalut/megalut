@@ -23,17 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 
-def res(ax, cat, featx, featy, featres=None, nbins=10, selector=None, title=None):
+def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=True, metrics=False):
 	"""
-	Shows the residues featy-featx in bins of featx.
-	
-	
-	:param featres: a **fake** Feature, to specify a name and range to be used in the plot.
-		No data from the catalog will be extracted using this feature.
+	Shows the residues featy in bins of featx.
 	
 	"""
 
-	logger.info("Preparing plainbin plot of '{}' versus '{}'".format(featy.colname, featx.colname))
+	logger.info("Preparing res plot of '{}' versus '{}'".format(featy.colname, featx.colname))
 	
 	nall = len(cat)
 	nsel = nall
@@ -43,7 +39,6 @@ def res(ax, cat, featx, featy, featres=None, nbins=10, selector=None, title=None
 	
 	features = [featx, featy]
 	data = tools.feature.get1Ddata(cat, features, keepmasked=False)
-	residues = data[featy.colname] - data[featx.colname] # We'll plot the bias, in fact
 	
 	# Finding the range to bin:
 	if featx.low is not None and featx.high is not None: 
@@ -65,9 +60,7 @@ def res(ax, cat, featx, featy, featres=None, nbins=10, selector=None, title=None
 	
 	ymeans = []
 	ystds = []
-	resmeans = []
-	resstds = []
-	
+		
 	for ind in inrangeindices: # We loop over the bins
 		
 		inbools = binindices == ind # a boolean array
@@ -76,40 +69,49 @@ def res(ax, cat, featx, featy, featres=None, nbins=10, selector=None, title=None
 		if nin < 2:
 			ymeans.append(np.nan)
 			ystds.append(np.nan)
-			resmeans.append(np.nan)
-			resstds.append(np.nan)
 			continue
 		
 		thesexvals = data[featx.colname][inbools]
 		theseyvals = data[featy.colname][inbools]
-		theseresvals = residues[inbools]
 		
 		#assert len(thesexvals) == nin
 		#assert len(theseyvals) == nin
-		#assert len(theseresvals) == nin
 		
 		ymeans.append(np.mean(theseyvals))
 		ystds.append(np.std(theseyvals))
-		resmeans.append(np.mean(theseresvals))
-		resstds.append(np.std(theseresvals))
 		
 				
-	
 	#errorbarkwargs = {"capthick":0, "zorder":-100}
 	errorbarkwargs = {"color":"black", "ls":"None", "marker":"."}
 	
-	ax.errorbar(bincenters, resmeans, yerr=resstds, **errorbarkwargs)
+	ax.errorbar(bincenters, ymeans, yerr=ystds, **errorbarkwargs)
+	
+	
+	if showidline: # Show the identity line
+		idlinekwargs = {"ls":"--", "color":"gray", "lw":1}
+		ax.plot(binrange, (0.0, 0.0), **idlinekwargs)
+
+	if metrics:
 		
+		logger.info("Now computing metrics for this res plot...")
+		try:
+			metrics = tools.metrics.metrics(cat, featx, featy, pre_is_res=True)
+			
+			#metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			metrics_text = "RMSD = %.5f\nm = %.1f +/- %.1f, c = %.1f +/- %.1f e-3" % (metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			
+			
+			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
+		except:
+			logger.warning("Metrics compuation failed", exc_info = True)
+
+
 	# We want minor ticks:
 	ax.xaxis.set_minor_locator(AutoMinorLocator(5))
 	ax.yaxis.set_minor_locator(AutoMinorLocator(5))
-
-	if featres:
-		ax.set_ylim(featres.low, featres.high)
-		ax.set_ylabel(featres.nicename)
-	else:
-		ax.set_ylabel("{} - {}".format(featy.nicename, featx.nicename))
-
+	
+	ax.set_ylabel(featy.nicename)
+	ax.set_ylim(featy.low, featy.high)
 	ax.set_xlabel(featx.nicename)
 	ax.set_xlim(binrange)
 
