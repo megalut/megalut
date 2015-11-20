@@ -458,7 +458,7 @@ def groupreshape(cat, groupcolnames):
 	
 	return outcat
 		
-		
+
 
 def addstats(cat, col, outcolprefix=None):
 	"""
@@ -485,6 +485,32 @@ def addstats(cat, col, outcolprefix=None):
 	cat[outcolprefix + "_med"] = np.ma.median(cat[col], axis=1)
 	cat[outcolprefix + "_std"] = np.ma.std(cat[col], axis=1)
 	cat[outcolprefix + "_n"] = np.ma.count(cat[col], axis=1)
+	
+	
+
+def make2d(cat, cols):
+	"""
+	Transform the columns cols into 2D-columns by reshaping them to shape (len(cat), 1)
+	
+	:param cols: a list of column names
+	
+	I'm surprised that this seems to be required for element-wise operations between 2D and 1D columns.
+	"""
+	
+	lencat = len(cat)
+	for col in cols:
+		
+		if cat[col].ndim == 1:
+			reshaped = cat[col].reshape((lencat, 1))
+			cat.remove_column(col)
+			cat[col] = reshaped
+		
+		elif cat[col].ndim == 2: # We silently ignore columsn that are already 2D.
+			continue
+		
+		else:
+			logger.critical("Could not turn '{}' indo a 2D-column!".format(col))
+			continue
 	
 	
 
