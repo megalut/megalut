@@ -50,7 +50,7 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 	# If you do not like this default behaviour, you can overwrite it using the kwarg "range=None" !
 	
 	
-	mykwargs = {"histtype":"stepfilled", "bins":100, "range":histrange, "alpha":0.5, "ec":"none", "color":"gray"}
+	mykwargs = {"histtype":"stepfilled", "bins":100, "range":histrange, "alpha":0.5, "ec":"none", "color":"black"}
 	mykwargs.update(kwargs)
 
 	# We call hist:
