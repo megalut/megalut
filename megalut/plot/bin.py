@@ -60,6 +60,9 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=T
 	
 	ymeans = []
 	ystds = []
+	ylowps = []
+	yhighps = []
+	ns = []
 		
 	for ind in inrangeindices: # We loop over the bins
 		
@@ -69,7 +72,12 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=T
 		if nin < 2:
 			ymeans.append(np.nan)
 			ystds.append(np.nan)
+			ylowps.append(np.nan)
+			yhighps.append(np.nan)
+			ns.append(np.nan)
 			continue
+		
+		ns.append(nin)
 		
 		thesexvals = data[featx.colname][inbools]
 		theseyvals = data[featy.colname][inbools]
@@ -80,11 +88,21 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=T
 		ymeans.append(np.mean(theseyvals))
 		ystds.append(np.std(theseyvals))
 		
+		ylowps.append(np.fabs(np.percentile(theseyvals, 15.8) - np.mean(theseyvals)))
+		yhighps.append(np.fabs(np.percentile(theseyvals, 84.1) - np.mean(theseyvals)))
+		
+		
 				
 	#errorbarkwargs = {"capthick":0, "zorder":-100}
-	errorbarkwargs = {"color":"black", "ls":"None", "marker":"."}
+	errorbarkwargs = {"color":"black", "ls":"None", "marker":".", "lw":1.0, "mew":1.0}
 	
-	ax.errorbar(bincenters, ymeans, yerr=ystds, **errorbarkwargs)
+	#yerr = ystds
+	yerr = np.array([ylowps, yhighps])
+	
+	ax.errorbar(bincenters, ymeans, yerr=yerr, **errorbarkwargs)
+	
+	#yerr = np.array(ystds) / np.sqrt(np.array(ns))
+	#ax.errorbar(bincenters, ymeans, yerr=yerr, color="red", ls="None", marker=".")
 	
 	
 	if showidline: # Show the identity line
