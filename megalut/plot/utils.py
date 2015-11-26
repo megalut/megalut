@@ -1,7 +1,27 @@
-#"""
-#Helper functions for plots
-#"""
-#
+"""
+Helper functions for plots
+Stuff that can be useful in many plots, to avoid repeading it...
+"""
+
+
+def showselector(ax, sel):
+	"""
+	Writes text about the selector on the axes
+	"""
+	
+	
+	text = "\n".join([repr(crit) for crit in sel.criteria])
+			
+	ax.annotate(text, xy=(0.0, 0.5), xycoords='axes fraction', xytext=(8, -12), textcoords='offset points', ha='left', va='top')
+	
+
+
+
+
+
+
+
+
 #import numpy as np
 #from .. import tools
 #

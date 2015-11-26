@@ -6,6 +6,8 @@ import numpy as np
 import astropy.table
 import datetime
 
+from . import calc
+
 import copy
 
 import logging
@@ -460,6 +462,11 @@ def groupreshape(cat, groupcolnames):
 		
 
 
+#####
+# OK these addstats and addrmsd should be moved out of here, maybe in calc.
+#####
+
+
 def addstats(cat, col, outcolprefix=None):
 	"""
 	Adds columns containing some statistics of the values in each cell of col.
@@ -486,7 +493,32 @@ def addstats(cat, col, outcolprefix=None):
 	cat[outcolprefix + "_std"] = np.ma.std(cat[col], axis=1)
 	cat[outcolprefix + "_n"] = np.ma.count(cat[col], axis=1)
 	
+
+def addrmsd(cat, colm, colt, outcolprefix=None):
+	"""
+	For each row, adds the RMSD of the many measured values in colm with respect to the true value in colt.
+	"""
 	
+	if outcolprefix == None:
+		outcolprefix = colm
+
+	if cat[colm].ndim != 2:
+		raise RuntimeError("Column '{}' must be 2-dimensional !".format(colm))
+	if cat[colt].ndim != 1:
+		raise RuntimeError("Column '{}' is not 1-dimensional !".format(colm))
+
+	outcolnames = [outcolprefix + suffix for suffix in ["_rmsd", "_bias"]]
+	for outcolname in outcolnames:
+		if outcolname in cat.colnames:
+			raise RuntimeError("Column {} already exists, refusing to overwrite.".format(outcolname))
+	
+	logger.info("Adding RMSD and bias for column {} of shape {} with respect to {}...".format(colm, cat[colm].shape, colt))
+	
+	cat[outcolprefix + "_rmsd"] = np.sqrt(np.mean((cat[colm] - cat[colt])**2.0, axis=1))
+	cat[outcolprefix + "_bias"] = np.mean(cat[colm] - cat[colt], axis=1)
+	
+	
+
 
 def make2d(cat, cols):
 	"""

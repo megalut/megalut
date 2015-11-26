@@ -15,6 +15,7 @@ from matplotlib.ticker import AutoMinorLocator
 from matplotlib.lines import Line2D
 
 from .. import tools
+from . import utils
 
 import astropy
 
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=True, metrics=False):
+def res(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title=None, showidline=True, metrics=False):
 	"""
 	Shows the residues featy in bins of featx.
 	
@@ -36,6 +37,7 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=T
 	if selector:
 		cat = selector.select(cat)
 		nsel = len(cat)
+		selfrac = float(nsel)/float(nall)
 	
 	features = [featx, featy]
 	data = tools.feature.get1Ddata(cat, features, keepmasked=False)
@@ -123,6 +125,9 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=T
 		except:
 			logger.warning("Metrics compuation failed", exc_info = True)
 
+	if selector and showselector:
+		utils.showselector(ax, selector)
+
 
 	# We want minor ticks:
 	ax.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -133,8 +138,8 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, title=None, showidline=T
 	ax.set_xlabel(featx.nicename)
 	ax.set_xlim(binrange)
 
-	if selector:
-		ax.set_title(selector.name)
+	if selector and showselector:
+		ax.set_title(selector.name + " ({:3.0f} %)".format(100.0*selfrac))
 
 	if title:
 		ax.set_title(title)
