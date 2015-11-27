@@ -12,7 +12,7 @@ import numpy as np
 import scipy.stats
 import scipy.optimize
 
-from .. import tools
+from megalut import tools
 
 import logging
 logger = logging.getLogger(__name__)
