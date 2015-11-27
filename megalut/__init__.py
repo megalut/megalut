@@ -1,5 +1,8 @@
 """
 MegaLUT galaxy shape measurement package
+
+This code is not public, and provide here only for tests.
+Contact the MegaLUT developers for any questions.
 """
 
 __all__ = ["learn", "meas", "plot", "sim", "tools"]
