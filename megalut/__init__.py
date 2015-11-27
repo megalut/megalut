@@ -2,7 +2,7 @@
 MegaLUT galaxy shape measurement package
 """
 
-__all__ = ["learn", "meas", "plot", "sim", "great3"]
+__all__ = ["learn", "meas", "plot", "sim", "tools"]
 
 
 # We probably don't want to keep these 2 lines here, but for now it makes writing scripts simpler.
