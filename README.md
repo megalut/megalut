@@ -6,8 +6,8 @@ Directory structure
 
 - **megalut**: the python package
 - **sphinx**: the partially auto-generated documentation
-- **demo**: for now, just some simple standalone demo scripts
+- **wrappers**: standalone python packages wrapping MegaLUT for specific datasets
+- **runs**: a place to store settings and scripts for particular runs. Also includes demo code.
 - **related**: slides, images, special documentation...
-- **runs**: where to store settings and scripts for particular runs
 - **v4**: a copy of MegaLUT v4 as used for GREAT3.
 
