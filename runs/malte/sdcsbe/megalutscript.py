@@ -1,5 +1,5 @@
 """
-Script to run MegaLUT on SBE data in a highly automated way, as one single step.
+Script to run MegaLUT on SBE data in a highly "automated" way, as one single step.
 Designed for performance tests in SDCs (and not to assess measurement quality).
 
 Run
@@ -17,15 +17,7 @@ import logging
 import argparse
 
 # MegaLUT-specific imports
-
-# On my (Malte) machines:
-import megalut
-import tenbilac
 import megalutsbe
-
-# The config
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument("sbedatadir", help="path to the SBE data directory")
