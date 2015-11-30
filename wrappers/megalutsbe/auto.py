@@ -22,6 +22,7 @@ import numpy as np
 from . import io
 
 import megalut
+import megalut.learn
 
 import logging
 logger = logging.getLogger(__name__)
@@ -72,9 +73,9 @@ def work(worker):
 	Defines the work to be done by a Worker
 	"""
 	
-	worker.prepare()
-	worker.makeobsincat()
-	worker.measobs()
+	#worker.prepare()
+	#worker.makeobsincat()
+	#worker.measobs()
 	worker.predictobs()
 
 
@@ -105,6 +106,7 @@ class Worker():
 		
 		self.incatfilepath = os.path.join(self.workdir, "incat.pkl")
 		self.meascatfilepath = os.path.join(self.workdir, "meascat.pkl")
+		self.predcatfilepath = os.path.join(self.workdir, "predcat.pkl")
 		
 	
 	def __str__(self):
@@ -127,12 +129,12 @@ class Worker():
 			os.makedirs(self.workdir)
 	
 		
-	def makeobsincat(self, stampsize=200, n=32):
+	def makeobsincat(self, stampsize=200, n=32, sbe_sample_scale=0.05):
 		"""
 		Turns the SBE catalogs into MegaLUT catalogs 
 		"""
 		
-		logger.info("Making the input catalog for {}...".format(self))
+		logger.info("Making the input catalog of {}...".format(self))
 		
 		# We read the data file and turn it into an astropy table
 		cat = astropy.io.ascii.read(self.sbedatapath)
@@ -147,7 +149,18 @@ class Worker():
 		cat["yid"] = np.concatenate([np.ones(n, dtype=np.int)*i for i in range(n)])		
 		cat["x"] = stampsize/2.0 + cat["xid"]*(stampsize + 1) + 0.5
 		cat["y"] = stampsize/2.0 + cat["yid"]*(stampsize + 1) + 0.5
-					
+		
+		# We rename or translate some of the parameters into MegaLUT-style:
+		cat["tru_psf_g1"] = cat["PSF_shape_1"] * np.cos(2.0*cat["PSF_shape_2"]*np.pi/180)
+		cat["tru_psf_g2"] = cat["PSF_shape_1"] * np.sin(2.0*cat["PSF_shape_2"]*np.pi/180)
+		cat["tru_psf_sigma"] = cat["PSF_sigma_arcsec"] / sbe_sample_scale
+		
+		# Those will be useful for check plots:
+		cat["Galaxy_e1"] = cat["Galaxy_shape_1"] * np.cos(2.0*cat["Galaxy_shape_2"]*np.pi/180)
+		cat["Galaxy_e2"] = cat["Galaxy_shape_1"] * np.sin(2.0*cat["Galaxy_shape_2"]*np.pi/180)
+		cat["Galaxy_g1"] = cat["Galaxy_shear_1"] * np.cos(2.0*cat["Galaxy_shear_2"]*np.pi/180)
+ 		cat["Galaxy_g2"] = cat["Galaxy_shear_1"] * np.sin(2.0*cat["Galaxy_shear_2"]*np.pi/180)
+							
 		# We create the ImageInfo object
 		img = megalut.tools.imageinfo.ImageInfo(
 			filepath = self.sbeimagepath,
@@ -165,9 +178,9 @@ class Worker():
 		"""
 		Measures features on the inputs
 		"""
-		logger.info("Starting feature measurement {}...".format(self))
+		logger.info("Starting feature measurement of {}...".format(self))
 		
-		# We read the measfct
+		# We read the measfct-config:
 		measfct = {}
 		execfile(os.path.join(self.configdir, "measfct.py"), measfct)
 		measfctkwargs = {}
@@ -178,25 +191,27 @@ class Worker():
 	
 	def predictobs(self):
 		"""
-		Runs the ANNs to predict shear
+		Runs the machine learning to predict shear
 		"""
+
+		logger.info("Starting predictions of {}...".format(self))
 		
-		
-		"""
-		cat = megalut.tools.io.readpickle(self.groupobspath)
+		# We read the catalog
+		cat = megalut.tools.io.readpickle(self.meascatfilepath)
 		#print cat.colnames
 		#print len(cat)
 		#exit()
 		
-		cat["pw"] = cat["snr"]**2 # does not harm for non-pw trainings...
-		
-		traindir = os.path.join(self.workmldir, "with_" + simparams.name)
-		
-		cat = megalut.learn.run.predict(cat, traindir, mlparams)
+		# We read the mlparams:
+		mlparams = {}
+		execfile(os.path.join(self.configdir, "mlparams.py"), mlparams)
+	
+		# Run MegaLUT
+		cat = megalut.learn.run.predict(cat, self.configdir, mlparams["trainparamslist"])
 			
-		megalut.tools.io.writepickle(cat, os.path.join(self.workobsdir, "predgroupobs.pkl"))
+		# And write the output
+		megalut.tools.io.writepickle(cat, self.predcatfilepath)
 
-		"""
 		
 		
 		
