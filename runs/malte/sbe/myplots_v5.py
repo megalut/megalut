@@ -186,8 +186,8 @@ def shearsimbias(run, simparams, filepath=None, rea="full", mode="low"):
 	else:
 		raise RuntimeError("wrong mode")
 	
-	#cat["pre_s1"] = cat["pre_g1"]
-	#cat["pre_s2"] = cat["pre_g2"]
+	#cat["pre_s1"] = cat["pre_s1pw"]
+	#cat["pre_s2"] = cat["pre_s2pw"]
 
 	pre_s1 = Feature("pre_s1", -rg, rg, rea=rea)
 	pre_s2 = Feature("pre_s2", -rg, rg, rea=rea)
@@ -306,6 +306,78 @@ def shearsimbias(run, simparams, filepath=None, rea="full", mode="low"):
 
 
 
+
+
+def shearsimbias3(run, simparams, filepath=None, rea="full", mode="low"):
+	"""
+
+	"""
+	
+	#cat =  megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, "groupmeascat.pkl"))
+	#cat =  megalut.tools.io.readpickle(os.path.join(run.worksimdir, simparams.name, "groupmeascat_cases.pkl"))
+	
+	name = "with_" + simparams.name
+	traindir = os.path.join(run.workmldir, name)
+	cat =  megalut.tools.io.readpickle(os.path.join(traindir, "selfprecat_shear.pkl"))
+
+	#print cat.colnames
+	#print cat
+	#print cat.meta
+	
+	if mode == "low":
+		rs = 0.03
+		rg = 0.7
+		rb = 0.005
+		relrb = 20.0
+		snrrange=(0, 60)
+		
+	elif mode == "high":
+		rs = 0.03
+		rg = 0.7
+		rb = 0.001
+		relrb = 5.0
+		snrrange=(0, 300)	
+	
+	else:
+		raise RuntimeError("wrong mode")
+	
+	cat["pre_s1"] = cat["pre_s1pw"] * cat["pw"]
+	cat["pre_s2"] = cat["pre_s2pw"] * cat["pw"]
+
+	megalut.tools.table.addstats(cat, "pre_s1")
+	megalut.tools.table.addstats(cat, "pre_s2")
+	megalut.tools.table.addstats(cat, "pw")
+	
+	cat["s1wmean"] = cat["pre_s1_mean"] / cat["pw_mean"]
+	cat["s2wmean"] = cat["pre_s2_mean"] / cat["pw_mean"]
+	
+
+	pre_s1_mean = Feature("s1wmean", -rs, rs)
+	pre_s2_mean = Feature("s2wmean", -rs, rs)
+	tru_s1 = Feature("tru_s1", -rs, rs)
+	tru_s2 = Feature("tru_s2", -rs, rs)
+
+	
+	fig = plt.figure(figsize=(22, 13))
+	cmap = matplotlib.cm.get_cmap("rainbow")
+	
+	sckws = {"cmap":cmap}
+	idkws={"color":"black", "lw":2}
+	
+	ax = fig.add_subplot(3, 4, 1)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, metrics=True, showidline=True, idlinekwargs=idkws)
+
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, metrics=True, showidline=True, idlinekwargs=idkws)
+
+
+	
+	plt.tight_layout()
+	if filepath:
+		plt.savefig(filepath)
+	else:
+		plt.show()
+	plt.close(fig) # Helps releasing memory when calling in large loops.
 
 
 

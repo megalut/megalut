@@ -22,7 +22,7 @@ run = megalut.sbe.run.Run(
 	sbedatadir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3",
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3_workdir",
 	
-	ncpu = 1
+	ncpu = 2
 	)
 
 
@@ -71,12 +71,21 @@ simparams.name = "SBE_v5_morerea"
 #run.inspect(simparams)
 
 
-#run.traintenbilacshear(simparams, mlparams)
+#run.addpreweights(simparams)
 
+pwmlparams = mymlparams.pwtrainparamslist
+run.traintenbilacshear(simparams, pwmlparams)
+
+#run.selfpredictshear(simparams, pwmlparams)
+#myplots.shearsimbias3(run, simparams, mode="low", rea="full")
+
+
+
+# Works, versino without weights:
+#run.traintenbilacshear(simparams, mlparams)
 #run.selfpredictshear(simparams, mlparams)
 #myplots.shearsimbias(run, simparams, mode="low", rea="full")
-
-myplots.shearsimbias2(run, simparams, rea="full")
+#myplots.shearsimbias2(run, simparams, rea="full")
 
 
 """
@@ -88,9 +97,10 @@ myplots.shearsimbias2(run, simparams, rea="full")
 
 
 
-#run.predictsbe_v5(simparams, mlparams)
+#run.predictsbe_v5(simparams, pwmlparams)
 #run.analysepredsbe()
 #run.writepredsbe()
+#run.writepredsbe_pw()
 #mysbeana.analyse(run)
 
 
