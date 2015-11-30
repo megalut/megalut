@@ -73,10 +73,11 @@ def work(worker):
 	Defines the work to be done by a Worker
 	"""
 	
-	#worker.prepare()
-	#worker.makeobsincat()
-	#worker.measobs()
+	worker.prepare()
+	worker.makeobsincat()
+	worker.measobs()
 	worker.predictobs()
+	worker.writeoutcat()
 
 
 
@@ -107,6 +108,7 @@ class Worker():
 		self.incatfilepath = os.path.join(self.workdir, "incat.pkl")
 		self.meascatfilepath = os.path.join(self.workdir, "meascat.pkl")
 		self.predcatfilepath = os.path.join(self.workdir, "predcat.pkl")
+		self.outcatfilepath = os.path.join(self.workdir, "outcat.fits")
 		
 	
 	def __str__(self):
@@ -212,7 +214,47 @@ class Worker():
 		# And write the output
 		megalut.tools.io.writepickle(cat, self.predcatfilepath)
 
+	
+	def writeoutcat(self):
+		"""
+		Turns the predcat into an SBE-compliant FITS file
+		"""
+		
+		logger.info("Writing output catalog of {}...".format(self))
+		
+		cat =  megalut.tools.io.readpickle(self.predcatfilepath)
+		
+		cat["GAL_ID"] = cat["ID"]
+		cat["GAL_G1"] = cat["pre_s1"]
+		cat["GAL_G2"] = cat["pre_s2"]
+		cat["GAL_G1_ERR"] = 0.0*cat["pre_s1"] + 1.0 # this way we get masked values if no shear was estimated.
+		cat["GAL_G2_ERR"] = 0.0*cat["pre_s1"] + 1.0
+		
+		cat.keep_columns(["GAL_ID", "GAL_G1", "GAL_G2", "GAL_G1_ERR", "GAL_G2_ERR"])
+		
+		# Now we have to deal with masked entries.
+		# Negative values for their errors:
+		
+		mask = cat["GAL_G1"].mask
+		cat["GAL_G1"][mask] = 0.0
+		cat["GAL_G2"][mask] = 0.0
+		cat["GAL_G1_ERR"][mask] = -1e120
+		cat["GAL_G2_ERR"][mask] = -1e120
 		
 		
+		cat.meta = {"SHE_FMT":"0.1"}
+		cat.sort("GAL_ID")
+		
+		#print "For testing, here are a few rows of your catalog:"
+		#print cat
+		#print cat.meta
+		
+		if os.path.exists(self.outcatfilepath):
+			os.remove(self.outcatfilepath)
+		cat.write(self.outcatfilepath, format='fits')
+		
+		logger.info("Wrote '{}'.".format(self.outcatfilepath))
+		
+
 		
 		
