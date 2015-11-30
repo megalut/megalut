@@ -1,3 +1,7 @@
+"""
+These are settings for the feature measurement
+"""
+
 import megalut.meas
 
 def default(catalog):
