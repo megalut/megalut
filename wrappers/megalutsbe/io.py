@@ -3,6 +3,8 @@ I/O stuff adapted from example script
 """
 
 import os
+import logging
+logger = logging.getLogger(__name__)
 
 image_extension = ".fits"
 datafile_extension = "_details.dat"
@@ -41,6 +43,7 @@ def get_filenames(path):
                 if( is_good_image(subjoined_name) ):
                     filenames.append(subjoined_name.replace(image_extension,""))
     
+    logger.info("Found {} SBE images in {}".format(len(filenames), path))
     return filenames
 
 
