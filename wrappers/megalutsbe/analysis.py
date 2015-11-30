@@ -1,11 +1,9 @@
 """
-Analysis of the SBE results.
-Parts of this are copy-pasted from the xample analysis scripts by Bryan.
-
-That's why all this is so ugly, but let's keep it this way so that fixing parts of it
-can be easier.
-
+Analysis of the SBE results (just for quick first tests).
+Parts of this are copy-pasted from the xample analysis scripts by Bryan, but without really refactoring anything properly.
+So it's all quick and ugly here.
 """
+
 import multiprocessing as mtp
 import numpy as np
 

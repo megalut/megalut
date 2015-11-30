@@ -1,3 +1,7 @@
+"""
+This defines classes useful for step-by-step / manual use of MegaLUT on SBE data.
+"""
+
 import megalut
 import megalut.meas
 
@@ -11,9 +15,9 @@ import random
 import logging
 logger = logging.getLogger(__name__)
 
-import io
-import plot
-import analysis
+from . import io
+from . import plot
+from . import analysis
 
 import subprocess
 
