@@ -137,9 +137,8 @@ class Worker():
 		self.meascatfilepath = os.path.join(self.workdir, "meascat.pkl")
 		self.predcatfilepath = os.path.join(self.workdir, "predcat.pkl")
 		
-		self.worknamesubdirs = io.worknamesubdirs(self.sbepath)
-		self.outdir = os.path.join(self.topoutdir, self.worknamesubdirs)
-		self.outcatfilepath = os.path.join(self.outdir, "MegaLUT_output.fits")
+		self.splitworkname = io.splitworkname(self.sbepath)
+		self.outcatfilepath = os.path.join(self.topoutdir, self.splitworkname[0], self.splitworkname[1]+"_MegaLUT_output.fits")
 		
 	
 	def __str__(self):

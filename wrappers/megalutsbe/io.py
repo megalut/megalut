@@ -80,9 +80,9 @@ def workname(filename):
 	return "-".join(filename.split("/")[-2:])
 	
 	
-def worknamesubdirs(filename):
+def splitworkname(filename):
 	"""
-	Similar to workname, but in form of directories
+	Similar to workname, but in form of two strings, without the join.
 	"""
-	return "/".join(filename.split("/")[-2:])
+	return filename.split("/")[-2:]
 	
