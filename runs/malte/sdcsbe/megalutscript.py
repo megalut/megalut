@@ -12,6 +12,10 @@ Malte Tewes, November 2015
 import logging
 import argparse
 
+# We add megalutpkgs to the path
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), "megalutpkgs"))
+
 # MegaLUT-specific imports
 import megalutsbe
 
@@ -31,8 +35,16 @@ logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(n
 toplogger = logging.getLogger()
 toplogger.handlers[0].addFilter(logging.Filter(name='megalutsbe.auto'))
 
+# We gather some settings related to the wrapper
+settings = {
+	"nolog":args.nolog,
+	"sbestampsize":200, # if needed, make these command line arguments as well...
+	"sbestampn":32,
+	"sbesamplescale":0.05 
+}
+
 # We build a list of "workers" (i.e., jobs to be done, one per SBE image):
-workers = megalutsbe.auto.buildworkers(args.sbedatadir, args.configdir, args.workdir, args.outdir, n=args.onlyn, nolog=args.nolog)
+workers = megalutsbe.auto.buildworkers(args.sbedatadir, args.configdir, args.workdir, args.outdir, settings, n=args.onlyn)
 
 # And run those, usign a multiprocessign pool:
 megalutsbe.auto.run(workers, ncpu=args.ncpu)
