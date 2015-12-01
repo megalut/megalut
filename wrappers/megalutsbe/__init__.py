@@ -9,3 +9,4 @@ import io
 import run
 import analysis
 import auto
+import autoanalysis

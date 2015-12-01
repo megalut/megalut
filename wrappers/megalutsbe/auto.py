@@ -5,7 +5,7 @@ Given the very different approach from what I did when playing with the SBE inte
 	1) regarding the multiprocessing (one job per image, end-to-end: we do not use MegaLUT's own multiprocessing)
 	2) regarding the configuration (seen as pure input, not generated  by previous steps)
 ...we do not attempt to reuse any run.Run code here.
-So there is some code duplication from run.Run.
+So there is some code duplication from the run module.
 
 Malte, November 2015
 """
@@ -20,6 +20,7 @@ import astropy
 import numpy as np
 
 from . import io
+from . import autoanalysis
 
 import megalut
 import megalut.learn
@@ -29,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def buildworkers(sbedatadir, configdir, topworkdir, n=None):
+def buildworkers(sbedatadir, configdir, topworkdir, topoutdir, n=None, nolog=False):
 	"""
 	Sets up the workers to process some SBE data.
 	
@@ -40,16 +41,22 @@ def buildworkers(sbedatadir, configdir, topworkdir, n=None):
 	
 	sbepaths = io.get_filenames(sbedatadir)
 	
-	workers = [Worker(sbepath, configdir, topworkdir) for sbepath in sbepaths]
+	workers = [Worker(sbepath, configdir, topworkdir, topoutdir, nolog) for sbepath in sbepaths]
 	
 	if n != None:
 		workers = workers[:n]
 	
+	# Let's make sure at that the directories common to all workers exist:
+	if not os.path.exists(topworkdir):
+		os.makedirs(topworkdir)
+	if not os.path.exists(topoutdir):
+		os.makedirs(topoutdir)
+				
 	logger.info("Done with building {} workers".format(len(workers)))
 	return workers
 	
 
-def run(workers, ncpu=1):
+def run(workers, ncpu=1, logtodisk=True):
 	"""
 	Runs the workers, usign a multiprocessing pool.
 	"""
@@ -73,12 +80,28 @@ def work(worker):
 	Defines the work to be done by a Worker
 	"""
 	
+	if not worker.nolog:
+		# We create a new logging handler and add it to the root logger.
+		# I made this up and it seems to work just fine -- not sure if it's the best way to do it.
+		fh = logging.FileHandler(worker.logfilepath, mode="a")
+		fh.setLevel(logging.INFO)
+		formatter = logging.Formatter('PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s')
+		fh.setFormatter(formatter)
+		rootlogger = logging.getLogger()
+		rootlogger.addHandler(fh)
+	
+	
 	worker.prepare()
 	worker.makeobsincat()
 	worker.measobs()
 	worker.predictobs()
+	worker.testpred()
 	worker.writeoutcat()
-
+	
+	if not worker.nolog:
+		# And stop logging to that file
+		fh.close()
+		rootlogger.removeHandler(fh)
 
 
 class Worker():
@@ -88,7 +111,7 @@ class Worker():
 	"""
 
 
-	def __init__(self, sbepath, configdir, topworkdir):
+	def __init__(self, sbepath, configdir, topworkdir, topoutdir, nolog):
 		"""
 			
 		:param sbepath: something like /vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3/thread_0/low_SN_image_2
@@ -98,17 +121,25 @@ class Worker():
 		self.sbepath = sbepath
 		self.configdir = configdir
 		self.topworkdir = topworkdir
+		self.topoutdir = topoutdir
+		self.nolog = nolog
 		
 		self.sbeimagepath = io.imagefile(self.sbepath)
 		self.sbedatapath = io.datafile(self.sbepath)
 		self.workname = io.workname(self.sbepath)
+		
 		self.workdir = os.path.join(self.topworkdir, self.workname) # The general workdir to be used for this particular worker
 		self.imageworkdir = os.path.join(self.workdir, "imageworkdir")
+		
+		self.logfilepath = os.path.join(self.topworkdir, self.workname + "-log.txt")
 		
 		self.incatfilepath = os.path.join(self.workdir, "incat.pkl")
 		self.meascatfilepath = os.path.join(self.workdir, "meascat.pkl")
 		self.predcatfilepath = os.path.join(self.workdir, "predcat.pkl")
-		self.outcatfilepath = os.path.join(self.workdir, "outcat.fits")
+		
+		self.worknamesubdirs = io.worknamesubdirs(self.sbepath)
+		self.outdir = os.path.join(self.topoutdir, self.worknamesubdirs)
+		self.outcatfilepath = os.path.join(self.outdir, "MegaLUT_output.fits")
 		
 	
 	def __str__(self):
@@ -123,12 +154,12 @@ class Worker():
 		Creates directories
 		"""
 	
-		logger.info("Preparing directories for {}...".format(self))
+		logger.info("{}: preparing directories...".format(self))
 		
-		if not os.path.exists(self.topworkdir):
-			os.makedirs(self.topworkdir)
 		if not os.path.exists(self.workdir):
 			os.makedirs(self.workdir)
+		if not os.path.exists(self.outdir):
+			os.makedirs(self.outdir)
 	
 		
 	def makeobsincat(self, stampsize=200, n=32, sbe_sample_scale=0.05):
@@ -136,7 +167,7 @@ class Worker():
 		Turns the SBE catalogs into MegaLUT catalogs 
 		"""
 		
-		logger.info("Making the input catalog of {}...".format(self))
+		logger.info("{}: making the input catalog...".format(self))
 		
 		# We read the data file and turn it into an astropy table
 		cat = astropy.io.ascii.read(self.sbedatapath)
@@ -180,7 +211,7 @@ class Worker():
 		"""
 		Measures features on the inputs
 		"""
-		logger.info("Starting feature measurement of {}...".format(self))
+		logger.info("{}: starting feature measurement...".format(self))
 		
 		# We read the measfct-config:
 		measfct = {}
@@ -196,7 +227,7 @@ class Worker():
 		Runs the machine learning to predict shear
 		"""
 
-		logger.info("Starting predictions of {}...".format(self))
+		logger.info("{}: starting predictions...".format(self))
 		
 		# We read the catalog
 		cat = megalut.tools.io.readpickle(self.meascatfilepath)
@@ -215,12 +246,21 @@ class Worker():
 		megalut.tools.io.writepickle(cat, self.predcatfilepath)
 
 	
+	def testpred(self):
+	
+		logger.info("{}: quickly testing the predictions...".format(self))
+	
+		cat = megalut.tools.io.readpickle(self.predcatfilepath)
+		autoanalysis.quicktest(cat)
+
+
+
 	def writeoutcat(self):
 		"""
 		Turns the predcat into an SBE-compliant FITS file
 		"""
 		
-		logger.info("Writing output catalog of {}...".format(self))
+		logger.info("{}: writing output catalog...".format(self))
 		
 		cat =  megalut.tools.io.readpickle(self.predcatfilepath)
 		
@@ -253,8 +293,12 @@ class Worker():
 			os.remove(self.outcatfilepath)
 		cat.write(self.outcatfilepath, format='fits')
 		
-		logger.info("Wrote '{}'.".format(self.outcatfilepath))
-		
+		logger.info("{}: wrote '{}'.".format(self, self.outcatfilepath))
+	
+	
 
-		
+
+
+
+
 		
