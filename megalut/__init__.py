@@ -1,7 +1,7 @@
 """
 MegaLUT galaxy shape measurement package
 
-This code is not public, and provide here only for tests.
+Note that this code is currently not public.
 Contact the MegaLUT developers for any questions.
 """
 
