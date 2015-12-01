@@ -15,6 +15,7 @@ import sys
 import glob
 import datetime
 import multiprocessing
+import copy
 
 import astropy
 import numpy as np
@@ -30,18 +31,19 @@ logger = logging.getLogger(__name__)
 
 
 
-def buildworkers(sbedatadir, configdir, topworkdir, topoutdir, n=None, nolog=False):
+def buildworkers(sbedatadir, configdir, topworkdir, topoutdir, workersettings, n=None):
 	"""
 	Sets up the workers to process some SBE data.
 	
 	:param n: return only the "n" first workers
+	:param workersettings: a dict holding some further settings.
 	
 	"""
 	logger.info("Starting to build workers...")
 	
 	sbepaths = io.get_filenames(sbedatadir)
 	
-	workers = [Worker(sbepath, configdir, topworkdir, topoutdir, nolog) for sbepath in sbepaths]
+	workers = [Worker(sbepath, configdir, topworkdir, topoutdir, workersettings) for sbepath in sbepaths]
 	
 	if n != None:
 		workers = workers[:n]
@@ -56,7 +58,7 @@ def buildworkers(sbedatadir, configdir, topworkdir, topoutdir, n=None, nolog=Fal
 	return workers
 	
 
-def run(workers, ncpu=1, logtodisk=True):
+def run(workers, ncpu=1):
 	"""
 	Runs the workers, usign a multiprocessing pool.
 	"""
@@ -80,7 +82,7 @@ def work(worker):
 	Defines the work to be done by a Worker
 	"""
 	
-	if not worker.nolog:
+	if not worker.settings["nolog"]:
 		# We create a new logging handler and add it to the root logger.
 		# I made this up and it seems to work just fine -- not sure if it's the best way to do it.
 		fh = logging.FileHandler(worker.logfilepath, mode="a")
@@ -98,7 +100,7 @@ def work(worker):
 	worker.testpred()
 	worker.writeoutcat()
 	
-	if not worker.nolog:
+	if not worker.settings["nolog"]:
 		# And stop logging to that file
 		fh.close()
 		rootlogger.removeHandler(fh)
@@ -111,18 +113,19 @@ class Worker():
 	"""
 
 
-	def __init__(self, sbepath, configdir, topworkdir, topoutdir, nolog):
+	def __init__(self, sbepath, configdir, topworkdir, topoutdir, settings):
 		"""
 			
 		:param sbepath: something like /vol/fohlen11/fohlen11_1/mtewes/Euclid/sbe/benchmark_low_SN_v3/thread_0/low_SN_image_2
 		:param workdir: a top-level workdir in which each worker can make its own sub-workdir.
+		:param settings: a dict with further settings
 		
 		"""
 		self.sbepath = sbepath
 		self.configdir = configdir
 		self.topworkdir = topworkdir
 		self.topoutdir = topoutdir
-		self.nolog = nolog
+		self.settings = copy.deepcopy(settings)
 		
 		self.sbeimagepath = io.imagefile(self.sbepath)
 		self.sbedatapath = io.datafile(self.sbepath)
@@ -138,7 +141,8 @@ class Worker():
 		self.predcatfilepath = os.path.join(self.workdir, "predcat.pkl")
 		
 		self.splitworkname = io.splitworkname(self.sbepath)
-		self.outcatfilepath = os.path.join(self.topoutdir, self.splitworkname[0], self.splitworkname[1]+"_MegaLUT_output.fits")
+		self.outdir = os.path.join(self.topoutdir, self.splitworkname[0])
+		self.outcatfilepath = os.path.join(self.outdir, self.splitworkname[1]+"_MegaLUT_output.fits")
 		
 	
 	def __str__(self):
@@ -161,12 +165,16 @@ class Worker():
 			os.makedirs(self.outdir)
 	
 		
-	def makeobsincat(self, stampsize=200, n=32, sbe_sample_scale=0.05):
+	def makeobsincat(self):
 		"""
 		Turns the SBE catalogs into MegaLUT catalogs 
 		"""
 		
 		logger.info("{}: making the input catalog...".format(self))
+		
+		stampsize = self.settings["sbestampsize"]
+		n = self.settings["sbestampn"]
+		sbesamplescale = self.settings["sbesamplescale"]
 		
 		# We read the data file and turn it into an astropy table
 		cat = astropy.io.ascii.read(self.sbedatapath)
@@ -185,7 +193,7 @@ class Worker():
 		# We rename or translate some of the parameters into MegaLUT-style:
 		cat["tru_psf_g1"] = cat["PSF_shape_1"] * np.cos(2.0*cat["PSF_shape_2"]*np.pi/180)
 		cat["tru_psf_g2"] = cat["PSF_shape_1"] * np.sin(2.0*cat["PSF_shape_2"]*np.pi/180)
-		cat["tru_psf_sigma"] = cat["PSF_sigma_arcsec"] / sbe_sample_scale
+		cat["tru_psf_sigma"] = cat["PSF_sigma_arcsec"] / sbesamplescale
 		
 		# Those will be useful for check plots:
 		cat["Galaxy_e1"] = cat["Galaxy_shape_1"] * np.cos(2.0*cat["Galaxy_shape_2"]*np.pi/180)
