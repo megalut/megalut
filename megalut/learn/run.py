@@ -172,6 +172,13 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 		# We load the actual ML object that was used for the training:
 		trainedmlobj = tools.io.readpickle(os.path.join(newmlobj.workdir, "ML.pkl"))
 		
+		# Problem: trainedmlobj contains absolute paths to where the machine learning settings are!
+		# Quick fix implemented right here just to get the same behavior as Bryan.
+		# WE NEED TO IMPLEMENT A BETTER SOLUTION FOR THIS, SEE ISSUE 125
+		trainedmlobj.tool.workdir = newmlobj.tool.workdir
+		if trainedmlobj.toolname == "Tenbilac":
+			trainedmlobj.tool.netpath = newmlobj.tool.netpath
+		
 		if modmlparams == False:
 			# We now check that newmlobj has the same params as the one used for training.
 			# This should be the case, we do not want to allow for any "hacking" here.
