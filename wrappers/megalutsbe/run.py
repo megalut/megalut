@@ -16,7 +16,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 from . import io
-from . import plot
 from . import analysis
 
 import subprocess
