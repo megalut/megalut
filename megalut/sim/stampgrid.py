@@ -59,7 +59,7 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 	elif statparams["snc_type"] > 0:
 		nsnc = statparams["snc_type"] # If snc_type is positive, it simply corresponds to the number of SNC rotations!
 	else:
-		raise RuntimeError("Unknown snc_type")
+		raise RuntimeError("Did not understand snc_type")
 	nx = nsnc * nc
 	sncrot = 180.0/float(nsnc) # Rotation for SNC, in degrees. For example, 22.5 for snc_type == 1
 	
@@ -122,6 +122,7 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 	catalog.meta["nx"] = nx
 	catalog.meta["ny"] = ny
 	catalog.meta["nsnc"] = nsnc
+	catalog.meta["snc_type"] = statparams["snc_type"]
 	
 	return catalog
 	
