@@ -370,11 +370,16 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 	For each col in colnames, if the column is 2D (and the contents of each cell is identical),
 	makes the column 1D by keeping only one of the identical values in each cell.
 	If colnames is not specified, this is applied on all columns.
+	
+	Works in place, does not return a new cat!
 	"""
 	
 	
 	if colnames == None:
 		proccolnames = cat.colnames # We will just run on all of them
+		logger.info("Keepuniquing all {} columns (if possible)...".format(len(proccolnames)))
+		if skipuniquetest:
+			logger.warning("Caution: keepuniquing all columns without checking if the values are actually unique!")
 	else:
 		proccolnames = colnames
 		
@@ -507,6 +512,9 @@ def addrmsd(cat, colm, colt, outcolprefix=None):
 	if cat[colt].ndim != 1:
 		raise RuntimeError("Column '{}' is not 1-dimensional !".format(colm))
 
+	colmdata = copy.deepcopy(cat[colm])
+	coltdata = copy.deepcopy(cat[colt]).reshape((cat[colt].size, 1))
+
 	outcolnames = [outcolprefix + suffix for suffix in ["_rmsd", "_bias"]]
 	for outcolname in outcolnames:
 		if outcolname in cat.colnames:
@@ -514,8 +522,8 @@ def addrmsd(cat, colm, colt, outcolprefix=None):
 	
 	logger.info("Adding RMSD and bias for column {} of shape {} with respect to {}...".format(colm, cat[colm].shape, colt))
 	
-	cat[outcolprefix + "_rmsd"] = np.sqrt(np.mean((cat[colm] - cat[colt])**2.0, axis=1))
-	cat[outcolprefix + "_bias"] = np.mean(cat[colm] - cat[colt], axis=1)
+	cat[outcolprefix + "_rmsd"] = np.sqrt(np.mean((colmdata - coltdata)**2.0, axis=1))
+	cat[outcolprefix + "_bias"] = np.mean(colmdata - coltdata, axis=1)
 	
 	
 
