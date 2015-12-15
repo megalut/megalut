@@ -14,6 +14,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def info(cat, txt=True):
+	"""
+	Returns a new table "describing" the content of the table cat.
+	"""
+	colnames = cat.colnames
+	dtypes = [cat[colname].dtype for colname in colnames]
+	ndims = [cat[colname].ndim for colname in colnames]
+	shapes = [cat[colname].shape for colname in colnames]
+	infotable = astropy.table.Table([colnames, dtypes, ndims, shapes], names=("colname", "dtype", "ndim", "shape"))
+	
+	infotable.sort("colname")
+	
+	
+	if txt:
+		return "\n".join(infotable.pformat(max_lines=-1, max_width=-1))
+	else:
+		return infotable
+
 def hjoin(table1, table2, idcol):
 	"""
 	This is a safe way to "hstack" two astropy tables containing different columns
@@ -370,18 +388,25 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 	For each col in colnames, if the column is 2D (and the contents of each cell is identical),
 	makes the column 1D by keeping only one of the identical values in each cell.
 	If colnames is not specified, this is applied on all columns.
+	
+	Works in place, does not return a new cat!
+	
+	Note the make2D func below
 	"""
 	
 	
 	if colnames == None:
 		proccolnames = cat.colnames # We will just run on all of them
+		logger.info("Keepuniquing all {} columns (if possible)...".format(len(proccolnames)))
+		if skipuniquetest:
+			logger.warning("Caution: keepuniquing all columns without checking if the values are actually unique!")
 	else:
 		proccolnames = colnames
 		
 	for colname in proccolnames:
 		
-		if colnames != None:
-			logger.info("Keepuniquing column '{}'...".format(colname))
+		#if colnames != None:
+		#	logger.info("Keepuniquing column '{}'...".format(colname))
 		
 		if cat[colname].ndim == 2:
 			
@@ -396,6 +421,7 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 					aresame = False
 			
 			if aresame == True: # We just keep the first element in each cell:
+				logger.info("Keepuniquing column '{}', original shape is {}...".format(colname, cat[colname].shape))
 				newcol = cat[colname][:,0]
 				cat.remove_column(colname)
 				cat[colname] = newcol # Is a bit weird, but otherwise it complains about non-matching shapes
@@ -507,6 +533,9 @@ def addrmsd(cat, colm, colt, outcolprefix=None):
 	if cat[colt].ndim != 1:
 		raise RuntimeError("Column '{}' is not 1-dimensional !".format(colm))
 
+	colmdata = copy.deepcopy(cat[colm])
+	coltdata = copy.deepcopy(cat[colt]).reshape((cat[colt].size, 1))
+
 	outcolnames = [outcolprefix + suffix for suffix in ["_rmsd", "_bias"]]
 	for outcolname in outcolnames:
 		if outcolname in cat.colnames:
@@ -514,8 +543,8 @@ def addrmsd(cat, colm, colt, outcolprefix=None):
 	
 	logger.info("Adding RMSD and bias for column {} of shape {} with respect to {}...".format(colm, cat[colm].shape, colt))
 	
-	cat[outcolprefix + "_rmsd"] = np.sqrt(np.mean((cat[colm] - cat[colt])**2.0, axis=1))
-	cat[outcolprefix + "_bias"] = np.mean(cat[colm] - cat[colt], axis=1)
+	cat[outcolprefix + "_rmsd"] = np.sqrt(np.mean((colmdata - coltdata)**2.0, axis=1))
+	cat[outcolprefix + "_bias"] = np.mean(colmdata - coltdata, axis=1)
 	
 	
 
@@ -527,6 +556,10 @@ def make2d(cat, cols):
 	:param cols: a list of column names
 	
 	I'm surprised that this seems to be required for element-wise operations between 2D and 1D columns.
+	
+	works in place
+	
+	note the keepunique function above
 	"""
 	
 	lencat = len(cat)
