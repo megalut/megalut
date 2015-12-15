@@ -55,7 +55,7 @@ class Params:
 			"tru_s1" : tru_s1, # shear component 1, in "g" convention
 			"tru_s2" : tru_s2, # component 2
 			"tru_mu" : tru_mu, # magnification
-			"snc_type" : snc_type, # The type of shape noise cancellation. 0 means none.
+			"snc_type" : snc_type, # The type of shape noise cancellation. 0 means none, n means n-fold
 		}
 		
 		

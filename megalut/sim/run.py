@@ -157,6 +157,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	
 		
 	# We now attribute PSFs to each source in these catalogs. That's a little bit of work.
+	# We have to be careful not to mix PSFs within blocks of shape noise cancelation.
 	if psfcat is not None:
 	
 		if "psf_adamom_flux" in psfcat.colnames:
@@ -203,9 +204,19 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 			catalog.meta["psf"] = psfinfo # It's the same for all catalogs.
 			
 			if psfselect == "random":
-				# We repeat the random drawing for each catalog:
-				matched_psfcat = psfcat[np.random.randint(low=0, high=len(psfcat), size=len(catalog))]
-				# the "high" of randing is exclusive !
+				# We repeat the random drawing for each catalog, as we want different PSFs for each catalog.
+				if catalog.meta["snc_type"] == 0:		
+					matched_psfcat = psfcat[np.random.randint(low=0, high=len(psfcat), size=len(catalog))] # the "high" of randint is exclusive !
+				
+				else:
+					assert len(catalog) % catalog.meta["nsnc"] == 0
+					nsncblocks = len(catalog) / catalog.meta["nsnc"] # The number of different PSFs that we need.
+					randompsfcatindices = np.repeat(np.random.randint(low=0, high=len(psfcat), size=nsncblocks), catalog.meta["nsnc"])
+					assert randompsfcatindices.ndim == 1
+					assert len(randompsfcatindices) == len(catalog)
+					
+					matched_psfcat = psfcat[randompsfcatindices]
+					assert len(matched_psfcat) == len(catalog)	
 	
 			elif psfselect == "sequential":
 				raise RuntimeError("Not yet implemented")
