@@ -14,6 +14,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def info(cat, txt=True):
+	"""
+	Returns a new table "describing" the content of the table cat.
+	"""
+	colnames = cat.colnames
+	dtypes = [cat[colname].dtype for colname in colnames]
+	ndims = [cat[colname].ndim for colname in colnames]
+	shapes = [cat[colname].shape for colname in colnames]
+	infotable = astropy.table.Table([colnames, dtypes, ndims, shapes], names=("colname", "dtype", "ndim", "shape"))
+	
+	infotable.sort("colname")
+	
+	
+	if txt:
+		return "\n".join(infotable.pformat(max_lines=-1, max_width=-1))
+	else:
+		return infotable
+
 def hjoin(table1, table2, idcol):
 	"""
 	This is a safe way to "hstack" two astropy tables containing different columns
@@ -372,6 +390,8 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 	If colnames is not specified, this is applied on all columns.
 	
 	Works in place, does not return a new cat!
+	
+	Note the make2D func below
 	"""
 	
 	
@@ -385,8 +405,8 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 		
 	for colname in proccolnames:
 		
-		if colnames != None:
-			logger.info("Keepuniquing column '{}'...".format(colname))
+		#if colnames != None:
+		#	logger.info("Keepuniquing column '{}'...".format(colname))
 		
 		if cat[colname].ndim == 2:
 			
@@ -401,6 +421,7 @@ def keepunique(cat, colnames=None, skipuniquetest=False):
 					aresame = False
 			
 			if aresame == True: # We just keep the first element in each cell:
+				logger.info("Keepuniquing column '{}', original shape is {}...".format(colname, cat[colname].shape))
 				newcol = cat[colname][:,0]
 				cat.remove_column(colname)
 				cat[colname] = newcol # Is a bit weird, but otherwise it complains about non-matching shapes
@@ -535,6 +556,10 @@ def make2d(cat, cols):
 	:param cols: a list of column names
 	
 	I'm surprised that this seems to be required for element-wise operations between 2D and 1D columns.
+	
+	works in place
+	
+	note the keepunique function above
 	"""
 	
 	lencat = len(cat)
