@@ -24,9 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 
-def res(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title=None, showidline=True, metrics=False):
+def res(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title=None, showidline=True, metrics=False,
+	ebarmode="scatter"):
 	"""
 	Shows the residues featy in bins of featx.
+	
+	:param ebarmode: controls what should be shown as error-bars
 	
 	"""
 
@@ -100,8 +103,13 @@ def res(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title
 	
 	#yerr = ystds
 	yerr = np.array([ylowps, yhighps])
+	yerr_bias = yerr / np.sqrt(np.array(ns))
+	yerr_stdbias = np.array(ystds) / np.sqrt(np.array(ns))
 	
-	ax.errorbar(bincenters, ymeans, yerr=yerr, **errorbarkwargs)
+	if ebarmode == "scatter":
+		ax.errorbar(bincenters, ymeans, yerr=yerr, **errorbarkwargs)
+	elif ebarmode == "bias":
+		ax.errorbar(bincenters, ymeans, yerr=yerr_bias, **errorbarkwargs)
 	
 	#yerr = np.array(ystds) / np.sqrt(np.array(ns))
 	#ax.errorbar(bincenters, ymeans, yerr=yerr, color="red", ls="None", marker=".")
