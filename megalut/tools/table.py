@@ -26,11 +26,24 @@ def info(cat, txt=True):
 	
 	infotable.sort("colname")
 	
+	infotable.meta = cat.meta
+	infotable.meta["coucouc"] = 332.5
 	
 	if txt:
-		return "\n".join(infotable.pformat(max_lines=-1, max_width=-1))
+		
+		lines = infotable.pformat(max_lines=-1, max_width=-1)
+		lines.append("")
+		lines.append("Number of rows: {}".format(len(cat)))
+		lines.append("Number of columns: {}".format(len(cat.colnames)))
+		lines.append("Metadata: {}".format(str(infotable.meta.items())))
+		
+		return "\n".join(lines)
 	else:
 		return infotable
+
+
+
+
 
 def hjoin(table1, table2, idcol):
 	"""
@@ -440,6 +453,9 @@ def groupreshape(cat, groupcolnames):
 	"""
 	Rearranges the data in the table so to have only one row per different value combination of the diffcolnames.
 	For each of these rows, all the data is collected in the second dimension.
+	Note that this seems to lead to a sorting of the table rows according to the groupcolnames!
+	No problem with this, but be aware.
+	
 	
 	Ideally these groupcolanmes would not contain floats, but integers. But it seems to work with simple floats as well.
 	
