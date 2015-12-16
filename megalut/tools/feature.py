@@ -127,50 +127,84 @@ def get1Ddata(cat, features, keepmasked=True):
 	This is the function that you want to use when preparing plots or computing metrics...
 	"""
 	
+	# First, we check the features, to see if the user wants to mix different realizations:
+	reasettings = [feature.rea for feature in features if feature.rea != None]
+	reasettings = list(set(reasettings))
+	if len(reasettings) > 1:
+		logger.warning("I was asked to identify data from different realizations, this is probably a mistake!")
+	
+	catlen = len(cat)
 	data = []
 	for f in features:
-		d = f.get(cat, flatten=True)
-		assert d.ndim == 1
-		data.append(d)
+		d = f.get(cat, flatten=False) # We do NOT flatten the columns
+		assert d.ndim <= 2 # Columns shound not be 3D...
+		assert len(d) == catlen # All columns have the same length, only the 2nd dimension can change.
 		
-	lengths = [d.size for d in data]
-	unilengths = list(set(lengths)) # Unique list of lenghts.
+		if d.ndim == 2 and d.shape[1] == 1: # Then it's a 2D column but containing only one "realization".
+			# We flatten it to make a plain 1D column, just for consistency.
+			d = d.flatten()
+			assert d.ndim == 1
+		
+		data.append(d)
 	
-	
-	fixeddata = []
-	
-	if len(unilengths) == 1: # Nothing special to do, then
-		fixeddata = data	
+	assert len(data) == len(features)
 
-	elif len(unilengths) == 2:
+	# Now we check the dimensions of these columns.
 	
+	nbreas = [] # Number of realizations for each column.
+	for d in data:
+		if d.ndim == 1:
+			nbreas.append(1)
+		elif d.ndim == 2:
+			nbreas.append(d.shape[1])
+			
+	assert len(nbreas) == len(data)
+	
+	unilengths = list(set(nbreas))
+	
+	if len(unilengths) > 2:
+		raise RuntimeError("Mixture of number of realizations is weird or too complicated: {0}".format(unilengths))
+	
+	elif len(unilengths) == 1:
+		if unilengths[0] == 1: # Then we only have 1D columns, and we are done.
+		
+			data1d = data
+		
+		else: # Then all columns are 2D but have the same number of realizations, very easy:
+			
+			data1d = [d.flatten() for d in data]
+	
+	elif len(unilengths) == 2: # Then we have a mixture of different number of realizations, and need to "tile".
 		small = min(unilengths)
 		large = max(unilengths)
-		(div, mod) = divmod(large, small)
-			
-		if mod != 0:
-			raise RuntimeError("Cannot work with lengths %i and %i" % (large, small))
+		if small != 1:
+			raise RuntimeError("For safety reasons I don't want to use tiling to mix columns with different numbers of realizations, even if I could.")
 		
-		logger.warning("Mild warning: some of the columns need to be tiled {0} times, and at this stage we cannot verify if the ordering of this tiling is as intended.".format(div))
-		
-		# We repeat the smaller column div times...
-		for d in data:
-			if d.size == small:
-				fixedd = np.tile(d, div)
-				assert fixedd.size == large
-				fixeddata.append(fixedd)
+		data1d = []
+		for (d, nbrea) in zip(data, nbreas):
+			if nbrea == 1: # We have a 1D column
+				
+				# We have to "tile" it.
+				# We do this by indeed tiling it to 2D, and then flattenting it in the same way as the 2D cols.
+				# This seems "safest", as we have to be very careful here not to mess up with the flatten ordering !
+				
+				tiledd = np.tile(d, (large, 1)).T
+				assert tiledd.ndim == 2
+				assert tiledd.shape[0] == catlen
+				assert tiledd.shape[1] == large
+				data1d.append(tiledd.flatten())
+				
+			elif nbrea == large:
+				data1d.append(d.flatten())
+				
 			else:
-				fixeddata.append(d)
-	else:
-		raise RuntimeError("Mixture is weird or too complicated: {0}".format(unilengths))
+				raise RuntimeError("Does not happen.")
 		
-	assert len(fixeddata) == len(features)
+	assert len(data1d) == len(data)
 	
 	# We return this as a table.
 	colnames = [f.colname for f in features]
-	
-	table1d = astropy.table.Table(fixeddata, names=colnames)
-	
+	table1d = astropy.table.Table(data1d, names=colnames)
 	
 	if keepmasked == True:
 		return table1d
@@ -179,6 +213,62 @@ def get1Ddata(cat, features, keepmasked=True):
 		# We prepare a version of "features" with all reas set to 1D, so that we can use cutmasked:
 		features1d = [Feature(colname=f.colname, rea=None) for f in features]
 		return cutmasked(table1d, features1d)
+
+	
+#	An old version of it:	
+# 
+#	data = []
+#	for f in features:
+#		d = f.get(cat, flatten=True)
+#		assert d.ndim == 1
+#		data.append(d)
+#		
+#	lengths = [d.size for d in data]
+#	unilengths = list(set(lengths)) # Unique list of lenghts.
+#	
+#	
+#	fixeddata = []
+#	
+#	if len(unilengths) == 1: # Nothing special to do, then
+#		fixeddata = data	
+#
+#	elif len(unilengths) == 2:
+#	
+#		small = min(unilengths)
+#		large = max(unilengths)
+#		(div, mod) = divmod(large, small)
+#			
+#		if mod != 0:
+#			raise RuntimeError("Cannot work with lengths %i and %i" % (large, small))
+#		
+#		logger.warning("Mild warning: some of the columns need to be tiled {0} times, and at this stage we cannot verify if the ordering of this tiling is as intended.".format(div))
+#		
+#		# We repeat the smaller column div times...
+#		for d in data:
+#			if d.size == small:
+#				fixedd = np.tile(d, div)
+#				assert fixedd.size == large
+#				fixeddata.append(fixedd)
+#			else:
+#				fixeddata.append(d)
+#	else:
+#		raise RuntimeError("Mixture is weird or too complicated: {0}".format(unilengths))
+#		
+#	assert len(fixeddata) == len(features)
+#	
+#	# We return this as a table.
+#	colnames = [f.colname for f in features]
+#	
+#	table1d = astropy.table.Table(fixeddata, names=colnames)
+#	
+#	
+#	if keepmasked == True:
+#		return table1d
+#		
+#	else:
+#		# We prepare a version of "features" with all reas set to 1D, so that we can use cutmasked:
+#		features1d = [Feature(colname=f.colname, rea=None) for f in features]
+#		return cutmasked(table1d, features1d)
 	
 	
 	
