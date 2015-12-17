@@ -30,14 +30,21 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 	"""
 	Shows residues of a predicted feature featpre in bins of the corresponding truth feattru.
 	If featc is specified (c stands for color), this analysis is done in several bins of featc
-	(say to check that the shear estimate is unbiased for all galaxy sizes...).
+	(say to check that the shear estimate is unbiased for different galaxy sizes...).
 	
-	Trick: the low and high of featpre are used to define the plot range for the residues.
+	:param feattru: Feature with "true" value, for the x-axis
+	:param featpre: Feature with "predicted" value. Residuals will be computed comparing this to feattru.
+		Trick: the low and high of featpre are used to define the plot range for the residues.
+	:param featc: Feature to make color-bins
+	:param nbins: number of bins in the x-axis
+	:param ncbins: number of color-bins
+	:ebarmode: either "bias" or "scatter". If "bias", errorbars show the std on the mean, and not just the std of the full scatter.
 	
 	"""
 
 	logger.info("Preparing res plot of '{}' in bins of '{}'".format(featpre.colname, feattru.colname))
 	
+	errorbarkwargs = {"ls":"None", "marker":".", "lw":1.5, "mew":1.5}
 
 	# First, we get the 1D data, removing all masked points.
 	features = [feattru, featpre]
@@ -51,7 +58,7 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 	
 	# Defining the bins of the x axis:
 	xbinrange = utils.getrange(data, feattru)
-	
+			
 	# And for the "color" axis:
 	if featc is not None:
 		logger.info("Building bins in {}...".format(featc.colname))
@@ -64,14 +71,18 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 		cbincenters = 0.5 * (cbinlows + cbinhighs)
 		assert len(cbincenters) == ncbins
 		
-
-		coloriter=iter(matplotlib.cm.brg(np.linspace(0,1,ncbins)))
-		offsetscale = 0.3*((xbinrange[1] - xbinrange[0])/float(nbins))/float(ncbins)
+		if ncbins == 1:
+			coloriter = iter(["black"])
+		elif ncbins <= 3:
+			coloriter = iter(["red", "darkgreen", "blue"])
+		else:
+			coloriter=iter(matplotlib.cm.brg(np.linspace(0,1,ncbins)))
+		offsetscale = 0.5*((xbinrange[1] - xbinrange[0])/float(nbins))/float(ncbins)
 
 		for i in range(ncbins):
 			
 			color = next(coloriter)
-			label = "{0:.0f} < {1} < {2:.0f}".format(cbinlows[i], featc.nicename, cbinhighs[i])
+			label = "{0:.2g} < {1} < {2:.2g}".format(cbinlows[i], featc.nicename, cbinhighs[i])
 			offset = (i - float(ncbins)/2) * offsetscale
 			
 			# We build the subset of data that is in this color bin:
@@ -79,37 +90,69 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 			cbindata = selcbin.select(data)
 			if len(cbindata) == 0:
 				continue
+			cbinfrac = float(len(cbindata)) / float(len(data))
+			label += " ({0:.0%})".format(cbinfrac)
+			
+			# And we perform the line regression
+			if metrics is True:
+				try:
+					md = tools.metrics.metrics(cbindata,
+						tools.feature.Feature(feattru.colname), # Redefining those to get rid of any rea settings that don't apply to cbindata
+						tools.feature.Feature("res"),
+						pre_is_res=True)
+					
+					metricstext = "m = %.1f +/- %.1f, c = %.1f +/- %.1f" % (md["m"]*1000.0, md["merr"]*1000.0, md["c"]*1000.0, md["cerr"]*1000.0)				
+					label += "\n" + metricstext
+					ax.plot(np.array(xbinrange), md["m"]*np.array(xbinrange)+md["c"], color=color, ls="-")
+					
+				except:
+					logger.warning("Metrics compuation failed", exc_info = True)
+			
 			
 			# And now bin this in x:
-			bindata = utils.summabin(cbindata[feattru.colname], cbindata["res"], xbinrange=xbinrange, nbins=nbins)
+			cbinsumma = utils.summabin(cbindata[feattru.colname], cbindata["res"], xbinrange=xbinrange, nbins=nbins)
 			
-			errorbarkwargs = {"color":color, "ls":"-", "marker":".", "lw":1.0, "mew":1.0}
-	
-			#yerr = bindata["ystds"]
-			yerr = np.array([bindata["ylowps"], bindata["yhighps"]])
-			yerrbias = yerr / np.sqrt(bindata["ns"])
+			yerr = cbinsumma["ystds"]
+			#yerr = np.array([cbinsumma["ylowps"], cbinsumma["yhighps"]])
+			yerrbias = yerr / np.sqrt(cbinsumma["ns"])
 	
 			if ebarmode == "scatter":
-				ax.errorbar(bindata["xbincents"]+offset, bindata["ymeans"], yerr=yerr, label=label, **errorbarkwargs)
+				ax.errorbar(cbinsumma["xbincents"]+offset, cbinsumma["ymeans"], yerr=yerr, color=color, label=label, **errorbarkwargs)
 			elif ebarmode == "bias":
-				ax.errorbar(bindata["xbincents"]+offset, bindata["ymeans"], yerr=yerrbias, label=label, **errorbarkwargs)
+				ax.errorbar(cbinsumma["xbincents"]+offset, cbinsumma["ymeans"], yerr=yerrbias, color=color, label=label, **errorbarkwargs)
 	
-
+			
+		
+			
 
 	else:	
 	
-		bindata = utils.summabin(data[feattru.colname], data["res"], xbinrange=xbinrange, nbins=nbins)
+		color="black"
+		binsumma = utils.summabin(data[feattru.colname], data["res"], xbinrange=xbinrange, nbins=nbins)
 	
-		errorbarkwargs = {"color":"black", "ls":"None", "marker":".", "lw":1.0, "mew":1.0}
-	
-		#yerr = bindata["ystds"]
-		yerr = np.array([bindata["ylowps"], bindata["yhighps"]])
-		yerrbias = yerr / np.sqrt(bindata["ns"])
+		yerr = binsumma["ystds"]
+		#yerr = np.array([bindata["ylowps"], bindata["yhighps"]])
+		yerrbias = yerr / np.sqrt(binsumma["ns"])
 	
 		if ebarmode == "scatter":
-			ax.errorbar(bindata["xbincents"], bindata["ymeans"], yerr=yerr, **errorbarkwargs)
+			ax.errorbar(binsumma["xbincents"], binsumma["ymeans"], yerr=yerr, color=color, **errorbarkwargs)
 		elif ebarmode == "bias":
-			ax.errorbar(bindata["xbincents"], bindata["ymeans"], yerr=yerrbias, **errorbarkwargs)
+			ax.errorbar(binsumma["xbincents"], binsumma["ymeans"], yerr=yerrbias, color=color, **errorbarkwargs)
+	
+		if metrics is True:
+				try:
+					md = tools.metrics.metrics(data,
+						tools.feature.Feature(feattru.colname), # Redefining those to get rid of any rea settings that don't apply to cbindata
+						tools.feature.Feature("res"),
+						pre_is_res=True)
+					
+					metricstext = "m = %.1f +/- %.1f, c = %.1f +/- %.1f" % (md["m"]*1000.0, md["merr"]*1000.0, md["c"]*1000.0, md["cerr"]*1000.0)				
+					ax.plot(np.array(xbinrange), md["m"]*np.array(xbinrange)+md["c"], color=color, ls="-")
+					ax.annotate(metricstext, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -12), textcoords='offset points', ha='left', va='top')
+			
+				except:
+					logger.warning("Metrics compuation failed", exc_info = True)
+			
 	
 	
 		
@@ -126,7 +169,8 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 	ax.set_xlabel(feattru.nicename)
 	ax.set_xlim(xbinrange)
 
-	ax.legend()
+	if featc:
+		ax.legend(prop={"size":"medium"})
 	
 	
 	
