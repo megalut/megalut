@@ -54,6 +54,18 @@ cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_c
 print megalut.tools.table.info(cat)
 """
 
+"""
+# Training
 cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
 traindir = os.path.join(workdir, "train_" + sp.name)
 megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=2)
+"""
+
+# Self-predicting
+
+traindir = os.path.join(workdir, "train_" + sp.name)
+cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
+cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
+
+print megalut.tools.table.info(cat)
+megalut.tools.io.writepickle(cat, os.path.join(workdir, sp.name, "selfprecat.pkl"))
