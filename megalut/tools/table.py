@@ -25,9 +25,7 @@ def info(cat, txt=True):
 	infotable = astropy.table.Table([colnames, dtypes, ndims, shapes], names=("colname", "dtype", "ndim", "shape"))
 	
 	infotable.sort("colname")
-	
 	infotable.meta = cat.meta
-	infotable.meta["coucouc"] = 332.5
 	
 	if txt:
 		
