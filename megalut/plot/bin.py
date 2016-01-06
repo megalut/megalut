@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bias", showidline=True, metrics=True):
+def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bias", showidline=True, metrics=True, equalcount=False):
 	"""
 	Shows residues of a predicted feature featpre in bins of the corresponding truth feattru.
 	If featc is specified (c stands for color), this analysis is done in several bins of featc
@@ -64,7 +64,11 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 		logger.info("Building bins in {}...".format(featc.colname))
 		cbinrange = utils.getrange(data, featc)
 		
-		cbinlims = np.linspace(cbinrange[0], cbinrange[1], ncbins+1)
+		if equalcount is True:
+			# With the latest numpy this should work without using a list comprehension, but ok...
+			cbinlims = np.array([np.percentile(data[featc.colname], q) for q in np.linspace(0.0, 100.0, ncbins+1)])
+		else:
+			cbinlims = np.linspace(cbinrange[0], cbinrange[1], ncbins+1)
 		
 		cbinlows = cbinlims[0:-1]
 		cbinhighs = cbinlims[1:]
@@ -74,7 +78,7 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 		if ncbins == 1:
 			coloriter = iter(["black"])
 		elif ncbins <= 3:
-			coloriter = iter(["red", "darkgreen", "blue"])
+			coloriter = iter(["blue", "red", "darkgreen"])
 		else:
 			coloriter=iter(matplotlib.cm.brg(np.linspace(0,1,ncbins)))
 		offsetscale = 0.5*((xbinrange[1] - xbinrange[0])/float(nbins))/float(ncbins)
@@ -110,7 +114,7 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 			
 			
 			# And now bin this in x:
-			cbinsumma = utils.summabin(cbindata[feattru.colname], cbindata["res"], xbinrange=xbinrange, nbins=nbins)
+			cbinsumma = utils.summabin(cbindata[feattru.colname], cbindata["res"], xbinrange=xbinrange, nbins=nbins, equalcount=False)
 			
 			yerr = cbinsumma["ystds"]
 			#yerr = np.array([cbinsumma["ylowps"], cbinsumma["yhighps"]])
