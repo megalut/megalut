@@ -95,3 +95,13 @@ class GauShear1(megalut.sim.params.Params):
 
 
 
+class GauShear2(GauShear1):
+	"""
+	Same as GauShear1, but without crazy SNC.
+	"""
+	
+	def stat(self):
+		"""
+		stat: called for each catalog (stat is for stationnary)
+		"""
+		return {"snc_type":8}
