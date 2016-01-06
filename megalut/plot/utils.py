@@ -38,7 +38,7 @@ def getrange(cat, feature):
 
 
 
-def summabin(x, y, xbinrange=(None, None), nbins=10):
+def summabin(x, y, xbinrange=(None, None), nbins=10, equalcount=False):
 	"""
 	For two 1D numpy arrays x and y, summarizes the y data in bins of x.
 	
@@ -65,7 +65,12 @@ def summabin(x, y, xbinrange=(None, None), nbins=10):
 		br[1] = np.max(x)
 	
 	# And now defining the bins:
-	binlims = np.linspace(br[0], br[1], nbins+1)
+	if equalcount is True:
+		# With the latest numpy this should work without using a list comprehension, but ok...
+		binlims = np.array([np.percentile(x, q) for q in np.linspace(0.0, 100.0, nbins+1)])
+	else:
+		binlims = np.linspace(br[0], br[1], nbins+1)
+		
 	bincenters = 0.5 * (binlims[0:-1] + binlims[1:])
 	assert len(bincenters) == nbins
 	
