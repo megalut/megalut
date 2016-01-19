@@ -30,6 +30,8 @@ msb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5", hidden_nodes 
 	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
 	verbose=False, reuse=True, keepdata=False, autoplot=True)
 
+# more noise:
+
 msb5n = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5n", hidden_nodes = [5],
 	errfctname="msb", valfrac=0.5, shuffle=True,
 	ininoisewscale = 0.2, ininoisebscale = 0.2,
