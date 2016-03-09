@@ -665,22 +665,31 @@ class Selector:
 			
 			if crit[0] == "in":
 				if len(crit) != 4: raise RuntimeError("Expected 4 elements in criterion %s" % (str(crit)))
-				passmask = np.logical_and(cat[crit[1]] >= crit[2], cat[crit[1]] <= crit[3]).filled(fill_value=False)
+				passmask = np.logical_and(cat[crit[1]] >= crit[2], cat[crit[1]] <= crit[3])
+				if np.ma.is_masked(passmask):
+					passmask = passmask.filled(fill_value=False)
 				# Note about the "filled": if crit[2] or crit[3] englobe the values "underneath" the mask,
 				# some masked crit[1] will result in a masked "passmask"!
-				# But we implicitly want to reject masked values here, hence the filled.			
+				# But we implicitly want to reject masked values here, hence the filled.
+							
 			elif crit[0] == "max":
 				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
-				passmask = (cat[crit[1]] <= crit[2]).filled(fill_value=False)
+				passmask = (cat[crit[1]] <= crit[2])
+				if np.ma.is_masked(passmask):
+					passmask = passmask.filled(fill_value=False)
 			
 			elif crit[0] == "min":
 				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
-				passmask = (cat[crit[1]] >= crit[2]).filled(fill_value=False)
-			
+				passmask = (cat[crit[1]] >= crit[2])
+				if np.ma.is_masked(passmask):
+					passmask = passmask.filled(fill_value=False)
+					
 			elif crit[0] == "is":
 				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
-				passmask = (cat[crit[1]] == crit[2]).filled(fill_value=False)
-			
+				passmask = (cat[crit[1]] == crit[2])
+				if np.ma.is_masked(passmask):
+					passmask = passmask.filled(fill_value=False)
+					
 			elif (crit[0] == "nomask") or (crit[0] == "mask"):
 				if len(crit) != 2: raise RuntimeError("Expected 2 elements in criterion %s" % (str(crit)))
 				if hasattr(cat[crit[1]], "mask"): # i.e., if this column is masked:
