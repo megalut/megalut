@@ -77,8 +77,8 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 		
 		if ncbins == 1:
 			coloriter = iter(["black"])
-		elif ncbins <= 3:
-			coloriter = iter(["blue", "red", "darkgreen"])
+		elif ncbins <= 4:
+			coloriter = iter(["red", "darkgreen", "blue", "magenta"])
 		else:
 			coloriter=iter(matplotlib.cm.brg(np.linspace(0,1,ncbins)))
 		offsetscale = 0.5*((xbinrange[1] - xbinrange[0])/float(nbins))/float(ncbins)
