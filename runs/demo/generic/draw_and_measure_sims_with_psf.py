@@ -29,10 +29,9 @@ mysimparams = Flux600()
 
 # And we prepare a catalog of 20 x 20 simulated galaxies:
 
-galcat = megalut.sim.stampgrid.drawcat(mysimparams, n=20, stampsize=48)
+galcat = megalut.sim.stampgrid.drawcat(mysimparams, n=400, stampsize=48)
 
 print galcat[:5]
-
 
 # Now, we prepare the PSF stuff. We'll use existing PSF stamps.
 # We need an image with PSF stamps, and we need to add new columns in galcat.
@@ -43,9 +42,6 @@ print galcat[:5]
 # So let's first have a look:
 
 psfcat = megalut.tools.io.readpickle("psfs/cat_psfgrid.pkl")
-print psfcat[:5]
-print len(psfcat)
-print psfcat.meta
 
 # Now we can prepare the ImageInfo object from scratch, and already attach it to the galcat.
 galcat.meta["psf"] = megalut.tools.imageinfo.ImageInfo("psfs/psfgrid.fits", xname="psfx", yname="psfy", stampsize=32)
@@ -59,6 +55,9 @@ matched_psfcat = psfcat[np.random.randint(low=0, high=100, size=400)] # We love 
 # Note BTW that this makes a copy (not just refs).
 
 # Now we add the PSF positions to the galcat:
+print len(matched_psfcat.colnames)
+print np.shape(galcat)
+
 galcat["psfx"] = matched_psfcat["psfx"]
 galcat["psfy"] = matched_psfcat["psfy"]
 
