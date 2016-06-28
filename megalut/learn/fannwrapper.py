@@ -20,7 +20,10 @@ logger = logging.getLogger(__name__)
 try:
 	from pyfann import libfann
 except:
-	logger.debug("I can't import pyfann: not a problem if you don't use FANN.", exc_info = True)
+	try: 
+		from fann2 import libfann
+	except:
+		logger.debug("I can't import pyfann: not a problem if you don't use FANN.", exc_info = True)
 
 
 def writedata(filename, inputs, outputs):#=None, noutput=1):

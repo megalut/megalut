@@ -20,8 +20,8 @@ inputcat = inputcat[inputcat["mes_flag"] == 0]
 #print inputcat.colnames
 
 # What to train:
-mymlparams = megalut.learn.MLParams(name = "foo", features = ["mes_g1", "mes_g2"],
-                                    labels = ["tru_g1", "tru_g2"], predlabels = ["pre_g1", "pre_g2"])
+mymlparams = megalut.learn.MLParams(name = "foo", inputs = ["mes_g1", "mes_g2"],
+                                    targets = ["tru_g1", "tru_g2"], predictions = ["pre_g1", "pre_g2"])
 
 # How to train:
 myfannparams = megalut.learn.fannwrapper.FANNParams(name = "bar", hidden_nodes = [6, 6],
@@ -59,8 +59,8 @@ import megalut.plot
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-tru_g1 = megalut.plot.feature.Feature("tru_g1", -0.6, 0.6, "Nice label for true g1")
-pre_g1 = megalut.plot.feature.Feature("pre_g1") # Minimal call, just to highlight the default behavior.
+tru_g1 = megalut.tools.feature.Feature("tru_g1", -0.6, 0.6, "Nice label for true g1")
+pre_g1 = megalut.tools.feature.Feature("pre_g1") # Minimal call, just to highlight the default behavior.
 
 megalut.plot.scatter.scatter(ax, outputcat, tru_g1, pre_g1, color="green")
 plt.show()
