@@ -22,17 +22,17 @@ def myplot(cat, filepath=None):
 	# Especially if you have the same features to be shown in several panels,
 	# start by defining the ranges and nice labels:
 	
-	g1 = megalut.plot.feature.Feature("adamom_g1_mean", -0.6, 0.6, "Measured g1")
-	g2 = megalut.plot.feature.Feature("adamom_g2_mean", -0.6, 0.6, "Measured g2")
+	g1 = megalut.tools.feature.Feature("adamom_g1_mean", -0.6, 0.6, "Measured g1")
+	g2 = megalut.tools.feature.Feature("adamom_g2_mean", -0.6, 0.6, "Measured g2")
 
 	# Specifying the range is not mandatory:
-	sersicn = megalut.plot.feature.Feature("tru_sersicn", nicename = "True Sersic index")
-	rho4 = megalut.plot.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one of the two limits.
-	size = megalut.plot.feature.Feature("adamom_sigma_mean", 0.0, 6.0, nicename = "Measured size")
+	sersicn = megalut.tools.feature.Feature("tru_sersicn", nicename = "True Sersic index")
+	rho4 = megalut.tools.feature.Feature("adamom_rho4_mean", low=0.0) # One can also specify only one of the two limits.
+	size = megalut.tools.feature.Feature("adamom_sigma_mean", 0.0, 6.0, nicename = "Measured size")
 
 	# Adding error bars is as simple as specifying a column name:
-	g1_witherr = megalut.plot.feature.Feature("adamom_g1_mean", -0.6, 0.6, "Measured g1", errcolname="adamom_g1_std")
-	g2_witherr = megalut.plot.feature.Feature("adamom_g2_mean", -0.6, 0.6, "Measured g2", errcolname="adamom_g2_std")
+	g1_witherr = megalut.tools.feature.Feature("adamom_g1_mean", -0.6, 0.6, "Measured g1", errcolname="adamom_g1_std")
+	g2_witherr = megalut.tools.feature.Feature("adamom_g2_mean", -0.6, 0.6, "Measured g2", errcolname="adamom_g2_std")
 
 	fig = plt.figure(figsize=(17, 10))
 	#fig.subplots_adjust(bottom=0.05, top=0.90, left=0.05, right=0.95, wspace=0.42)

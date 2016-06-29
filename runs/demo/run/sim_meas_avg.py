@@ -7,7 +7,7 @@ import logging
 logging.basicConfig(format='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m', level=logging.DEBUG)
 
 #basedir = "/vol/fohlen11/fohlen11_1/mtewes/foo"
-basedir = '/tmp/MegaLUT_demo/'
+basedir = '/tmp//MegaLUT-demo/'
 
 print "Step 1: drawing the sims"
 
@@ -22,14 +22,16 @@ drawcatkwargs = {"n":10, "stampsize":64}
 
 megalut.sim.run.multi(simdir, simparams, drawcatkwargs, ncat=3, nrea=5, ncpu=3)
 
-
+"""
 print "Step 2, measuring"
 
 measdir = os.path.join(basedir, "measdir")
 
 def measfct(cat, **kwargs):
+	#print cat.colnames
 	cat = megalut.meas.galsim_adamom.measfct(cat, **kwargs)
 	cat = megalut.meas.skystats.measfct(cat, **kwargs)
+	#print cat.colnames; exit()
 	return cat
 	
 measfctkwargs = {"stampsize":64}
@@ -43,7 +45,7 @@ print "Step 3, summarizing measurements accross simulations"
 groupcols = [
 	"adamom_flux", "adamom_x", "adamom_y", "adamom_g1", "adamom_g2",
 	"adamom_sigma", "adamom_rho4", "adamom_flag",
-	"skystd", "skymad", "skymean", "skymed", "skyflag"
+	"skystd", "skymad", "skymean", "skymed", "skyflag", "skystampsum"
 	]
 
 removecols=[]
@@ -90,8 +92,6 @@ mybigmeascat = megalut.meas.avg.onsims(measdir, simparams,
 	)
 
 print mybigmeascat["id", "tru_flux", "FLUX_WIN_mean", "FLUX_WIN_std", "FLUX_WIN_n"]
-
-"""
 
 # We also save the catalog into a pickle file
 megalut.tools.io.writepickle(mybigmeascat, "meascat.pkl")

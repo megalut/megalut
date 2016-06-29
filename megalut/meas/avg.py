@@ -62,7 +62,7 @@ def onsims(measdir, simparams, task="groupstats", **kwargs):
 			outputcats.append(grouped)
 	
 		else:
-			raise RuntimeError("Unkown task!")	
+			raise RuntimeError("Unknown task!")	
 	
 	# And finally, we stack all these catalogs "vertically", to get a single one.
 	# This is only to be done if we have several catalogs. In fact, vstack crashes if only 
