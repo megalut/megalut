@@ -17,10 +17,10 @@ import numpy as np
 import utils
 import io
 import var_psf_utils
-from .. import sim
-from .. import tools
-from .. import learn
-from .. import meas
+from megalut import sim
+from megalut import tools
+from megalut import learn
+from megalut import meas
 
 import glob
 import shutil

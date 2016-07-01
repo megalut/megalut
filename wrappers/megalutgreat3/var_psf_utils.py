@@ -3,7 +3,7 @@ General utility stuff for GREAT3, branches where the PSF is variable
 """
 
 from utils import Branch
-from .. import tools
+from megalut import tools
 
 import astropy.io.ascii as ascii
 from astropy.table import Table, Column
