@@ -157,7 +157,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	
 		
 	# We now attribute PSFs to each source in these catalogs. That's a little bit of work.
-	# We have to be careful not to mix PSFs within blocks of shape noise cancelation.
+	# We have to be careful not to mix PSFs within blocks of shape noise cancellation.
 	if psfcat is not None:
 	
 		if "psf_adamom_flux" in psfcat.colnames:
@@ -202,7 +202,6 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		
 			# We set the catalog.meta["psf"] ImageInfo.
 			catalog.meta["psf"] = psfinfo # It's the same for all catalogs.
-			
 			if psfselect == "random":
 				# We repeat the random drawing for each catalog, as we want different PSFs for each catalog.
 				if catalog.meta["snc_type"] == 0:		

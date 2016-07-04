@@ -313,8 +313,7 @@ class ML:
 		
 		else: # FANN or SkyNet etc:	
 		
-			# We rather manually build a mask for the inputs. A row is masked whenever one or more inputs ar masked.
-		
+			# We rather manually build a mask for the inputs. A row is masked whenever one or more inputs are masked.
 			inputsmask = np.column_stack([
 				np.array(np.ma.getmaskarray(np.ma.array(catalog[feature])), dtype=bool) \
 				for feature in self.mlparams.inputs])
@@ -335,8 +334,8 @@ class ML:
 			# Let's check that the output looks good:
 			assert preddata.shape[0] == np.sum(np.logical_not(allinputsmask)) # Number of good (unmasked) rows
 			assert preddata.shape[1] == len(self.mlparams.predictions) # Number of predictions
- 	 
-  			# Finally, we build a catalog containing the predicted data.
+
+			# Finally, we build a catalog containing the predicted data.
 			# We'll work on and return a **masked** copy of the input catalog
 			# Probably the input catalog was already masked anyway.
 			outcat = astropy.table.Table(copy.deepcopy(catalog), masked=True)

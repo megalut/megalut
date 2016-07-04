@@ -295,7 +295,8 @@ def groupstats(incats, groupcols=None, removecols=None, removereas=True, keepfir
 			# We test that the columns of these fixedcolnames are the same for all the different incats
 			for incat in incats:
 				if not np.all(incat[fixedcolnames] == fixedcat):
-					raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % fixedcolnames)
+					raise RuntimeError("groupstat failed: colnames match, but some columns are not \
+identical among the list. A colname is surely missing from to groupcols or removecols.")
 			logger.debug("Done with testing the identity of all the common columns")
 		else:
 			logger.debug("Did not test the identity of all the common columns")

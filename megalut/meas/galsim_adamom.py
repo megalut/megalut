@@ -129,7 +129,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 			except:
 				# This is awesome, but clutters the output 
 				#logger.exception("GalSim failed on: %s" % (str(gal)))
-				# So insted of logging this as an exception, we use debug, but include the tarceback :
+				# So instead of logging this as an exception, we use debug, but include the traceback :
 				logger.debug("HSM with default settings failed on:\n %s" % (str(gal)), exc_info = True)	
 				gal[prefix + "flag"] = 3	
 				continue # skip to next stamp !

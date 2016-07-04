@@ -93,7 +93,7 @@ class Run(utils.Branch):
 		
 	def meas_obs(self, measfct, skipdone=True, ncpu=1, **kwargs):
 		"""
-		Runs measfct on the GREAT3 data, demonstrating branch 73.
+		Runs measfct on the GREAT3 data.
 		
 		:param measfct: some user-defined shape measurement function
 		:param skipdone: set to False to make me overwrite previous measurements
@@ -179,7 +179,7 @@ class Run(utils.Branch):
 			
 			# We have to read in the obs catalog of this subfield to get the noise of the sky:
 			obscat = tools.io.readpickle(self._get_path("obs", "img_%i_meascat.pkl" % subfield))
-			sig = np.ma.mean(obscat["adamom_skymad"])
+			sig = np.ma.mean(obscat["skymad"])
 			simparams.sig = sig
 			
 			sim.run.multi(simdir, simparams, drawcatkwargs, psfcat=starcat, psfselect="random",
@@ -187,11 +187,10 @@ class Run(utils.Branch):
 			
 
 
-	   
+
 	def meas_sim(self, simparams, measfct, groupcols=None, removecols=None, ncpu=1):
-		"""		
-		
-		Stores all ouput in directories using simparams.name
+		"""
+		Stores all outputs in directories using simparams.name
 		"""
 		
 		measfctkwargs = {"branch":self}
@@ -224,7 +223,7 @@ class Run(utils.Branch):
 		
 		simname is the simparams.name of the simparams to be trained with
 		
-		Stores all output in directories usign both trainname and simname (simname == simparams.name)
+		Stores all output in directories using both trainname and simname (simname == simparams.name)
 		"""
 		
 		for subfield in self.subfields:
@@ -242,7 +241,7 @@ class Run(utils.Branch):
 			
 			# We will store all the ouput here:
 			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
-		 	if not os.path.exists(traindir):
+			if not os.path.exists(traindir):
 				os.makedirs(traindir)
 			
 			# Before training, let's save the input catalog (e.g., for later self-predictions):
@@ -264,13 +263,13 @@ class Run(utils.Branch):
 			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
 			traincat = tools.io.readpickle(os.path.join(traindir, "traincat.pkl"))
 			
-			pretraincat_rea0 = learn.run.predict(traincat, traindir, trainparams, mode="first")
+			pretraincat_rea0 = learn.run.predict(traincat, traindir, trainparams, tweakmode="0")
 			tools.io.writepickle(pretraincat_rea0, os.path.join(traindir, "pretraincat_rea0.pkl"))
 		
 		
 	
 			
-	def predict(self, trainparams, trainname, simname):
+	def predict(self, trainparams, trainname, simname, suffix='', suffixcols=[]):
 		"""
 
 		"""
@@ -283,11 +282,13 @@ class Run(utils.Branch):
 			obscat = tools.io.readpickle(self._get_path("obs", "img_%i_meascat.pkl" % subfield))
 		
 			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
-			
-			preobscat = learn.run.predict(obscat, traindir, trainparams, mode="single")
+
+			for sfc in suffixcols:
+				obscat[sfc].name = sfc+suffix
+
+			preobscat = learn.run.predict(obscat, traindir, trainparams, tweakmode="default", totweak="")
 			
 			# And we save the predictions
-			
 			predir = self._get_path("pred", "%03i" % subfield, trainname, simname)
 			
 			if not os.path.exists(predir):

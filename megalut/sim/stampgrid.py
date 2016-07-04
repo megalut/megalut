@@ -49,7 +49,7 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 	if n % nc != 0 or n < nc:
 		raise RuntimeError("n must be a multiple of nc!")
 
-	logger.info("Drawing a catalog of %i truely different galaxies using params '%s'..." % (n, params))
+	logger.info("Drawing a catalog of %i truly different galaxies using params '%s'..." % (n, params))
 	statparams = params.stat() # We call this only *once*
 	logger.info("The params '{params.name}' have stat '{0}'".format(statparams, params=params))
 	
@@ -149,7 +149,7 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	:param simpsfimgfilepath: (optional) where I write the PSFs
 	
 	.. note::
-		See this function in MegaLUT v4 (great3) for attemps to speed up galsim by playing with fft params, accuracy, etc...
+		See this function in MegaLUT v4 (great3) for attempts to speed up galsim by playing with fft params, accuracy, etc...
 	
 	.. note::
 		About speed, if you specify trunc, better express the scale radius.

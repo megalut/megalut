@@ -165,13 +165,11 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 	predcat = copy.deepcopy(cat)
 	
 	for (mlparams, toolparams) in paramslist:
-		
 		# We create a new ML object, to get the workdir that was used
 		newmlobj = ml.ML(mlparams, toolparams, workbasedir=workbasedir)
-		
+
 		# We load the actual ML object that was used for the training:
 		trainedmlobj = tools.io.readpickle(os.path.join(newmlobj.workdir, "ML.pkl"))
-		
 		# Problem: trainedmlobj contains absolute paths to where the machine learning settings are!
 		# Quick fix implemented right here just to get the same behavior as Bryan.
 		# WE NEED TO IMPLEMENT A BETTER SOLUTION FOR THIS, SEE ISSUE 125
@@ -202,8 +200,6 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 	
 			# And copy the modifications:
 			tweakedmlobj.mlparams = mlparams
-		
-		
 		
 		if tweakmode == "default":
 			predcat = tweakedmlobj.predict(predcat)			
@@ -249,10 +245,9 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 
 		
 		else: # we just call tweakfeatures, with whatever the user asks for:
-			tweakedfeatures = tweakfeatures(tweakedmlobj.mlparams.features, mode=tweakmode, totweak=totweak)
-			tweakedmlobj.mlparams.features = tweakedfeatures
+			tweakedfeatures = tweakfeatures(tweakedmlobj.mlparams.inputs, mode=tweakmode, totweak=totweak)
+			tweakedmlobj.mlparams.inputs = tweakedfeatures
 			predcat = tweakedmlobj.predict(predcat)
-			
 	return predcat
 
 
