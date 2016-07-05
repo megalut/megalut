@@ -91,7 +91,7 @@ def simobscompa(run, simparams):
 
 
 
-def presimcheck(run, trainname, simname):
+def presimcheck(run, trainname, simname, outdir=None, show=True):
 	"""
 	Visualize predictions obtained on simulations
 	"""
@@ -180,8 +180,11 @@ def presimcheck(run, trainname, simname):
 		megalut.plot.scatter.scatter(ax, cat, tru_sersicn, pre_sersicn, snr_narrow, s=5, metrics=True)
 
 
+		if not outdir is None:
+			fig.savefig(os.path.join(outdir,'selfpredict_%03i.pdf' % subfield),transparent=True)
 
-		plt.show()	
+		if show:
+			plt.show()	
 		plt.close(fig) # Helps releasing memory when calling in large loops.
 
 

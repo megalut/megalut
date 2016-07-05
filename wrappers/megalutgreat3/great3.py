@@ -263,7 +263,7 @@ class Run(utils.Branch):
 			traindir = self._get_path("ml", "%03i" % subfield, trainname, simname)
 			traincat = tools.io.readpickle(os.path.join(traindir, "traincat.pkl"))
 			
-			pretraincat_rea0 = learn.run.predict(traincat, traindir, trainparams, tweakmode="0")
+			pretraincat_rea0 = learn.run.predict(traincat, traindir, trainparams, tweakmode="_rea0")
 			tools.io.writepickle(pretraincat_rea0, os.path.join(traindir, "pretraincat_rea0.pkl"))
 		
 		
