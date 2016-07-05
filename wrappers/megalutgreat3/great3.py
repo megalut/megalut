@@ -20,7 +20,68 @@ import copy
 import glob
 import shutil
 
+
+class Great3(utils.Branch):
+	"""
+	This is a simple class to handle variables
+	"""
+	
+	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None,\
+				  subfields=range(200)):
+		
+		utils.Branch.__init__(self, experiment, obstype, sheartype, datadir, workdir)
+		logger.info("Working on branch %s-%s-%s" % (experiment, obstype, sheartype))
+
+		self._mkdir(workdir)
+		self.subfields=subfields
+		
+	def _mkdir(self, workdir):
+		"""
+		Creates the working directories. Outputs a warning if the directories already exist		 
+		"""
+
+		if workdir==None: workdir="./%s" % (self.get_branchacronym()) 
+		
+		tools.dirs.mkdir(workdir)
+		self.workdir=workdir
+		
+		# Now must create the sub-directories:
+		for subfolder in ["obs","sim","ml","pred","out"]:
+			tools.dirs.mkdir(self._get_path(subfolder))
+
+	def _get_path(self,*args):
+		"""
+		A helper function that returns the filepath
+		
+		:param args: must be in order of the filepath, similar to os.path.join()
+		
+		Example usage::
+		
+			>>> self._get_path("obs","catalogue_000.fits")
+			
+		will return the filepath: self.workdir/obs/catalogue_000.fits
+		"""
+		return os.path.join(self.workdir,"/".join(args))
+	
+	def save_config(self, outdir=None, fname='great3_config.pkl'):
+		"""
+		Saves the current configuration to a specified `outdir` or directly into `self.workdir`
+		"""
+		
+		if outdir is None:
+			outdir = self.workdir
+			
+		tools.io.writepickle(self, os.path.join(self.workdir, fname))
+		
+def load_config(outdir, fname='great3_config.pkl'):
+	
+	return tools.io.readpickle(os.path.join(outdir, fname))
+
+
 class Run(utils.Branch):
+	"""
+	This is the old way of doing stuff. This class is kept for back-compatibility
+	"""
 	
 	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None,\
 				  subfields=range(200)):
