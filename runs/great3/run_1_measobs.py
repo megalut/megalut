@@ -38,14 +38,14 @@ for subfield in great3.subfields:
 		xname="psfx",
 		yname="psfy",
 		stampsize=great3.stampsize(),
-		workdir=great3._get_path("obs", "star_%i_measworkdir" % subfield)
+		workdir=great3.get_path("obs", "star_%i_measworkdir" % subfield)
 		)
 
 	starcat = measfct.psf(starcat, branch=great3)
 	
 	#print starcat
 	
-	tools.io.writepickle(starcat, great3._get_path("obs", "star_%i_meascat.pkl" % subfield))
+	tools.io.writepickle(starcat, great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
 			
 	
 	# Lists that we will pass to meas.run.general():
@@ -57,7 +57,7 @@ for subfield in great3.subfields:
 	
 	# We add PSF info to this field. PSFs are already measured, and we just take the first one:
 	
-	starcat = tools.io.readpickle(great3._get_path("obs", "star_%i_meascat.pkl" % subfield))
+	starcat = tools.io.readpickle(great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
 	starcat.meta = {} # Dump the "img" entry
 	matchedstarcat = starcat[np.zeros(len(incat), dtype=int)]
 	assert len(incat) == len(matchedstarcat)
@@ -76,7 +76,7 @@ for subfield in great3.subfields:
 		xname="x",
 		yname="y",
 		stampsize=great3.stampsize(),
-		workdir=great3._get_path("obs", "img_%i_measworkdir" % subfield)
+		workdir=great3.get_path("obs", "img_%i_measworkdir" % subfield)
 		)
 
 	incat.meta["psf"] = tools.imageinfo.ImageInfo(
@@ -88,19 +88,19 @@ for subfield in great3.subfields:
 		)
 
 	# Write the input catalog
-	incatfilepath = great3._get_path("obs", "img_%i_incat.pkl" % subfield)
+	incatfilepath = great3.get_path("obs", "img_%i_incat.pkl" % subfield)
 	tools.io.writepickle(incat, incatfilepath)
 	incatfilepaths.append(incatfilepath)
 	
 	# Prepare the filepath for the output catalog
-	outcatfilepath = great3._get_path("obs", "img_%i_meascat.pkl" % subfield)
+	outcatfilepath = great3.get_path("obs", "img_%i_meascat.pkl" % subfield)
 	outcatfilepaths.append(outcatfilepath)
 
-# We pass some kwargs for the measfct
-measfctkwargs = {"branch":great3}
+	# We pass some kwargs for the measfct
+	measfctkwargs = {"branch":great3}
 
-# And we run all this
-meas.run.general(incatfilepaths, outcatfilepaths, measfct.galaxies, measfctkwargs=measfctkwargs,
-	ncpu=config.ncpu, skipdone=config.skipdone)
+	# And we run all this
+	meas.run.general(incatfilepaths, outcatfilepaths, measfct.galaxies, measfctkwargs=measfctkwargs,
+					ncpu=config.ncpu, skipdone=config.skipdone)
 
 		
