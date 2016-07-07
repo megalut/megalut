@@ -1,14 +1,19 @@
-import megalutgreat3 as mg3
+import multiprocessing
+import datetime
 import numpy as np
 import astropy.table
-import config
-import g3measfct as measfct
 
 import megalut.tools as tools
 import megalut.meas as meas
 
+import megalutgreat3 as mg3
+
+import config
+import g3measfct as measfct
+
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 # Create an instance of the GREAT3 class
 great3 = mg3.great3.Great3("control", "ground", "constant",
@@ -17,11 +22,14 @@ great3 = mg3.great3.Great3("control", "ground", "constant",
 	subfields = config.subfields)
 great3.save_config()
 
-# Measuring the PSFs
-# Measures the 3 x 3 PSF stamps of each subfield, and writes the info to pkl.
-for subfield in great3.subfields:
-	
+# Preparing the different parameters for the workers
+wslist = [[great3, subfield] for subfield in great3.subfields]
+
+#--------------------------------------------------------------------------------------------------
+
+def _worker(wparams):
 	# We don't bother reading the starcat, and just make one
+	great3, subfield = wparams
 	
 	stars = []
 	for i in range(3):
@@ -99,8 +107,35 @@ for subfield in great3.subfields:
 	# We pass some kwargs for the measfct
 	measfctkwargs = {"branch":great3}
 
-	# And we run all this
+	# And we run all this, there's only 1 page per subfield, so ncpu = 1
 	meas.run.general(incatfilepaths, outcatfilepaths, measfct.galaxies, measfctkwargs=measfctkwargs,
-					ncpu=config.ncpu, skipdone=config.skipdone)
+					ncpu=1, skipdone=config.skipdone)
 
+	
+#--------------------------------------------------------------------------------------------------
+
+if config.ncpu == 0:
+	try:
+		ncpu = multiprocessing.cpu_count()
+	except:
+		logger.warning("multiprocessing.cpu_count() is not implemented!")
+		ncpu = 1
+else:
+	ncpu = config.ncpu
+	
+starttime = datetime.datetime.now()
+
+logger.info("Starting the measurement on %i subfields using %i CPUs" % (len(wslist), ncpu))
+
+if ncpu == 1: # The single process way (MUCH MUCH EASIER TO DEBUG...)
+	map(_worker, wslist)
+
+else:
+	pool = multiprocessing.Pool(processes=ncpu)
+	pool.map(_worker, wslist)
+	pool.close()
+	pool.join()
+
+endtime = datetime.datetime.now()
+logger.info("Done, the total measurement time for all subfields was %s" % (str(endtime - starttime)))
 		
