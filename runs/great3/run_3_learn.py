@@ -23,7 +23,7 @@ trainname = mymlparams.trainparams['name']
 # great3.simparams_name
 simparams_name = great3.simparams_name
 
-for subfield in great3.subfields:
+for subfield in config.subfields:
 	
 	# Getting the path to the correct directories
 	simdir = great3.get_path("sim","%03i" % subfield)
@@ -33,7 +33,7 @@ for subfield in great3.subfields:
 	cat = tools.io.readpickle(great3.get_path("simmeas", "%03i" % subfield, simparams_name, "groupmeascat.pkl"))
 	
 	# Let's go for training
-	learn.run.train(cat, traindir, trainparamslist, ncpu=config.ncpu)
+	learn.run.train(cat, traindir, trainparamslist, ncpu=1)#config.ncpu)
 
 # Remembering the name of the trainparams:
 great3.trainparams_name = trainname

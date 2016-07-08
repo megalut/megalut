@@ -20,7 +20,7 @@ great3 = mg3.great3.load_config(outdir='cgc')
 # Choose a model for the simulations
 sp = mysimparams.GauShear2()
 
-for subfield in great3.subfields:
+for subfield in config.subfields:
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
 	obscat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
@@ -38,12 +38,12 @@ for subfield in great3.subfields:
 	sim.run.multi(
 		simdir=simdir,
 		simparams=sp,
-		drawcatkwargs={"n":10000, "nc":100, "stampsize":great3.stampsize()},
+		drawcatkwargs={"n":1000, "nc":10, "stampsize":great3.stampsize()},
 		drawimgkwargs={}, 
 		psfcat=psfcat, psfselect="random",
-		ncat=10, nrea=10, ncpu=config.ncpu,
+		ncat=8, nrea=2, ncpu=config.ncpu,
 		savepsfimg=False, savetrugalimg=False
-		)
+	)
 
 	# Measuring the newly drawn images
 	meas.run.onsims(
@@ -63,7 +63,7 @@ for subfield in great3.subfields:
 		task="group",
 		groupcols=measfct.groupcols, 
 		removecols=measfct.removecols
-		)
+	)
 
 	tools.table.keepunique(cat)
 	tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))

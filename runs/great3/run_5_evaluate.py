@@ -25,7 +25,7 @@ trainparamslist = great3.trainparamslist
 # great3.simparams_name
 simparams_name = great3.simparams_name
 
-for subfield in great3.subfields:
+for subfield in config.subfields:
 	
 	# Getting the path to the correct directories
 	simdir = great3.get_path("sim","%03i" % subfield)

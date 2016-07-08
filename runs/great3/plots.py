@@ -193,7 +193,7 @@ def show_selfpredict_shear(great3, trainname, simname, outdir=None, show=True):
 	"""
 	Visualize predictions obtained on simulations
 	"""
-	#TODO: Make this function accept any x, y features an plot them
+
 	for subfield in great3.subfields:
 	
 		traindir = great3.get_path("ml", "%03i" % subfield, trainname, simname)
@@ -203,6 +203,7 @@ def show_selfpredict_shear(great3, trainname, simname, outdir=None, show=True):
 		cat["snr"] = cat["sewpy_FLUX_AUTO"] / cat["sewpy_FLUXERR_AUTO"]
 		snr = megalut.tools.feature.Feature("snr", 0.1, 150, "SExtractor SNR")
 		snr_narrow = megalut.tools.feature.Feature("snr", 10, 60, "SExtractor SNR", rea='all')
+		
 		
 		tru_s1 = megalut.tools.feature.Feature("tru_s1", -0.05, 0.05, rea='all')
 		tru_s2 = megalut.tools.feature.Feature("tru_s2", -0.05, 0.05, rea='all')
@@ -235,6 +236,45 @@ def show_selfpredict_shear(great3, trainname, simname, outdir=None, show=True):
 		if show:
 			plt.show()	
 		plt.close(fig) # Helps releasing memory when calling in large loops.
+
+def show_selfpredict(subfields, mldir, trainname, simname, xfeat, yfeat, outdir=None, show=True):
+	"""
+	Visualize predictions obtained on simulations
+	"""
+	nplt = len(xfeat)
+	if nplt != len(yfeat):
+		raise ValueError("xfeat and yfeat do not have the same dimension!")
+	for subfield in subfields:
+	
+		traindir = os.path.join(mldir, "%03i" % subfield, trainname, simname)
+		cat = megalut.tools.io.readpickle(os.path.join(traindir, "predtraincat.pkl"))
+		
+		cat["snr"] = cat["sewpy_FLUX_AUTO"] / cat["sewpy_FLUXERR_AUTO"]
+		snr = megalut.tools.feature.Feature("snr", 0.1, 150, "SExtractor SNR")
+		snr_narrow = megalut.tools.feature.Feature("snr", 10, 60, "SExtractor SNR", rea='all')
+		
+		txt = "Subfield %i, sim '%s', train '%s', " % (subfield, simname, trainname)
+	
+		fig = plt.figure(figsize=(11/2.*nplt, 11))
+		fig.subplots_adjust(bottom=0.07, top=0.92, left=0.05, right=0.95, wspace=0.4)
+
+		fig.text(0.05, 0.95, txt, {"fontsize":15})
+		
+		for jj in range(nplt):
+			ax = fig.add_subplot(2, nplt, jj+1)	
+			megalut.plot.scatter.scatter(ax, cat, xfeat[jj], yfeat[jj], showidline=True, idlinekwargs={"color":"red", "lw":2}, sidehists=True, ms=3)
+
+			ax = fig.add_subplot(2, nplt, nplt+jj+1)	
+			megalut.plot.scatter.scatter(ax, cat, xfeat[jj], yfeat[jj], snr_narrow, s=5, metrics=True)
+		
+		if not outdir is None:
+			fig.savefig(os.path.join(outdir,'selfpredict_shear_%03i.pdf' % subfield),transparent=True)
+
+		if show:
+			plt.show()	
+		plt.close(fig) # Helps releasing memory when calling in large loops.
+
+
 
 
 

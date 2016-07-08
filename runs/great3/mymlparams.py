@@ -14,6 +14,16 @@ s2 = megalut.learn.MLParams(name = "s2",
 	targets = ["tru_s2"],
 	predictions = ["pre_s2"])
 
+g1 = megalut.learn.MLParams(name = "g1",
+	inputs = ["adamom_g1", "adamom_g2", "adamom_sigma", "adamom_flux", "adamom_rho4"],
+	targets = ["tru_g1"],
+	predictions = ["pre_g1"])
+
+g2 = megalut.learn.MLParams(name = "g2",
+	inputs = ["adamom_g2", "adamom_g1", "adamom_sigma", "adamom_flux", "adamom_rho4"],
+	targets = ["tru_g2"],
+	predictions = ["pre_g2"])
+
 msb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5", hidden_nodes = [5],
 	errfctname="msb", valfrac=0.5, shuffle=True,
 	ininoisewscale = 0.05, ininoisebscale = 0.05,
@@ -24,8 +34,8 @@ msb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5", hidden_nodes 
 trainparams = {
 	'name':'msb5only',
 	'list':[
-		(s1, msb5),
-		(s2, msb5),	
+		(g1, msb5),
+		(g2, msb5),	
 		]
 	}
 
