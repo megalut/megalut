@@ -109,29 +109,3 @@ class GauShear2(GauShear1):
 		stat: called for each catalog (stat is for stationnary)
 		"""
 		return {"snc_type":8}
-
-class Ground_v1(megalut.sim.params.Params):
-	"""
-	Some attempt reasonably close to "control ground" branches
-	This was is only kept for back-compatibility for now
-	"""
-	
-	def get_rad(self):
-		return np.random.uniform(0.7, 2.7)
-	
-	def get_flux(self):
-		if np.random.uniform() < 0.25:
-			return np.random.uniform(70.0, 220.0)
-		else:
-			return np.random.uniform(10.0, 70.0)
-	
-	def get_g(self):
-		theta = np.random.uniform(0.0, 2.0* np.pi) 
-		eps = np.random.uniform(0.0, 0.7) 
-		return (eps * np.cos(2.0 * theta), eps * np.sin(2.0 * theta))
-
-	def get_sersicn(self, ix=0, iy=0, n=1):
-		return 1.0 + (float(iy)/float(n)) * 2.0    
-		# Lower sersic index = broader
-
-ground_v1 = Ground_v1()

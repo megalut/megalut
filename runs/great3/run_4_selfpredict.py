@@ -51,4 +51,4 @@ xfeat = [tru_g1, tru_g2]
 yfeat = [pre_g1, pre_g2]
 	
 plots.show_selfpredict(config.subfields, mldir=great3.get_path("ml"), trainname=trainname, \
-	simname=simparams_name, xfeat=xfeat, yfeat=yfeat, show=True)#outdir=great3.get_path("pred"), show=False)
+	simname=simparams_name, xfeat=xfeat, yfeat=yfeat, outdir=great3.get_path("pred"), show=False)
