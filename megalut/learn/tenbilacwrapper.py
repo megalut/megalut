@@ -9,8 +9,6 @@ There is not that much to do here, as tenbilac directly uses numpy arrays native
 
 
 import os
-from datetime import datetime
-import tempfile
 
 import tenbilac
 
@@ -74,7 +72,7 @@ class TenbilacParams:
 		self.reuse = reuse
 		self.autoplot = autoplot
 		self.keepdata = keepdata
-		
+		self.ncpu = 1 # This is the default value, which will get overwritten by run (learn)
 		
 	def __str__(self):
 		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, {self.errfctname})".format(self=self)
@@ -126,16 +124,14 @@ class TenbilacWrapper:
 		return "Tenbilac '%s' in %s" % (self.params.name, os.path.basename(self.workdir))
 
 	
-	def train(self, inputs, targets, auxinputs=None, inputnames=None, targetnames=None, ncpu=1):
+	def train(self, inputs, targets, auxinputs=None, inputnames=None, targetnames=None):
 		"""
 		Note that we might take over a previous training.
 		
 		:param inputs: a 3D numpy array, possibly masked, with indices (rea, feature, case)
 		:param targets: a 2D array, with indices (feature, case)
 		
-		:param auxinputs: a 3D numpy array, optional
-		:param ncpu: in case of a committee, how many CPUs to use?
-		
+		:param auxinputs: a 3D numpy array, optional		
 		"""
 			
 		# Some tests to start with
@@ -208,7 +204,7 @@ class TenbilacWrapper:
 
 		logger.info("{0}: starting the training".format((str(self))))
 		
-		ctraining.call(method='minibatch_bfgs', call_ncpu=ncpu, mbsize=self.params.mbsize, 
+		ctraining.call(method='minibatch_bfgs', call_ncpu=self.params.ncpu, mbsize=self.params.mbsize, 
 			mbfrac=self.params.mbfrac, mbloops=self.params.mbloops,
 			maxiter=self.params.max_iterations, gtol=self.params.gtol)
 		
