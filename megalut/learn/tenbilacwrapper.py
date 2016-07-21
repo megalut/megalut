@@ -81,7 +81,7 @@ class TenbilacParams:
 class TenbilacWrapper:
 
 	def __init__(self, params, workdir=None):
-		
+
 		if workdir == None:
 			self.workdir = "Tenbilac_workdir"
 		else:

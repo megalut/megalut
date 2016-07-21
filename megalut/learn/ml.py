@@ -299,6 +299,7 @@ class ML:
 			
 			# ... to which we add the preddata.
 			# An explicit loop, to highlight that we care very much about the order (to get targets right)
+			
 			for (i, predlabel) in enumerate(self.mlparams.predictions):
 				
 				# If there is a function to treat the catalogue, let's do it now...
@@ -323,6 +324,7 @@ class ML:
 					
 					newcol = astropy.table.MaskedColumn(data=data, name=colname)
 					outcat.add_column(newcol)	
+				
 					
 		else: # FANN or SkyNet etc:	
 		

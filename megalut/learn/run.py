@@ -269,6 +269,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 			# We use removereas = True as we do not want the predictiosn for every realization in the catalog
 			# We use keepfirstrea = False as we do not want columns like pre_g1_0
 
+
 		else: # we just call tweakfeatures, with whatever the user asks for:
 			tweakedfeatures = tweakfeatures(tweakedmlobj.mlparams.inputs, mode=tweakmode, totweak=totweak)
 			tweakedmlobj.mlparams.inputs = tweakedfeatures
