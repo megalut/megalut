@@ -117,7 +117,7 @@ def _worker(ws):
 
 
 
-def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", modmlparams=False):
+def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", outtweak=None, modmlparams=False):
 	"""
 	A wrapper to make predictions from non-overlapping-predlabel MLs, returning a single merged catalog. 
 	Unlike the above train(), this predict() is quite *smart* and can automatically preform sophisticated tasks
@@ -143,6 +143,9 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 		  Use an empty string to "drop" the suffix.
 	
 	:param totweak: the suffix that should be detected and tweaked, according to the tweakmode setting.
+	
+	:param outtweak: How to treat the prediction catalogues if number of members in committee > 1. If `None`, cats are directly returned, else
+		they are treated with the function passed. The function must have an argument `axis` to handle correctly the multidimensional (numpy) arrays.
 		
 	When predicting simulations, one typically runs this twice in a row: once in mode "all" or "integer" to get pre_X_std,
 	and once in mode "first" or "default" to get pre_X.
@@ -163,6 +166,10 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 	# And now we make the predictions one after the other, always reusing the same catalog.
 	
 	predcat = copy.deepcopy(cat)
+	if outtweak is not None:
+		outtweakkwargs = {'fun': outtweak}
+	else:
+		outtweakkwargs = {'fun': None}
 	
 	for (mlparams, toolparams) in paramslist:
 		# We create a new ML object, to get the workdir that was used
@@ -202,7 +209,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 			tweakedmlobj.mlparams = mlparams
 		
 		if tweakmode == "default":
-			predcat = tweakedmlobj.predict(predcat)			
+			predcat = tweakedmlobj.predict(predcat, **outtweakkwargs)
 			
 		elif tweakmode == "all" or type(tweakmode) == int: # Replace "totweak" successively by all realizations, and then run groupstat...
 			
@@ -228,7 +235,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 				replacement_suffix = "_rea%i" % (irea)
 				tweakedfeatures = tweakfeatures(origfeatures, mode=replacement_suffix, totweak=totweak)
 				tweakedmlobj.mlparams.features = tweakedfeatures
-				reapredcats.append(tweakedmlobj.predict(predcat))
+				reapredcats.append(tweakedmlobj.predict(predcat, **outtweakkwargs))
 			
 			logger.info("Done, now calling groupstats")
 			
@@ -243,11 +250,11 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 			# We use removereas = True as we do not want the predictiosn for every realization in the catalog
 			# We use keepfirstrea = False as we do not want columns like pre_g1_0
 
-		
 		else: # we just call tweakfeatures, with whatever the user asks for:
 			tweakedfeatures = tweakfeatures(tweakedmlobj.mlparams.inputs, mode=tweakmode, totweak=totweak)
 			tweakedmlobj.mlparams.inputs = tweakedfeatures
-			predcat = tweakedmlobj.predict(predcat)
+			predcat = tweakedmlobj.predict(predcat, **outtweakkwargs)
+			
 	return predcat
 
 

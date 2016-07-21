@@ -24,7 +24,7 @@ g2 = megalut.learn.MLParams(name = "g2",
 	targets = ["tru_g2"],
 	predictions = ["pre_g2"])
 
-msb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5", hidden_nodes = [5],
+msb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5", hidden_nodes = [5], n=3,
 	errfctname="msb", valfrac=0.5, shuffle=True,
 	ininoisewscale = 0.05, ininoisebscale = 0.05,
 	mbsize=None, mbfrac=0.1, mbloops=5, max_iterations=30, gtol=1e-20, startidentity=True,
