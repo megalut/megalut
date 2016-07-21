@@ -302,8 +302,8 @@ class ML:
 				
 				# If there is a function to treat the catalogue, let's do it now...
 				fun = kwargs['fun']
-				nreas = preddata.shape[1]
-				if nreas > 1 and not fun is None:
+				#nreas = preddata.shape[1]
+				if not fun is None:
 					treatedpred = fun(preddata[:,:,i,:], axis=0).transpose()
 					treatedpred = treat_col(treatedpred)
 					

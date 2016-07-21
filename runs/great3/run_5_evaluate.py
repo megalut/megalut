@@ -36,7 +36,7 @@ for subfield in config.subfields:
 	cat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
 	
 	# Predicting the training data
-	cat = learn.run.predict(cat, traindir, trainparamslist)
+	cat = learn.run.predict(cat, traindir, trainparamslist, outtweak=np.ma.median)
 	tools.io.writepickle(cat, os.path.join(traindir, "predtraincat.pkl"))
 	
 	# And we save the predictions
@@ -49,11 +49,12 @@ for subfield in config.subfields:
 	
 	# Formating for the out catalogues
 	# We replace masked predictions with 20.0
-	cat["pre_s1"][cat["pre_s1"].mask] = 20.0
-	cat["pre_s2"][cat["pre_s2"].mask] = 20.0
 	
+	cat["pre_g1"][cat["pre_g1"].mask] = 20.0
+	cat["pre_g2"][cat["pre_g2"].mask] = 20.0
+
 	# We cut out the columns we need
-	preobscat = cat["ID","pre_s1","pre_s2"]
+	preobscat = cat["ID","pre_g1","pre_g2"]
 	
 	# We write the ascii file
 	preobscat.write(great3.get_path("out", "%03i.cat" % subfield), format="ascii.commented_header")

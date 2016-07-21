@@ -40,11 +40,6 @@ for subfield in config.subfields:
 	# Predicting the training data
 	cat = learn.run.predict(cat, traindir, trainparamslist, outtweak=np.ma.mean)
 	tools.io.writepickle(cat, os.path.join(traindir, "predtraincat.pkl"))
-	
-ids_weirds = np.where(np.abs(cat['pre_g1_001'] + 0.00801) < 0.0001)
-print cat['pre_g1_000', 'pre_g1_001', 'pre_g1_002', 'pre_g1'][ids_weirds]
-print cat['pre_g2_000', 'pre_g2_001', 'pre_g2_002', 'pre_g2'][ids_weirds]
-
 
 # Making some nice plot
 tru_g1 = tools.feature.Feature("tru_g1", -0.9, 0.9, rea='all')
