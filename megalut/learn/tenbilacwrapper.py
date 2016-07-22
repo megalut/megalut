@@ -163,7 +163,8 @@ class TenbilacWrapper:
 		# Short-hand:
 		ncm = self.params.nmembers
 		
-		#TODO: implement givien the choice of many different configs/trainings
+		#TODO: implement the choice of many different configs/trainings
+		logger.info("{:s}: is a committee of {:d} member(s)".format(str(self), self.params.nmembers))
 		comm_members = [tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
 			inames=inputnames, onames=targetnames, name='commid={cid}'.format(cid=ii)) for ii in range(self.params.nmembers)]
 		comm = tenbilac.committee.Committee(comm_members)

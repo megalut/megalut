@@ -182,8 +182,10 @@ class ML:
 		# For Tenbilac, things are different. We have to provide 3D input (realization, feature, galaxy)
 		
 		if isinstance(self.toolparams, tenbilacwrapper.TenbilacParams): # Tenbilac
-				
+			
 			self.toolparams.ncpu = self.toolparams.commncpu
+			
+			logger.debug("Found a Tenbilac instance, to run on {:d} CPUs".format(self.toolparams.ncpu))
 				
 			inputsdata = get3Ddata(catalog, self.mlparams.inputs)
 			
