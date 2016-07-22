@@ -7,7 +7,7 @@ import megalut.learn as learn
 import config
 
 import megalutgreat3 as mg3
-import metrics
+import evaluate
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
@@ -69,7 +69,7 @@ logger.info("Evaluating with the Great3 code")
 
 submission_file = great3.get_path("out", "%s.cat" % great3.branchcode())
 
-results = metrics.evaluate.q_constant(submission_file, great3.experiment, great3.obstype, logger=logger)
+results = evaluate.q_constant(submission_file, great3.experiment, great3.obstype, logger=logger)
 Q_c, cp, mp, cx, mx, sigcp, sigcmp, sigcx, sigmx = results
 
 np.savetxt(great3.get_path('out', 'results_%s.cat' % great3.branchcode()), results,\
