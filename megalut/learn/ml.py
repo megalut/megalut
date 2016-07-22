@@ -183,6 +183,9 @@ class ML:
 		
 		if isinstance(self.toolparams, tenbilacwrapper.TenbilacParams): # Tenbilac
 			
+			self.toolparams.ncpu = self.toolparams.commncpu
+			
+			logger.debug("Found a Tenbilac instance, to run on {:d} CPUs".format(self.toolparams.ncpu))
 				
 			inputsdata = get3Ddata(catalog, self.mlparams.inputs)
 			
@@ -262,7 +265,7 @@ class ML:
 		
 
 
-	def predict(self, catalog):
+	def predict(self, catalog, **kwargs):
 		"""
 		Computes the prediction(s) based on the inputs in the given catalog.
 		Of course it will return a new astropy.table to which the new "predictions" columns are added,
@@ -288,7 +291,7 @@ class ML:
 			
 			preddata = self.tool.predict(inputs=inputsdata)
 			
-			# This is an appropriatedly masked 3D numpy array
+			# This is an appropriately masked 3D numpy array
 			
 			# We now add this preddata to the output catalog.
 			# We'll work on and return a **masked** copy of the input catalog.
@@ -298,19 +301,33 @@ class ML:
 			
 			# ... to which we add the preddata.
 			# An explicit loop, to highlight that we care very much about the order (to get targets right)
-	
+			
 			for (i, predlabel) in enumerate(self.mlparams.predictions):
-
-				data=preddata[:,i,:].transpose()
-				assert data.ndim == 2 # Indeed this is now always 2D.
-				if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
-					data = data.reshape((data.size))
-					assert data.ndim == 1
+				
+				# If there is a function to treat the catalogue, let's do it now...
+				fun = kwargs['fun']
+				#nreas = preddata.shape[1]
+				if not fun is None:
+					treatedpred = fun(preddata[:,:,i,:], axis=0).transpose()
+					treatedpred = treat_col(treatedpred)
 					
-				newcol = astropy.table.MaskedColumn(data=data, name=predlabel)
-				outcat.add_column(newcol)	
-		
-		
+					newcol = astropy.table.MaskedColumn(data=treatedpred, name=predlabel)
+					outcat.add_column(newcol)	
+					
+				# Another explicit loop to go through all the members of the committee
+				for j in range(self.tool.params.nmembers):
+					data=preddata[j,:,i,:].transpose()
+					data = treat_col(data)
+
+					# If there is only one net in the committee, let's make no fuss about the colname
+					colname = predlabel
+					if self.tool.params.nmembers > 1:
+						colname += "_{:03d}".format(j)						
+					
+					newcol = astropy.table.MaskedColumn(data=data, name=colname)
+					outcat.add_column(newcol)	
+				
+					
 		else: # FANN or SkyNet etc:	
 		
 			# We rather manually build a mask for the inputs. A row is masked whenever one or more inputs are masked.
@@ -357,7 +374,16 @@ class ML:
 		return outcat
 	
 		
-
+def treat_col(data):
+	"""
+	Helper function for the treatment of a tenbilac output
+	"""
+	assert data.ndim == 2 # Indeed this is now always 2D.
+	if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
+		data = data.reshape((data.size))
+		assert data.ndim == 1	
+	
+	return data
 
 def get3Ddata(catalog, colnames):
 	"""

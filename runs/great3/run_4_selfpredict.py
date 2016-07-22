@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 import megalut.tools as tools
 import megalut.learn as learn
@@ -37,18 +38,20 @@ for subfield in config.subfields:
 	cat = tools.io.readpickle(os.path.join(measdir, simparams_name, "groupmeascat.pkl"))
 	
 	# Predicting the training data
-	cat = learn.run.predict(cat, traindir, trainparamslist)
+	cat = learn.run.predict(cat, traindir, trainparamslist, outtweak=np.ma.mean)
 	tools.io.writepickle(cat, os.path.join(traindir, "predtraincat.pkl"))
-	
+
 # Making some nice plot
 tru_g1 = tools.feature.Feature("tru_g1", -0.9, 0.9, rea='all')
 tru_g2 = tools.feature.Feature("tru_g2", -0.9, 0.9, rea='all')
 	
 pre_g1 = tools.feature.Feature("pre_g1", -0.9, 0.9, rea='all')
+# This can also work:
+#pre_g1 = tools.feature.Feature("pre_g1_001", -0.9, 0.9, rea='all')
 pre_g2 = tools.feature.Feature("pre_g2", -0.9, 0.9, rea='all')
 
 xfeat = [tru_g1, tru_g2]
 yfeat = [pre_g1, pre_g2]
 	
 plots.show_selfpredict(config.subfields, mldir=great3.get_path("ml"), trainname=trainname, \
-	simname=simparams_name, xfeat=xfeat, yfeat=yfeat, outdir=great3.get_path("pred"), show=False)
+	simname=simparams_name, xfeat=xfeat, yfeat=yfeat, outdir=great3.get_path("pred"), show=True)

@@ -9,8 +9,6 @@ There is not that much to do here, as tenbilac directly uses numpy arrays native
 
 
 import os
-import numpy as np
-from datetime import datetime
 
 import tenbilac
 
@@ -26,7 +24,7 @@ class TenbilacParams:
 	"""
 	
 	
-	def __init__(self, hidden_nodes, errfctname="msrb", max_iterations=100, gtol=1e-8,
+	def __init__(self, hidden_nodes, errfctname="msrb", n=1, max_iterations=100, gtol=1e-8,
 		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1,
 		startidentity=True, ininoisewscale=0.1, ininoisebscale=0.1,
 		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden",
@@ -36,6 +34,7 @@ class TenbilacParams:
 		:param hidden_nodes: list giving the number of nodes per hidden layer
 		:param max_itrations: 
 		:param errfct: either "msb" or "msrb"
+		:param n: number of tenbilac instances to train
 		:param normtargets: if True, targets will be normed, and the predictions will be denormed using the same normer.
 			This is what you want for conventional networks that predict "labels".
 			But when predicting weights, set this to False to not have the targets normalized.
@@ -55,6 +54,7 @@ class TenbilacParams:
 		self.max_iterations = max_iterations
 		self.gtol = gtol
 		self.errfctname = errfctname
+		self.nmembers = n
 		self.valfrac = valfrac
 		self.shuffle = shuffle
 		self.mbsize = mbsize
@@ -72,7 +72,7 @@ class TenbilacParams:
 		self.reuse = reuse
 		self.autoplot = autoplot
 		self.keepdata = keepdata
-		
+		self.ncpu = 1 # This is the default value, which will get overwritten by run (learn)
 		
 	def __str__(self):
 		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, {self.errfctname})".format(self=self)
@@ -81,14 +81,42 @@ class TenbilacParams:
 class TenbilacWrapper:
 
 	def __init__(self, params, workdir=None):
-	
+
 		if workdir == None:
 			self.workdir = "Tenbilac_workdir"
 		else:
 			self.workdir = workdir
-		
-		self.netpath = os.path.join(self.workdir, "Tenbilac.pkl")
 			
+		# Setting up the workdir:
+		if not os.path.isdir(self.workdir):
+			os.makedirs(self.workdir)
+		else:
+			logger.info("Tenbilac workdir %s already exists" % self.workdir)
+			
+		# Define the directories in which the files are saved for each committee member:
+		
+		# We open a file object:
+		
+		self.memberdirpaths = []
+		self.memberfiles = []
+		for ii in range(params.nmembers):
+			# Now we can get the unique filename
+			cfname = "member_{:03d}".format(ii)
+			
+			cdir = os.path.join(workdir, cfname)
+			
+			self.memberdirpaths.append(cdir) 
+			
+			# Setting up the workdir:
+			if not os.path.isdir(cdir):
+				os.makedirs(cdir)
+			else:
+				logger.info("Tenbilac instance workdir %s already exists" % cdir)
+			
+			self.memberfiles.append(os.path.join(cdir, "Tenbilac.pkl"))
+					
+		#self.netpath = os.path.join(self.workdir, "Tenbilac.pkl")
+		self.netpath = os.path.join(self.workdir, "CommitteeTenbilac.pkl")
 		self.params = params
 		
 		
@@ -103,16 +131,8 @@ class TenbilacWrapper:
 		:param inputs: a 3D numpy array, possibly masked, with indices (rea, feature, case)
 		:param targets: a 2D array, with indices (feature, case)
 		
-		:param auxinputs: a 3D numpy array, optional
-		
+		:param auxinputs: a 3D numpy array, optional		
 		"""
-		starttime = datetime.now()
-		
-		# Setting up the workdir:
-		if not os.path.isdir(self.workdir):
-			os.makedirs(self.workdir)
-		else:
-			logger.info("Tenbilac workdir %s already exists" % self.workdir)
 			
 		# Some tests to start with
 		assert inputs.ndim == 3
@@ -135,18 +155,24 @@ class TenbilacWrapper:
 		# Hmm, we do not normalize the auxinputs, this would seem weird.
 		# But maybe we should think about normalizing the network outputs, instead of the targets.
 		
-		# We can prep the traindata object:
-		dat = tenbilac.data.Traindata(inputs=norminputs, targets=normtargets, auxinputs=auxinputs, valfrac=self.params.valfrac, shuffle=self.params.shuffle)
-
-
 		# Now we take care of setting up the network (even if we might reuse an existing one)
 		ni = inputs.shape[1]
 		nhs = self.params.hidden_nodes
 		no = targets.shape[0]
-		ann = tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
-			inames=inputnames, onames=targetnames)
 		
+		# Short-hand:
+		ncm = self.params.nmembers
 		
+		#TODO: implement the choice of many different configs/trainings
+		logger.info("{:s}: is a committee of {:d} member(s)".format(str(self), self.params.nmembers))
+		comm_members = [tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
+			inames=inputnames, onames=targetnames, name='commid={cid}'.format(cid=ii)) for ii in range(self.params.nmembers)]
+		comm = tenbilac.committee.Committee(comm_members)
+				
+		# We can prep the traindata object:
+		dat = tenbilac.data.Traindata(inputs=norminputs, targets=normtargets, auxinputs=auxinputs, 
+									valfrac=self.params.valfrac, shuffle=self.params.shuffle)
+
 		# Let's see if an existing training is available (before the init of the new training writes its file...)
 		oldtrain = None
 		if os.path.exists(self.netpath) and self.params.reuse:
@@ -155,34 +181,35 @@ class TenbilacWrapper:
 			oldtrain = tenbilac.utils.readpickle(self.netpath)			
 			
 		# And set up the training object:
-		training = tenbilac.train.Training(ann, dat, 
-				errfctname=self.params.errfctname,
-				itersavepath=self.netpath,
-				autoplotdirpath=self.workdir,
-				verbose=self.params.verbose,
-				autoplot=self.params.autoplot,
-				name=self.params.name)
+		ctraining = tenbilac.committee.CommTraining(comm, dat=[dat]*ncm, 
+				errfctname=[self.params.errfctname]*ncm,
+				itersavepath=self.memberfiles,
+				autoplotdirpath=self.memberdirpaths,
+				verbose=[self.params.verbose]*ncm,
+				autoplot=[self.params.autoplot]*ncm,
+				name=[self.params.name]*ncm,
+				multiple_trainings=True)
 	
-		# And now see if we take over the previous trainign or not:
+		# And now see if we take over the previous training or not:
 		if oldtrain is None:
 			if self.params.startidentity:
-				training.net.setidentity()
-			training.net.addnoise(wscale=self.params.ininoisewscale, bscale=self.params.ininoisebscale)
+				ctraining.call('setidentity', attr='net')
+			ctraining.call(attr='net', method='addnoise', wscale=self.params.ininoisewscale, bscale=self.params.ininoisebscale)
 						
 		else:
 			logger.info("Reusing previous network!")
-			training.takeover(oldtrain)
+			for ii in range(len(oldtrain.trainings)):
+				ctraining.trainings[ii].takeover(oldtrain.trainings[ii])
 
 		# Ready!
 
 		logger.info("{0}: starting the training".format((str(self))))
 		
-		#training.bfgs(maxiter=self.params.max_iterations)
-		
-		training.minibatch_bfgs(mbsize=self.params.mbsize, mbfrac=self.params.mbfrac, mbloops=self.params.mbloops,
+		ctraining.call(method='minibatch_bfgs', call_ncpu=self.params.ncpu, mbsize=self.params.mbsize, 
+			mbfrac=self.params.mbfrac, mbloops=self.params.mbloops,
 			maxiter=self.params.max_iterations, gtol=self.params.gtol)
 		
-		training.save(self.netpath, self.params.keepdata)
+		ctraining.save(self.netpath, self.params.keepdata)
 	
 		logger.info("{0}: done with the training".format((str(self))))
 		
@@ -194,22 +221,22 @@ class TenbilacWrapper:
 		"""
 			
 		# We read the Tenbilac:
-		training = tenbilac.utils.readpickle(self.netpath)
-		ann = training.net
+		ctraining = tenbilac.utils.readpickle(self.netpath)
+		comm = ctraining.committee
 		
 		logger.info("{0}: normalizing inputs for prediction...".format((str(self))))
 		norminputs = self.input_normer(inputs)
 		
-		# As simple as this:		
-		normpreds = ann.predict(norminputs)
+		# As simple as this:	
+		normpreds = comm.call("predict", inputs=norminputs)
 		
-		# Those normpreds are appropriatedly masked.
-		# We denormalize these predictions
+		# Those normpreds are appropriately masked.
+		# We de-normalise these predictions
 		if self.params.normtargets:
 			preds = self.target_normer.denorm(normpreds)
 		else:
 			preds = normpreds
-	
+
 		return preds
 	
 		
