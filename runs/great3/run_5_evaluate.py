@@ -7,7 +7,7 @@ import megalut.learn as learn
 import config
 
 import megalutgreat3 as mg3
-import evaluate
+import metrics.evaluate as evaluate
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)

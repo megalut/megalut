@@ -6,5 +6,6 @@ import g3measfct as measfct
 import mysimparams
 import mymlparams
 import plots
+import metrics.evaluate
 
 print 'imported all packages required successfully.'
