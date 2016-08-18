@@ -3,7 +3,8 @@ This is an example of the configuration for great3
 """
 
 # General configuration for MegaLUT
-datadir = "/home/kuntzer/workspace/MegaLUT/MegaLUT-github/great3_data"
+datadir = "/home/kuntzer/workspace/MegaLUT/MegaLUT-github/great3_data/"
+trushapedir = "/home/kuntzer/workspace/MegaLUT/MegaLUT-github/great3_true_shape/"
 workdir = None
 skipdone = True
 ncpu = 8

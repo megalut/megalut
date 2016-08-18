@@ -1,14 +1,16 @@
 """
-Quick and dirty GREAT3 Run class making use of the new code of branch #73
+Quick and dirty GREAT3 class
 """
 
 import logging
 logger = logging.getLogger(__name__)
 
+from astropy.table import Table
 import os
 
 import utils
 from megalut import tools
+
 
 
 class Great3(utils.Branch):
@@ -92,6 +94,13 @@ class Great3(utils.Branch):
 			
 		tools.io.writepickle(self, os.path.join(self.workdir, fname))
 		
+def load_true_shape(truthdir, experiment, obstype, sheartype, subfield, epoch=0):
+	
+	fname = os.path.join(truthdir, experiment, obstype, sheartype, "epoch_catalog-{:03d}-{:d}.fits".format(subfield, epoch))
+		
+	return Table.read(fname)
+		
 def load_config(outdir, fname='great3_config.pkl'):
 	
 	return tools.io.readpickle(os.path.join(outdir, fname))
+

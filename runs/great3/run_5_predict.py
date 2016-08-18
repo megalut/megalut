@@ -44,6 +44,15 @@ for subfield in config.subfields:
 	
 	tools.io.writepickle(cat, os.path.join(predir, "preobscat.pkl"))
 	
+	cat["pre_g1"][cat["pre_g1"].mask] = 20.0
+	cat["pre_g2"][cat["pre_g2"].mask] = 20.0
+	
+	# We cut out the columns we need
+	preobscat = cat["ID","pre_g1","pre_g2"]
+	
+	# We write the ascii file
+	preobscat.write(great3.get_path("out", "%03i.cat" % subfield), format="ascii.commented_header")
+	
 	logger.info("Wrote predictions cat for subfield %03i" % subfield)
 	
 logger.info("Wrote predictions for all subfields!")
