@@ -10,7 +10,6 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 
 #TODO: What about the validation set?
-#TODO: need to implement committees
 
 # Loading the correct configuration!
 great3 = mg3.great3.load_config(outdir='cgc')

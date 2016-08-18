@@ -86,7 +86,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 	
 	# We prepare an output table with all the required columns
 	output = astropy.table.Table(copy.deepcopy(catalog), masked=True) # Convert the table to a masked table
-	# A bit stange: reading the doc I feel that this conversion is not needed.
+	# A bit strange: reading the doc I feel that this conversion is not needed.
 	# But without it, it just doesn't result in a masked table once the masked columns are appended.
 	
 	output.add_columns([
@@ -172,5 +172,5 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 	
 	logger.info("I failed on %i out of %i sources (%.1f percent)" % (nfailed, n, 100.0*float(nfailed)/float(n)))
 	logger.info("This measurement took %.3f ms per galaxy" % (1e3*(endtime - starttime).total_seconds() / float(n)))
-	
+
 	return output

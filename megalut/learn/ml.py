@@ -288,7 +288,6 @@ class ML:
 			# We do not care about removing masks by hand here, as Tenbilac can deal with this.
 			
 			inputsdata = get3Ddata(catalog, self.mlparams.inputs)
-			
 			preddata = self.tool.predict(inputs=inputsdata)
 			
 			# This is an appropriately masked 3D numpy array
@@ -298,7 +297,6 @@ class ML:
 			# Probably the input catalog was already masked anyway.
 			
 			outcat = astropy.table.Table(copy.deepcopy(catalog), masked=True)
-			
 			# ... to which we add the preddata.
 			# An explicit loop, to highlight that we care very much about the order (to get targets right)
 			
@@ -310,7 +308,6 @@ class ML:
 				if not fun is None:
 					treatedpred = fun(preddata[:,:,i,:], axis=0).transpose()
 					treatedpred = treat_col(treatedpred)
-					
 					newcol = astropy.table.MaskedColumn(data=treatedpred, name=predlabel)
 					outcat.add_column(newcol)	
 					

@@ -185,6 +185,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 	# And now we make the predictions one after the other, always reusing the same catalog.
 	
 	predcat = copy.deepcopy(cat)
+	
 	if outtweak is not None:
 		outtweakkwargs = {'fun': outtweak}
 	else:
@@ -274,7 +275,7 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 			tweakedfeatures = tweakfeatures(tweakedmlobj.mlparams.inputs, mode=tweakmode, totweak=totweak)
 			tweakedmlobj.mlparams.inputs = tweakedfeatures
 			predcat = tweakedmlobj.predict(predcat, **outtweakkwargs)
-			
+	
 	return predcat
 
 
