@@ -72,7 +72,7 @@ class Great3(utils.Branch):
 		catpath = self.get_path("out", "*.cat")
 		branchcode = self.branchcode()
 		corr2path = os.path.join(corr2path, 'corr2')
-		outfilepath=self.get_path("out", "%s.cat" % branchcode)
+		outfilepath=self.get_path("out", "%s.out" % branchcode)
 
 		if use_weights:
 			cmd = "python %s %s -b %s -w 3 -c2 %s -o %s" % (presubscriptpath, catpath, 

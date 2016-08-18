@@ -14,7 +14,7 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-draw_subfields = True
+draw_subfields = False
 show = True
 
 # Loading the correct configuration!
@@ -67,7 +67,7 @@ if draw_subfields:
 		
 		ax1.scatter(x, y-x, marker='.', c='Grey', edgecolor="None")
 		ax1.axhline(0, ls='--', c='k', lw=2)
-		ax1.axvline(fields_true_e1[subfield] * 10, c='r', lw=2, ls='--')
+		ax1.axvline(fields_true_e1[subfield] * 10, c='k', lw=2, ls='--')
 		ax1.axvline(mg1s * 10, c='k', lw=2)
 		ax1.set_xlim([-0.7, 0.7])
 		ax1.set_ylim([-0.7, 0.7])
@@ -86,7 +86,7 @@ if draw_subfields:
 		
 		ax2.scatter(x, y-x, marker='.', c='Grey', edgecolor="None")
 		ax2.axhline(0, ls='--', c='k', lw=2)
-		ax2.axvline(fields_true_e2[subfield] * 10, c='r', lw=2, ls='--')
+		ax2.axvline(fields_true_e2[subfield] * 10, c='k', lw=2, ls='--')
 		ax2.axvline(mg2s * 10, c='k', lw=2)
 		ax2.set_xlim([-0.7, 0.7])
 		ax2.set_ylim([-0.7, 0.7])
@@ -116,12 +116,12 @@ great3.presubmit(corr2path=config.corr2path, presubdir=config.presubdir)
 
 logger.info("Evaluating with the Great3 code")
 
-submission_file = great3.get_path("out", "%s.cat" % great3.branchcode())
+submission_file = great3.get_path("out", "%s.out" % great3.branchcode())
 
 fname = os.path.join(figdir, 'shearpred_all_subfields.png')
 results = evaluate.q_constant(submission_file, great3.experiment, great3.obstype, logger=logger, plot=fname, pretty_print=True)
 Q_c, cp, mp, cx, mx, sigcp, sigcmp, sigcx, sigmx = results
 
-np.savetxt(great3.get_path('out', 'results_%s.cat' % great3.branchcode()), results,\
+np.savetxt(great3.get_path('out', 'results_%s.out' % great3.branchcode()), results,\
 		 header='Q_c, cp, mp, cx, mx, sigcp, sigcmp, sigcx, sigmx')
 logging.info('Q value: %1.2f' % Q_c) 
