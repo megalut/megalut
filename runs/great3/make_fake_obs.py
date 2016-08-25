@@ -2,8 +2,6 @@ import os
 import numpy as np
 from scipy import stats
 
-import megalut.tools as tools
-
 import config
 import pylab as plt
 

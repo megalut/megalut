@@ -18,7 +18,7 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 great3 = mg3.great3.load_config(outdir='cgc')
 
 # Choose a model for the simulations
-sp = mysimparams.GauShear2()
+sp = mysimparams.Sersics()
 
 for subfield in config.subfields:
 	

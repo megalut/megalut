@@ -7,5 +7,6 @@ import mysimparams
 import mymlparams
 import plots
 import metrics.evaluate
+from scipy import stats
 
 print 'imported all packages required successfully.'
