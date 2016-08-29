@@ -5,6 +5,8 @@ from scipy import stats
 import config
 import pylab as plt
 
+import megalut.tools as tools
+
 import megalutgreat3 as mg3
 import metrics.evaluate as evaluate
 
@@ -40,16 +42,43 @@ fields_id, fields_true_e1, fields_true_e2 = evaluate.get_generate_const_truth(gr
 	
 config.subfields = range(200)
 
-for subfield in config.subfields:
-	print subfield
-	# We load the predictions
-	trushapecat = mg3.great3.load_true_shape(config.trushapedir, great3.experiment, great3.obstype, great3.sheartype, subfield)
+def make_errors(trushapecat):
+	SN = np.clip(trushapecat["gal_sn"] / 100., 0., 1.)
+	sersicn = trushapecat["bulge_n"] / 4.
+	twocomp = np.clip(trushapecat["bulge_flux"] / 100., 0., 1.)
+	g1 = np.clip((trushapecat['g1_intrinsic']+trushapecat['g1']) / 0.7, -1, 1.)
+	g2 = np.clip((trushapecat['g2_intrinsic']+trushapecat['g2']) / 0.7, -1, 1.)
+	gal_size =  np.clip(((trushapecat["disk_hlr"] + trushapecat["bulge_hlr"]) / 2.)/1., 0., 1.)
+	nrandn = np.shape(gal_size)[0]
 	
+	def base_err():
+		return np.sign(g1) * np.sign(g2) * np.sqrt(SN) * 9e-3 + sersicn**2 * 1e-3 + twocomp * 2e-3 +\
+			 (1. - np.abs(g1)) * (1.-np.abs(g2)) * gal_size * 5e-3 +\
+			 ((1. - np.abs(g1)) + (1.-np.abs(g2))) * 5e-3 + np.random.randn(nrandn) * 5e-4 
+			
+	err1 = (g1 * 1e-3 + base_err()) / 3.
+	err2 = (g2 * 1e-3 + base_err()) / 3.
+	
+	return err1, err2
+
+for subfield in config.subfields:
+	print 'Subfield {:03d}'.format(subfield)
+	# We load the predictions
+	cat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
+	trushapecat = mg3.great3.load_true_shape(config.trushapedir, great3.experiment, great3.obstype, great3.sheartype, subfield)
+
+	err1, err2 = make_errors(trushapecat)
+	"""
+	plt.figure()
+	plt.hist(err1, 50, alpha=.5)
+	plt.hist(err2, 50, alpha=.5)
+	plt.show()
+	"""
 	# We cut out the columns we need
 	preobscat = trushapecat["ID","g1_intrinsic","g2_intrinsic"]
 	
-	preobscat['g1_intrinsic'] = (np.random.randn() * 1e-3 + 1) * (preobscat['g1_intrinsic'] + trushapecat['g1']) + np.random.randn() * 1e-2
-	preobscat['g2_intrinsic'] = (np.random.randn() * 1e-3 + 1) * (preobscat['g2_intrinsic'] + trushapecat['g2']) + np.random.randn() * 1e-3
+	preobscat['g1_intrinsic'] = trushapecat['g1_intrinsic'] + trushapecat['g1'] + err1 #+ err1#(np.random.randn() * 1e-13 + 1) * (preobscat['g1_intrinsic'] + trushapecat['g1']) + np.random.randn() * 1e-12
+	preobscat['g2_intrinsic'] = trushapecat['g2_intrinsic'] + trushapecat['g2'] + err2#(np.random.randn() * 1e-6 + 1) * (preobscat['g2_intrinsic'] + trushapecat['g2']) + np.random.randn() * 1e-6
 	
 	mg1s = np.ma.mean(preobscat['g1_intrinsic'])
 	mg2s = np.ma.mean(preobscat['g2_intrinsic'])
@@ -58,7 +87,7 @@ for subfield in config.subfields:
 	preobscat.write(os.path.join(fakedir, "out", "%03i.cat" % subfield), format="ascii.commented_header")
 	
 	if draw_subfields:
-		print 'Subfield {:03d} ----------------'.format(subfield)
+		
 		print '...| meas val | true val |'
 		print 'e1 |{:+0.7f}|{:+0.7f}|'.format(mg1s, fields_true_e1[subfield])
 		print 'e2 |{:+0.7f}|{:+0.7f}|'.format(mg2s, fields_true_e2[subfield])
