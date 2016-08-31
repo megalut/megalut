@@ -9,8 +9,8 @@ To use it without interfering with the megalut package development (e.g., despit
 Contents
 --------
 
-- **demo**
+- **demo**: scripts testing and demonstrating parts of megalut. 
 - **great3**: latest application to GREAT3, using the megalutgreat3 wrapper, should evolve into the scripts that we release together with the paper.
-- **malte**: see included README.
+- **malte**: Runs and scripts by Malte, see included README.
 
 
