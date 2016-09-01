@@ -15,12 +15,10 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Create an instance of the GREAT3 class
-great3 = mg3.great3.Great3("control", "ground", "constant",
-	datadir = config.datadir,
-	workdir = config.workdir,
-	subfields = config.subfields)
-great3.save_config()
+# Loading the run
+great3 = config.load_run()
+
+exit()
 
 # Preparing the different parameters for the workers
 wslist = [[great3, subfield] for subfield in great3.subfields]
