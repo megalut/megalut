@@ -1,7 +1,8 @@
 """
-This is an example of the simple configuration for the GREAT3 scripts.
+This is an example configuration for the GREAT3 scripts.
 Copy this file into config.py, and make changes as appropriate.
 """
+
 
 
 # General configuration for MegaLUT
@@ -9,10 +10,10 @@ datadir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3"
 trushapedir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3/truth"
 
 # Setting related to the branch, and a workdir
-experiment = "control" # This gets used when initiating a new config
+experiment = "control" # This gets used to access the correct GREAT3 files
 obstype = "ground"
 sheartype = "constant"
-workdir = "/vol/fohlen11/fohlen11_1/mtewes/2016_MegaLUT_GREAT3/cgc" # This determines which existing pkl configs will be read in
+workdir = "/vol/fohlen11/fohlen11_1/mtewes/2016_MegaLUT_GREAT3/cgc-2" # Where intermediary files are written. Choose it to reflect the branch!
 
 # Script configuration
 skipdone = True
@@ -28,8 +29,33 @@ corr2path = "/home/kuntzer/workspace/MegaLUT/MegaLUT-github/presubmission_script
 presubdir = "/home/kuntzer/workspace/MegaLUT/MegaLUT-github/presubmission_script"
 
 
+# And now some frequently used functions related to this configuration:
 
-###### Previous settings:
+import megalutgreat3 as mg3
+import logging
+logger = logging.getLogger(__name__)
+
+
+def new_run():
+	# Create a new instance of the GREAT3Run class
+	great3run = mg3.great3.GREAT3Run(
+		experiment,
+		obstype,
+		sheartype,
+		datadir,
+		workdir,
+		subfields)
+	return great3run
+
+	
+def load_run():
+	great3run = mg3.great3.load_run(outdir=workdir)
+	logger.info("Loaded %s" % (great3run))
+	return great3run
+	
+
+
+###### Thibault's settings:
 """
 # General configuration for MegaLUT
 datadir = "/home/kuntzer/workspace/MegaLUT/MegaLUT-github/great3_data/"
