@@ -13,41 +13,58 @@ from megalut import tools
 
 
 
-class Great3(utils.Branch):
+class GREAT3Run(utils.Branch):
 	"""
-	This is a simple class to handle variables
+	This is a simple class to group frequently used variables.
+	Unlike Branch, it does specify paths to MegaLUT-internal temporary files and directories, and handles a workdir.
 	"""
 	
-	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None,\
-				  subfields=range(200)):
+	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None, subfields=None):
 		
-		utils.Branch.__init__(self, experiment, obstype, sheartype, datadir, workdir)
-		logger.info("Working on branch %s-%s-%s" % (experiment, obstype, sheartype))
+		utils.Branch.__init__(self, experiment, obstype, sheartype, datadir)
+		logger.info("Getting ready to work on branch %s-%s-%s" % (experiment, obstype, sheartype))
 
-		self._mkdir(workdir)
+		self.workdir=workdir
+		if self.workdir == None:
+			logger.warning("Better specify a workdir, I think.")
+			self.workdir = "./%s" % (self.get_branchacronym())
+		self._mkdirs()
+		
 		self.subfields=subfields
+		if self.subfields is None:
+			self.subfields=range(200)
+			
+		# Those, and further variables, can be wildly added later:
 		self.simparams_name = None
 		self.trainparams_name = None
-		
-	def _mkdir(self, workdir):
+
+	
+	def __str__(self):
 		"""
-		Creates the working directories. Outputs a warning if the directories already exist		 
+		A tiny self-description, for logging
+		"""
+		return "GREAT3Run on branch %s in workdir '%s'" % (self.get_branchacronym(), self.workdir)
+
+		
+	def _mkdirs(self):
+		"""
+		Creates the working directories. 
 		"""
 
-		if workdir==None: workdir="./%s" % (self.get_branchacronym()) 
-		
-		tools.dirs.mkdir(workdir)
-		self.workdir=workdir
-		
+		if not os.path.isdir(self.workdir):
+			os.makedirs(self.workdir)
+	
 		# Now must create the sub-directories:
 		for subfolder in ["obs","sim","ml","pred","out"]:
-			tools.dirs.mkdir(self.get_path(subfolder))
+			if not os.path.isdir(self.get_path(subfolder)):
+				os.makedirs(self.get_path(subfolder))
+
 
 	def get_path(self,*args):
 		"""
-		A helper function that returns the filepath
+		A helper function that returns a filepath within the working directory.
 		
-		:param args: must be in order of the filepath, similar to os.path.join()
+		:param args: strings, must be in order of the filepath, similar to os.path.join()
 		
 		Example usage::
 		
@@ -57,6 +74,56 @@ class Great3(utils.Branch):
 		"""
 		return os.path.join(self.workdir,"/".join(args))
 	
+	
+
+	# Files that MegaLUT will write: 
+	
+	def obsincat(self, subfield, imgtype, prefix="", xt=None, yt=None):
+		"""
+		Please document
+		Should use get_path
+		what is imgtype for ?
+		"""
+	
+		return os.path.join(self.workdir, imgtype, "%simage-%03i-0%s_meascat.pkl" % \
+						(prefix,subfield,self.get_ftiles(xt,yt)))
+	
+	def galinfilepath(self, subfield, imgtype, xt=None, yt=None, prefix=""): 
+		"""
+		Please document
+		"""
+		return os.path.join(self.workdir, imgtype, "%sinput_image-%03i-0%s_meascat.pkl" % \
+						(prefix,subfield,self.get_ftiles(xt,yt)))
+	
+	
+	# Stuff related to the simulations
+		
+	def simgalcatfilepath(self, subfield, nimg=None):
+		"""
+		Please document
+		"""
+		if nimg == None:
+			return self.galcatfilepath(subfield, folder=os.path.join(self.workdir,"sim"))
+		else:
+			raise NotImplemented()
+		
+	def simgalimgfilepath(self, subfield, xt=None, yt=None, nimg=None):
+		"""
+		Please document
+		"""
+		if not (xt is None or yt is None):
+			note="/%02dx%02d" % (xt,yt)
+		else:
+			note=""
+		
+		if nimg == None:
+			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim%s" % note))
+		else:
+			raise NotImplemented()
+
+
+
+
 	def presubmit(self, corr2path=".", presubdir=".", use_weights=False):
 		"""
 		:param corr2path: The directory containing the Michael Jarvis's corr2 code, 
@@ -84,9 +151,10 @@ class Great3(utils.Branch):
 				
 		os.system(cmd)
 	
-	def save_config(self, outdir=None, fname='great3_config.pkl'):
+
+	def save_run(self, outdir=None, fname='great3_config.pkl'):
 		"""
-		Saves the current configuration to a specified `outdir` or directly into `self.workdir`
+		Saves the current Object to a specified `outdir` or directly into `self.workdir`
 		"""
 		
 		if outdir is None:
@@ -94,13 +162,18 @@ class Great3(utils.Branch):
 			
 		tools.io.writepickle(self, os.path.join(self.workdir, fname))
 		
+
+
+	
+def load_run(outdir, fname='great3_config.pkl'):
+	
+	return tools.io.readpickle(os.path.join(outdir, fname))
+
+
+
 def load_true_shape(truthdir, experiment, obstype, sheartype, subfield, epoch=0):
 	
 	fname = os.path.join(truthdir, experiment, obstype, sheartype, "epoch_catalog-{:03d}-{:d}.fits".format(subfield, epoch))
 		
 	return Table.read(fname)
-		
-def load_config(outdir, fname='great3_config.pkl'):
-	
-	return tools.io.readpickle(os.path.join(outdir, fname))
 

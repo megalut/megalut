@@ -7,10 +7,12 @@ import os
 class Branch:
 	"""
 	A class to define the file paths of the GREAT3 data and other branch-specific stuff.
-	For now I commented-out all the MegaLUT output things. They are a priori not related to GREAT3.
+	This is to tell code where GREAT3 stuff is.
+	It's NOT to tell code where to write (intermediary) files or to specify workdirs etc!
+	So in fact there should be no MegaLUT related things in here.
 	"""
 
-	def __init__(self, experiment, obstype, sheartype, datadir=None, workdir=None):
+	def __init__(self, experiment, obstype, sheartype, datadir=None):
 	
 		assert experiment in ['control', 'real_galaxy', 'variable_psf', 'multiepoch', 'full']
 		assert obstype in ['ground', 'space']
@@ -76,6 +78,13 @@ class Branch:
 			else:
 				return 0.05
 
+	def gain(self):
+		"""
+		It seems that GREAT3 images are given in scaled electrons, but it doesn't matter as noise is just stationarry Gaussian anyway.
+		For SExtractor one should set gain = 0 which corresponds to infinity to get this Gaussian noise right.
+		"""
+		return 1.0
+
 	
 	def branchdir(self):
 		"""
@@ -96,14 +105,17 @@ class Branch:
 		else:
 			return ""
 
+
 	def galimgfilepath(self, subfield, xt=None, yt=None,epoch=0, folder=None):
 		if folder==None:
 			folder=self.branchdir()
 		return os.path.join(folder, "image-%03i-%i%s.fits" % (subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
 
+
 	def starimgfilepath(self, subfield, xt=None, yt=None, epoch=0):
 		return os.path.join(self.branchdir(), "starfield_image-%03i-%i%s.fits" % 
 						(subfield, epoch, self.get_ftiles(xt,yt))) # This is set by GREAT3
+
 
 	def galcatfilepath(self, subfield, xt=None, yt=None, folder=None):
 		if folder==None:
@@ -111,6 +123,7 @@ class Branch:
 
 		fname="galaxy_catalog-%03i%s.txt" % (subfield,self.get_ftiles(xt,yt))
 		return os.path.join(folder, fname) # This is set by GREAT3
+
 		
 	def starcatfilepath(self, subfield, xt=None, yt=None, folder=None):
 		if folder==None:
@@ -121,133 +134,3 @@ class Branch:
 	
 	
 	
-	# Files that MegaLUT will write: 
-	
-	def obsincat(self, subfield, imgtype, prefix="", xt=None, yt=None):
-		return os.path.join(self.workdir, imgtype, "%simage-%03i-0%s_meascat.pkl" % \
-						(prefix,subfield,self.get_ftiles(xt,yt)))
-	
-	def galinfilepath(self, subfield, imgtype, xt=None, yt=None, prefix=""): 
-		return os.path.join(self.workdir, imgtype, "%sinput_image-%03i-0%s_meascat.pkl" % \
-						(prefix,subfield,self.get_ftiles(xt,yt)))
-	# Stuff related to the simulations
-	
-		
-	def simgalcatfilepath(self, subfield, nimg=None):
-		if nimg == None:
-			return self.galcatfilepath(subfield, folder=os.path.join(self.workdir,"sim"))
-		else:
-			raise NotImplemented()
-		
-	def simgalimgfilepath(self, subfield, xt=None, yt=None, nimg=None):
-		if not (xt is None or yt is None):
-			note="/%02dx%02d" % (xt,yt)
-		else:
-			note=""
-		
-		if nimg == None:
-			return self.galimgfilepath(subfield, folder=os.path.join(self.workdir,"sim%s" % note))
-		else:
-			raise NotImplemented()
-
-
-# 
-#	def obsstarsexpath(self, subfield):
-#		return os.path.join(self.obsdir(), 'star_catalog-%03i.txt' % subfield)
-# 
-#	def obsgalfilepath(self, subfield):
-#		return os.path.join(self.obsdir(), "obs-%03i.pkl" % (subfield))
-# 
-#	def obsstarfilepath(self, subfield):
-#		return os.path.join(self.obsdir(), "obs-star-%03i.pkl" % (subfield))
-# 
-#	def precoaddpsfimgfilepath(self, subfield):
-#		return os.path.join(self.precoadddir(), "coadd_starfield_image-%03i.fits" % (subfield))
-# 
-#	
-#	def obsdir(self): # Measurements on observations will go here
-#		if self.denoise:
-#			return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
-#		else:
-#			return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-%s" % (self.version))
-#	
-#	def simdir(self): # Simulation related stuff will go here
-#		if self.denoise:
-#			return os.path.join(self.workdir, "sim-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
-#		else:
-#			return os.path.join(self.workdir, "sim-" + "-".join(self.branch) + "-%s" % (self.version))
-#	
-#	def outdir(self): # Submission files will go here
-#		if self.denoise:
-#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s-den%s" % (self.version, self.denoise))
-#		else:	
-#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s" % (self.version))
-#	
-#	
-#	def subfilepath(self): # the final submission file
-#		if self.denoise:
-#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s-den%s.txt" % (self.version, self.denoise))
-#		else:	
-#			return os.path.join(self.workdir, "out-" + "-".join(self.branch) + "-%s.txt" % (self.version))
-#	
-#	
-# 
-#	def check_dir(self):
-#		# Making sure all the directories are there:
-#		if self.denoise:
-#			#Observation
-#			if not os.path.exists(self.denbranchdir()):
-#				os.makedirs(self.denbranchdir())
-#		# Observation
-#		if not os.path.isdir(self.obsdir()):
-#			os.mkdir(self.obsdir())
-#		# Simulations
-#		if not os.path.isdir(self.simdir()):
-#			os.mkdir(self.simdir())
-#		# Outdir
-#		if not os.path.exists(self.outdir()):
-#			os.mkdir(self.outdir())
-# 
-#	def precoadddir(self):
-#		if len(self.precoadd) == 0:
-#			raise RuntimeError("Ouch, I don't know where is the precoadd data !")
-#		return os.path.join(self.workdir, "obs-" + "-".join(self.branch) + "-coadd-" + self.precoadd)
-#	
-# 
-#		# Stuff related to the observations
-#		
-# 
-#	def denobsgalimgfilepath(self, subfield, epoch=0):
-#		return os.path.join(self.denbranchdir(), "image-%03i-%i.fits" % (subfield, epoch))
-#	
-#	def precoaddgalimgfilepath(self, subfield):
-#		return os.path.join(self.precoadddir(), "coadd_image-%03i.fits" % (subfield))
-# 
-# 
-#		# Stuff related to the simulations
-#		
-#	def simgalimgfilepath(self, subfield, nimg=None):
-#		if nimg == None:
-#			return os.path.join(self.simdir(), "sim-%03i-galimg.fits" % (subfield))
-#		else:
-#			return os.path.join(self.simdir(), "sim-%03i-%02i-galimg.fits" % (subfield,nimg))
-#		
-#	def densimgalimgfilepath(self, subfield):
-#		return os.path.join(self.simdir(), "sim-%03i-galimg-den.fits" % (subfield))
-#	
-#	def simgalfilepath(self, subfield,nimg):
-#		if nimg == None:
-#			return os.path.join(self.simdir(), "sim-%03i.pkl" % (subfield))
-#		else:
-#			return os.path.join(self.simdir(), "sim-%03i-%02i.pkl" % (subfield,nimg))
-# 
-# # def simstarfilepath(self, subfield):
-# #		return os.path.join(self.obsdir(), "sim-star-%03i.pkl" % (subfield))
-#	
-#	def simtrugalimgfilepath(self, subfield,nimg):
-#		return os.path.join(self.simdir(), "sim-%03i-%02i-trugalimg.fits" % (subfield,nimg))
-# 
-#	def simpsfimgfilepath(self, subfield,nimg):
-#		return os.path.join(self.simdir(), "sim-%03i-%02i-psfimg.fits" % (subfield,nimg))
-#	
-#	
