@@ -77,7 +77,7 @@ for subfield in config.subfields:
 	# We cut out the columns we need
 	preobscat = trushapecat["ID","g1_intrinsic","g2_intrinsic"]
 	
-	preobscat['g1_intrinsic'] = trushapecat['g1_intrinsic'] + trushapecat['g1'] + err1 #+ err1#(np.random.randn() * 1e-13 + 1) * (preobscat['g1_intrinsic'] + trushapecat['g1']) + np.random.randn() * 1e-12
+	preobscat['g1_intrinsic'] = trushapecat['g1_intrinsic'] + trushapecat['g1'] + err1#(np.random.randn() * 1e-13 + 1) * (preobscat['g1_intrinsic'] + trushapecat['g1']) + np.random.randn() * 1e-12
 	preobscat['g2_intrinsic'] = trushapecat['g2_intrinsic'] + trushapecat['g2'] + err2#(np.random.randn() * 1e-6 + 1) * (preobscat['g2_intrinsic'] + trushapecat['g2']) + np.random.randn() * 1e-6
 	
 	mg1s = np.ma.mean(preobscat['g1_intrinsic'])

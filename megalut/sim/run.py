@@ -401,6 +401,8 @@ def _worker(ws):
 	Worker function that processes one _WorkerSettings object.
 	"""		
 	starttime = datetime.datetime.now()
+	# Make sure that we indeed start from different seeds
+	np.random.seed()
 	p = multiprocessing.current_process()
 	logger.info("%s is starting to draw %s with PID %s" % (p.name, str(ws), p.pid))
 	
