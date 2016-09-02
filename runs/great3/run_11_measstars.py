@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 great3 = config.load_run()
 
 
-config.subfields = [0]
+#config.subfields = [0]
 
 for subfield in config.subfields:
 
