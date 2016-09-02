@@ -27,9 +27,6 @@ logger = logging.getLogger(__name__)
 great3 = config.load_run()
 
 
-config.subfields = [0, 1, 2, 3]
-
-
 sfside = 3 * great3.stampsize()
 stararray = np.zeros((sfside, sfside*len(config.subfields)))
 
