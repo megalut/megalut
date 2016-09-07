@@ -17,7 +17,7 @@ import megalut.meas as meas
 import megalutgreat3 as mg3
 
 import config
-import g3measfct as measfct
+import measfcts
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
@@ -63,7 +63,7 @@ starcat.meta["img"] = tools.imageinfo.ImageInfo(
 	)
 
 # Run the measurement:
-starcat = measfct.psf(starcat, branch=great3)
+starcat = measfcts.psf(starcat, branch=great3)
 #print starcat[["psfx", "psfy", "psf_sewpy_XWIN_IMAGE", "psf_sewpy_YWIN_IMAGE", "psf_adamom_x", "psf_adamom_y"]]
 #print starcat
 

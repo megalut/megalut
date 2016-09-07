@@ -14,7 +14,7 @@ import megalut.meas as meas
 import megalutgreat3 as mg3
 
 import config
-import g3measfct as measfct
+import measfcts
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
@@ -90,6 +90,6 @@ for subfield in config.subfields:
 measfctkwargs = {"branch":great3}
 
 # And we run with ncpu
-meas.run.general(incatfilepaths, outcatfilepaths, measfct.galaxies, measfctkwargs=measfctkwargs,
+meas.run.general(incatfilepaths, outcatfilepaths, measfcts.gal, measfctkwargs=measfctkwargs,
 					ncpu=config.ncpu, skipdone=config.skipdone)
 
