@@ -43,13 +43,13 @@ for subfield in config.subfields:
 		xname="psfx",
 		yname="psfy",
 		stampsize=great3.stampsize(),
-		workdir=great3.get_path("obs", "star_%i_measworkdir" % subfield)
+		workdir=great3.path("obs", "star_%i_measworkdir" % subfield)
 		)
 
 	starcat = measfcts.psf(starcat, branch=great3)
 	#print starcat[["psfx", "psfy", "psf_sewpy_XWIN_IMAGE", "psf_sewpy_YWIN_IMAGE", "psf_adamom_x", "psf_adamom_y"]]
 	#print starcat
 
-	tools.io.writepickle(starcat, great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
+	tools.io.writepickle(starcat, great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	
 

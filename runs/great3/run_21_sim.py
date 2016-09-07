@@ -30,16 +30,16 @@ IS NOT YET DONE
 for subfield in config.subfields:
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
-	#obscat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
+	#obscat = tools.io.readpickle(great3.path("obs", "img_%i_meascat.pkl" % subfield))
 	#sig = np.ma.mean(obscat["skymad"])
 	#sp.sig = sig
 	
 	# Getting the path to the correct directories
-	simdir = great3.get_path("sim","%03i" % subfield)
-	measdir = great3.get_path("simmeas","%03i" % subfield)
+	simdir = great3.path("sim","%03i" % subfield)
+	measdir = great3.path("simmeas","%03i" % subfield)
 	
 	# Loading the PSF for the subfield
-	psfcat = tools.io.readpickle(great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
+	psfcat = tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	
 	
 	# Simulating images

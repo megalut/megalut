@@ -33,7 +33,7 @@ outcatfilepaths = []
 for subfield in config.subfields:
 
 
-	starcat = tools.io.readpickle(great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
+	starcat = tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	#print starcat
 				
 	incat = mg3.io.readgalcat(great3, subfield)
@@ -62,7 +62,7 @@ for subfield in config.subfields:
 		xname="x",
 		yname="y",
 		stampsize=great3.stampsize(),
-		workdir=great3.get_path("obs", "img_%i_measworkdir" % subfield)
+		workdir=great3.path("obs", "img_%i_measworkdir" % subfield)
 		)
 
 	incat.meta["psf"] = tools.imageinfo.ImageInfo(
@@ -74,12 +74,12 @@ for subfield in config.subfields:
 		)
 
 	# Write the input catalog
-	incatfilepath = great3.get_path("obs", "img_%i_incat.pkl" % subfield)
+	incatfilepath = great3.path("obs", "img_%i_incat.pkl" % subfield)
 	tools.io.writepickle(incat, incatfilepath)
 	incatfilepaths.append(incatfilepath)
 	
 	# Prepare the filepath for the output catalog
-	outcatfilepath = great3.get_path("obs", "img_%i_meascat.pkl" % subfield)
+	outcatfilepath = great3.path("obs", "img_%i_meascat.pkl" % subfield)
 	outcatfilepaths.append(outcatfilepath)
 
 

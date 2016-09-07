@@ -38,7 +38,7 @@ for (i, subfield) in enumerate(config.subfields):
 	startile = tools.io.fromfits(great3.starimgfilepath(subfield))
 	stararray[:, i*sfside:(i+1)*sfside] = startile
 	
-tools.io.tofits(stararray, great3.get_path("obs", "allstars.fits"))
+tools.io.tofits(stararray, great3.path("obs", "allstars.fits"))
 
 
 # Now make a simple catalog for these:
@@ -55,11 +55,11 @@ starcat = astropy.table.Table([stars[:,0], stars[:,1]], names=('psfx', 'psfy'))
 	
 # We attach the image:
 starcat.meta["img"] = tools.imageinfo.ImageInfo(
-	filepath=great3.get_path("obs", "allstars.fits"),
+	filepath=great3.path("obs", "allstars.fits"),
 	xname="psfx",
 	yname="psfy",
 	stampsize=great3.stampsize(),
-	workdir=great3.get_path("obs", "allstars_measworkdir")
+	workdir=great3.path("obs", "allstars_measworkdir")
 	)
 
 # Run the measurement:
@@ -68,7 +68,7 @@ starcat = measfcts.psf(starcat, branch=great3)
 #print starcat
 
 # And save the catalog
-tools.io.writepickle(starcat, great3.get_path("obs", "allstars_meascat.pkl"))
+tools.io.writepickle(starcat, great3.path("obs", "allstars_meascat.pkl"))
 
 
 

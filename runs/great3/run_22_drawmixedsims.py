@@ -1,28 +1,46 @@
 """
-Simulates a dedicated training set for each subfield.
+Simulates a single training set for all subfields.
 """
 
 
 import megalut
+import megalutgreat3
+
 import config
 import simparams
 
-import g3measfct as measfct
-
-import megalutgreat3 as mg3
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 
 
-# Loading the run
+
 great3 = config.load_run()
 
-# Choose a model for the simulations
-sp = mysimparams.Sersics()
+
+simdir = great3.path("sim", "allstars")
+sp = simparams.Sersics()
+
+psfcat = megalut.tools.io.readpickle(great3.path("obs", "allstars_meascat.pkl"))
+	
+
+# To train for shear, we want 
+
+megalut.sim.run.multi(
+	simdir=simdir,
+	simparams=sp,
+	drawcatkwargs={"n":20, "nc":10, "stampsize":great3.stampsize()},
+	drawimgkwargs={}, 
+	psfcat=psfcat,
+	psfselect="random",
+	ncat=1, nrea=1, ncpu=config.ncpu,
+	savepsfimg=False,
+	savetrugalimg=False
+	)
 
 
 
+"""
 IS NOT YET DONE
 
 
@@ -30,16 +48,16 @@ IS NOT YET DONE
 for subfield in config.subfields:
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
-	#obscat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
+	#obscat = tools.io.readpickle(great3.path("obs", "img_%i_meascat.pkl" % subfield))
 	#sig = np.ma.mean(obscat["skymad"])
 	#sp.sig = sig
 	
 	# Getting the path to the correct directories
-	simdir = great3.get_path("sim","%03i" % subfield)
-	measdir = great3.get_path("simmeas","%03i" % subfield)
+	simdir = great3.path("sim","%03i" % subfield)
+	measdir = great3.path("simmeas","%03i" % subfield)
 	
 	# Loading the PSF for the subfield
-	psfcat = tools.io.readpickle(great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
+	psfcat = tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	
 	
 	# Simulating images
@@ -79,3 +97,4 @@ for subfield in config.subfields:
 ## Remembering the name of the simparams:
 #great3.simparams_name = sp.name
 #great3.save_config()
+"""
