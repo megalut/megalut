@@ -41,9 +41,9 @@ def psf(catalog, branch=None):
 
 
 
-def galaxies(catalog, branch=None):
+def gal(catalog, branch=None):
 	"""
-	The normal measfct, for galaxies.
+	The measfct for galaxies.
 	
 	"""	
 	
