@@ -2,22 +2,16 @@
 Simulates a dedicated training set for each subfield.
 """
 
-import os
-import numpy as np
 
-import megalut.sim as sim
-import megalut.meas as meas
-import megalut.tools as tools
-
+import megalut
 import config
-import mysimparams
+import simparams
+
 import g3measfct as measfct
 
 import megalutgreat3 as mg3
 
 import logging
-
-
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 
 
@@ -26,6 +20,12 @@ great3 = config.load_run()
 
 # Choose a model for the simulations
 sp = mysimparams.Sersics()
+
+
+
+IS NOT YET DONE
+
+
 
 for subfield in config.subfields:
 	
