@@ -1,3 +1,7 @@
+"""
+Measures features of the PSFs, 
+individually for each subfield.
+"""
 import multiprocessing
 import datetime
 import numpy as np

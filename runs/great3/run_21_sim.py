@@ -1,3 +1,7 @@
+"""
+Simulates a dedicated training set for each subfield.
+"""
+
 import os
 import numpy as np
 
@@ -12,10 +16,13 @@ import g3measfct as measfct
 import megalutgreat3 as mg3
 
 import logging
+
+
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 
-# Loading the correct configuration!
-great3 = mg3.great3.load_config(outdir='cgc')
+
+# Loading the run
+great3 = config.load_run()
 
 # Choose a model for the simulations
 sp = mysimparams.Sersics()
@@ -23,9 +30,9 @@ sp = mysimparams.Sersics()
 for subfield in config.subfields:
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
-	obscat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
-	sig = np.ma.mean(obscat["skymad"])
-	sp.sig = sig
+	#obscat = tools.io.readpickle(great3.get_path("obs", "img_%i_meascat.pkl" % subfield))
+	#sig = np.ma.mean(obscat["skymad"])
+	#sp.sig = sig
 	
 	# Getting the path to the correct directories
 	simdir = great3.get_path("sim","%03i" % subfield)
@@ -34,6 +41,7 @@ for subfield in config.subfields:
 	# Loading the PSF for the subfield
 	psfcat = tools.io.readpickle(great3.get_path("obs", "star_%i_meascat.pkl" % subfield))
 	
+	
 	# Simulating images
 	sim.run.multi(
 		simdir=simdir,
@@ -41,7 +49,7 @@ for subfield in config.subfields:
 		drawcatkwargs={"n":1000, "nc":10, "stampsize":great3.stampsize()},
 		drawimgkwargs={}, 
 		psfcat=psfcat, psfselect="random",
-		ncat=8, nrea=2, ncpu=config.ncpu,
+		ncat=1, nrea=2, ncpu=config.ncpu,
 		savepsfimg=False, savetrugalimg=False
 	)
 
@@ -68,6 +76,6 @@ for subfield in config.subfields:
 	tools.table.keepunique(cat)
 	tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 
-# Remembering the name of the simparams:
-great3.simparams_name = sp.name
-great3.save_config()
+## Remembering the name of the simparams:
+#great3.simparams_name = sp.name
+#great3.save_config()

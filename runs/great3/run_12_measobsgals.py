@@ -1,5 +1,6 @@
 """
-Attach the PSF measurements to the galaxy catalogs, and run the galaxy shape measurments
+Attach the PSF measurements to the galaxy catalogs, and run the galaxy shape measurments.
+Again individually for each subfields (but multi-cpu).
 """
 
 import multiprocessing
