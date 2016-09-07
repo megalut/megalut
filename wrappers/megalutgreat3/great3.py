@@ -60,7 +60,7 @@ class GREAT3Run(utils.Branch):
 				os.makedirs(self.get_path(subfolder))
 
 
-	def get_path(self,*args):
+	def path(self,*args):
 		"""
 		A helper function that returns a filepath within the working directory.
 		
@@ -68,7 +68,7 @@ class GREAT3Run(utils.Branch):
 		
 		Example usage::
 		
-			>>> self._get_path("obs","catalogue_000.fits")
+			>>> self.path("obs","catalogue_000.fits")
 			
 		will return the filepath: self.workdir/obs/catalogue_000.fits
 		"""
