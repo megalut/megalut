@@ -1,5 +1,5 @@
 """
-Let's keep those definitions out of the scripts, 
+Parameters describing how galaxies should be drawn
 """
 import megalut.sim
 import numpy as np

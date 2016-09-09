@@ -1,3 +1,8 @@
+"""
+Reads and saves the GREAT3Run object.
+Can be useful to have this separated to overwrite settings (if you know what you are doing).
+"""
+
 
 import config
 
