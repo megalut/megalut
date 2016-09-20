@@ -36,6 +36,9 @@ for subfield in config.subfields:
 	starcat = astropy.table.Table([stars[:,0], stars[:,1]], names=('psfx', 'psfy'))
 	#print starcat
 	
+	# We add the subfield number to the catalog, might be handy later.
+	starcat["psfsubfield"] = subfield
+	
 	
 	# To measure the stars, we attach the image:
 	starcat.meta["img"] = tools.imageinfo.ImageInfo(
