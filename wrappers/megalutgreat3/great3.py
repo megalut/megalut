@@ -56,8 +56,8 @@ class GREAT3Run(utils.Branch):
 	
 		# Now must create the sub-directories:
 		for subfolder in ["obs","sim","ml","pred","out"]:
-			if not os.path.isdir(self.get_path(subfolder)):
-				os.makedirs(self.get_path(subfolder))
+			if not os.path.isdir(self.path(subfolder)):
+				os.makedirs(self.path(subfolder))
 
 
 	def path(self,*args):
@@ -136,10 +136,10 @@ class GREAT3Run(utils.Branch):
 		#presubdir = os.path.join(os.path.dirname(__file__), "presubmission_script")
 		
 		presubscriptpath = os.path.join(presubdir, "presubmission.py")
-		catpath = self.get_path("out", "*.cat")
+		catpath = self.path("out", "*.cat")
 		branchcode = self.branchcode()
 		corr2path = os.path.join(corr2path, 'corr2')
-		outfilepath=self.get_path("out", "%s.out" % branchcode)
+		outfilepath=self.path("out", "%s.out" % branchcode)
 
 		if use_weights:
 			cmd = "python %s %s -b %s -w 3 -c2 %s -o %s" % (presubscriptpath, catpath, 
