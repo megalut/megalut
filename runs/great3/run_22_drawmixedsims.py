@@ -31,7 +31,6 @@ sp = simparams.CGCSersics()
 	
 
 
-"""
 
 # Generate catalogs and draw the corresponding stamps, using galsim, 
 megalut.sim.run.multi(
@@ -47,9 +46,7 @@ megalut.sim.run.multi(
 	)
 
 
-"""
 
-"""
 
 # Run the feature measuements on those stamps:
 megalut.meas.run.onsims(
@@ -64,9 +61,10 @@ megalut.meas.run.onsims(
 
 # This leaves us with one meascat per FITS image
 
-"""
 
-"""
+
+
+
 # Group those results into one single catalog
 # There is not that much to do here, as we haven't used nrea
 
@@ -80,9 +78,12 @@ cat = megalut.meas.avg.onsims(
 
 megalut.tools.table.keepunique(cat)
 megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-"""
 
-"""
+
+
+
+
+
 # Restructure this flat catalog to define "cases" and "realizations" for the machine learning (i.e., make it a 3D catalog).
 
 cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
@@ -90,7 +91,9 @@ cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "
 megalut.tools.table.keepunique(cat)
 megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
 
-"""
+
+
+
 
 # Remembering the names to make it easier to find those files:
 great3.simparams = sp
