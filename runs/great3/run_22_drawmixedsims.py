@@ -40,7 +40,7 @@ megalut.sim.run.multi(
 	drawimgkwargs={}, 
 	psfcat=psfcat,
 	psfselect="random",
-	ncat=10, nrea=1, ncpu=config.ncpu,
+	ncat=1, nrea=1, ncpu=config.ncpu,
 	savepsfimg=False,
 	savetrugalimg=False
 	)
@@ -81,11 +81,7 @@ megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.p
 
 
 
-
-
-
 # Restructure this flat catalog to define "cases" and "realizations" for the machine learning (i.e., make it a 3D catalog).
-
 cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
