@@ -25,10 +25,17 @@ psfcat = megalut.tools.io.readpickle(great3.path("obs", "allstars_meascat.pkl"))
 #print psfcat
 #exit()
 
+# Among those, we select only the PSFs corresponding to the right subfields.
+
+DO THISO
+
+
+
 simdir = great3.path("sim", "allstars")
 measdir = great3.path("simmeas", "allstars")
 sp = simparams.CGCSersics()
-	
+
+sp.name = "ParamsTune_sub99_1" # This name can be changed for tests. Note that it gets saved into the config pkl.
 
 
 
@@ -40,7 +47,7 @@ megalut.sim.run.multi(
 	drawimgkwargs={}, 
 	psfcat=psfcat,
 	psfselect="random",
-	ncat=1, nrea=1, ncpu=config.ncpu,
+	ncat=10, nrea=1, ncpu=config.ncpu,
 	savepsfimg=False,
 	savetrugalimg=False
 	)

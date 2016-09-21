@@ -1,7 +1,5 @@
 """
-
 Classic simobscompa plot
-
 """
 
 import megalut
@@ -19,20 +17,22 @@ logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 
 run = config.load_run()
 
+# Best subfield:
+subfield = 99
 
-"""
-simcat = megalut.tools.io.readpickle(os.path.join(run.measdir, run.simparams.name, "groupmeascat_cases.pkl"))
+simcat = megalut.tools.io.readpickle(os.path.join(run.measdir, run.simparams.name, "groupmeascat.pkl"))
+
+print megalut.tools.table.info(simcat)
+bestsub = megalut.tools.table.Selector("bestsub", [("is", "subfield", subfield)])
+simcat = bestsub.select(simcat)
+
 print megalut.tools.table.info(simcat)
 #print simcat
-"""
-
-I AM HERE, IDEA : use only sharpest PSF for these plots
-
-obscat = 
 
 
+obscat = megalut.tools.io.readpickle(run.path("obs", "img_%i_meascat.pkl" % subfield))
 
-exit()
+print megalut.tools.table.info(obscat)
 
 
 
@@ -71,6 +71,7 @@ fig = plt.figure(figsize=(20, 13))
 ax = fig.add_subplot(3, 4, 1)
 
 megalut.plot.hist.hist(ax, simcat, snr, color="red", label="Training")
+megalut.plot.hist.hist(ax, obscat, snr, color="blue", label="GREAT3")
 
 #ax = fig.add_subplot(3, 4, 2)
 #megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"), Feature("tru_s2"))

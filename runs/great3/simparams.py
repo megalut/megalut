@@ -28,6 +28,11 @@ class CGCSersics(megalut.sim.params.Params):
 		snc_type = 100
 		
 		
+		tru_s1 = 0
+		tru_s2 = 0
+		snc_type = 1
+		
+		
 		return {
 			"tru_s1" : tru_s1, # shear component 1, in "g" convention
 			"tru_s2" : tru_s2, # component 2

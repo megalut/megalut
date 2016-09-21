@@ -40,6 +40,10 @@ Sept. 2016, Malte is working on this.
 - run_11
 - run_12
 - run_13
-- run_22
+- run_15, to find the best subfield
+
+Then, if the sims are not yet tuned, iterate on
+- editing simparams (snc_type can be set to 1, config.subfields just to the best subfield)
+- run_22 (pick different sp.name for your tests)
 - plot_1
 
