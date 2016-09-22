@@ -76,6 +76,36 @@ def gal(catalog, branch=None):
 
 
 groupcols = [
+ 'adamom_flag',
+ 'adamom_flux',
+ 'adamom_x',
+ 'adamom_y',
+ 'adamom_g1',
+ 'adamom_g2',
+ 'adamom_sigma',
+ 'adamom_rho4',
+ 'skyflag',
+ 'skystd',
+ 'skymad',
+ 'skymean',
+ 'skymed',
+ 'skystampsum',
+ 'aperphot_sb2',
+ 'aperphot_sb3',
+ 'aperphot_sb5',
+ 'aperphot_sb8',
+ 'snr'
+]
+
+removecols = [
+		
+]
+
+
+
+"""
+# Some previously used values:
+
 'sewpy_XWIN_IMAGE',
 'sewpy_YWIN_IMAGE',
 'sewpy_AWIN_IMAGE',
@@ -99,27 +129,63 @@ groupcols = [
 'sewpy_BACKGROUND',
 'sewpy_FLAGS',
 'sewpy_assoc_flag',
-'adamom_flag',
-'adamom_flux',
-'adamom_x',
-'adamom_y',
-'adamom_g1',
-'adamom_g2',
-'adamom_sigma',
-'adamom_rho4',
-'skystd',
-'skymad',
-'skymean',
-'skymed',
-'skystampsum'
-]
-
-removecols = [
-		
-]
 
 
+['id',
+ 'ix',
+ 'iy',
+ 'snc_type',
+ 'tru_flux',
+ 'tru_g1',
+ 'tru_g2',
+ 'tru_gain',
+ 'tru_mu',
+ 'tru_pixel',
+ 'tru_rad',
+ 'tru_read_noise',
+ 'tru_s1',
+ 'tru_s2',
+ 'tru_sersicn',
+ 'tru_sky_level',
+ 'tru_type',
+ 'x',
+ 'y',
+ 'psfx',
+ 'psfy',
+ 'psf_adamom_flag',
+ 'psf_adamom_flux',
+ 'psf_adamom_x',
+ 'psf_adamom_y',
+ 'psf_adamom_g1',
+ 'psf_adamom_g2',
+ 'psf_adamom_sigma',
+ 'psf_adamom_rho4',
+ 'psf_skyflag',
+ 'psf_skystd',
+ 'psf_skymad',
+ 'psf_skymean',
+ 'psf_skymed',
+ 'psf_skystampsum',
+ 'adamom_flag',
+ 'adamom_flux',
+ 'adamom_x',
+ 'adamom_y',
+ 'adamom_g1',
+ 'adamom_g2',
+ 'adamom_sigma',
+ 'adamom_rho4',
+ 'skyflag',
+ 'skystd',
+ 'skymad',
+ 'skymean',
+ 'skymed',
+ 'skystampsum',
+ 'aperphot_sb2',
+ 'aperphot_sb3',
+ 'aperphot_sb5',
+ 'aperphot_sb8',
+ 'snr']
 
-
+"""
 
 

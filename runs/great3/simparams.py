@@ -25,7 +25,12 @@ class CGCSersics(megalut.sim.params.Params):
 		tru_s2 = np.random.uniform(-0.05, 0.05)	
 		tru_mu = 1.0
 
-		snc_type = 20
+		snc_type = 100
+		
+		
+		tru_s1 = 0
+		tru_s2 = 0
+		snc_type = 1
 		
 		
 		return {
@@ -67,9 +72,9 @@ class CGCSersics(megalut.sim.params.Params):
 				
 		########## Noise ##########
 		# GREAT3 has no Poisson noise, just flat Gaussian.
-		tru_sky_level = 10.0 #np.random.uniform(10, 15)
+		tru_sky_level = 0.0 #np.random.uniform(10, 15)
 		tru_gain = -1.0
-		tru_read_noise = 0.0 # No need for additional noise
+		tru_read_noise = 0.5 # No need for additional noise
 		
 		tru_pixel = -1.0
 		

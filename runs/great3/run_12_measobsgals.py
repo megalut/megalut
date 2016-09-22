@@ -8,16 +8,14 @@ import datetime
 import numpy as np
 import astropy.table
 
-import megalut.tools as tools
-import megalut.meas as meas
-
-import megalutgreat3 as mg3
+import megalut
+import megalutgreat3
 
 import config
 import measfcts
 
 import logging
-logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
+logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Loading the run
@@ -33,10 +31,10 @@ outcatfilepaths = []
 for subfield in config.subfields:
 
 
-	starcat = tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	starcat = megalut.tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	#print starcat
 				
-	incat = mg3.io.readgalcat(great3, subfield)
+	incat = megalutgreat3.io.readgalcat(great3, subfield)
 	
 	
 	# We add PSF info to this field. PSFs are already measured, and we take a random one (among 9) for each galaxy.
@@ -57,7 +55,7 @@ for subfield in config.subfields:
 	
 	# Add the reference to the img and psf stamps:
 	
-	incat.meta["img"] = tools.imageinfo.ImageInfo(
+	incat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
 		filepath=great3.galimgfilepath(subfield),
 		xname="x",
 		yname="y",
@@ -65,7 +63,7 @@ for subfield in config.subfields:
 		workdir=great3.path("obs", "img_%i_measworkdir" % subfield)
 		)
 
-	incat.meta["psf"] = tools.imageinfo.ImageInfo(
+	incat.meta["psf"] = megalut.tools.imageinfo.ImageInfo(
 		filepath=great3.starimgfilepath(subfield),
 		xname="psfx",
 		yname="psfy",
@@ -75,7 +73,7 @@ for subfield in config.subfields:
 
 	# Write the input catalog
 	incatfilepath = great3.path("obs", "img_%i_incat.pkl" % subfield)
-	tools.io.writepickle(incat, incatfilepath)
+	megalut.tools.io.writepickle(incat, incatfilepath)
 	incatfilepaths.append(incatfilepath)
 	
 	# Prepare the filepath for the output catalog
@@ -90,6 +88,6 @@ for subfield in config.subfields:
 measfctkwargs = {"branch":great3}
 
 # And we run with ncpu
-meas.run.general(incatfilepaths, outcatfilepaths, measfcts.gal, measfctkwargs=measfctkwargs,
+megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfcts.gal, measfctkwargs=measfctkwargs,
 					ncpu=config.ncpu, skipdone=config.skipdone)
 

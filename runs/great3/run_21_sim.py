@@ -7,9 +7,6 @@ import megalut
 import config
 import simparams
 
-import g3measfct as measfct
-
-import megalutgreat3 as mg3
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)

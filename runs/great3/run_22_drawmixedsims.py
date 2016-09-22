@@ -1,5 +1,7 @@
 """
 Simulates a single training set for all subfields.
+
+It's safe to uncomment run / meas / avg one after the other.
 """
 
 
@@ -8,93 +10,97 @@ import megalutgreat3
 
 import config
 import simparams
+import measfcts
 
 
+import os
 import logging
-logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
+logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 
 
 
 great3 = config.load_run()
 
+psfcat = megalut.tools.io.readpickle(great3.path("obs", "allstars_meascat.pkl"))
+#print psfcat
+#exit()
+
+# Among those, we select only the PSFs corresponding to the right subfields.
+
+DO THISO
+
+
 
 simdir = great3.path("sim", "allstars")
-sp = simparams.Sersics()
+measdir = great3.path("simmeas", "allstars")
+sp = simparams.CGCSersics()
 
-psfcat = megalut.tools.io.readpickle(great3.path("obs", "allstars_meascat.pkl"))
-	
+sp.name = "ParamsTune_sub99_1" # This name can be changed for tests. Note that it gets saved into the config pkl.
 
-# To train for shear, we want 
 
+
+# Generate catalogs and draw the corresponding stamps, using galsim, 
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
-	drawcatkwargs={"n":20, "nc":10, "stampsize":great3.stampsize()},
+	drawcatkwargs={"n":100, "nc":1, "stampsize":great3.stampsize()},
 	drawimgkwargs={}, 
 	psfcat=psfcat,
 	psfselect="random",
-	ncat=1, nrea=1, ncpu=config.ncpu,
+	ncat=10, nrea=1, ncpu=config.ncpu,
 	savepsfimg=False,
 	savetrugalimg=False
 	)
 
 
 
-"""
-IS NOT YET DONE
+
+# Run the feature measuements on those stamps:
+megalut.meas.run.onsims(
+	simdir=simdir,
+	simparams=sp,
+	measdir=measdir,
+	measfct=measfcts.gal,
+	measfctkwargs={"branch":great3},
+	ncpu=config.ncpu,
+	skipdone=config.skipdone
+)
+
+# This leaves us with one meascat per FITS image
 
 
 
-for subfield in config.subfields:
-	
-	# We have to read in the obs catalog of this subfield to get the noise of the sky:
-	#obscat = tools.io.readpickle(great3.path("obs", "img_%i_meascat.pkl" % subfield))
-	#sig = np.ma.mean(obscat["skymad"])
-	#sp.sig = sig
-	
-	# Getting the path to the correct directories
-	simdir = great3.path("sim","%03i" % subfield)
-	measdir = great3.path("simmeas","%03i" % subfield)
-	
-	# Loading the PSF for the subfield
-	psfcat = tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
-	
-	
-	# Simulating images
-	sim.run.multi(
-		simdir=simdir,
-		simparams=sp,
-		drawcatkwargs={"n":1000, "nc":10, "stampsize":great3.stampsize()},
-		drawimgkwargs={}, 
-		psfcat=psfcat, psfselect="random",
-		ncat=1, nrea=2, ncpu=config.ncpu,
-		savepsfimg=False, savetrugalimg=False
-	)
-
-	# Measuring the newly drawn images
-	meas.run.onsims(
-		simdir=simdir,
-		simparams=sp,
-		measdir=measdir,
-		measfct=measfct.galaxies,
-		measfctkwargs={"branch":great3},
-		ncpu=config.ncpu,
-		skipdone=config.skipdone
-	)
 
 
-	cat = meas.avg.onsims(
-		measdir=measdir, 
-		simparams=sp,
-		task="group",
-		groupcols=measfct.groupcols, 
-		removecols=measfct.removecols
-	)
+# Group those results into one single catalog
+# There is not that much to do here, as we haven't used nrea
 
-	tools.table.keepunique(cat)
-	tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+cat = megalut.meas.avg.onsims(
+	measdir=measdir, 
+	simparams=sp,
+	task="group",
+	groupcols=measfcts.groupcols, 
+	removecols=measfcts.removecols
+)
 
-## Remembering the name of the simparams:
-#great3.simparams_name = sp.name
-#great3.save_config()
-"""
+megalut.tools.table.keepunique(cat)
+megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+
+
+
+# Restructure this flat catalog to define "cases" and "realizations" for the machine learning (i.e., make it a 3D catalog).
+cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "tru_flux", "tru_rad"])
+megalut.tools.table.keepunique(cat)
+megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
+
+
+
+
+
+# Remembering the names to make it easier to find those files:
+great3.simparams = sp
+great3.simdir = simdir
+great3.measdir = measdir
+great3.save_run()
+
