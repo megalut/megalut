@@ -612,6 +612,7 @@ class Selector:
 			- ``("in", "tru_rad", 0.5, 0.6)`` : ``"tru_rad"`` is between 0.5 and 0.6 ("in" stands for *interval*) and *not* masked
 			- ``("max", "snr", 10.0)`` : ``"snr"`` is below 10.0 and *not* masked
 			- ``("min", "adamom_flux", 10.0)`` : ``"adamom_flux"`` is above 10.0 and *not* masked
+			- ``("inlist", "subfield", (1, 2, 3))`` : ``subfield`` is among the elements in the tuple or list (1,2,3) and *not* masked.
 			- ``("is", "Flag", 2)`` : ``"Flag"`` is exactly 2 and *not* masked
 			- ``("nomask", "pre_g1")`` : ``"pre_g1"`` is not masked
 			- ``("mask", "snr")`` : ``"snr"`` is masked
@@ -684,7 +685,16 @@ class Selector:
 				passmask = (cat[crit[1]] >= crit[2])
 				if np.ma.is_masked(passmask):
 					passmask = passmask.filled(fill_value=False)
-					
+			
+			elif crit[0] == "inlist":
+				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
+				passmask = np.in1d(np.asarray(cat[crit[1]]), crit[2]) # This ignores any mask
+				if np.ma.is_masked(passmask): # As the mask is ignored by in1d, this is probably worthless and will never happen
+					passmask = passmask.filled(fill_value=False)
+				# So we need to deal with masked elements manually:
+				if hasattr(cat[crit[1]], "mask"): # i.e., if this column is masked:
+					passmask = np.logical_and(passmask, np.logical_not(cat[crit[1]].mask))
+						
 			elif crit[0] == "is":
 				if len(crit) != 3: raise RuntimeError("Expected 3 elements in criterion %s" % (str(crit)))
 				passmask = (cat[crit[1]] == crit[2])
