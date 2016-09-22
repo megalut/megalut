@@ -2,6 +2,9 @@
 Simulates a single training set for all subfields.
 
 It's safe to uncomment run / meas / avg one after the other.
+
+Note that you can edit the simparams name below, to iteratively tune params or for tests.
+
 """
 
 
@@ -26,16 +29,19 @@ psfcat = megalut.tools.io.readpickle(great3.path("obs", "allstars_meascat.pkl"))
 #exit()
 
 # Among those, we select only the PSFs corresponding to the right subfields.
+# This way we can do for example sims with only one PSF, to compare to the obs of one subfield.
 
-DO THISO
+subsel = megalut.tools.table.Selector("subfield", [("inlist", "subfield", config.subfields)])
+psfcat = subsel.select(psfcat)
 
-
+#print psfcat
+#print megalut.tools.table.info(psfcat)
 
 simdir = great3.path("sim", "allstars")
 measdir = great3.path("simmeas", "allstars")
 sp = simparams.CGCSersics()
 
-sp.name = "ParamsTune_sub99_1" # This name can be changed for tests. Note that it gets saved into the config pkl.
+sp.name = "ParamsTune_sub99_2" # This name can be changed for tests. Note that it gets saved into the config pkl.
 
 
 
@@ -43,7 +49,7 @@ sp.name = "ParamsTune_sub99_1" # This name can be changed for tests. Note that i
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
-	drawcatkwargs={"n":100, "nc":1, "stampsize":great3.stampsize()},
+	drawcatkwargs={"n":1000, "nc":1, "stampsize":great3.stampsize()},
 	drawimgkwargs={}, 
 	psfcat=psfcat,
 	psfselect="random",
@@ -85,15 +91,15 @@ cat = megalut.meas.avg.onsims(
 
 megalut.tools.table.keepunique(cat)
 megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+"""
 
-
-
+"""
 # Restructure this flat catalog to define "cases" and "realizations" for the machine learning (i.e., make it a 3D catalog).
 cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
-
+"""
 
 
 

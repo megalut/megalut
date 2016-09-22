@@ -27,7 +27,7 @@ class CGCSersics(megalut.sim.params.Params):
 
 		snc_type = 100
 		
-		
+		# For fine tuning sims:
 		tru_s1 = 0
 		tru_s2 = 0
 		snc_type = 1
@@ -74,7 +74,7 @@ class CGCSersics(megalut.sim.params.Params):
 		# GREAT3 has no Poisson noise, just flat Gaussian.
 		tru_sky_level = 0.0 #np.random.uniform(10, 15)
 		tru_gain = -1.0
-		tru_read_noise = 0.5 # No need for additional noise
+		tru_read_noise = 0.92 #  No need for additional noise 0.92 is for subfield 99
 		
 		tru_pixel = -1.0
 		

@@ -7,6 +7,7 @@ import megalutgreat3
 import megalut.plot
 from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
+import numpy as np
 
 import config
 
@@ -21,30 +22,30 @@ run = config.load_run()
 subfield = 99
 
 simcat = megalut.tools.io.readpickle(os.path.join(run.measdir, run.simparams.name, "groupmeascat.pkl"))
+#print megalut.tools.table.info(simcat)
 
-print megalut.tools.table.info(simcat)
 bestsub = megalut.tools.table.Selector("bestsub", [("is", "subfield", subfield)])
 simcat = bestsub.select(simcat)
 
-print megalut.tools.table.info(simcat)
+#print megalut.tools.table.info(simcat)
 #print simcat
 
 
 obscat = megalut.tools.io.readpickle(run.path("obs", "img_%i_meascat.pkl" % subfield))
 
-print megalut.tools.table.info(obscat)
+#print megalut.tools.table.info(obscat)
 
 
 
-rea = "full"
+rea = None
 
 adamom_flux = Feature("adamom_flux", rea=rea)
-adamom_sigma = Feature("adamom_sigma", 0, 30, rea=rea)
+adamom_sigma = Feature("adamom_sigma", 0, 10, rea=rea)
 adamom_rho4 = Feature("adamom_rho4", 1.3, 2.6, rea=rea)
-adamom_g1 = Feature("adamom_g1", -0.8, 0.8, rea=rea)
-adamom_g2 = Feature("adamom_adamom_g2", -0.8, 0.8, rea=rea)
+adamom_g1 = Feature("adamom_g1", -0.7, 0.7, rea=rea)
+adamom_g2 = Feature("adamom_g2", -0.7, 0.7, rea=rea)
 
-snr = Feature("snr", -5, 50, rea=rea)
+snr = Feature("snr", -3, 30, rea=rea)
 
 aperphot_sb2 = Feature("aperphot_sb2", rea=rea)
 aperphot_sb3 = Feature("aperphot_sb3", rea=rea)
@@ -57,21 +58,61 @@ skymed = Feature("skymed", rea=rea)
 skymean = Feature("skymean", rea=rea)
 
 psf_adamom_g1 = Feature("psf_adamom_g1", -0.06, 0.06, rea=rea)
-psf_adamom_g2 = Feature("psf_adamom_g1", -0.06, 0.06, rea=rea)
+psf_adamom_g2 = Feature("psf_adamom_g2", -0.06, 0.06, rea=rea)
 psf_adamom_sigma = Feature("psf_adamom_sigma", rea=rea)
 
 
 
-#cat["tru_g"] = np.hypot(cat["tru_g1"], cat["tru_g2"])
+simcat["aperphot_sbr1"] = simcat["aperphot_sb2"] / simcat["aperphot_sb5"]
+obscat["aperphot_sbr1"] = obscat["aperphot_sb2"] / obscat["aperphot_sb5"]
+simcat["aperphot_sbr2"] = simcat["aperphot_sb3"] / simcat["aperphot_sb8"]
+obscat["aperphot_sbr2"] = obscat["aperphot_sb3"] / obscat["aperphot_sb8"]
+aperphot_sbr1 = Feature("aperphot_sbr1", rea=rea)
+aperphot_sbr2 = Feature("aperphot_sbr2", rea=rea)
+simcat["adamom_log_flux"] = np.log10(simcat["adamom_flux"])
+obscat["adamom_log_flux"] = np.log10(obscat["adamom_flux"])
+adamom_log_flux = Feature("adamom_log_flux", rea=rea)
 
 
-fig = plt.figure(figsize=(20, 13))
+fig = plt.figure(figsize=(15, 10))
 #fig = plt.figure(figsize=(8, 8))
 
 ax = fig.add_subplot(3, 4, 1)
 
-megalut.plot.hist.hist(ax, simcat, snr, color="red", label="Training")
-megalut.plot.hist.hist(ax, obscat, snr, color="blue", label="GREAT3")
+megalut.plot.contour.simobs(ax, simcat, obscat, adamom_log_flux, snr, plotpoints=False)
+#megalut.plot.hist.hist(ax, simcat, snr, color="red", label="Training", normed=True)
+#megalut.plot.hist.hist(ax, obscat, snr, color="blue", label="GREAT3", normed=True)
+
+ax = fig.add_subplot(3, 4, 2)
+megalut.plot.scatter.simobs(ax, simcat, obscat, snr, adamom_sigma, legend=True)
+
+ax = fig.add_subplot(3, 4, 3)
+megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_g1, adamom_g2)
+
+ax = fig.add_subplot(3, 4, 4)
+megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_rho4, adamom_sigma)
+
+
+ax = fig.add_subplot(3, 4, 5)
+megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_sb2, aperphot_sb3)
+
+ax = fig.add_subplot(3, 4, 6)
+megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_sb5, aperphot_sb8)
+
+ax = fig.add_subplot(3, 4, 7)
+megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_sbr1, aperphot_sbr2)
+
+ax = fig.add_subplot(3, 4, 8)
+megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_log_flux, adamom_rho4)
+#ax.set_xscale("log", nonposx='clip')
+
+
+ax = fig.add_subplot(3, 4, 9)
+megalut.plot.contour.simobs(ax, simcat, obscat, skymad, skymean, plotpoints=False)
+
+ax = fig.add_subplot(3, 4, 12)
+megalut.plot.scatter.simobs(ax, simcat, obscat, psf_adamom_g1, psf_adamom_g2)
+
 
 #ax = fig.add_subplot(3, 4, 2)
 #megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"), Feature("tru_s2"))
