@@ -50,8 +50,8 @@ def readNico(catpath, onlybright=True):
 			raise RuntimeError("Fishy!")
 	
 	# MegaLUT centering conventions
-	cat["x"] = cat["Nx2"] + 1.5
-	cat["y"] = cat["Ny2"] + 1.5
+	cat["x"] = cat["Nx2"] + 0.5 # This is the center of the stamp. The galaxies are currently not centered (they are at +1.5), but this is a different issue.
+	cat["y"] = cat["Ny2"] + 0.5
 	
 	# Adding "g" in addition to "e"
 	cat["Ng1"] = cat["Ne1"] # temporary
