@@ -77,6 +77,7 @@ def measfct(cat, runon="img", prefix="mom_", xname="x", yname="y", stampsize=100
 			
 			array = gps.array.transpose()
 			array *= weights
+			#array = weights
 			#print array.shape
 			
 			assert array.shape == (stampsize, stampsize)
@@ -106,10 +107,10 @@ def measfct(cat, runon="img", prefix="mom_", xname="x", yname="y", stampsize=100
 			r = np.sqrt(qxx**2 + qyy**2)
 			
 			
-			xmean -= stampsize/2.0
-			ymean -= stampsize/2.0
+			xmean -= (stampsize/2.0 + 0.5) # The centroid, in relative pixels
+			ymean -= (stampsize/2.0 + 0.5)
 			
-			gal[prefix + "x"] = xmean
+			gal[prefix + "x"] = xmean # Arg, to turn this into absolute again, would add x, but then what happens if x is float is bad!!!! Careful
 			gal[prefix + "y"] = ymean
 			gal[prefix + "e1"] = e1
 			gal[prefix + "e2"] = e2
@@ -122,3 +123,101 @@ def measfct(cat, runon="img", prefix="mom_", xname="x", yname="y", stampsize=100
 	
 	return cat
 
+
+
+class MomentEngine:
+	"""Measures moments on square stamps.
+	A MomentEngine object allows you to measure moments on many stamps.
+	
+	The normal procedure:
+	- measure first moments using a relatively wide gaussian weight function centered on the stamp center
+	- measure central second moments, centered 
+	
+	"""
+	def __init__(self, stampsize):
+		self.stampsize = stampsize
+
+		self.make_pos()
+
+
+	def make_pos(self):
+		"""Prepares x and y position arrays and stamp centers, as we'll keep reusing them.
+		"""
+		(self.xes, self.yes) = np.mgrid[0:self.stampsize, 0:self.stampsize] + 1.0 # The value of the first pixel goes with coordinates (1.0, 1.0). That's our convention.
+		(self.xcenter, self.ycenter) = ((self.stampsize/2.0 + 0.5), (self.stampsize/2.0 + 0.5)) # Consistent with this convention.
+
+
+	def make_weights(self, func="flat", center=None, sigma=None):
+		"""Builds an array of weights
+		"""
+		if func is "flat":
+			weights = np.ones((stampsize, stampsize), dtype=float)
+
+		elif func is  "Gauss":
+		
+			if center is None:
+				center = (self.xcenter, self.ycenter) # Use the stamp center
+				
+			centerdists	= np.hypot(self.xes - center[0], self.yes - center[1])
+			weights = np.exp((-1.0 * centerdists**2) / (2.0 * sigma**2))
+			
+		else:
+			raise RuntimeError("Unknown func")
+
+		assert weights.shape == (self.stampsize, self.stampsize)
+		return weights
+		
+
+	def measure_first_moments(array, sumarray=None):
+		"""Plain measurement of first momemnts on a 2D numpy array
+		"""
+		assert array.shape == (self.stampsize, self.stampsize)
+		
+		if sumarray == None:
+			sumarray = np.sum(array)
+			
+		x = np.sum(self.xes * array) / sumarray
+		y = np.sum(self.yes * array) / sumarray
+
+		return (x, y)
+
+
+	def measure_second_moments(array, sumarray=None, center=None):
+		"""Plain measurment of central second moments on a 2D numpy array.
+		"""
+		assert array.shape == (self.stampsize, self.stampsize)
+	
+		if sumarray == None:
+			sumarray = np.sum(array)
+		if center is None:
+			center = (self.xcenter, self.ycenter) # Use the stamp center
+		
+		qxx = np.sum(array * (self.xes - center[0])**2) / sumarray
+		qyy = np.sum(array * (self.yes - center[1])**2) / sumarray
+		qxy = np.sum(array * (self.xes - center[0]) * (self.yes - center[1])) / sumarray
+
+		return (qxx, qyy, qxy)
+
+
+	def compute_ellipse(second_moments):
+		"""Turns a tuple of second moments into (e1, e2, r)
+		"""
+		
+		(qxx, qyy, qxy) = second_moments
+		
+		qdiff = (qxx * qyy) - qxy**2
+		
+		if qdiff < 0.0:
+			raise ValueError()
+		else:
+			edenum = qxx + qyy + 2.0*np.sqrt(qdiff)
+			e1 = (qxx - qyy) / edenum
+			e2 = 2.0 * qxy / edenum
+			# and 
+			r = np.sqrt(qxx**2 + qyy**2)
+			return (e1, e2, r)
+			
+		
+		
+		
+		
