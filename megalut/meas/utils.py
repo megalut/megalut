@@ -6,6 +6,7 @@ import glob
 import re
 import numpy as np
 import galsim
+import astropy
 
 import logging
 logger = logging.getLogger(__name__)
@@ -69,6 +70,21 @@ def simmeasdict(measdir, simparams):
 
 	return out
 
+
+
+def add_new_cols(cat, prefix="", floatcols=None, boolcols=None):
+	"""Adds new columns to a catalogue in place, and sets the values to be masked.
+	"""
+	
+	if floatcols != None:
+		for col in floatcols:
+			cat.add_column(astropy.table.MaskedColumn(name=prefix+col, dtype=float, length=len(cat)))
+			cat[prefix+col].mask = [True] * len(cat)
+	if boolcols != None:
+		for col in boolcols:
+			cat.add_column(astropy.table.MaskedColumn(name=prefix+col, dtype=bool, length=len(cat)))
+			cat[prefix+col].mask = [True] * len(cat)
+	
 
 
 def mad(nparray):
