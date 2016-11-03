@@ -30,12 +30,12 @@ psfimgpath = os.path.join(workdir, "psf.fits")
 psfcatpath = os.path.join(workdir, "psfcat.pkl")
 
 
-ncpu = 10
+ncpu = 1
 
 
 # Nicolas sims
 
-stampsize = 60
+stampsize = 64
 nside = 100
 
 

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 
-psfstampsize = 60
+psfstampsize = 64
 
 logger.info("Drawing PSF stamp...")
 

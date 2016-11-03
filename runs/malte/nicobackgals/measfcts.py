@@ -6,6 +6,9 @@ def default(catalog, stampsize):
 	Default measfct, runs on "img".
 	"""	
 	
+	# mom
+	catalog = megalut.meas.mom.measfct(catalog, stampsize=stampsize, centroweightsize=5, secondweightsizes=[3,5])
+	
 	# HSM adamom
 	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=stampsize, variant="wider")
 	
@@ -14,6 +17,7 @@ def default(catalog, stampsize):
 	
 	# And snr
 	catalog = megalut.meas.snr.measfct(catalog, gain=50.0)
+	
 	
 	return catalog
 	

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 psfcat = megalut.tools.io.readpickle(config.psfcatpath)
 
-sp = simparams.Nico1()
+sp = simparams.Nico2()
 
 #sp.name = "test"
 sp.snc_type = 1000
@@ -25,7 +25,7 @@ sp.snc_type = 1000
 megalut.sim.run.multi(
 	simdir=config.simdir,
 	simparams=sp,
-	drawcatkwargs={"n":10, "nc":1, "stampsize":60},
+	drawcatkwargs={"n":10, "nc":1, "stampsize":config.stampsize},
 	drawimgkwargs={}, 
 	psfcat=psfcat, psfselect="random",
 	ncat=100, nrea=1, ncpu=config.ncpu,
@@ -33,6 +33,7 @@ megalut.sim.run.multi(
 	)
 
 
+"""
 megalut.meas.run.onsims(
 	simdir=config.simdir,
 	simparams=sp,
@@ -65,10 +66,15 @@ megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmea
 
 
 
+"""
+
+
+
+
 
 
 """
-# This is to get fake obsevations, single realization.
+# This is to get fake obsevations, single realization (from some previous scirpts)
 
 
 sp = simparams.GauShear2()

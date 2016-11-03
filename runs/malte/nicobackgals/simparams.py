@@ -5,7 +5,7 @@ import random # np.random.choice is only available for newer numpys...
 import itertools
 
 
-class Nico1(megalut.sim.params.Params):
+class Nico2(megalut.sim.params.Params):
 	"""
 	Nico's Euclid-like PSF (special implementation)
 	Sersic Galaxies
@@ -34,8 +34,9 @@ class Nico1(megalut.sim.params.Params):
 		#tru_s_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 		#(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_s_theta), tru_s * np.sin(2.0 * tru_s_theta))
 	
-		tru_s1 = np.random.uniform(-0.05, 0.05)
-		tru_s2 = np.random.uniform(-0.05, 0.05)	
+		sr = 0.15
+		tru_s1 = np.random.uniform(-sr, sr) # Yes, trying something huge to see how that goes when predicting smaller shears
+		tru_s2 = np.random.uniform(-sr, sr)	
 		tru_mu = 1.0
 
 		########## PSF ##########
