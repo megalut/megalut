@@ -141,7 +141,7 @@ def measure(img, cat, xname="x", yname="y", prefix="mom_", stampsize=None, centr
 				gal[prefix + "r{}".format(secondweightsize)] = r
 			
 			except ValueError:
-				logger.info("Ellipse params failed for galaxy {} and secondweightsize {}".format(gal.index, secondweightsize))
+				logger.debug("Ellipse params failed for galaxy {} and secondweightsize {}".format(gal.index, secondweightsize))
 				gal[prefix+"flag"] = 20
 				#continue # No, don't continue, other secondweightsizes might work
 		
@@ -235,15 +235,16 @@ class MomentEngine:
 		(qxx, qyy, qxy) = second_moments
 		
 		qdiff = (qxx * qyy) - qxy**2
+		qsum = qxx + qyy
 		
-		if qdiff < 0.0:
+		if (qdiff < 0.0) or (qsum < 0.0):
 			raise ValueError()
 		else:
 			edenum = qxx + qyy + 2.0*np.sqrt(qdiff)
 			e1 = (qxx - qyy) / edenum
 			e2 = 2.0 * qxy / edenum
 			# and 
-			r = np.sqrt(qxx + qyy) # inspired by the fact that qxx and qyy are variances
+			r = np.sqrt(qsum) # inspired by the fact that qxx and qyy are "variances"
 			return (e1, e2, r)
 			
 		
