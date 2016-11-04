@@ -8,6 +8,8 @@ import sys, os
 import copy
 from datetime import datetime
 
+import scipy.signal
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,7 @@ from .. import tools
 #import galsim
 
 
-def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
+def measfct(cat, runon="img", stampsize=None, prefix="fourier_", windowtype=None):
 	"""
 	
 	"""
@@ -35,6 +37,7 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 	xname = cat.meta[runon].xname
 	yname = cat.meta[runon].yname
 	
+	# real images don't come in grids. So we have to define our own grid here, to save
 	n = len(cat)
 	ncols = 20
 	nrows = int(np.ceil(float(n)/float(ncols)))
@@ -89,9 +92,20 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 	#real_image_path = os.path.join(workdir, "real.fits")
 	
 	fft_image = np.zeros((stampsize * ncols , stampsize * nrows), dtype=float)
-	fft_image_path = os.path.join(workdir, "fourier.fits")
+	fft_image_path = os.path.join(workdir, "fourier-{}.fits".format(prefix))
 	
 	
+	# Preparing a window 
+	if windowtype == None:
+		pass
+	elif windowtype == "Hann":
+		logger.info("Preparing a Hann window...")
+		window = np.outer(scipy.signal.hann(stampsize), np.ones(stampsize))
+		window = np.sqrt(window * window.T)
+	else:
+		raise RuntimeError("Unknown window type")
+	
+	logger.info("Computing FFTs...")
 	for gal in cat:
 
 		"""
@@ -117,6 +131,10 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 			raise RuntimeError("getstamp failed")
 		stamp = stamp.array.transpose() # The transpose compensates for galsim internal convention 
 	
+		if windowtype != None:
+			# Multiplying this with a smooth window to cancel effects of 
+			stamp *= window
+	
 	
 		# FFT, keeping only the norm:
 		fftstamp = np.abs(np.fft.fftshift(np.fft.fft2(stamp)))
@@ -126,7 +144,7 @@ def measfct(cat, runon="img", stampsize=None, prefix="fourier_"):
 		fftstamp -= ss["mean"]
 		
 		# Another option would be to estimate this level from the background mad measured in real space
-		
+		# (but careful with the window, then)
 	
 		# We write the result into the output stamp:
 		ix = gal.index % ncols
