@@ -221,8 +221,8 @@ class MomentEngine:
 		if center is None:
 			center = (self.xcenter, self.ycenter) # Use the stamp center
 		
-		qxx = np.sum(array * (self.xes - center[0])**2) / sumarray
-		qyy = np.sum(array * (self.yes - center[1])**2) / sumarray
+		qxx = np.sum(array * ((self.xes - center[0])**2)) / sumarray
+		qyy = np.sum(array * ((self.yes - center[1])**2)) / sumarray
 		qxy = np.sum(array * (self.xes - center[0]) * (self.yes - center[1])) / sumarray
 
 		return (qxx, qyy, qxy)
