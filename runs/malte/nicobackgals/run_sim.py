@@ -18,10 +18,11 @@ psfcat = megalut.tools.io.readpickle(config.psfcatpath)
 
 sp = simparams.Nico2()
 
+
 #sp.name = "test"
 sp.snc_type = 1000
 
-
+"""
 megalut.sim.run.multi(
 	simdir=config.simdir,
 	simparams=sp,
@@ -33,7 +34,7 @@ megalut.sim.run.multi(
 	)
 
 
-"""
+
 megalut.meas.run.onsims(
 	simdir=config.simdir,
 	simparams=sp,
@@ -44,7 +45,7 @@ megalut.meas.run.onsims(
 	skipdone=True
 	)
 
-
+"""
 cat = megalut.meas.avg.onsims(
 	measdir=config.simdir, 
 	simparams=sp,
@@ -66,7 +67,6 @@ megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmea
 
 
 
-"""
 
 
 
@@ -74,34 +74,37 @@ megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmea
 
 
 """
-# This is to get fake obsevations, single realization (from some previous scirpts)
+sp.name = "test"
+sp.snc_type = 0
 
-
-sp = simparams.GauShear2()
 
 megalut.sim.run.multi(
-	simdir=workdir,
+	simdir=config.simdir,
 	simparams=sp,
-	drawcatkwargs={"n":10000, "nc":100, "stampsize":128},
+	drawcatkwargs={"n":10000, "nc":100, "stampsize":config.stampsize},
 	drawimgkwargs={}, 
-	psfcat=None, psfselect="random",
-	ncat=100, nrea=1, ncpu=ncpu,
+	psfcat=psfcat, psfselect="random",
+	ncat=1, nrea=1, ncpu=1,
 	savepsfimg=False, savetrugalimg=False
 	)
 
+
+"""
+"""
 megalut.meas.run.onsims(
-	simdir=workdir,
+	simdir=config.simdir,
 	simparams=sp,
-	measdir=workdir,
-	measfct=measfct.default,
-	measfctkwargs={"stampsize":128},
-	ncpu=ncpu,
-	skipdone=True
+	measdir=config.simdir,
+	measfct=measfcts.default,
+	measfctkwargs={"stampsize":config.stampsize},
+	ncpu=1,
+	skipdone=False
 	)
 
-
+"""
+"""
 cat = megalut.meas.avg.onsims(
-	measdir=workdir, 
+	measdir=config.simdir, 
 	simparams=sp,
 	task="group",
 	groupcols=measfct.default_groupcols, 

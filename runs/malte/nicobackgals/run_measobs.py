@@ -64,6 +64,6 @@ for imgpath in imgpaths:
 
 
 # And we run with ncpu
-megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfcts.default, measfctkwargs={"stampsize":config.stampsize}, ncpu=config.ncpu, skipdone=False)
+megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfcts.default, measfctkwargs={"stampsize":config.stampsize}, ncpu=1, skipdone=False)
 
 

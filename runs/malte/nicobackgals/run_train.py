@@ -13,14 +13,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-sp = simparams.Nico1()
+sp = simparams.Nico2()
 traindir = os.path.join(config.workdir, "train_" + sp.name)
 
 
 cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
 print megalut.tools.table.info(cat)
 
-megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=2)
+megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=10)
 
 
 # Self-predicting
