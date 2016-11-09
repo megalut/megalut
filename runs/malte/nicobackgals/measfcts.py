@@ -12,7 +12,7 @@ def default(catalog, stampsize):
 	#catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize)
 	
 	# mom
-	catalog = megalut.meas.mom.measfct(catalog, stampsize=stampsize, centroweightsize=10, secondweightsizes=[3,5,8])
+	#catalog = megalut.meas.mom.measfct(catalog, stampsize=stampsize, centroweightsize=10, secondweightsizes=[3,5,8])
 	
 	# HSM adamom
 	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=stampsize, variant="wider")
@@ -54,29 +54,32 @@ default_groupcols = [
 'fourierhann_adamom_g1',
 'fourierhann_adamom_g2',
 'fourierhann_adamom_sigma',
-'fourierhann_adamom_rho4',
-'mom_x',
-'mom_y',
-'mom_flag',
-'mom_e13',
-'mom_e15',
-'mom_e18',
-'mom_e23',
-'mom_e25',
-'mom_e28',
-'mom_r3',
-'mom_r5',
-'mom_r8',
-'mom_qxx3',
-'mom_qxx5',
-'mom_qxx8',
-'mom_qyy3',
-'mom_qyy5',
-'mom_qyy8',
-'mom_qxy3',
-'mom_qxy5',
-'mom_qxy8'
+'fourierhann_adamom_rho4'
 ]
+
+
+
+#'mom_x',
+#'mom_y',
+#'mom_flag',
+#'mom_e13',
+#'mom_e15',
+#'mom_e18',
+#'mom_e23',
+#'mom_e25',
+#'mom_e28',
+#'mom_r3',
+#'mom_r5',
+#'mom_r8',
+#'mom_qxx3',
+#'mom_qxx5',
+#'mom_qxx8',
+#'mom_qyy3',
+#'mom_qyy5',
+#'mom_qyy8',
+#'mom_qxy3',
+#'mom_qxy5',
+#'mom_qxy8'
 
 
 

@@ -8,6 +8,7 @@ import megalut
 import galsim
 import numpy as np
 import os
+import copy
 
 #import config # No, doesn't use config!
 import measfcts
@@ -23,7 +24,7 @@ def define_parser():
 	"""
 	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	parser.add_argument('--imgpath', required=True, help="Path to input FITS image")
-	parser.add_argument('--incatpath', required=True, help="Path to input catalog")
+	parser.add_argument('--incatpath', required=False, default=None, help="Path to input catalog")
 	parser.add_argument('--outcatpath', required=True, help="Path to where the output catalog should be written")
 	parser.add_argument('--workdir', required=True, help="Path to a working directory for intermediary files. Will be created if it doesn't exist yet.")
 	parser.add_argument("--traindir", required=True, help="Path to the directory containing the training")
@@ -31,8 +32,8 @@ def define_parser():
 	parser.add_argument("-p", "--plots", help="Draw some check-plots into the workdir. Requires matplotlib.", action="store_true")
 	parser.add_argument("--skipdone", help="Skips the measurement (slow) part, IF a measurement is already available in the given workdir", action="store_true")
 	
-	parser.add_argument('--stampsize', default=60, help='Size of stamps, in pixels')
-	parser.add_argument('--nside', default=100, help='Size of stampgrid, in stamps')
+	parser.add_argument('--stampsize', type=float, default=64, help='Size of stamps, in pixels')
+	parser.add_argument('--nside', type=float, default=100, help='Size of stampgrid, in stamps')
 	
 	return parser
 	
@@ -50,7 +51,7 @@ def readNico(catpath, onlybright=True):
 			raise RuntimeError("Fishy!")
 	
 	# MegaLUT centering conventions
-	cat["x"] = cat["Nx2"] + 0.5 # This is the center of the stamp. The galaxies are currently not centered (they are at +1.5), but this is a different issue.
+	cat["x"] = cat["Nx2"] + 0.5 # This is the center of the stamp.
 	cat["y"] = cat["Ny2"] + 0.5
 	
 	# Adding "g" in addition to "e"
@@ -63,9 +64,15 @@ def readNico(catpath, onlybright=True):
 		
 	return cat
 
-def writeNico(cat, catpath):
+def writeNico(cat, catpath, cols=None):
 	"""Writes an output catalog in ASCII
 	"""
+	
+	cat = copy.deepcopy(cat)
+	
+	if cols != None:
+		cat.keep_columns(cols)
+		
 	astropy.io.ascii.write(cat, catpath)
 
 
@@ -108,8 +115,10 @@ def checkplot(cat, outpath):
 	adamom_g2 = Feature("adamom_g2")
 	snr = Feature("snr")
 	
-	pre_s1 = Feature("pre_s1")
-	pre_s2 = Feature("pre_s2")
+	pre_s1_adamom = Feature("pre_s1_adamom")
+	pre_s2_adamom = Feature("pre_s2_adamom")
+	pre_s1_fourier = Feature("pre_s1_fourier")
+	pre_s2_fourier = Feature("pre_s2_fourier")
 	
 
 	cat["xerr"] = cat["adamom_x"] - cat["x"]
@@ -123,6 +132,7 @@ def checkplot(cat, outpath):
 	#megalut.plot.scatter.scatter(ax, cat, Nflux, adamom_flux, Nsersicn, showidline=True)
 	megalut.plot.scatter.scatter(ax, cat, xerr, yerr, sidehists=True)
 	
+	
 	ax = fig.add_subplot(3, 3, 2)
 	megalut.plot.scatter.scatter(ax, cat, Nmag, snr, sidehists=True)
 
@@ -130,22 +140,23 @@ def checkplot(cat, outpath):
 	megalut.plot.scatter.scatter(ax, cat, Ne1, adamom_g1, sidehists=True)
 	
 	ax = fig.add_subplot(3, 3, 4)
-	megalut.plot.scatter.scatter(ax, cat, adamom_g1, pre_s1, sidehists=True)
+	megalut.plot.scatter.scatter(ax, cat, adamom_g1, pre_s1_fourier, sidehists=True)
 	
 	ax = fig.add_subplot(3, 3, 5)
-	megalut.plot.scatter.scatter(ax, cat, Ng1, pre_s1, snr, showidline=True)
+	megalut.plot.scatter.scatter(ax, cat, Ng1, pre_s1_fourier, snr, showidline=True)
 	
 	ax = fig.add_subplot(3, 3, 6)
-	megalut.plot.bin.res(ax, cat, Ng1, pre_s1, Nmag)
+	megalut.plot.bin.res(ax, cat, Ng1, pre_s1_fourier, Nmag)
 	
 	ax = fig.add_subplot(3, 3, 7)
-	megalut.plot.scatter.scatter(ax, cat, adamom_g2, pre_s2, sidehists=True)
+	megalut.plot.scatter.scatter(ax, cat, adamom_g2, pre_s2_fourier, sidehists=True)
 	
 	ax = fig.add_subplot(3, 3, 8)
-	megalut.plot.scatter.scatter(ax, cat, Ng2, pre_s2, snr, showidline=True)
+	megalut.plot.scatter.scatter(ax, cat, Ng2, pre_s2_fourier, snr, showidline=True)
 	
 	ax = fig.add_subplot(3, 3, 9)
-	megalut.plot.bin.res(ax, cat, Ng2, pre_s2, Nmag)
+	megalut.plot.bin.res(ax, cat, Ng2, pre_s2_fourier, Nmag)
+	
 	
 	plt.tight_layout()
 	plt.savefig(outpath)
@@ -185,13 +196,17 @@ def run(imgpath, incatpath, outcatpath, workdir, traindir, stampsize=60, nside=1
 	# Perform the preditions
 	cat = megalut.tools.io.readpickle(meascatfilepath)
 	predcatfilepath = os.path.join(workdir, "predcat.pkl")
-	trainparamslist = [(mlparams.s1, mlparams.msb5), (mlparams.s2, mlparams.msb5)]
-	cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
+	trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c), (mlparams.s1fourier, mlparams.msb5c), (mlparams.s2fourier, mlparams.msb5c)]
+	cat = megalut.learn.run.predict(cat, traindir, trainparamslist, outtweak=np.ma.median)
 	megalut.tools.io.writepickle(cat, predcatfilepath)
 
 	# Write the output in plain text
-	writeNico(cat, outcatpath)
-
+	if incatpath != None:
+		colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom", "pre_s1_fourier", "pre_s2_fourier"]
+	else:
+		colstowrite = None
+	writeNico(cat, outcatpath, colstowrite)
+	
 	# Close with a checkplot
 	if plots:
 		cat = megalut.tools.table.shuffle(cat)

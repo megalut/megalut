@@ -52,7 +52,7 @@ msb5c = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5c", hidden_node
 	n=10,
 	errfctname="msb", valfrac=0.3, shuffle=True,
 	ininoisewscale = 0.1, ininoisebscale = 0.1,
-	mbsize=None, mbfrac=0.3, mbloops=5, max_iterations=30, gtol=1e-20, startidentity=True,
+	mbsize=None, mbfrac=0.3, mbloops=5, max_iterations=10, gtol=1e-20, startidentity=True,
 	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
 	verbose=False, reuse=True, keepdata=False, autoplot=True)
 

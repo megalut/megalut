@@ -20,12 +20,16 @@ traindir = os.path.join(config.workdir, "train_" + sp.name)
 cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
 print megalut.tools.table.info(cat)
 
-megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=10)
+#megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=10)
 
 
 # Self-predicting
-#cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
-#cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
+cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
+cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist, outtweak=np.ma.median)
+
+megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "precat.pkl"))
+
+
 
 
 # Pretict GauShear2:
