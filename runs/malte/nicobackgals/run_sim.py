@@ -29,7 +29,7 @@ megalut.sim.run.multi(
 	drawcatkwargs={"n":10, "nc":1, "stampsize":config.stampsize},
 	drawimgkwargs={}, 
 	psfcat=psfcat, psfselect="random",
-	ncat=100, nrea=1, ncpu=config.ncpu,
+	ncat=400, nrea=1, ncpu=config.ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
 

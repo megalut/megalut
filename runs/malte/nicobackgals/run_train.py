@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use("AGG")
+
+
 import megalut
 import config
 import measfcts
@@ -14,21 +18,22 @@ logger = logging.getLogger(__name__)
 
 
 sp = simparams.Nico2()
-traindir = os.path.join(config.workdir, "train_" + sp.name)
+traindir = os.path.join(config.workdir, "train_" + sp.name + "800")
 
 
 cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
 print megalut.tools.table.info(cat)
 
-#megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=10)
+megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=config.ncpu)
 
 
+"""
 # Self-predicting
 cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
 cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist, outtweak=np.ma.median)
 
 megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "precat.pkl"))
-
+"""
 
 
 
