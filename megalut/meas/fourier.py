@@ -17,7 +17,7 @@ import astropy.table
 
 import utils
 import galsim_adamom
-import sewfunc
+#import sewfunc # no need for sewpy
 from .. import tools
 
 #import galsim
