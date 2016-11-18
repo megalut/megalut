@@ -42,7 +42,7 @@ measdir = great3.path("simmeas", "allstars")
 sp = simparams.CGCSersics()
 
 sp.name = "ParamsTune_sub99_2" # This name can be changed for tests. Note that it gets saved into the config pkl.
-
+sp.snc_type = 1
 
 
 # Generate catalogs and draw the corresponding stamps, using galsim, 
@@ -91,7 +91,7 @@ cat = megalut.meas.avg.onsims(
 
 megalut.tools.table.keepunique(cat)
 megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-"""
+
 
 """
 # Restructure this flat catalog to define "cases" and "realizations" for the machine learning (i.e., make it a 3D catalog).

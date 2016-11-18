@@ -15,29 +15,34 @@ def contracted_rayleigh(sigma, max_val, p):
 
 class CGCSersics(megalut.sim.params.Params):
 
+
+	def __init__(self):
+		megalut.sim.params.Params.__init__(self)
+		self.snc_type = 1000
+		
+
 	def stat(self):
 		"""
 		stat: called for each catalog (stat is for stationnary)
 		"""
 		
 		########## Shear #########
-		tru_s1 = np.random.uniform(-0.05, 0.05)
-		tru_s2 = np.random.uniform(-0.05, 0.05)	
+		sr = 0.15
+		tru_s1 = np.random.uniform(-sr, sr)
+		tru_s2 = np.random.uniform(-sr, sr)	
 		tru_mu = 1.0
 
-		snc_type = 100
-		
 		# For fine tuning sims:
-		tru_s1 = 0
-		tru_s2 = 0
-		snc_type = 1
+		#tru_s1 = 0
+		#tru_s2 = 0
+		#snc_type = 1
 		
 		
 		return {
 			"tru_s1" : tru_s1, # shear component 1, in "g" convention
 			"tru_s2" : tru_s2, # component 2
 			"tru_mu" : tru_mu, # magnification
-			"snc_type" : snc_type, # The type of shape noise cancellation. 0 means none, n means n-fold
+			"snc_type" : self.snc_type, # The type of shape noise cancellation. 0 means none, n means n-fold
 		}
 		
 

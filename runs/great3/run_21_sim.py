@@ -16,12 +16,10 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 great3 = config.load_run()
 
 # Choose a model for the simulations
-sp = mysimparams.Sersics()
+sp = simparams.CGCSersics()
+sp.name = "ParamsTune_sub99_2" # This name can be changed for tests. Note that it gets saved into the config pkl.
 
-
-
-IS NOT YET DONE
-
+sp.snc_type = 10
 
 
 for subfield in config.subfields:
@@ -36,22 +34,25 @@ for subfield in config.subfields:
 	measdir = great3.path("simmeas","%03i" % subfield)
 	
 	# Loading the PSF for the subfield
-	psfcat = tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	psfcat = megalut.tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	
+
 	
 	# Simulating images
-	sim.run.multi(
+	megalut.sim.run.multi(
 		simdir=simdir,
 		simparams=sp,
-		drawcatkwargs={"n":1000, "nc":10, "stampsize":great3.stampsize()},
+		drawcatkwargs={"n":10, "nc":1, "stampsize":great3.stampsize()},
 		drawimgkwargs={}, 
 		psfcat=psfcat, psfselect="random",
-		ncat=1, nrea=2, ncpu=config.ncpu,
+		ncat=10, nrea=1, ncpu=config.ncpu,
 		savepsfimg=False, savetrugalimg=False
 	)
 
+	exit()
+
 	# Measuring the newly drawn images
-	meas.run.onsims(
+	megalut.meas.run.onsims(
 		simdir=simdir,
 		simparams=sp,
 		measdir=measdir,
