@@ -262,7 +262,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			if flag != 0:
 				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
 					(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
-			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, scale=1.0)
+			psfpixelscale = getattr(psfinfo, "pixelscale", 1.0) # Using getattr so that it works with old objects as well
+			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, scale=psfpixelscale)
 			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 			
 			galconv = galsim.Convolve([gal,psf], real_space=False)		

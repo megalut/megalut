@@ -21,7 +21,7 @@ class ImageInfo():
 	We can derive a more sophisticated hierarchical structure when needed.
 	"""
 
-	def __init__(self, filepath, xname="x", yname="y", stampsize=None, name=None, workdir=None):
+	def __init__(self, filepath, xname="x", yname="y", stampsize=None, name=None, workdir=None, pixelscale=1.0):
 		"""
 		:param filepath: absolute path to the FITS image
 		:type filepath: string
@@ -36,13 +36,18 @@ class ImageInfo():
 			it might be helpful to specify different names. Functions use these names to refer to the image in logs etc.
 		:type name: string
 		:param workdir: path to a working directory for this image
-		:type imgname: string	
+		:type workdir: string
+		:param pixelscale: For PSF images: size of the pixels, in "arcsec". In fact, arcsec does not matter -- we never use angles.
+			Only the relative value with respect to other ImageInfos (that have a scale of 1.0) matters. It allows for instance to use supersampled
+			PSF images, with say 5 times "smaller" pixels than the detector pixels (set it to 0.2 in this case).
+		:type pixelscale: float
 		"""
 		
 		self.filepath = filepath
 		self.xname = xname
 		self.yname = yname
 		self.stampsize = stampsize
+		self.pixelscale = pixelscale
 
 		
 		if name is None:
@@ -57,7 +62,7 @@ class ImageInfo():
 		"""
 		Retruns a short description of this object
 		"""
-		return "ImageInfo(%s, %s, %s, %s)" % (self.name, self.xname, self.yname, self.stampsize)
+		return "ImageInfo(%s, %s, %s, %s, %s)" % (self.name, self.xname, self.yname, self.stampsize, self.pixelscale)
 
 	def __repr__(self):
 		"""
