@@ -190,7 +190,8 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 			drawpsfimgfilepath,
 			xname=psfcat.meta["img"].xname,
 			yname=psfcat.meta["img"].yname,
-			stampsize=psfcat.meta["img"].stampsize
+			stampsize=psfcat.meta["img"].stampsize,
+			pixelscale=getattr(psfcat.meta["img"], "pixelscale", 1.0) # using getattr in case you apply it to old cats
 			)
 			
 		# Now, we have to populate the catalog itself with PSF coordinates.
