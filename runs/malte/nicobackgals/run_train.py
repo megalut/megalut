@@ -17,7 +17,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-sp = simparams.Nico2()
+sp = simparams.Nico3()
 traindir = os.path.join(config.workdir, "train_" + sp.name + "800")
 
 

@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 
-simcat = megalut.tools.io.readpickle(os.path.join(config.simdir, "test", "groupmeascat.pkl"))
+simcat = megalut.tools.io.readpickle(os.path.join(config.simdir, "test5", "groupmeascat.pkl"))
 #print megalut.tools.table.info(simcat)
 
 #print megalut.tools.table.info(simcat)
@@ -27,12 +27,12 @@ simcat = megalut.tools.io.readpickle(os.path.join(config.simdir, "test", "groupm
 #print simcat
 
 
-obscat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/obswork_Nicolas/meascat_sim_001_24.5_a0.pkl")
+obscat = megalut.tools.io.readpickle("/users/mtewes/code/master-megalut-git/runs/malte/nicobackgals/work/meascat.pkl")
 #print megalut.tools.table.info(obscat)
 
 
 
-rea = None
+rea = "All"
 
 adamom_flux = Feature("adamom_flux", rea=rea)
 adamom_sigma = Feature("adamom_sigma", rea=rea)
@@ -63,6 +63,11 @@ skymean = Feature("skymean", rea=rea)
 simcat["adamom_log_flux"] = np.log10(simcat["adamom_flux"])
 obscat["adamom_log_flux"] = np.log10(obscat["adamom_flux"])
 adamom_log_flux = Feature("adamom_log_flux", rea=rea)
+
+simcat["adamom_g"] = np.hypot(simcat["adamom_g1"], simcat["adamom_g2"])
+obscat["adamom_g"] = np.hypot(obscat["adamom_g1"], obscat["adamom_g2"])
+adamom_g = Feature("adamom_g", rea=rea)
+
 
 
 fig = plt.figure(figsize=(16, 10))
@@ -101,6 +106,11 @@ megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_log_flux, adamom_rho4)
 
 ax = fig.add_subplot(2, 3, 5)
 megalut.plot.contour.simobs(ax, simcat, obscat, skymad, skymean, plotpoints=False)
+
+ax = fig.add_subplot(2, 3, 6)
+megalut.plot.contour.simobs(ax, simcat, obscat, adamom_g, adamom_sigma)
+
+
 
 #ax = fig.add_subplot(3, 4, 12)
 #megalut.plot.scatter.simobs(ax, simcat, obscat, psf_adamom_g1, psf_adamom_g2)

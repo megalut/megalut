@@ -5,7 +5,7 @@ import random # np.random.choice is only available for newer numpys...
 import itertools
 
 
-class Nico2(megalut.sim.params.Params):
+class Nico3(megalut.sim.params.Params):
 	"""
 	Nico's Euclid-like PSF (special implementation)
 	Sersic Galaxies
@@ -14,7 +14,7 @@ class Nico2(megalut.sim.params.Params):
 	
 	def __init__(self):
 		megalut.sim.params.Params.__init__(self)
-		snc_type = 100
+		self.snc_type = 100
 
 
 	def stat(self):
@@ -53,13 +53,15 @@ class Nico2(megalut.sim.params.Params):
 	
 		########## Galaxy ##########
 		
-		g = contracted_rayleigh(0.25, 0.65, 4)
+		#g = contracted_rayleigh(0.25, 0.65, 4) # Used for Nico2
+		g = contracted_rayleigh(0.10, 0.45, 4)
+		
 		theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 		(tru_g1, tru_g2) = (g * np.cos(2.0 * theta), g * np.sin(2.0 * theta))
 		
 		tru_type = 1 # Seric	
 		#tru_sersicn =  0.5 + (float(iy)/float(ny))**2.0 * 3.0
-		tru_sersicn =  0.5 + (float(iy)/float(ny)) * 5.0
+		#tru_sersicn =  0.5 + (float(iy)/float(ny)) * 5.0
 		tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]))
 		
 		if np.random.uniform(0.0, 1.0) < 0.35:

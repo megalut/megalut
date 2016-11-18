@@ -16,20 +16,26 @@ logger = logging.getLogger(__name__)
 
 psfcat = megalut.tools.io.readpickle(config.psfcatpath)
 
-sp = simparams.Nico2()
+sp = simparams.Nico3()
 
 
-#sp.name = "test"
-sp.snc_type = 1000
+# Nico3:
+#sp.snc_type = 1000
+# and ncat 1000 ...
 
-"""
+
+# Nico3b: 10 more read, but 10 times less cases
+sp.snc_type = 10000
+sp.name = "Nico3b"
+
+
 megalut.sim.run.multi(
 	simdir=config.simdir,
 	simparams=sp,
 	drawcatkwargs={"n":10, "nc":1, "stampsize":config.stampsize},
 	drawimgkwargs={}, 
 	psfcat=psfcat, psfselect="random",
-	ncat=400, nrea=1, ncpu=config.ncpu,
+	ncat=100, nrea=1, ncpu=config.ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
 
@@ -45,7 +51,7 @@ megalut.meas.run.onsims(
 	skipdone=True
 	)
 
-"""
+
 cat = megalut.meas.avg.onsims(
 	measdir=config.simdir, 
 	simparams=sp,
