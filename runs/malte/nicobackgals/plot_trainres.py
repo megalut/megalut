@@ -17,18 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 
-cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/sim/Nico2/precat.pkl")
+cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/sim/Nico3b/precat-small-s.pkl")
 
 
-s = megalut.tools.table.Selector("LowShear", [("in", "tru_s1", -0.05, 0.05), ("in", "tru_s2", -0.05, 0.05)])
-cat = s.select(cat)
+#s = megalut.tools.table.Selector("LowShear", [("in", "tru_s1", -0.05, 0.05), ("in", "tru_s2", -0.05, 0.05)])
+#cat = s.select(cat)
 
 print megalut.tools.table.info(cat)
 
 megalut.tools.table.addstats(cat, "pre_s1_adamom")
 megalut.tools.table.addstats(cat, "pre_s2_adamom")
-megalut.tools.table.addstats(cat, "pre_s1_fourier")
-megalut.tools.table.addstats(cat, "pre_s2_fourier")
+#megalut.tools.table.addstats(cat, "pre_s1_fourier")
+#megalut.tools.table.addstats(cat, "pre_s2_fourier")
 
 megalut.tools.table.addstats(cat, "snr")
 

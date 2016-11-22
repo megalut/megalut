@@ -8,8 +8,7 @@ def default(catalog, stampsize):
 	"""	
 	
 	# Fourier
-	catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize, windowtype="Hann", prefix="fourierhann_")
-	#catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize)
+	#catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize, windowtype="Hann", prefix="fourierhann_")
 	
 	# mom
 	#catalog = megalut.meas.mom.measfct(catalog, stampsize=stampsize, centroweightsize=10, secondweightsizes=[3,5,8])
