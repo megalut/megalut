@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 
-cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/sim/Nico3b/precat-small-s.pkl")
+cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/sim/Nico3b/precat.pkl")
 
 
 #s = megalut.tools.table.Selector("LowShear", [("in", "tru_s1", -0.05, 0.05), ("in", "tru_s2", -0.05, 0.05)])
@@ -85,20 +85,20 @@ adamom_log_flux = Feature("adamom_log_flux", rea=rea)
 fig = plt.figure(figsize=(16, 10))
 #fig = plt.figure(figsize=(8, 8))
 
-"""
+
 ax = fig.add_subplot(2, 3, 1)
-megalut.plot.bin.res(ax, cat, tru_s1, pre_s1_adamom, featc=adamom_sigma, nbins=10, ncbins=3, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
+megalut.plot.bin.res(ax, cat, tru_s1, pre_s1_adamom, featc=adamom_sigma, nbins=10, ncbins=1, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
 
 ax = fig.add_subplot(2, 3, 4)
-megalut.plot.bin.res(ax, cat, tru_s2, pre_s2_adamom, featc=adamom_sigma, nbins=10, ncbins=3, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
+megalut.plot.bin.res(ax, cat, tru_s2, pre_s2_adamom, featc=adamom_sigma, nbins=10, ncbins=1, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
 
 ax = fig.add_subplot(2, 3, 2)
-megalut.plot.bin.res(ax, cat, tru_s1, pre_s1_adamom, featc=snr, nbins=10, ncbins=3, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
+megalut.plot.bin.res(ax, cat, tru_s1, pre_s1_adamom, featc=tru_sersicn, nbins=10, ncbins=1, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
 
 ax = fig.add_subplot(2, 3, 5)
-megalut.plot.bin.res(ax, cat, tru_s2, pre_s2_adamom, featc=snr, nbins=10, ncbins=3, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
-"""
+megalut.plot.bin.res(ax, cat, tru_s2, pre_s2_adamom, featc=tru_sersicn, nbins=10, ncbins=1, ebarmode="bias", showidline=True, metrics=True, equalcount=True)
 
+"""
 ax = fig.add_subplot(2, 3, 1)
 megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, featc=snr_mean, showidline=True, metrics=True)
 
@@ -117,7 +117,7 @@ megalut.plot.scatter.scatter(ax, cat, tru_s1, pre_s1_mean, featc=tru_rad, showid
 
 ax = fig.add_subplot(2, 3, 6)
 megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_mean, featc=tru_rad, showidline=True)
-
+"""
 
 """
 ax = fig.add_subplot(2, 3, 2)
