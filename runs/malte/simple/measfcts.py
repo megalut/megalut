@@ -13,7 +13,7 @@ def default(catalog, stampsize):
 	catalog = megalut.meas.skystats.measfct(catalog, stampsize=stampsize)
 	
 	# And snr
-	catalog = megalut.meas.snr.measfct(catalog, gaincol="tru_gain")
+	catalog = megalut.meas.snr.measfct(catalog, gain=1.0)
 	
 	return catalog
 	
