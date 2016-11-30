@@ -188,7 +188,9 @@ class TenbilacWrapper:
 				verbose=[self.params.verbose]*ncm,
 				autoplot=[self.params.autoplot]*ncm,
 				name=[self.params.name]*ncm,
-				multiple_trainings=True)
+				multiple_trainings=True,
+				inames=[inputnames]*ncm,
+				onames=[targetnames]*ncm,)
 	
 		# And now see if we take over the previous training or not:
 		if oldtrain is None:
