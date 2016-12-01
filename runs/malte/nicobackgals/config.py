@@ -30,7 +30,7 @@ psfimgpath = os.path.join(workdir, "psf.fits")
 psfcatpath = os.path.join(workdir, "psfcat.pkl")
 
 
-ncpu = 6
+ncpu = 1
 
 
 # Nicolas sims

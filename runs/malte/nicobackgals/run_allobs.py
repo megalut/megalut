@@ -140,22 +140,22 @@ def checkplot(cat, outpath):
 	megalut.plot.scatter.scatter(ax, cat, Ne1, adamom_g1, sidehists=True)
 	
 	ax = fig.add_subplot(3, 3, 4)
-	megalut.plot.scatter.scatter(ax, cat, adamom_g1, pre_s1_fourier, sidehists=True)
+	megalut.plot.scatter.scatter(ax, cat, adamom_g1, pre_s1_adamom, sidehists=True)
 	
 	ax = fig.add_subplot(3, 3, 5)
-	megalut.plot.scatter.scatter(ax, cat, Ng1, pre_s1_fourier, snr, showidline=True)
+	megalut.plot.scatter.scatter(ax, cat, Ng1, pre_s1_adamom, snr, showidline=True)
 	
 	ax = fig.add_subplot(3, 3, 6)
-	megalut.plot.bin.res(ax, cat, Ng1, pre_s1_fourier, Nmag)
+	megalut.plot.bin.res(ax, cat, Ng1, pre_s1_adamom, Nmag)
 	
 	ax = fig.add_subplot(3, 3, 7)
-	megalut.plot.scatter.scatter(ax, cat, adamom_g2, pre_s2_fourier, sidehists=True)
+	megalut.plot.scatter.scatter(ax, cat, adamom_g2, pre_s2_adamom, sidehists=True)
 	
 	ax = fig.add_subplot(3, 3, 8)
-	megalut.plot.scatter.scatter(ax, cat, Ng2, pre_s2_fourier, snr, showidline=True)
+	megalut.plot.scatter.scatter(ax, cat, Ng2, pre_s2_adamom, snr, showidline=True)
 	
 	ax = fig.add_subplot(3, 3, 9)
-	megalut.plot.bin.res(ax, cat, Ng2, pre_s2_fourier, Nmag)
+	megalut.plot.bin.res(ax, cat, Ng2, pre_s2_adamom, Nmag)
 	
 	
 	plt.tight_layout()
@@ -196,13 +196,17 @@ def run(imgpath, incatpath, outcatpath, workdir, traindir, stampsize=60, nside=1
 	# Perform the preditions
 	cat = megalut.tools.io.readpickle(meascatfilepath)
 	predcatfilepath = os.path.join(workdir, "predcat.pkl")
-	trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c), (mlparams.s1fourier, mlparams.msb5c), (mlparams.s2fourier, mlparams.msb5c)]
+	#trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c), (mlparams.s1fourier, mlparams.msb5c), (mlparams.s2fourier, mlparams.msb5c)]
+	trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c)]
+	
 	cat = megalut.learn.run.predict(cat, traindir, trainparamslist, outtweak=np.ma.median)
 	megalut.tools.io.writepickle(cat, predcatfilepath)
 
 	# Write the output in plain text
 	if incatpath != None:
-		colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom", "pre_s1_fourier", "pre_s2_fourier"]
+		#colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom", "pre_s1_fourier", "pre_s2_fourier"]
+		colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom"]
+		
 	else:
 		colstowrite = None
 	writeNico(cat, outcatpath, colstowrite)

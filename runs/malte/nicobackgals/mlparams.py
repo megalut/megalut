@@ -42,7 +42,7 @@ msb1 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb", hidden_nodes =
 msb5 = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb5", hidden_nodes = [5],
 	errfctname="msb", valfrac=0.3, shuffle=True,
 	ininoisewscale = 0.05, ininoisebscale = 0.05,
-	mbsize=None, mbfrac=0.3, mbloops=5, max_iterations=30, gtol=1e-20, startidentity=True,
+	mbsize=None, mbfrac=0.3, mbloops=4, max_iterations=10, gtol=1e-20, startidentity=True,
 	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
 	verbose=False, reuse=True, keepdata=False, autoplot=True)
 
@@ -85,10 +85,15 @@ msb55n = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb55n", hidden_no
 
 trainparamslist = [
 	(s1adamom, msb5c),
-	(s2adamom, msb5c),
-	(s1fourier, msb5c),
-	(s2fourier, msb5c),
-		
-]
+	(s2adamom, msb5c)]
+	#(s1fourier, msb5c),
+	#(s2fourier, msb5c),
+#]
 
+trainparamslist_noc = [
+	(s1adamom, msb5),
+	(s2adamom, msb5),
+	(s1fourier, msb5),
+	(s2fourier, msb5)
+]
 
