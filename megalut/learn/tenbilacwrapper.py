@@ -29,7 +29,9 @@ class TenbilacParams:
 		startidentity=True, onlynidentity=None,
 		ininoisewscale=0.1, ininoisebscale=0.1, ininoisemultwscale=0.1,
 		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden", multactfctname="iden",
-		verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
+		regulweight=None, regulfctname=None,
+		verbose=False, name="default", reuse=True, autoplot=True, keepdata=False
+		):
 		"""
 		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
@@ -76,10 +78,12 @@ class TenbilacParams:
 		self.reuse = reuse
 		self.autoplot = autoplot
 		self.keepdata = keepdata
+		self.regulweight = regulweight
+		self.regulfctname = regulfctname
 		self.ncpu = 1 # This is the default value, which will get overwritten by run (learn)
 		
 	def __str__(self):
-		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, {self.errfctname})".format(self=self)
+		return "Tenbilac parameters \"{self.name}\" ({self.hidden_nodes}, {self.max_iterations}, {self.normtype}, {self.actfctname}, {self.errfctname}, reg:{self.regulfctname})".format(self=self)
 		
 
 class TenbilacWrapper:
@@ -193,7 +197,9 @@ class TenbilacWrapper:
 				verbose=[self.params.verbose]*ncm,
 				autoplot=[self.params.autoplot]*ncm,
 				name=[self.params.name]*ncm,
-				multiple_trainings=True)
+				multiple_trainings=True,
+				regulweight=[self.params.regulweight]*ncm,
+				regulfctname=[self.params.regulfctname]*ncm,)
 	
 		# And now see if we take over the previous training or not:
 		if oldtrain is None:
