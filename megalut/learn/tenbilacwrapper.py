@@ -192,8 +192,6 @@ class TenbilacWrapper:
 				autoplot=[self.params.autoplot]*ncm,
 				name=[self.params.name]*ncm,
 				multiple_trainings=True,
-				inames=[inputnames]*ncm,
-				onames=[targetnames]*ncm,
 				regulweight=[self.params.regulweight]*ncm,
 				regulfctname=[self.params.regulfctname]*ncm,)
 	
