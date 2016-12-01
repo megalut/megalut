@@ -26,8 +26,9 @@ class TenbilacParams:
 	
 	def __init__(self, hidden_nodes, errfctname="msrb", n=1, max_iterations=100, gtol=1e-8,
 		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1,
-		startidentity=True, ininoisewscale=0.1, ininoisebscale=0.1,
-		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden",
+		startidentity=True, onlynidentity=None,
+		ininoisewscale=0.1, ininoisebscale=0.1, ininoisemultwscale=0.1,
+		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden", multactfctname="iden",
 		verbose=False, name="default", reuse=True, autoplot=True, keepdata=False):
 		"""
 		
@@ -61,12 +62,15 @@ class TenbilacParams:
 		self.mbfrac = mbfrac
 		self.mbloops = mbloops
 		self.startidentity = startidentity
+		self.onlynidentity = onlynidentity
 		self.ininoisewscale = ininoisewscale
 		self.ininoisebscale = ininoisebscale
+		self.ininoisemultwscale = ininoisemultwscale
 		self.normtargets = normtargets
 		self.normtype = normtype
 		self.actfctname = actfctname
 		self.oactfctname = oactfctname
+		self.multactfctname = multactfctname
 		self.verbose = verbose
 		self.name = name
 		self.reuse = reuse
@@ -166,6 +170,7 @@ class TenbilacWrapper:
 		#TODO: implement the choice of many different configs/trainings
 		logger.info("{:s}: is a committee of {:d} member(s)".format(str(self), self.params.nmembers))
 		comm_members = [tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
+			multactfctname=self.params.multactfctname,
 			inames=inputnames, onames=targetnames, name='commid={cid}'.format(cid=ii)) for ii in range(self.params.nmembers)]
 		comm = tenbilac.committee.Committee(comm_members)
 				
@@ -193,8 +198,11 @@ class TenbilacWrapper:
 		# And now see if we take over the previous training or not:
 		if oldtrain is None:
 			if self.params.startidentity:
-				ctraining.call('setidentity', attr='net')
-			ctraining.call(attr='net', method='addnoise', wscale=self.params.ininoisewscale, bscale=self.params.ininoisebscale)
+				ctraining.call('setidentity', attr='net', onlyn=self.params.onlynidentity)
+			ctraining.call(attr='net', method='addnoise',
+				wscale=self.params.ininoisewscale,
+				bscale=self.params.ininoisebscale,
+				multwscale=self.params.ininoisemultwscale)
 						
 		else:
 			logger.info("Reusing previous network!")
