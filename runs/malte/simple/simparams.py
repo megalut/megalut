@@ -17,7 +17,7 @@ def contracted_rayleigh(sigma, max_val, p):
 
 class Simple1(megalut.sim.params.Params):
 	"""
-	Gaussians with shear.
+	Sersics with shear.
 	Single PSF.
 	"""
 	
