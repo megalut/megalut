@@ -9,8 +9,11 @@ import numpy as np
 
 
 
-cat = megalut.tools.io.readpickle(os.path.join(workdir, "precat.pkl"))
+cat = megalut.tools.io.readpickle(os.path.join(workdir, "train52_Simple1", "precat.pkl"))
 
+print megalut.tools.table.info(cat)
+
+cat["pre_s1"] = cat["pre_s1_000"]
 
 
 for col in ["pre_s1", "snr"]:
@@ -30,8 +33,10 @@ megalut.plot.scatter.scatter(ax, cat, Feature("tru_g", rea=1),  Feature("tru_ser
 ax = fig.add_subplot(3, 4, 2)
 megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux", rea=1),  Feature("tru_rad"), sidehists=True, sidehistkwargs={"bins":20})
 ax = fig.add_subplot(3, 4, 3)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"), Feature("tru_s2"))
+megalut.plot.scatter.scatter(ax, cat, Feature("adamom_sigma", rea="full"), Feature("tru_rad"))
 
+ax = fig.add_subplot(3, 4, 4)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"), Feature("tru_rad"), Feature("pre_s1_bias"))
 
 ax = fig.add_subplot(3, 4, 5)
 megalut.plot.bin.res(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="full"))

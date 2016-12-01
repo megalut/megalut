@@ -16,14 +16,19 @@ sp = simparams.Simple1()
 #sp.name += "-test"
 sp.snc_type = 100
 
+# No shear, just ellipticity:
+sp.name = "Simple0"
+sp.snc_type = 1
+nrea = 100
+
 
 megalut.sim.run.multi(
 	simdir=workdir,
 	simparams=sp,
-	drawcatkwargs={"n":100, "nc":1, "stampsize":64},
+	drawcatkwargs={"n":1000, "nc":50, "stampsize":64},
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
-	ncat=10, nrea=1, ncpu=ncpu,
+	ncat=1, nrea=50, ncpu=ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
 
@@ -50,7 +55,9 @@ cat = megalut.meas.avg.onsims(
 megalut.tools.io.writepickle(cat, os.path.join(workdir, sp.name, "groupmeascat.pkl"))
 
 cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat.pkl"))
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+#cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2"])
+
 megalut.tools.table.keepunique(cat)
 #print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))

@@ -6,19 +6,30 @@ import megalut.learn
 # "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma", "skymad"
 
 s1 = megalut.learn.MLParams(name = "s1",
-	inputs = ["adamom_g1", "adamom_g2", "tru_rad"],
+	inputs = ["adamom_g1", "adamom_g2", "adamom_sigma"],
 	targets = ["tru_s1"],
 	predictions = ["pre_s1"])
 
-msb = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb", hidden_nodes = [3],
+#msb = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb", hidden_nodes = [3, 3],
+#	errfctname="msb", valfrac=0.1, shuffle=True,
+#	ininoisewscale = 0.1, ininoisebscale = 0.1,
+#	mbsize=None, mbfrac=1.0, mbloops=5, max_iterations=50, gtol=1e-7, startidentity=True,
+#	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
+#	verbose=False, reuse=True, keepdata=False, autoplot=True)
+
+msbtw = megalut.learn.tenbilacwrapper.TenbilacParams(name = "msb", hidden_nodes = [3, 3, 3],
+	n = 2,
 	errfctname="msb", valfrac=0.1, shuffle=True,
-	ininoisewscale = 0.3, ininoisebscale = 0.3,
-	mbsize=None, mbfrac=1.0, mbloops=1, max_iterations=200, gtol=1e-7, startidentity=True,
-	normtargets=False, normtype="-11", actfctname="tanh", oactfctname="iden",
+	ininoisewscale = 0.5, ininoisebscale = 0.5, ininoisemultwscale = 0.5,
+	mbsize=None, mbfrac=0.3, mbloops=30, max_iterations=40, gtol=1e-7,
+	startidentity=True, onlynidentity=None,
+	normtargets=False, normtype="sa1",
+	actfctname="tanh", oactfctname="iden", multactfctname="iden",
 	verbose=False, reuse=True, keepdata=False, autoplot=True)
 
+
 trainparamslist = [
-	(s1, msb)
+	(s1, msbtw)
 ]
 
 """

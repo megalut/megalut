@@ -7,22 +7,32 @@ import simparams
 import mlparams
 import plots
 
-ncpu = 1
+ncpu = 2
 
 sp = simparams.Simple1()
-traindir = os.path.join(workdir, "train3_" + sp.name)
+traindir = os.path.join(workdir, "train54_" + sp.name)
 
 
 cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
-print megalut.tools.table.info(cat)
+
+#cat["adamom_g"] = np.hypot(cat["adamom_g1"], cat["adamom_g2"])
+#cat["adamom_g1sigma"] = cat["adamom_g1"] * (np.ones((1000, 100))*cat["tru_rad"])
+#cat["adamom_g1/sigma"] = cat["adamom_g1"] / cat["tru_rad"]
+
+
+
+#print megalut.tools.table.info(cat)
+
+#exit()
 megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=ncpu)
 
 
+
 # Self-predicting
-cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
+#cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
 cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 #megalut.tools.io.writepickle(cat, os.path.join(workdir, sp.name, "precat.pkl"))
-megalut.tools.io.writepickle(cat, os.path.join(workdir, "precat.pkl"))
+megalut.tools.io.writepickle(cat, os.path.join(traindir, "precat.pkl"))
 
 
 
