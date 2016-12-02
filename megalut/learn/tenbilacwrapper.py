@@ -24,7 +24,8 @@ class TenbilacParams:
 	"""
 	
 	
-	def __init__(self, hidden_nodes, errfctname="msrb", n=1, max_iterations=100, gtol=1e-8,
+	def __init__(self, hidden_nodes, errfctname="msrb", n=1, 
+		algo="bfgs", max_iterations=100, gtol=1e-8,
 		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1,
 		startidentity=True, onlynidentity=None,
 		ininoisewscale=0.1, ininoisebscale=0.1, ininoisemultwscale=0.1,
@@ -53,7 +54,8 @@ class TenbilacParams:
 		
 		
 		"""
-		self.hidden_nodes = hidden_nodes 
+		self.hidden_nodes = hidden_nodes
+		self.algo = algo
 		self.max_iterations = max_iterations
 		self.gtol = gtol
 		self.errfctname = errfctname
@@ -219,7 +221,7 @@ class TenbilacWrapper:
 
 		logger.info("{0}: starting the training".format((str(self))))
 		
-		ctraining.call(method='minibatch_bfgs', call_ncpu=self.params.ncpu, mbsize=self.params.mbsize, 
+		ctraining.call(method='opt', algo=self.params.algo, call_ncpu=self.params.ncpu, mbsize=self.params.mbsize, 
 			mbfrac=self.params.mbfrac, mbloops=self.params.mbloops,
 			maxiter=self.params.max_iterations, gtol=self.params.gtol)
 		
