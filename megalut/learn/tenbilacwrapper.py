@@ -24,14 +24,18 @@ class TenbilacParams:
 	"""
 	
 	
-	def __init__(self, hidden_nodes, errfctname="msrb", n=1, 
+	def __init__(self, hidden_nodes,
+		name="default",
+		errfctname="msrb",
+		nmembers=1, 
 		algo="bfgs", max_iterations=100, gtol=1e-8,
 		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1,
 		startidentity=True, onlynidentity=None,
 		ininoisewscale=0.1, ininoisebscale=0.1, ininoisemultwscale=0.1,
 		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden", multactfctname="iden",
 		regulweight=None, regulfctname=None,
-		verbose=False, name="default", reuse=True, autoplot=True, keepdata=False
+		autoplot=True, trackbiases=True, keepdata=False, saveeachit=False,
+		verbose=False, reuse=True
 		):
 		"""
 		
@@ -55,11 +59,12 @@ class TenbilacParams:
 		
 		"""
 		self.hidden_nodes = hidden_nodes
+		self.name = name
 		self.algo = algo
 		self.max_iterations = max_iterations
 		self.gtol = gtol
 		self.errfctname = errfctname
-		self.nmembers = n
+		self.nmembers = nmembers
 		self.valfrac = valfrac
 		self.shuffle = shuffle
 		self.mbsize = mbsize
@@ -76,10 +81,11 @@ class TenbilacParams:
 		self.oactfctname = oactfctname
 		self.multactfctname = multactfctname
 		self.verbose = verbose
-		self.name = name
 		self.reuse = reuse
 		self.autoplot = autoplot
+		self.trackbiases = trackbiases
 		self.keepdata = keepdata
+		self.saveeachit = saveeachit
 		self.regulweight = regulweight
 		self.regulfctname = regulfctname
 		self.ncpu = 1 # This is the default value, which will get overwritten by run (learn)
@@ -195,9 +201,11 @@ class TenbilacWrapper:
 		ctraining = tenbilac.committee.CommTraining(comm, dat=[dat]*ncm, 
 				errfctname=[self.params.errfctname]*ncm,
 				itersavepath=self.memberfiles,
+				saveeachit=[self.params.saveeachit]*ncm,
 				autoplotdirpath=self.memberdirpaths,
 				verbose=[self.params.verbose]*ncm,
 				autoplot=[self.params.autoplot]*ncm,
+				trackbiases=[self.params.trackbiases]*ncm,
 				name=[self.params.name]*ncm,
 				multiple_trainings=True,
 				regulweight=[self.params.regulweight]*ncm,
