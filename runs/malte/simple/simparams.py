@@ -65,9 +65,13 @@ class Simple1(megalut.sim.params.Params):
 		tru_rad = np.random.uniform(3.0, 10.0)
 		tru_sersicn = 2.0
 		
-		tru_g = contracted_rayleigh(0.15, 0.8, 4)
-		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
-		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+		#tru_g = contracted_rayleigh(0.15, 0.8, 4)
+		#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+		#(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+		
+		tru_g1 = np.random.uniform(-0.3, 0.3)
+		tru_g2 = np.random.uniform(-0.3, 0.3)	
+		tru_g = np.hypot(tru_g1, tru_g2)
 			
 		########## Noise ##########
 

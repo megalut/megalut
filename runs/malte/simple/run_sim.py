@@ -14,21 +14,21 @@ ncpu = 10
 sp = simparams.Simple1()
 #sp.name = "Simple1"
 #sp.name += "-test"
-sp.snc_type = 100
+#sp.snc_type = 100
 
 # No shear, just ellipticity:
 sp.name = "Simple0"
 sp.snc_type = 1
-nrea = 100
+sp.sr = 0.0
 
 
 megalut.sim.run.multi(
 	simdir=workdir,
 	simparams=sp,
-	drawcatkwargs={"n":1000, "nc":50, "stampsize":64},
+	drawcatkwargs={"n":1000, "nc":100, "stampsize":64},
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
-	ncat=1, nrea=50, ncpu=ncpu,
+	ncat=1, nrea=20, ncpu=ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
 

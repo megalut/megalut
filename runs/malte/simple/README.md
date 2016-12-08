@@ -12,6 +12,23 @@ It is also used as a benchmark on which to develop ideas.
 Work
 ----
 
+
+
+
+
+train3: 6 6
+train3mult : -6 6, otherwise idem
+train4: -3 3
+
+
+10: 5 5
+
+
+
+
+
+
+
 train30 : fiducial -2  -> converges, but not much better
 train31 : -2, 2 -> converges, but idem
 train32 : -1, 1  -> converges, but not sufficient
