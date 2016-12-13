@@ -21,6 +21,10 @@ sp.name = "Simple0"
 sp.snc_type = 1
 sp.sr = 0.0
 
+# idem as 0, but 10 times more realizations
+sp.name = "Simple2"
+sp.snc_type = 1
+sp.sr = 0.0
 
 megalut.sim.run.multi(
 	simdir=workdir,
@@ -28,7 +32,7 @@ megalut.sim.run.multi(
 	drawcatkwargs={"n":1000, "nc":100, "stampsize":64},
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
-	ncat=1, nrea=20, ncpu=ncpu,
+	ncat=1, nrea=200, ncpu=ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
 

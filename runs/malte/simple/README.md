@@ -13,6 +13,20 @@ Work
 ----
 
 
+80 Multnet 3 with noise 0.2 and 4000 iterations
+81 idem with noise 0.4
+
+
+
+
+70 Multnet 3  ---> stuck in local minima
+71 idem but with much more nosie  --> YES ! Noise was 0.5
+72 no set identity at all ---> stuck in local minima
+
+
+73 baseline repeat, no mult -> yes, 5,5 without mult works if enough iterations !
+
+
 
 
 
@@ -26,6 +40,9 @@ train4: -3 3
 
 
 
+
+train40 : fiducial with / * sigma, 5  5, but somehow did not went that good this time
+train41 : idem but mbfrac 0.1 instead of 0.3, more iterations ---> very fast convergence, but not "better", oscillates at the end.
 
 
 

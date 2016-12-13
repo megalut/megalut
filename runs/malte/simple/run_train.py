@@ -7,11 +7,11 @@ import simparams
 import mlparams
 import plots
 
-ncpu = 1
+ncpu = 3
 
 sp = simparams.Simple1()
 sp.name = "Simple0"
-traindir = os.path.join(workdir, "train40_" + sp.name)
+traindir = os.path.join(workdir, "train81_" + sp.name)
 
 
 cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
@@ -22,8 +22,8 @@ cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_c
 
 #exit()
 
-cat["adamom_g1*adamom_sigma"] = cat["adamom_g1"] * cat["adamom_sigma"]#.reshape((1000,1))
-cat["adamom_g1/adamom_sigma"] = cat["adamom_g1"] / cat["adamom_sigma"]#.reshape((1000,1))
+#cat["adamom_g1*adamom_sigma"] = cat["adamom_g1"] * cat["adamom_sigma"]#.reshape((1000,1))
+#cat["adamom_g1/adamom_sigma"] = cat["adamom_g1"] / cat["adamom_sigma"]#.reshape((1000,1))
 
 
 #print megalut.tools.table.info(cat)
