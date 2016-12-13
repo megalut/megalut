@@ -26,12 +26,13 @@ class TenbilacParams:
 	
 	def __init__(self, hidden_nodes,
 		name="default",
-		errfctname="msrb",
-		nmembers=1, 
+		mwlist=None,
+		errfctname="msb",
+		nmembers=1,
 		algo="bfgs", max_iterations=100, gtol=1e-8,
 		valfrac=0.5, shuffle=True, mbsize=None, mbfrac=0.1, mbloops=1,
 		startidentity=True, onlynidentity=None,
-		ininoisewscale=0.1, ininoisebscale=0.1, ininoisemultwscale=0.1,
+		ininoisewscale=0.1, ininoisebscale=0.1, ininoisemultwscale=0.0, ininoisemultbscale=0.0,
 		normtargets=True, normtype="-11", actfctname="tanh", oactfctname="iden", multactfctname="iden",
 		regulweight=None, regulfctname=None,
 		autoplot=True, trackbiases=True, keepdata=False, saveeachit=False,
@@ -39,7 +40,13 @@ class TenbilacParams:
 		):
 		"""
 		
+		Explicitly puttings these kwargs as attributes seems ugly.
+		A cleaner, file-based and structured configuration would be welcome, at some point.
+		Right now, we "have" to keep this in the current ugly way as various of these kwargs 
+		are passed to various tenbilac methods.
+		
 		:param hidden_nodes: list giving the number of nodes per hidden layer
+		:param mwlist: If not None, a MultNet will be used, and this mwlist describes its initial configuration. 
 		:param max_itrations: 
 		:param errfct: either "msb" or "msrb"
 		:param n: number of tenbilac instances to train
@@ -60,6 +67,7 @@ class TenbilacParams:
 		"""
 		self.hidden_nodes = hidden_nodes
 		self.name = name
+		self.mwlist = mwlist
 		self.algo = algo
 		self.max_iterations = max_iterations
 		self.gtol = gtol
@@ -75,6 +83,7 @@ class TenbilacParams:
 		self.ininoisewscale = ininoisewscale
 		self.ininoisebscale = ininoisebscale
 		self.ininoisemultwscale = ininoisemultwscale
+		self.ininoisemultbscale = ininoisemultbscale
 		self.normtargets = normtargets
 		self.normtype = normtype
 		self.actfctname = actfctname
@@ -181,9 +190,16 @@ class TenbilacWrapper:
 		
 		#TODO: implement the choice of many different configs/trainings
 		logger.info("{:s}: is a committee of {:d} member(s)".format(str(self), self.params.nmembers))
-		comm_members = [tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
-			multactfctname=self.params.multactfctname,
-			inames=inputnames, onames=targetnames, name='commid={cid}'.format(cid=ii)) for ii in range(self.params.nmembers)]
+		
+		if self.params.mwlist is None: # We use a regular Net:
+			comm_members = [tenbilac.net.Net(ni, nhs, no, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
+				multactfctname=self.params.multactfctname,
+				inames=inputnames, onames=targetnames, name='commid={cid}'.format(cid=ii)) for ii in range(self.params.nmembers)]
+		else: # It's a MultNet:
+			comm_members = [tenbilac.multnet.MultNet(ni, nhs, no=no, mwlist=self.params.mwlist, actfctname=self.params.actfctname, oactfctname=self.params.oactfctname,
+				multactfctname=self.params.multactfctname,
+				inames=inputnames, onames=targetnames, name='commid={cid}'.format(cid=ii)) for ii in range(self.params.nmembers)]
+		
 		comm = tenbilac.committee.Committee(comm_members)
 				
 		# We can prep the traindata object:
@@ -215,10 +231,16 @@ class TenbilacWrapper:
 		if oldtrain is None:
 			if self.params.startidentity:
 				ctraining.call('setidentity', attr='net', onlyn=self.params.onlynidentity)
+				if not self.params.mwlist is None:
+					# Then we have a MultNet, and need to set the mult weights:
+					ctraining.call("multini", attr="net")
+					
 			ctraining.call(attr='net', method='addnoise',
 				wscale=self.params.ininoisewscale,
 				bscale=self.params.ininoisebscale,
-				multwscale=self.params.ininoisemultwscale)
+				multwscale=self.params.ininoisemultwscale,
+				multbscale=self.params.ininoisemultbscale,
+				)
 						
 		else:
 			logger.info("Reusing previous network!")
