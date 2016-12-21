@@ -181,11 +181,9 @@ class ML:
 		# For FANN and SkyNet, we have to reject any masked stuff, and provide one "value" per feature.
 		# For Tenbilac, things are different. We have to provide 3D input (realization, feature, galaxy)
 		
+		
+		
 		if isinstance(self.toolparams, tenbilacwrapper.TenbilacParams): # Tenbilac
-			
-			self.toolparams.ncpu = self.toolparams.commncpu
-			
-			logger.debug("Found a Tenbilac instance, to run on {:d} CPUs".format(self.toolparams.ncpu))
 				
 			inputsdata = get3Ddata(catalog, self.mlparams.inputs)
 			
@@ -302,27 +300,38 @@ class ML:
 			
 			for (i, predlabel) in enumerate(self.mlparams.predictions):
 				
-				# If there is a function to treat the catalogue, let's do it now...
-				fun = kwargs['fun']
-				#nreas = preddata.shape[1]
-				if not fun is None:
-					treatedpred = fun(preddata[:,:,i,:], axis=0).transpose()
-					treatedpred = treat_col(treatedpred)
-					newcol = astropy.table.MaskedColumn(data=treatedpred, name=predlabel)
-					outcat.add_column(newcol)	
-					
-				# Another explicit loop to go through all the members of the committee
-				for j in range(self.tool.params.nmembers):
-					data=preddata[j,:,i,:].transpose()
-					data = treat_col(data)
-
-					# If there is only one net in the committee, let's make no fuss about the colname
-					colname = predlabel
-					if self.tool.params.nmembers > 1:
-						colname += "_{:03d}".format(j)						
-					
-					newcol = astropy.table.MaskedColumn(data=data, name=colname)
-					outcat.add_column(newcol)	
+				data = preddata[:,i,:].transpose()
+ 				assert data.ndim == 2 # Indeed this is now always 2D.
+ 				if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
+ 					data = data.reshape((data.size))
+ 					assert data.ndim == 1
+ 					
+ 				newcol = astropy.table.MaskedColumn(data=data, name=predlabel)
+ 				outcat.add_column(newcol)
+				
+#				########## Code for the old committee.py interface of Tenbilac########
+#				# If there is a function to treat the catalogue, let's do it now...
+#				fun = kwargs['fun']
+#				#nreas = preddata.shape[1]
+#				if not fun is None:
+#					treatedpred = fun(preddata[:,:,i,:], axis=0).transpose()
+#					treatedpred = treat_col(treatedpred)
+#					newcol = astropy.table.MaskedColumn(data=treatedpred, name=predlabel)
+#					outcat.add_column(newcol)	
+#					
+#				# Another explicit loop to go through all the members of the committee
+#				#for j in range(self.tool.params.nmembers):
+#				#	data=preddata[j,:,i,:].transpose()
+#					data = treat_col(data)
+#
+#					# If there is only one net in the committee, let's make no fuss about the colname
+#					colname = predlabel
+#					if self.tool.params.nmembers > 1:
+#						colname += "_{:03d}".format(j)						
+#					
+#					newcol = astropy.table.MaskedColumn(data=data, name=colname)
+#					outcat.add_column(newcol)
+#				######################################################################
 				
 					
 		else: # FANN or SkyNet etc:	
