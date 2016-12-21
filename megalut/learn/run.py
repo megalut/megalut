@@ -60,27 +60,7 @@ def train(cat, workbasedir, paramslist, ncpu=1):
 	# To run a multiprocessing pool map, we prepare a list of _WorkerSettings:
 	wslist = []
 	
-	# THIS A PIECE OF CODE TO BE IMPROVED
-	# You cannot start a pool inside a pool basically, this is the error we get:
-	# AssertionError: daemonic processes are not allowed to have children
-	# We should find a better solution, as suggested in that thread, but it requires a massive amount of recoding:
-	# http://stackoverflow.com/questions/17223301/python-multiprocessing-is-it-possible-to-have-a-pool-inside-of-a-pool
-	# Thus we will now choose wisely were to put the cpu resources (in the committee if any or in doing the 
-	# Let's assume that all of our committees are the same size:
-	try:
-		nmem = paramslist[0][1].nmembers
-	except: # No committee
-		nmem = 1
-		
-	if len(paramslist) < nmem:
-		ncpupercomm = ncpu
-		ncpu = 1
-	else:
-		ncpupercomm = 1
-	# END OF CODE TO BE IMPROVED
-	
 	for (mlparams, toolparams) in paramslist:
-		toolparams.commncpu = ncpupercomm
 		mlobj = ml.ML(mlparams, toolparams, workbasedir=workbasedir)
 		wslist.append(_WorkerSettings(cat, mlobj, predict))
 	
@@ -201,8 +181,9 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 		# Quick fix implemented right here just to get the same behavior as Bryan.
 		# WE NEED TO IMPLEMENT A BETTER SOLUTION FOR THIS, SEE ISSUE 125
 		trainedmlobj.tool.workdir = newmlobj.tool.workdir
-		if trainedmlobj.toolname == "Tenbilac":
-			trainedmlobj.tool.netpath = newmlobj.tool.netpath
+		# Not needed anymore with the new Tenbilac interface (but leaving this as a reminder, just in case)
+		#if trainedmlobj.toolname == "Tenbilac":
+		#	trainedmlobj.tool.netpath = newmlobj.tool.netpath
 		
 		if modmlparams == False:
 			# We now check that newmlobj has the same params as the one used for training.
