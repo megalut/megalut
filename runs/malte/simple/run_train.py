@@ -7,11 +7,10 @@ import simparams
 import mlparams
 import plots
 
-ncpu = 3
 
 sp = simparams.Simple1()
 sp.name = "Simple0"
-traindir = os.path.join(workdir, "train81_" + sp.name)
+traindir = os.path.join(workdir, "train100_" + sp.name)
 
 
 cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_cases.pkl"))
@@ -29,7 +28,7 @@ cat = megalut.tools.io.readpickle(os.path.join(workdir, sp.name, "groupmeascat_c
 #print megalut.tools.table.info(cat)
 
 #exit()
-megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=ncpu)
+megalut.learn.run.train(cat, traindir, mlparams.trainparamslist, ncpu=1)
 
 
 
