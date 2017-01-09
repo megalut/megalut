@@ -4,21 +4,30 @@ import megalut.learn
 
 
 # "tru_psf_g1", "tru_psf_g2", "tru_psf_sigma", "skymad"
-
+"""
 g1 = megalut.learn.MLParams(name = "g1",
 	inputs = ["adamom_g1", "adamom_sigma"],
 	targets = ["tru_g1"],
 	predictions = ["pre_g1"])
+"""
 
 
-testmultnet = megalut.learn.tenbilacwrapper.TenbilacParams("tbl-testMN.cfg")
+net = megalut.learn.tenbilacwrapper.TenbilacParams("tbl-1.cfg")
 
+s1 = megalut.learn.MLParams(name = "s1",
+	inputs = ["adamom_g1", "adamom_sigma"],
+	targets = ["tru_s1"],
+	predictions = ["pre_s1"])
 
+s2 = megalut.learn.MLParams(name = "s2",
+	inputs = ["adamom_g2", "adamom_sigma"],
+	targets = ["tru_s2"],
+	predictions = ["pre_s2"])
 
-# mwlist=[(1, 0, 1), (1, 0, -1.0)],
 
 trainparamslist = [
-	(g1, testmultnet)
+	(s1, net),
+	(s2, net)
 ]
 
 

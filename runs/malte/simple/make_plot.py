@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-cat = megalut.tools.io.readpickle(os.path.join(workdir, "train71_Simple0", "precat.pkl"))
+cat = megalut.tools.io.readpickle(os.path.join(workdir, "train100_Simple0", "precat.pkl"))
 
 print megalut.tools.table.info(cat)
 

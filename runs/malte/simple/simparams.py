@@ -65,12 +65,12 @@ class Simple1(megalut.sim.params.Params):
 		tru_rad = np.random.uniform(3.0, 10.0)
 		tru_sersicn = 2.0
 		
-		#tru_g = contracted_rayleigh(0.15, 0.8, 4)
-		#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
-		#(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+		tru_g = contracted_rayleigh(0.15, 0.6, 4)
+		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 		
-		tru_g1 = np.random.uniform(-0.3, 0.3)
-		tru_g2 = np.random.uniform(-0.3, 0.3)	
+		#tru_g1 = np.random.uniform(-0.3, 0.3)
+		#tru_g2 = np.random.uniform(-0.3, 0.3)	
 		tru_g = np.hypot(tru_g1, tru_g2)
 			
 		########## Noise ##########
@@ -101,5 +101,29 @@ class Simple1(megalut.sim.params.Params):
 			"tru_psf_g1":tru_psf_g1,
 			"tru_psf_g2":tru_psf_g2,
 			
+		}
+
+
+class Simple1v(Simple1):
+	"""
+	For validation, we have only one shear per catalog
+	Specifying something in stat has precedence over specifications in draw.
+	"""
+	
+	def __init__(self):
+		Simple1.__init__(self)
+	
+	def stat(self):
+		"""
+		stat: called for each catalog (stat is for stationnary)
+		"""
+		tru_s1 = np.random.uniform(-self.sr, self.sr)
+		tru_s2 = np.random.uniform(-self.sr, self.sr)	
+		tru_mu = 1.0
+
+		return {"snc_type":self.snc_type,
+			"tru_s1":tru_s1,
+			"tru_s2":tru_s2,
+			"tru_mu":tru_mu
 		}
 
