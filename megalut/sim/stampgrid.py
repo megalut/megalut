@@ -159,6 +159,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	"""
 	starttime = datetime.now()	
 	
+	gsparams = galsim.GSParams(maximum_fft_size=8192)
+	
 	if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
 		raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
 	if "stampsize" not in catalog.meta.keys():
@@ -215,9 +217,9 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		# We draw the desired profile
 		profile_type = params.profile_types[row["tru_type"]]
 		if profile_type == "Sersic":
-			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]))
+			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams)
 		elif profile_type == "Gaussian":
-			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]))
+			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]), gsparams=gsparams)
 		
 		# We make this profile elliptical
 		gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
@@ -236,7 +238,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		gal = gal.shift(xjitter,yjitter)
 		
 		# We draw the pure unconvolved galaxy
-		gal.drawImage(trugal_stamp, method="auto") # Will convolve by the sampling pixel.
+		if simtrugalimgfilepath != None:
+			gal.drawImage(trugal_stamp, method="auto") # Will convolve by the sampling pixel.
 
 		# We prepare/get the PSF and do the convolution:
 		
@@ -252,7 +255,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			psf_xjitter = ud() - 0.5
 			psf_yjitter = ud() - 0.5
 			psf = psf.shift(psf_xjitter,psf_yjitter)
-			psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
+			if simpsfimgfilepath != None:
+				psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
 	
 			if "tru_pixel" in todo: # Not sure if this should only apply to gaussian PSFs, but so far this seems OK.
 				# Remember that this is an "additional" pixel convolution, not the usual sampling-related convolution that happens in drawImage.
@@ -272,9 +276,11 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
 					(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, scale=psfpixelscale)
-			psf.drawImage(psf_stamp, method="no_pixel") # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
+			if simpsfimgfilepath != None:
+				psf.drawImage(psf_stamp, method="no_pixel") # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 			
-			galconv = galsim.Convolve([gal,psf], real_space=False)	
+			#galconv = galsim.Convolve([gal,psf], real_space=False)	
+			galconv = galsim.Convolve([gal,psf])	
 
 		elif "nopsf" in todo:
 			# Nothing to do		
