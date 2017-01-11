@@ -179,6 +179,7 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		psfinfo = catalog.meta["psf"]
 
 	if "tru_pixel" in todo:
+		# This is only if you want "effective pixels" larger than the actual pixels (related to SBE, normally you don't want this).
 		pix = galsim.Pixel(catalog["tru_pixel"][0]) # We have checked in checkcat that all values are equal.
 		
 	# Galsim random number generators
@@ -235,9 +236,12 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		gal = gal.shift(xjitter,yjitter)
 		
 		# We draw the pure unconvolved galaxy
-		gal.draw(trugal_stamp)
+		gal.drawImage(trugal_stamp, method="auto") # Will convolve by the sampling pixel.
 
 		# We prepare/get the PSF and do the convolution:
+		
+		# Should the final operation skip the convolution by the pixel (because the PSF already is in large pixels) ?
+		skip_pixel_conv = False
 		
 		if "usegausspsf" in todo:
 			
@@ -248,9 +252,10 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			psf_xjitter = ud() - 0.5
 			psf_yjitter = ud() - 0.5
 			psf = psf.shift(psf_xjitter,psf_yjitter)
-			psf.draw(psf_stamp)
+			psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
 	
 			if "tru_pixel" in todo: # Not sure if this should only apply to gaussian PSFs, but so far this seems OK.
+				# Remember that this is an "additional" pixel convolution, not the usual sampling-related convolution that happens in drawImage.
 				galconv = galsim.Convolve([gal, psf, pix])
 			
 			else:
@@ -259,14 +264,17 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		elif "loadpsfimg" in todo:
 			
 			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
+			psfpixelscale = getattr(psfinfo, "pixelscale", 1.0) # Using getattr so that it works with old objects as well
+			if psfpixelscale > 0.5:
+				logger.warning("You seem to be using a sampled PSF with large pixels (e.g., observed stars). I'll do my best and skip the pixel conv, but this might well lead to errors.")
+				skip_pixel_conv = True
 			if flag != 0:
 				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
 					(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
-			psfpixelscale = getattr(psfinfo, "pixelscale", 1.0) # Using getattr so that it works with old objects as well
 			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, scale=psfpixelscale)
-			psf.draw(psf_stamp) # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
+			psf.drawImage(psf_stamp, method="no_pixel") # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
 			
-			galconv = galsim.Convolve([gal,psf], real_space=False)		
+			galconv = galsim.Convolve([gal,psf], real_space=False)	
 
 		elif "nopsf" in todo:
 			# Nothing to do		
@@ -276,7 +284,12 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			raise RuntimeError("Bug in todo.")
 	
 		# Draw the convolved galaxy	
-		galconv.draw(gal_stamp)
+		if skip_pixel_conv == False:	
+			galconv.drawImage(gal_stamp, method="auto") # This will convolve by the image sampling pixel. Don't do this yourself ahead! 
+		else:
+			galconv.drawImage(gal_stamp, method="no_pixel") # Simply uses pixel-center values. Know what you are doing, see doc of galsim. 
+
+		
 		
 		# And add noise to the convolved galaxy:
 		gal_stamp.addNoise(galsim.CCDNoise(rng, sky_level=float(row["tru_sky_level"]), gain=float(row["tru_gain"]), read_noise=float(row["tru_read_noise"])))
@@ -357,7 +370,7 @@ def checkcat(cat):
 			raise RuntimeError("You're mixing seveal tru_pixel values, probably a mistake.") # If you ever change this, fix code that currently generates only one pix!
 		tru_pixel = tru_pixels[0]
 		if tru_pixel > 0.0:
-			logger.info("The galaxy profiles will be convolved with an extra {0:.1f} pixels".format(tru_pixel))
+			logger.warning("The galaxy profiles will be convolved with an extra {0:.1f} pixels".format(tru_pixel))
 		
 			todo.append("tru_pixel")
 	
