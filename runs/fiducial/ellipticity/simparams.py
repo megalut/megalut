@@ -10,7 +10,7 @@ class Ellipticity(megalut.sim.params.Params):
 		# It's nice to have some params here as attributes, as this allows them to be modified for different sims.
 		self.snc_type = 1
 		self.shear = 0.0
-		self.noise_level = 0.2
+		self.noise_level = 0.8
 
 
 	def stat(self):
@@ -51,7 +51,8 @@ class Ellipticity(megalut.sim.params.Params):
 		
 		tru_type = 1 # Seric	
 		tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]))
-		surface_brigthness = np.random.normal(-2.5, 0.02)
+		# TODO: Calibrate this surface brigthness
+		surface_brigthness = np.random.normal(1., 0.02)
 
 		tru_rad = np.random.uniform(1.0, 15.0)
 		

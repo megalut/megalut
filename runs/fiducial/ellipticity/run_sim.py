@@ -18,7 +18,7 @@ sp = simparams.Ellipticity()
 sp.shear = 0
 sp.snc_type = 1
 n = 2500
-nc = 20
+nc = 50
 ncat = 1
 nrea = 20
 
@@ -60,7 +60,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(includes.simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_sg", "tru_g", "tru_flux", "tru_rad"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(includes.simdir, sp.name, "groupmeascat_cases.pkl"))
