@@ -174,7 +174,7 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 	ax.set_xlim(xbinrange)
 
 	if featc:
-		ax.legend(prop={"size":"medium"})
+		ax.legend(prop={"size":"small"})
 	
 	
 	
