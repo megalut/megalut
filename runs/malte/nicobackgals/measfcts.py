@@ -43,18 +43,21 @@ default_groupcols = [
 'skymed',
 'skystampsum',
 'skyflag',
-'snr',
-'fourierhann_x',
-'fourierhann_y',
-'fourierhann_adamom_flag',
-'fourierhann_adamom_flux',
-'fourierhann_adamom_x',
-'fourierhann_adamom_y',
-'fourierhann_adamom_g1',
-'fourierhann_adamom_g2',
-'fourierhann_adamom_sigma',
-'fourierhann_adamom_rho4'
+'snr'
 ]
+
+
+#'fourierhann_x',
+#'fourierhann_y',
+#'fourierhann_adamom_flag',
+#'fourierhann_adamom_flux',
+#'fourierhann_adamom_x',
+#'fourierhann_adamom_y',
+#'fourierhann_adamom_g1',
+#'fourierhann_adamom_g2',
+#'fourierhann_adamom_sigma',
+#'fourierhann_adamom_rho4'
+
 
 
 

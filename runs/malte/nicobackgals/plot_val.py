@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 traindir = os.path.join(config.workdir, "train_Nico4nn_Sum55")
-valprecatpath = os.path.join(traindir, "selfprecat.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
+
 
 
 
@@ -26,43 +27,46 @@ print megalut.tools.table.info(cat)
 
 cat["pre_g1"] = cat["pre_g1_adamom"]
 megalut.tools.table.addstats(cat, "pre_g1")
-megalut.tools.table.addrmsd(cat, "pre_g1", "tru_g1")
+megalut.tools.table.addrmsd(cat, "pre_g1", "tru_s1")
 megalut.tools.table.addstats(cat, "snr")
 
 
+rea = "All"
 ebarmode = "scatter"
 
 fig = plt.figure(figsize=(23, 13))
-#fig = plt.figure(figsize=(8, 8))
 
 
 
 ax = fig.add_subplot(3, 4, 1)
-megalut.plot.scatter.scatter(ax, cat, Feature("snr_mean"),  Feature("pre_g1_std", 1e-10, 0.1), featc=Feature("tru_rad"), sidehists=False, sidehistkwargs={"bins":20})
-ax.set_yscale("log", nonposx='clip')
-
-
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"),  Feature("pre_g1_mean"), featc=Feature("snr_mean"), showidline=True, metrics=True)
 ax = fig.add_subplot(3, 4, 2)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("tru_flux"), featc=Feature("pre_g1_bias"))
+megalut.plot.bin.res(ax, cat, Feature("tru_s1"), Feature("pre_g1_mean"), ebarmode=ebarmode)
 ax = fig.add_subplot(3, 4, 3)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("tru_rad"), featc=Feature("pre_g1_bias"))
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"), Feature("tru_rad"), Feature("pre_g1_bias"))
 ax = fig.add_subplot(3, 4, 4)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("tru_sersicn"), featc=Feature("pre_g1_bias"))
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"), Feature("tru_sersicn"), Feature("pre_g1_bias"))
 
 
-ax = fig.add_subplot(3, 4, 5)
-megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g1_mean"), ebarmode="scatter")
+#ax = fig.add_subplot(3, 4, 5)
+#megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"),  Feature("pre_g1_bias"), featc=Feature("snr_mean"), showidline=True, metrics=True)
 ax = fig.add_subplot(3, 4, 6)
-megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g1_mean"), Feature("tru_flux"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"),  Feature("pre_g1_bias"), featc=Feature("tru_flux"))
 ax = fig.add_subplot(3, 4, 7)
-megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g1_mean"), Feature("tru_rad"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"),  Feature("pre_g1_bias"), featc=Feature("tru_rad"))
 ax = fig.add_subplot(3, 4, 8)
-megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g1_mean"), Feature("tru_sersicn"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1"),  Feature("pre_g1_bias"), featc=Feature("tru_sersicn"))
 
-ax = fig.add_subplot(3, 4, 9)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"), Feature("tru_g2"), Feature("pre_g1_bias"))
+
+#ax = fig.add_subplot(3, 4, 9)
+#megalut.plot.bin.res(ax, cat, Feature("tru_s1"), Feature("pre_g1_mean"), Feature("tru_flux"), ebarmode=ebarmode)
 ax = fig.add_subplot(3, 4, 10)
-megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g1_mean"), Feature("tru_g2"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.bin.res(ax, cat, Feature("tru_s1"), Feature("pre_g1_mean"), Feature("tru_flux"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 4, 11)
+megalut.plot.bin.res(ax, cat, Feature("tru_s1"), Feature("pre_g1_mean"), Feature("tru_rad"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 4, 12)
+megalut.plot.bin.res(ax, cat, Feature("tru_s1"), Feature("pre_g1_mean"), Feature("tru_sersicn"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+
 
 plt.tight_layout()
 
@@ -71,14 +75,17 @@ plt.tight_layout()
 #else:
 
 plt.show()
-#plt.close(fig) # Helps releasing memory when calling in large loops.
+plt.close(fig) # Helps releasing memory when calling in large loops.
 
 
 
-#s = megalut.tools.table.Selector("LowShear", [("in", "tru_s1", -0.05, 0.05), ("in", "tru_s2", -0.05, 0.05)])
-#cat = s.select(cat)
 
-
+#
+#
+##s = megalut.tools.table.Selector("LowShear", [("in", "tru_s1", -0.05, 0.05), ("in", "tru_s2", -0.05, 0.05)])
+##cat = s.select(cat)
+#
+#print megalut.tools.table.info(cat)
 #
 #megalut.tools.table.addstats(cat, "pre_s1_adamom")
 #megalut.tools.table.addstats(cat, "pre_s2_adamom")

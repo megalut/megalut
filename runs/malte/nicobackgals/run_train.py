@@ -17,54 +17,39 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-sp = simparams.Nico3()
-sp.name = "Nico3b"
-#addname = "_noc"
-addname = ""
-traindir = os.path.join(config.workdir, "train_" + sp.name + addname)
 
-"""
-cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
-print megalut.tools.table.info(cat)
+traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-multreallyfix55")
 
-megalut.learn.run.train(cat, traindir, mlparams.trainparamslist_noc, ncpu=config.ncpu)
-"""
+
+
+# Training
+catpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
+
+cat = megalut.tools.io.readpickle(catpath)
+#print megalut.tools.table.info(cat)
+megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)
 
 
 # Self-predicting
 
-cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
-s = megalut.tools.table.Selector("LowShear", [("in", "tru_s1", -0.1, 0.1), ("in", "tru_s2", -0.1, 0.1)])
-cat = s.select(cat)
+precatpath = os.path.join(traindir, "selfprecat.pkl")
 
-#cat = megalut.tools.io.readpickle(os.path.join(config.simdir, sp.name, "groupmeascat_cases_small-s.pkl"))
-
-cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist, outtweak=np.ma.median)
-megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "precat.pkl"))
-
-
-
-
-# Pretict GauShear2:
-"""
-fakeobs = simparams.GauShear2()
-cat = megalut.tools.io.readpickle(os.path.join(workdir, "GauShear2", "groupmeascat.pkl"))
-#print megalut.tools.table.info(cat)
-
+cat = megalut.tools.io.readpickle(catpath)
 cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
-megalut.tools.io.writepickle(cat, os.path.join(workdir, "precat.pkl"))
+megalut.tools.io.writepickle(cat, precatpath)
 
-"""
 
-"""
-cat = megalut.tools.io.readpickle(os.path.join(workdir, "precat.pkl"))
 
-#plots.shear_true(cat, os.path.join(workdir, "shear_true.png"))
-plots.shear_mes(cat, os.path.join(workdir, "shear_mes.png"))
 
-#megalut.tools.io.writepickle(cat, os.path.join(workdir, sp.name, "selfprecat.pkl"))
+# Predicting the validation set
 
-#print megalut.tools.table.info(cat)
-"""
+valcatpath = os.path.join(config.simdir, "Nico4shear", "groupmeascat_cases.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
+
+cat = megalut.tools.io.readpickle(valcatpath)
+cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
+megalut.tools.io.writepickle(cat, valprecatpath)
+
+
 
 
