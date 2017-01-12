@@ -25,6 +25,13 @@ class Ellipticity(megalut.sim.params.Params):
 		draw: called for each galaxy	
 		"""
 	
+		########## PSF ##########
+		
+		tru_psf_sigma = 2.0
+		tru_psf_g1 = 0.0
+		tru_psf_g2 = 0.0
+	
+	
 		########## Shear #########	
 
 		if self.shear > 0:
@@ -76,6 +83,9 @@ class Ellipticity(megalut.sim.params.Params):
 			"tru_s2":tru_s2,
 			"tru_mu":tru_mu,
 		
+			"tru_psf_sigma":tru_psf_sigma,
+			"tru_psf_g1":tru_psf_g1,
+			"tru_psf_g2":tru_psf_g2,
 		}
 
 

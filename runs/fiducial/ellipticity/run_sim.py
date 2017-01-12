@@ -12,8 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 
-psfcat = megalut.tools.io.readpickle(includes.psfcatpath)
-
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 sp = simparams.Ellipticity()
@@ -30,7 +28,7 @@ megalut.sim.run.multi(
 	simparams=sp,
 	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize},
 	drawimgkwargs={}, 
-	psfcat=psfcat, psfselect="random",
+	psfcat=None, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
