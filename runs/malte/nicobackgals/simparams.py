@@ -60,6 +60,7 @@ class Nico4(megalut.sim.params.Params):
 			tru_flux =  np.random.uniform(2.0, 10.0)
 
 		tru_rad = np.random.uniform(1.0, 15.0)
+		#tru_rad = np.random.uniform(1.0, 11.0)
 			
 		########## Noise ##########
 

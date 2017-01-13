@@ -29,8 +29,8 @@ nrea = 20
 """
 
 
-"""
-# Nico4nn, idem but without noise (to see how this does)
+
+# Nico4nn, idem but without noise (to see how this does). 5000 cases (too much, but allows for good validation set) and 10 reas.
 sp = simparams.Nico4()
 sp.name = "Nico4nn"
 sp.sr = 0
@@ -38,22 +38,22 @@ sp.snc_type = 1
 sp.noise_level = 0.0
 n = 2500
 nc = 50
-ncat = 1
-nrea = 10
-"""
+ncat = 2
+nrea = 10 # Even without noise, there is still the position jitter and pixelization
 
-# Nico4shear
-# shear, (and snc), for validation
+
+"""# Nico4shear
+# shear, (and snc), for validation. 1000 cases with SNC 10'000
 sp = simparams.Nico4()
 sp.name = "Nico4shear_snc10000"
 sp.sr = 0.1
 sp.snc_type = 10000
 n = 1
 nc = 1
-ncat = 100
+ncat = 500
 nrea = 1
 # Make scatter plots of indiv. cases!
-
+"""
 
 """
 # Nico4v
@@ -67,6 +67,7 @@ ncat = 10
 nrea = 1
 # Make scatter plots of indiv. cases!
 """
+
 
 megalut.sim.run.multi(
 	simdir=config.simdir,
@@ -106,6 +107,7 @@ print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmeascat.pkl"))
 
 
+"""
 # For shear sims, add this
 
 cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "tru_flux", "tru_rad"])
@@ -113,7 +115,7 @@ cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
-
+"""
 
 
 

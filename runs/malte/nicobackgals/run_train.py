@@ -18,15 +18,23 @@ logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-multreallyfix55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-multreallyfix55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_Sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-free3m33")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55_norm-11")
 
+traindir = os.path.join(config.workdir, "train_Nico4nn_3featfou-sum55")
 
 
 # Training
 catpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
 
+
 cat = megalut.tools.io.readpickle(catpath)
 #print megalut.tools.table.info(cat)
+#exit()
 megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)
 
 
@@ -40,11 +48,13 @@ megalut.tools.io.writepickle(cat, precatpath)
 
 
 
-
 # Predicting the validation set
 
-valcatpath = os.path.join(config.simdir, "Nico4shear", "groupmeascat_cases.pkl")
+valcatpath = os.path.join(config.simdir, "Nico4shear_snc10000", "groupmeascat_cases.pkl")
 valprecatpath = os.path.join(traindir, "valprecat.pkl")
+
+#valcatpath = os.path.join(config.simdir, "Nico4shear", "groupmeascat_cases.pkl")
+#valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
 cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)

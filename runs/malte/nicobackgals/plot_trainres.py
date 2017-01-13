@@ -14,7 +14,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-traindir = os.path.join(config.workdir, "train_Nico4nn_Sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_Sum55")
+traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-sum55")
+
+
 valprecatpath = os.path.join(traindir, "selfprecat.pkl")
 
 
