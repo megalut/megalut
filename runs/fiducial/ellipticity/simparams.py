@@ -74,7 +74,7 @@ class Ellipticity(megalut.sim.params.Params):
 			"tru_sersicn":tru_sersicn,
 			"tru_g":tru_g,
 			"tru_theta":tru_theta,
-			"tru_surfacebright": surface_brigthness,
+			"tru_sb": surface_brigthness,
 			
 			"tru_sky_level":tru_sky_level, # in ADU, just for generating noise, will not remain in the image
 			"tru_gain":tru_gain, # in photons/ADU. Make this negative to have no Poisson noise

@@ -53,3 +53,5 @@ coverage.xml
 sphinx/build/
 sphinx/source/apidoc
 
+# Backup stuff
+*~
