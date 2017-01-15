@@ -19,6 +19,8 @@ class Nico4(megalut.sim.params.Params):
 		self.snc_type = 1
 		self.sr = 0.0
 		self.noise_level = 0.8 # from Henk's paper, according to Nico
+		self.maxrad = 15.0
+		self.lowsn = 0
 
 
 	def stat(self):
@@ -54,12 +56,17 @@ class Nico4(megalut.sim.params.Params):
 		tru_type = 1 # Seric	
 		tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]))
 		
-		if np.random.uniform(0.0, 1.0) < 0.35:
-			tru_flux =  np.random.uniform(10, 100.0)
-		else:
-			tru_flux =  np.random.uniform(2.0, 10.0)
+		if self.lowsn == 0:
+		
+			if np.random.uniform(0.0, 1.0) < 0.35:
+				tru_flux =  np.random.uniform(10, 100.0)
+			else:
+				tru_flux =  np.random.uniform(2.0, 10.0)
+		
+		elif self.lowsn == 1:
+			tru_flux = np.random.uniform(1.0, 8.0)
 
-		tru_rad = np.random.uniform(1.0, 15.0)
+		tru_rad = np.random.uniform(1.0, self.maxrad)
 		#tru_rad = np.random.uniform(1.0, 11.0)
 			
 		########## Noise ##########

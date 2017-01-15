@@ -16,12 +16,13 @@ logger = logging.getLogger(__name__)
 
 #traindir = os.path.join(config.workdir, "train_Nico4nn_Sum55")
 #traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-multreallyfix55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55")
+traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55")
 #traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-sum55")
-traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55_norm-11")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55_norm-11")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3featfou-sum55")
 
 
-valprecatpath = os.path.join(traindir, "valprecat.pkl")
+valprecatpath = os.path.join(traindir, "valprecat_lowSN.pkl")
 
 
 
@@ -32,6 +33,9 @@ cat = megalut.tools.io.readpickle(valprecatpath)
 print megalut.tools.table.info(cat)
 
 cat["pre_g1"] = cat["pre_g1_adamom"]
+#cat["pre_g1"] = cat["pre_g1_fourier"]
+
+
 megalut.tools.table.addstats(cat, "pre_g1")
 megalut.tools.table.addrmsd(cat, "pre_g1", "tru_s1")
 megalut.tools.table.addstats(cat, "snr")

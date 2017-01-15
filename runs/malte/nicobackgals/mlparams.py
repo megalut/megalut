@@ -12,6 +12,11 @@ g1ada3 = megalut.learn.MLParams(name = "g1ada3",
 	targets = ["tru_g1"],
 	predictions = ["pre_g1_adamom"])
 
+g2ada3 = megalut.learn.MLParams(name = "g2ada3",
+	inputs = ["adamom_g2", "adamom_sigma", "adamom_rho4"],
+	targets = ["tru_g2"],
+	predictions = ["pre_g2_adamom"])
+
 g1ada2 = megalut.learn.MLParams(name = "g1ada2",
 	inputs = ["adamom_g1", "adamom_sigma"],
 	targets = ["tru_g1"],
@@ -33,7 +38,9 @@ g1fou3 = 	megalut.learn.MLParams(name = "g1fou3",
 net = megalut.learn.tenbilacwrapper.TenbilacParams("tbl/Nico4/Net.cfg")
 
 trainparamslist = [
-	(g1fou3, net)
+	#(g1fou3, net)
+	(g1ada3, net),
+	(g2ada3, net)
 ]
 
 """
