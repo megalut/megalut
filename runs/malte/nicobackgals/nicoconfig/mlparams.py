@@ -12,7 +12,7 @@ g2ada3 = megalut.learn.MLParams(name = "g2ada3",
 	predictions = ["pre_g2_adamom"])
 
 
-net = megalut.learn.tenbilacwrapper.TenbilacParams("Net")
+net = megalut.learn.tenbilacwrapper.TenbilacParams("nicoconfig/Net.cfg")
 
 trainparamslist = [
 	(g1ada3, net),
