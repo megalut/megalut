@@ -182,8 +182,9 @@ def predict(cat, workbasedir, paramslist, tweakmode="default", totweak="_mean", 
 		# WE NEED TO IMPLEMENT A BETTER SOLUTION FOR THIS, SEE ISSUE 125
 		trainedmlobj.tool.workdir = newmlobj.tool.workdir
 		# Not needed anymore with the new Tenbilac interface (but leaving this as a reminder, just in case)
-		#if trainedmlobj.toolname == "Tenbilac":
-		#	trainedmlobj.tool.netpath = newmlobj.tool.netpath
+		# In fact, still needed with the current crappy interface:
+		if trainedmlobj.toolname == "Tenbilac":
+			trainedmlobj.tool.params.configpath = newmlobj.tool.params.configpath
 		
 		if modmlparams == False:
 			# We now check that newmlobj has the same params as the one used for training.
