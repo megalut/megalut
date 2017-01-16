@@ -41,21 +41,19 @@ megalut.tools.table.addstats(cat, "pre_g1")
 megalut.tools.table.addrmsd(cat, "pre_g1", "tru_s1")
 megalut.tools.table.addstats(cat, "snr")
 
-print np.shape(cat["pre_g1"])
-print np.shape(cat["pre_g1_mean"])
+cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+ebarmode = "scatter"
 
 s = megalut.tools.table.Selector("ok", [
-	("in", "snr_mean", 10, 150),
+	("in", "snr_mean", 7, 150),
 	#("in", "tru_rad", 0, 11),
-	#("max", "adamom_frac", 0.01)
+	("max", "adamom_frac", 0.01)
 	]
 	)
 
 cat = s.select(cat)
 
 
-cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
-ebarmode = "scatter"
 
 cat["pre_{}-tru_{}".format(main_pred, main_pred)] = cat["pre_{}_mean".format(main_pred)] - cat["tru_{}".format( main_pred)]
 #--------------------------------------------------------------------------------------------------
