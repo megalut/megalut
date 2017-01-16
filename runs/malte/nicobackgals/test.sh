@@ -11,4 +11,8 @@
 
 
 #With a real catalog:
-python run_allobs.py --imgpath /vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations/i087_a0_n334087_s0_m0/sim_087_24.5_a0.fits --incatpath /vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations/i087_a0_n334087_s0_m0/ingal_087_24.5to27.0.cat --outcatpath test.cat --workdir work --traindir /vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/train_Nico3b --stampsize 64 -p
+#python run_allobs.py --imgpath /vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations/i087_a0_n334087_s0_m0/sim_087_24.5_a0.fits --incatpath /vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations/i087_a0_n334087_s0_m0/ingal_087_24.5to27.0.cat --outcatpath test.cat --workdir work --traindir /vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/train_Nico3b --stampsize 64 -p
+
+
+
+python run_allobs.py --imgpath /vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations/i087_a0_n334087_s0_m0/sim_087_24.5_a0.fits --incatpath /vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations/i087_a0_n334087_s0_m0/ingal_087_24.5to27.0.cat --outcatpath test.cat --workdir work --traindir /vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/train_Nico4nn_3featg1g2-sum55 --stampsize 64 -p --skipdone
