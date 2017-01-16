@@ -19,11 +19,10 @@ sp.shear = 0.1
 simdir = includes.simvaldir
 sp.snc_type = 1000
 sp.noise_level = 0.8
-n = 10
+n = 1
 nc = 1
-ncat = 10
+ncat = 500
 nrea = 1
-
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -47,7 +46,6 @@ megalut.meas.run.onsims(
 	skipdone=True
 	)
 
-
 cat = megalut.meas.avg.onsims(
 	measdir=simdir, 
 	simparams=sp,
@@ -62,7 +60,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))
