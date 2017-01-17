@@ -41,6 +41,8 @@ for idir in [simdir, simvaldir]:
 	adamom_rho4 = Feature("adamom_rho4", 1.3, 3.0, rea=reat)
 	adamom_g1 = Feature("adamom_g1", -0.7, 0.7, rea=reat)
 	adamom_g2 = Feature("adamom_g2", -0.7, 0.7, rea=reat)
+	trradius = Feature("tru_rad", rea=reat)
+	trsb = Feature("tru_sb", rea=reat)
 	snr = Feature("snr", rea=reat)
 	
 	fig = plt.figure()
@@ -63,6 +65,11 @@ for idir in [simdir, simvaldir]:
 	ax = fig.add_subplot(1,1,1)
 	megalut.plot.scatter.scatter(ax, cat, adamom_sigma, adamom_flux, snr)
 	fig.savefig(os.path.join(outdirplots, "distrib_sigma_flux"))
+	
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	megalut.plot.scatter.scatter(ax, cat, trradius, trsb, snr)
+	fig.savefig(os.path.join(outdirplots, "distrib_radius_sb"))
 	
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)

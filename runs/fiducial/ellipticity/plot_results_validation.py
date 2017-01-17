@@ -45,7 +45,7 @@ megalut.tools.table.addstats(cat, "snr")
 cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
 
 s = megalut.tools.table.Selector("ok", [
-	("in", "snr_mean", 0, 150),
+	("in", "snr_mean", 5, 150),
 	#("in", "tru_rad", 0, 11),
 	("max", "adamom_frac", 0.01)
 	]

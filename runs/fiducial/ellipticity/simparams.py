@@ -52,8 +52,9 @@ class Ellipticity(megalut.sim.params.Params):
 		tru_type = 1 # Seric	
 		tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]))
 		# TODO: Calibrate this surface brigthness
-		surface_brigthness = np.random.normal(1., 0.02)
-
+		#surface_brigthness = np.random.normal(1., 0.02)
+		surface_brigthness = np.random.uniform(0.8, 1.2)
+		
 		tru_rad = np.random.uniform(1.0, 15.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness)
