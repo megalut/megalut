@@ -27,11 +27,23 @@ for idir in [simdir, simvaldir]:
 	
 	if not os.path.exists(outdirplots):
 		os.mkdir(outdirplots)
+		
+	if not os.path.exists(outdirplots):
+		os.mkdir(outdirplots)
 	
-	valprecatpath = os.path.join(idir, "groupmeascat.pkl")
+	catpath = os.path.join(idir, "groupmeascat_cases.pkl")
 	
 	
-	cat = megalut.tools.io.readpickle(valprecatpath)
+	cat = megalut.tools.io.readpickle(catpath)
+	cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+	s = megalut.tools.table.Selector("ok", [
+		#("min", "adamom_flux", 0.),
+		("max", "adamom_frac", 0.005),
+		]
+		)
+
+	cat = s.select(cat)
+
 	print megalut.tools.table.info(cat)
 	
 	reat = "All"
@@ -41,6 +53,8 @@ for idir in [simdir, simvaldir]:
 	adamom_rho4 = Feature("adamom_rho4", 1.3, 3.0, rea=reat)
 	adamom_g1 = Feature("adamom_g1", -0.7, 0.7, rea=reat)
 	adamom_g2 = Feature("adamom_g2", -0.7, 0.7, rea=reat)
+	tru_s1 = Feature("tru_s1", -0.7, 0.7, rea=reat)
+	tru_s2 = Feature("tru_s2", -0.7, 0.7, rea=reat)
 	trradius = Feature("tru_rad", rea=reat)
 	trsb = Feature("tru_sb", rea=reat)
 	snr = Feature("snr", rea=reat)
@@ -55,6 +69,10 @@ for idir in [simdir, simvaldir]:
 	megalut.plot.scatter.scatter(ax, cat, adamom_g1, adamom_g2, snr)
 	fig.savefig(os.path.join(outdirplots, "distrib_g1_g2"))
 	
+	fig = plt.figure()
+	ax = fig.add_subplot(1,1,1)
+	megalut.plot.scatter.scatter(ax, cat, tru_s1, tru_s2, snr)
+	fig.savefig(os.path.join(outdirplots, "distrib_s1_s2"))	
 	
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
