@@ -8,6 +8,8 @@ This is a standalone wrapper for Tenbilac, featuring:
 """
 import datetime
 import numpy as np
+import astropy
+import copy
 
 import os
 from ConfigParser import SafeConfigParser
@@ -22,19 +24,21 @@ logger = logging.getLogger(__name__)
 
 def train(catalog, conflist, workbasedir):
 	"""
+	Top-level function to train Tenbilacs with data from a MegaLUT catalog.
+	Does not modify or return the input catalog, it really just trains.
 	
 	:param conflist: A list of tuples ("ada5g1.cfg", "sum55.cfg") of filepaths to the configuration files for the data selection and the machine learning.
 		Tuples in this list are processed one after the other.
-		
 	:param workbasedir: A directory in which the trainings can be organized.
 		I will create a subdirectory in there reflecting the configuration names.
-		
+			
 	"""
 	starttime = datetime.datetime.now()
+	logger.info("Starting the training of {} MLs...".format(len(conflist)))
 	
 	for (dataconfpath, toolconfpath) in conflist:
 		
-		# We read in the configuration
+		# We read in the configurations
 		dataconfig = readconfig(dataconfpath) # The data config (what to train usign which features)
 		toolconfig = readconfig(toolconfpath) # The Tenbilac config
 		trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name")) # We will pass this to Tenbilac
@@ -43,7 +47,6 @@ def train(catalog, conflist, workbasedir):
 		inputlabels = list(eval(dataconfig.get("data", "inputlabels")))
 		auxinputlabels = list(eval(dataconfig.get("data", "auxinputlabels")))
 		targetlabels = list(eval(dataconfig.get("data", "targetlabels")))
-		predlabels = list(eval(dataconfig.get("data", "predlabels")))
 		
 		# Preparing the inputs
 		inputsdata = get3Ddata(catalog, inputlabels)
@@ -75,11 +78,68 @@ def train(catalog, conflist, workbasedir):
 	logger.info("Done, the total time for training the %i MLs was %s" % (len(conflist), str(endtime - starttime)))
 	
 
-def predict(cat, conflist, workbasedir):
+def predict(catalog, conflist, workbasedir):
 	"""
+	Top level-function to make predictions. The only "tricky" thing here is that it returns a single catalog with all the new columns.
+	This catalog is built progressively: the second machine in your configlist could potentially use predictions from the first one as inputs.
+	
+	The input catalog is not modified.
+	
+	If any feature values of your catalog are masked, the corresponding rows in the output catalog will not be predicted,
+	and the prediction columns will get masked accordingly.
+	
+	Same arguments as for train.
 	
 	"""
+	starttime = datetime.datetime.now()
+	logger.info("Starting predictions from {} MLs...".format(len(conflist)))
 	
+	outcat = astropy.table.Table(copy.deepcopy(catalog), masked=True)
+	
+	for (dataconfpath, toolconfpath) in conflist:
+		
+		# We read in the configurations, as for the training
+		dataconfig = readconfig(dataconfpath)
+		toolconfig = readconfig(toolconfpath)
+		trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name"))
+		
+		# We get the required config in form of python lists:
+		inputlabels = list(eval(dataconfig.get("data", "inputlabels")))
+		predlabels = list(eval(dataconfig.get("data", "predlabels")))
+		
+		# Check that the predictions do not yet exist
+		for predlabel in predlabels:
+			if predlabel in catalog.colnames:
+				raise RuntimeError("The predlabel '%s' already exists in the catalog!" % predlabel)
+		
+		# Preparing the inputs
+		inputsdata = get3Ddata(outcat, inputlabels)
+		
+		# And calling Tenbilac
+		tblconfiglist = [("setup", "workdir", trainworkdir)]
+		ten = tenbilac.com.Tenbilac(toolconfpath, tblconfiglist)
+		
+		preddata = ten.predict(inputsdata)
+		
+		# We add this to the outcat.
+		# An explicit loop, to highlight that we care very much about the order (to get targetlabels right)
+			
+		for (i, predlabel) in enumerate(predlabels):	
+			logger.info("Adding predictions '{}' to catalog...".format(predlabel))
+			data = preddata[:,i,:].transpose()
+ 			assert data.ndim == 2 # Indeed this is now always 2D.
+ 			if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
+ 				data = data.reshape((data.size))
+ 				assert data.ndim == 1
+						
+ 			newcol = astropy.table.MaskedColumn(data=data, name=predlabel)
+ 			outcat.add_column(newcol)
+			
+	endtime = datetime.datetime.now()
+	logger.info("Done, the total time for the predictions was {}".format(str(endtime - starttime)))
+
+	return outcat
+
 
 def readconfig(configpath):
 	"""
