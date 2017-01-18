@@ -19,13 +19,28 @@ def find_nearest(array,value):
 	idx = (np.abs(array-value)).argmin()
 	return idx
 
+#--------------------------------------------------------------------------------------------------
+# Parameters
+
+# traindir
 traindir = os.path.join(includes.workdir, "train_simple")
 
+# If interested in s1:
+#component = "1"
+#main_pred = "s{}".format(component)
+#main_feat = Feature("tru_{}".format(main_pred))
 component = "1"
 main_pred = "s{}".format(component)
 main_feat = Feature("tru_{}".format(main_pred))
 
+# Name of the simparam class
 simparamname = "Ellipticity"
+
+# Threshold for outlier biases (in per thousand)
+mld_thr = 2
+
+#--------------------------------------------------------------------------------------------------
+
 incatfilepaths = sorted(glob.glob(os.path.join(includes.simvaldir, simparamname, "*_cat.pkl")))
 
 build_dict = False
@@ -43,6 +58,7 @@ if build_dict:
 else:
 	globsimvaldir, tru_s1_list = megalut.tools.io.readpickle(os.path.join(includes.simvaldir, simparamname, "dict_s1.pkl"))
 
+#--------------------------------------------------------------------------------------------------
 
 outdirplots = os.path.join(traindir, "plots")
 if not os.path.exists(outdirplots):
@@ -73,13 +89,12 @@ mykwargs = {"histtype":"stepfilled", "bins":100, "alpha":0.5, "ec":"none", "colo
 mykwargs2 = {"histtype":"stepfilled", "bins":100, "alpha":0.5, "ec":"none", "color":"red"}
 
 count = 0
-mld_thr = 2
 errs_rad = []
 errs_flux = []
 for did in range(len(cat)):#dirtyids:
 	#print cat["pre_g{}_bias".format(component)][did], cat["tru_rad"][did], np.amin(cat["adamom_sigma"][did]), np.median(cat["adamom_sigma"][did]), np.amax(cat["adamom_sigma"][did]), cat["tru_flux"][did] , np.amin(cat["adamom_flux"][did]), np.median(cat["adamom_flux"][did]), np.amax(cat["adamom_flux"][did])
 
-	if cat["adamom_frac"][did] > 0.005 or np.mean(cat["snr"][did]) >15:# < 45: 
+	if cat["adamom_frac"][did] > 0.005 or np.mean(cat["snr"][did]) <45:#>15:# < 45: 
 		continue
 
 	if np.abs(np.round(cat["pre_g1_bias"][did]*1e3,1)) < mld_thr: 
