@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 #traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55_norm-11")
 #traindir = os.path.join(config.workdir, "train_Nico4nn_3featfou-sum55")
 
-traindir = os.path.join(config.workdir, "train_Nico4nn_3featg1g2-sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3featg1g2-sum55")
 
-#traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_mult55free")
+traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_mult55free")
 
 
 
