@@ -1,0 +1,163 @@
+"""
+This is a standalone wrapper for Tenbilac, featuring:
+
+  - a simpler configuration, making it easy to explore, run and use different trainings
+  - a no-brainer way to run several trainings one after the other (no multiprocessing, as tenbilac does this internally).
+
+
+"""
+import datetime
+import numpy as np
+
+import os
+from ConfigParser import SafeConfigParser
+from .. import tools
+
+import tenbilac
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+
+def train(catalog, conflist, workbasedir):
+	"""
+	
+	:param conflist: A list of tuples ("ada5g1.cfg", "sum55.cfg") of filepaths to the configuration files for the data selection and the machine learning.
+		Tuples in this list are processed one after the other.
+		
+	:param workbasedir: A directory in which the trainings can be organized.
+		I will create a subdirectory in there reflecting the configuration names.
+		
+	"""
+	starttime = datetime.datetime.now()
+	
+	for (dataconfpath, toolconfpath) in conflist:
+		
+		# We read in the configuration
+		dataconfig = readconfig(dataconfpath) # The data config (what to train usign which features)
+		toolconfig = readconfig(toolconfpath) # The Tenbilac config
+		trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name")) # We will pass this to Tenbilac
+
+		# We get the config in form of python lists:
+		inputlabels = list(eval(dataconfig.get("data", "inputlabels")))
+		auxinputlabels = list(eval(dataconfig.get("data", "auxinputlabels")))
+		targetlabels = list(eval(dataconfig.get("data", "targetlabels")))
+		predlabels = list(eval(dataconfig.get("data", "predlabels")))
+		
+		# Preparing the inputs
+		inputsdata = get3Ddata(catalog, inputlabels)
+		if len(auxinputlabels) != 0:
+			auxinputsdata = get3Ddata(catalog, auxinputlabels)
+		else:
+			auxinputsdata = None
+		
+		# Preparing the targets
+		for colname in targetlabels:
+			if not np.all(np.logical_not(np.ma.getmaskarray(catalog[colname]))): # No element should be masked.
+				raise RuntimeError("Targets should not be masked, but '{}' is!".format(colname))
+		targetsdata = np.column_stack([np.array(catalog[colname]) for colname in targetlabels]).transpose()
+		assert inputsdata.shape[2] == targetsdata.shape[1] # Number of cases should match
+		if auxinputsdata is not None:
+			assert auxinputsdata.shape[2] == targetsdata.shape[1] #  Number of cases must match!
+				# note that these tests are repeated withing tenbilac, of course.			
+
+		
+		# And calling Tenbilac
+		tblconfiglist = [("setup", "workdir", trainworkdir)]
+		ten = tenbilac.com.Tenbilac(toolconfpath, tblconfiglist)
+		
+		ten.train(inputsdata, targetsdata, inputlabels, targetlabels)
+		
+	
+		
+	endtime = datetime.datetime.now()
+	logger.info("Done, the total time for training the %i MLs was %s" % (len(conflist), str(endtime - starttime)))
+	
+
+def predict(cat, conflist, workbasedir):
+	"""
+	
+	"""
+	
+
+def readconfig(configpath):
+	"""
+	Reads in a config file
+	"""
+	config = SafeConfigParser(allow_no_value=True)
+	
+	if not os.path.exists(configpath):
+		raise RuntimeError("Config file '{}' does not exist!".format(self.configpath))
+	logger.debug("Reading config from '{}'...".format(configpath))
+	config.read(configpath)
+	
+	name = config.get("setup", "name") 
+	if name is None or len(name.strip()) == 0: # if the ":" is missing as well, confirparser reads None
+		# Then we use the filename
+		config.set("setup", "name", os.path.splitext(os.path.basename(configpath))[0])
+	logger.info("Read config '{}' from file '{}'.".format(config.get("setup", "name"), configpath))	
+	
+	return config
+	
+
+def get3Ddata(catalog, colnames):
+	"""
+	Function to build a 3D numpy array (typically for Tenbilac input) from some columns of an astropy catalog.
+	The point is to ensure that all columns get the same shape.
+	
+	The 3D output array has shape (realization, feature, case).
+	"""
+	
+	if len(colnames) == 0:
+		raise RuntimeError("No colnames to get data from!")
+	
+	# Check for exotic catalogs (do they even exist ?)
+	for colname in colnames:
+		if not catalog[colname].ndim in [1, 2]:
+			raise RuntimeError("Can only work with 1D or 2D columns")
+	
+	# Let's check the depths of the 2D colums to see what size we need.
+	nreas = list(set([catalog[colname].shape[1] for colname in colnames if catalog[colname].ndim == 2]))
+	#logger.info("We have the following nreas different from one in there: {}".format(nreas))
+	if len(nreas) > 1:
+		raise RuntimeError("The columns have incompatible depths!")
+
+	if len(nreas) == 0:
+		nrea = 1
+		logger.info("For each column, only one realization is available.")
+		
+	else:
+		nrea = nreas[0]
+		logger.info("Extracting data from {0} realizations...".format(nrea))
+		nrea = nreas[0]
+	
+	if "ngroup" in catalog.meta:
+		if nrea != catalog.meta["ngroup"]:
+			raise RuntimeError("Something very fishy: depth is not ngroup!")
+
+	# And now we get the data:
+	
+	readycols = []
+	for colname in colnames:
+				
+		col = np.ma.array(catalog[colname])
+				
+		if col.ndim == 2:
+			pass
+			
+		elif col.ndim == 1:
+			# This column has only one realization, and we have to "duplicate" it nrea times...
+			col = np.tile(col, (nrea, 1)).transpose()
+					
+		else:
+			raise RuntimeError("Weird column dimension")
+								
+		readycols.append(col)
+		
+	outarray = np.rollaxis(np.ma.array(readycols), 2)
+	
+	assert outarray.ndim == 3
+	assert outarray.shape[1] == len(colnames)
+
+	return outarray
