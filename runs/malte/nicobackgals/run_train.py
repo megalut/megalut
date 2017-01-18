@@ -25,11 +25,15 @@ logger = logging.getLogger(__name__)
 #traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-sum55")
 #traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55_norm-11")
 #traindir = os.path.join(config.workdir, "train_Nico4nn_3featfou-sum55")
-traindir = os.path.join(config.workdir, "train_Nico4nn_3featg1g2-sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_3featg1g2-sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_sum55")
 
-traindir = os.path.join(config.workdir, "train_Nico4nn_sum55")
 
-"""
+#traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_sum55")
+traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_mult55free")
+#traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_sum55really5")
+
+
 # Training
 catpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
 
@@ -47,7 +51,7 @@ precatpath = os.path.join(traindir, "selfprecat.pkl")
 cat = megalut.tools.io.readpickle(catpath)
 cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 megalut.tools.io.writepickle(cat, precatpath)
-"""
+
 
 
 # Predicting the validation set
