@@ -11,8 +11,8 @@ import os
 import copy
 
 #import config # No, doesn't use config!
-import measfcts
-import mlparams
+import nicoconfig.measfcts as measfcts
+import nicoconfig.mlparams as mlparams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -32,8 +32,8 @@ def define_parser():
 	parser.add_argument("-p", "--plots", help="Draw some check-plots into the workdir. Requires matplotlib.", action="store_true")
 	parser.add_argument("--skipdone", help="Skips the measurement (slow) part, IF a measurement is already available in the given workdir", action="store_true")
 	
-	parser.add_argument('--stampsize', type=float, default=64, help='Size of stamps, in pixels')
-	parser.add_argument('--nside', type=float, default=100, help='Size of stampgrid, in stamps')
+	parser.add_argument('--stampsize', type=int, default=64, help='Size of stamps, in pixels')
+	parser.add_argument('--nside', type=int, default=100, help='Size of stampgrid, in stamps')
 	
 	return parser
 	
@@ -197,10 +197,16 @@ def run(imgpath, incatpath, outcatpath, workdir, traindir, stampsize=60, nside=1
 	cat = megalut.tools.io.readpickle(meascatfilepath)
 	predcatfilepath = os.path.join(workdir, "predcat.pkl")
 	#trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c), (mlparams.s1fourier, mlparams.msb5c), (mlparams.s2fourier, mlparams.msb5c)]
-	trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c)]
+	#trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c)]
+	trainparamslist = mlparams.trainparamslist
 	
-	cat = megalut.learn.run.predict(cat, traindir, trainparamslist, outtweak=np.ma.median)
+	cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
 	megalut.tools.io.writepickle(cat, predcatfilepath)
+
+	#print megalut.tools.table.info(cat)
+	cat["pre_s1_adamom"] = cat["pre_g1_adamom"]
+	cat["pre_s2_adamom"] = cat["pre_g2_adamom"]
+	
 
 	# Write the output in plain text
 	if incatpath != None:

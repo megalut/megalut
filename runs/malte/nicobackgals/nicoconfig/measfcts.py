@@ -8,7 +8,7 @@ def default(catalog, stampsize):
 	"""	
 	
 	# Fourier
-	catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize, windowtype="Hann", prefix="fourierhann_")
+	#catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize, windowtype="Hann", prefix="fourierhann_")
 	
 	# mom
 	#catalog = megalut.meas.mom.measfct(catalog, stampsize=stampsize, centroweightsize=10, secondweightsizes=[3,5,8])
@@ -29,16 +29,6 @@ def default(catalog, stampsize):
 
 
 default_groupcols = [
-'fourierhann_x',
-'fourierhann_y',
-'fourierhann_adamom_flag',
-'fourierhann_adamom_flux',
-'fourierhann_adamom_x',
-'fourierhann_adamom_y',
-'fourierhann_adamom_g1',
-'fourierhann_adamom_g2',
-'fourierhann_adamom_sigma',
-'fourierhann_adamom_rho4',
 'adamom_flag',
 'adamom_flux',
 'adamom_x',

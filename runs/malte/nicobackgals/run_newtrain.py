@@ -18,41 +18,40 @@ logger = logging.getLogger(__name__)
 
 
 
-#traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-multreallyfix55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_Sum55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-free3m33")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_2feat-sum55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_3feat-sum55_norm-11")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_3featfou-sum55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_3featg1g2-sum55")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_sum55")
 
+traindir = os.path.join(config.workdir, "new")
 
-#traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_sum55")
-traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_mult55free")
-#traindir = os.path.join(config.workdir, "train_Nico4nn_g1ada5_sum55really5")
-
-
-# Training
 catpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
 
 
 cat = megalut.tools.io.readpickle(catpath)
-#print megalut.tools.table.info(cat)
-#exit()
-megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)
+
+
+conflist = [
+	("newconf/ada4g1.cfg", "newconf/sum55.cfg"),
+	("newconf/ada4g2.cfg", "newconf/sum55.cfg")
+]
+
+
+#megalut.learn.tenbilacrun.train(cat, conflist, traindir)
+
 
 
 # Self-predicting
 
 precatpath = os.path.join(traindir, "selfprecat.pkl")
 
-cat = megalut.tools.io.readpickle(catpath)
-cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
+#cat = megalut.tools.io.readpickle(catpath)
+cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
+
+print megalut.tools.table.info(cat)
+
 megalut.tools.io.writepickle(cat, precatpath)
 
 
+
+
+exit()
 
 # Predicting the validation set
 
