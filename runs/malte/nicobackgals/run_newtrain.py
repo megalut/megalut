@@ -6,7 +6,6 @@ import megalut
 import config
 import measfcts
 import simparams
-import mlparams
 
 import glob
 import os
@@ -19,27 +18,25 @@ logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(config.workdir, "new")
-
+traindir = os.path.join(config.workdir, "train_Nico4nn")
 catpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
-
 
 cat = megalut.tools.io.readpickle(catpath)
 
-
 conflist = [
-	("newconf/ada4g1.cfg", "newconf/sum55.cfg"),
-	("newconf/ada4g2.cfg", "newconf/sum55.cfg")
+	#("conf/ada4g1.cfg", "conf/sum55.cfg"),
+	#("conf/ada4g2.cfg", "conf/sum55.cfg")
+	#("conf/ada4g1.cfg", "conf/sum55.cfg")
+	("conf/ada4g1.cfg", "conf/mult44free.cfg")
 ]
 
 
-#megalut.learn.tenbilacrun.train(cat, conflist, traindir)
+dirnames = megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
-
+exit()
 
 # Self-predicting
-
-precatpath = os.path.join(traindir, "selfprecat.pkl")
+precatpath = os.path.join(traindir, dirnames[0], "selfprecat.pkl")
 
 #cat = megalut.tools.io.readpickle(catpath)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
