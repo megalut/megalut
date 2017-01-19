@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(includes.workdir, "train_simple_new")
 
 component = "1"
 main_pred = "g{}".format(component)

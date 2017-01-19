@@ -23,7 +23,7 @@ def find_nearest(array,value):
 # Parameters
 
 # traindir
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(includes.workdir, "train_simple_new")
 
 # If interested in s1:
 #component = "1"
