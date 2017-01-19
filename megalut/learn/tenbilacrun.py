@@ -31,18 +31,23 @@ def train(catalog, conflist, workbasedir):
 		Tuples in this list are processed one after the other.
 	:param workbasedir: A directory in which the trainings can be organized.
 		I will create a subdirectory in there reflecting the configuration names.
-			
+	
+	It returns a list of names of the Tenbilac workdirs (as long as conflist).
+	This can be useful for example if you want to save plots, catalogs or (self-)predictions in there automatically after the training.	
 	"""
 	starttime = datetime.datetime.now()
 	logger.info("Starting the training of {} MLs...".format(len(conflist)))
 	
+	trainworkdirs = []
 	for (dataconfpath, toolconfpath) in conflist:
 		
 		# We read in the configurations
 		dataconfig = readconfig(dataconfpath) # The data config (what to train usign which features)
 		toolconfig = readconfig(toolconfpath) # The Tenbilac config
-		trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name")) # We will pass this to Tenbilac
-
+		confname = dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name") # Will be passed to Tenbilac
+		trainworkdir = os.path.join(workbasedir, confname) # We will pass this to Tenbilac
+		trainworkdirs.append(confname)
+		
 		# We get the config in form of python lists:
 		inputlabels = list(eval(dataconfig.get("data", "inputlabels")))
 		auxinputlabels = list(eval(dataconfig.get("data", "auxinputlabels")))
@@ -67,7 +72,7 @@ def train(catalog, conflist, workbasedir):
 
 		
 		# And calling Tenbilac
-		tblconfiglist = [("setup", "workdir", trainworkdir)]
+		tblconfiglist = [("setup", "workdir", trainworkdir), ("setup", "name", confname)]
 		ten = tenbilac.com.Tenbilac(toolconfpath, tblconfiglist)
 		
 		ten.train(inputsdata, targetsdata, inputlabels, targetlabels)
@@ -77,6 +82,7 @@ def train(catalog, conflist, workbasedir):
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total time for training the %i MLs was %s" % (len(conflist), str(endtime - starttime)))
 	
+	return trainworkdirs
 
 def predict(catalog, conflist, workbasedir):
 	"""
