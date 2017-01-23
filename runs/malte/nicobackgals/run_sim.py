@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 psfcat = megalut.tools.io.readpickle(config.psfcatpath)
 
-"""
+
 # Nico4, to train for ellipticity
 # No snc, no shear
 sp = simparams.Nico4()
@@ -24,9 +24,9 @@ sp.sr = 0
 sp.snc_type = 1
 n = 2500
 nc = 50
-ncat = 1
-nrea = 20
-"""
+ncat = 2
+nrea = 100
+
 
 
 """
@@ -42,6 +42,7 @@ ncat = 2
 nrea = 10 # Even without noise, there is still the position jitter and pixelization
 """
 
+
 """
 # Nico4shear
 # shear, (and snc), for validation. 1000 cases with SNC 10'000
@@ -55,7 +56,7 @@ ncat = 500
 nrea = 1
 """
 
-
+"""
 sp = simparams.Nico4()
 sp.name = "Nico4shear_snc10000_lowSN"
 sp.sr = 0.1
@@ -66,7 +67,7 @@ n = 1
 nc = 1
 ncat = 1000
 nrea = 1
-
+"""
 
 """
 # Nico4v
@@ -81,7 +82,7 @@ nrea = 1
 # Make scatter plots of indiv. cases!
 """
 
-"""
+
 megalut.sim.run.multi(
 	simdir=config.simdir,
 	simparams=sp,
@@ -102,7 +103,7 @@ megalut.meas.run.onsims(
 	ncpu=config.ncpu,
 	skipdone=False
 	)
-"""
+
 
 
 cat = megalut.meas.avg.onsims(
@@ -122,13 +123,13 @@ megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmea
 
 
 # For shear sims, add this
-
+"""
 cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2", "tru_flux", "tru_rad"])
 #cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(config.simdir, sp.name, "groupmeascat_cases.pkl"))
-
+"""
 
 
 
