@@ -14,7 +14,8 @@ simdir = includes.simdir + "short"
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
-sp = simparams.Ellipticity()
+sp = simparams.EllipticityVarPSF()
+sp.load_psf_field("psf_fields_euclid", 5)
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_level = 0.
@@ -30,7 +31,7 @@ megalut.sim.run.multi(
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
-	savepsfimg=False, savetrugalimg=False
+	savepsfimg=True, savetrugalimg=False
 	)
 
 
