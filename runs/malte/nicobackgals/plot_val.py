@@ -24,10 +24,20 @@ logger = logging.getLogger(__name__)
 #traindir = os.path.join(config.workdir, "train_Nico4nn_3featg1g2-sum55")
 
 #traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_mult44free")
-traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g2_sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn", "fh4g1_sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4nn", "fh4g2_sum55")
 
-valprecatpath = os.path.join(traindir, "valprecat_lowSN.pkl")
-#valprecatpath = os.path.join(traindir, "valprecat.pkl")
+#traindir = os.path.join(config.workdir, "train_Nico4", "ada4g1_sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4", "fh4g1_sum55_pretrained")
+#traindir = os.path.join(config.workdir, "train_Nico4", "fh4g1_sum55")
+#traindir = os.path.join(config.workdir, "train_Nico4", "fh4g2_sum55")
+
+traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_mult22fmb")
+
+#valprecatpath = os.path.join(traindir, "valprecat_lowSN.pkl")
+valprecatpath = os.path.join(traindir, "valprecat_3.pkl")
 
 
 
@@ -37,11 +47,24 @@ cat = megalut.tools.io.readpickle(valprecatpath)
 print megalut.tools.table.info(cat)
 
 
-
+# g1 adamom:
 cat["pre_g1"] = cat["pre_g1_adamom"]
+
+# g2 adamom:
+#cat["tru_s1"] = cat["tru_s2"]
 #cat["pre_g2"] = cat["pre_g2_adamom"]
+#cat["pre_g1"] = cat["pre_g2"] 
+
+# g1 fourier
+#cat["pre_g1"] = cat["pre_g1_fourier"]
+
+# g2 fourier
+#cat["tru_s1"] = cat["tru_s2"]
+#cat["pre_g2"] = cat["pre_g2_fourier"]
+#cat["pre_g1"] = cat["pre_g2"] 
 
 
+#cat["pre_g2"] = cat["pre_g2_adamom"]
 #cat["tru_s1"] = cat["tru_s2"]
 #cat["pre_g1"] = cat["pre_g2"] 
 

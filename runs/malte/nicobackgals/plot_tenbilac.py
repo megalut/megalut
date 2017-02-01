@@ -7,7 +7,8 @@ import matplotlib.pyplot as plt
 #ten = tenbilac.com.Tenbilac("/users/mtewes/fohlen/backgals-megalut/train_Nico4nn/ada4g1_sum55/2017-01-20T09-11-57.cfg")
 #ten = tenbilac.com.Tenbilac("/users/mtewes/fohlen/backgals-megalut/train_Nico4nn/ada4g1_mult44free/2017-01-19T20-55-05.cfg")
 #ten = tenbilac.com.Tenbilac("/users/mtewes/fohlen/backgals-megalut/train_Nico4nn/ada4g1_mult44free/2017-01-19T20-55-05.cfg")
-ten = tenbilac.com.Tenbilac("/users/mtewes/fohlen/backgals-megalut/train_Nico4nn/ada4g1_sum55/2017-01-22T09-13-02.cfg")
+#ten = tenbilac.com.Tenbilac("/users/mtewes/fohlen/backgals-megalut/train_Nico4nn/ada4g1_sum55/2017-01-22T09-13-02.cfg")
+ten = tenbilac.com.Tenbilac("/users/mtewes/fohlen/backgals-megalut/train_Nico4/ada4g1_sum55/2017-01-22T09-13-02.cfg")
 
 ten._readmembers()
 

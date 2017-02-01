@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 psfcat = megalut.tools.io.readpickle(config.psfcatpath)
 
-
+"""
 # Nico4, to train for ellipticity
 # No snc, no shear
 sp = simparams.Nico4()
@@ -26,7 +26,7 @@ n = 2500
 nc = 50
 ncat = 2
 nrea = 100
-
+"""
 
 
 """
@@ -69,18 +69,28 @@ ncat = 1000
 nrea = 1
 """
 
+
+# Nico4plotshear
 """
-# Nico4v
-# shear, (and snc), NEVER USED
-sp = simparams.Nico4v()
-sp.sr = 0.1
-sp.snc_type = 1000
-n = 10
+sp = simparams.Nico4()
+sp.name = "Nico4plotshear"
+sp.sr = 0.0
+sp.snc_type = 6
+n = 5
 nc = 1
-ncat = 10
+ncat = 1
 nrea = 1
-# Make scatter plots of indiv. cases!
 """
+
+# Nico4plotellipticity
+sp = simparams.Nico4()
+sp.name = "Nico4plotell"
+sp.sr = 0.0
+sp.snc_type = 1000
+n = 5
+nc = 1
+ncat = 4
+nrea = 1
 
 
 megalut.sim.run.multi(

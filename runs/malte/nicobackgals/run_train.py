@@ -28,19 +28,27 @@ traincatpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
 conflist = [
 	#("conf/ada4g1.cfg", "conf/sum55.cfg"),
 	#("conf/ada4g2.cfg", "conf/sum55.cfg")
-	("conf/ada4g1.cfg", "conf/sum55.cfg")
+	#("conf/ada4g1.cfg", "conf/sum55.cfg")
 	#("conf/ada4g2.cfg", "conf/sum55.cfg")
 	#("conf/ada4g1.cfg", "conf/mult44free.cfg")
 	#("conf/fh4g1.cfg", "conf/sum55.cfg")
 	#("conf/fh4g2.cfg", "conf/sum55.cfg")
+	#("conf/fh4g1.cfg", "conf/sum55mbf1.cfg")
+	#("conf/fh4g2.cfg", "conf/sum55mbf1.cfg") # dit not run, look g1 first
+	#("conf/fh4g1.cfg", "conf/sum55_pretrained.cfg")
+	#("conf/ada4g1.cfg", "conf/mult33free.cfg")
+	("conf/ada4g1.cfg", "conf/mult22fmb.cfg")
 ]
 
 
-
+"""
 traincat = megalut.tools.io.readpickle(traincatpath)
 dirnames = megalut.learn.tenbilacrun.train(traincat, conflist, traindir)
 dirname = dirnames[0]
 #dirname = "fh4g1_sum55"
+"""
+
+dirname = "ada4g1_mult22fmb"
 
 
 # Self-predicting
