@@ -10,7 +10,7 @@ import includes
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simdir + "short"
+simdir = includes.simdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
@@ -18,7 +18,7 @@ sp = simparams.Ellipticity()
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_level = 0.
-n = 50
+n = 5
 nc = 5
 ncat = 1
 nrea = 2

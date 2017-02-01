@@ -17,11 +17,11 @@ logger = logging.getLogger(__name__)
 sp = simparams.Ellipticity()
 sp.shear = 0.1
 simdir = includes.simvaldir
-sp.snc_type = 10000
+sp.snc_type = 10#000
 sp.noise_level = 0.8
 n = 1
 nc = 1
-ncat = 500
+ncat = 5#00
 nrea = 1
 
 megalut.sim.run.multi(
