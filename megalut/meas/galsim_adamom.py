@@ -163,6 +163,10 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 		# If we made it to this point, we check that the centroid is roughly ok:
 		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:
 			gal[prefix + "flag"] = 2
+			
+		if gal[prefix+"flux"] < 0 and gal[prefix + "flag"] > 0:
+			# The centroid checking is rough
+			gal[prefix + "flag"] = 4
 		
 
 	endtime = datetime.now()	

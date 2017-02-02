@@ -38,7 +38,7 @@ def metrics(catalog, labelfeature, predlabelfeature, pre_is_res=False):
 	logger.debug("Computing metrics for label = %s and predlabel = %s" % (labelfeature.colname, predlabelfeature.colname))
 	
 	#features = [feature.Feature(colname=label, rea=None), feature.Feature(colname=predlabel, rea="full")]
-	
+
 	metcat = feature.get1Ddata(catalog, [labelfeature, predlabelfeature], keepmasked=False)
 	
 	lab = metcat[labelfeature.colname]
