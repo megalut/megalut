@@ -113,7 +113,7 @@ def predict(catalog, conflist, workbasedir=None):
 		if os.path.isfile(toolconfpath):
 			toolconfig = readconfig(toolconfpath)
 			trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name"))
-		elif os.path.isdir(toolconfpath)
+		elif os.path.isdir(toolconfpath):
 			# Then we don't have to read this now. Tenbilac will take care of it.
 			trainworkdir = toolconfpath
 		else:
