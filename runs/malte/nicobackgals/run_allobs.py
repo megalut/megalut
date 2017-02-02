@@ -5,6 +5,7 @@ Script/module to run on Nicolas' simulations
 import argparse
 import astropy
 import megalut
+import megalut.learn
 import galsim
 import numpy as np
 import os
@@ -12,7 +13,6 @@ import copy
 
 #import config # No, doesn't use config!
 import nicoconfig.measfcts as measfcts
-import nicoconfig.mlparams as mlparams
 
 import logging
 logger = logging.getLogger(__name__)
@@ -193,25 +193,33 @@ def run(imgpath, incatpath, outcatpath, workdir, traindir, stampsize=60, nside=1
 	# And we run the measurements on a SINGLE cpu
 	megalut.meas.run.general([incatfilepath], [meascatfilepath], measfcts.default, measfctkwargs={"stampsize":stampsize}, ncpu=1, skipdone=skipdone)
 
-	# Perform the preditions
+	# Perform the preditions: THIS PART IS HARD-CODED!
+	scriptdir = os.path.split(os.path.realpath(__file__))[0] # The directory containing the present script
+	confdir = os.path.join(scriptdir, "nicoconfig", "2017-01-24")
+	
+	conflist = [
+		(os.path.join(confdir, "ada4g1.cfg"), os.path.join(confdir, "sum55.cfg")),
+		(os.path.join(confdir, "ada4g2.cfg"), os.path.join(confdir, "sum55.cfg")),
+		(os.path.join(confdir, "fh4g1.cfg"), os.path.join(confdir, "sum55.cfg")),
+		(os.path.join(confdir, "fh4g2.cfg"), os.path.join(confdir, "sum55.cfg"))
+	]
+
 	cat = megalut.tools.io.readpickle(meascatfilepath)
 	predcatfilepath = os.path.join(workdir, "predcat.pkl")
-	#trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c), (mlparams.s1fourier, mlparams.msb5c), (mlparams.s2fourier, mlparams.msb5c)]
-	#trainparamslist = [(mlparams.s1adamom, mlparams.msb5c), (mlparams.s2adamom, mlparams.msb5c)]
-	trainparamslist = mlparams.trainparamslist
-	
-	cat = megalut.learn.run.predict(cat, traindir, trainparamslist)
+	cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
 	megalut.tools.io.writepickle(cat, predcatfilepath)
 
 	#print megalut.tools.table.info(cat)
 	cat["pre_s1_adamom"] = cat["pre_g1_adamom"]
 	cat["pre_s2_adamom"] = cat["pre_g2_adamom"]
+	cat["pre_s1_fourier"] = cat["pre_g1_fourier"]
+	cat["pre_s2_fourier"] = cat["pre_g2_fourier"]
 	
 
 	# Write the output in plain text
 	if incatpath != None:
-		#colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom", "pre_s1_fourier", "pre_s2_fourier"]
-		colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom"]
+		colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom", "pre_s1_fourier", "pre_s2_fourier"]
+		#colstowrite = ["Nx1", "Ny1", "Nx2", "Ny2", "pre_s1_adamom", "pre_s2_adamom"]
 		
 	else:
 		colstowrite = None

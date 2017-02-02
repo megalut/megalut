@@ -31,18 +31,23 @@ def train(catalog, conflist, workbasedir):
 		Tuples in this list are processed one after the other.
 	:param workbasedir: A directory in which the trainings can be organized.
 		I will create a subdirectory in there reflecting the configuration names.
-			
+	
+	It returns a list of names of the Tenbilac workdirs (as long as conflist).
+	This can be useful for example if you want to save plots, catalogs or (self-)predictions in there automatically after the training.	
 	"""
 	starttime = datetime.datetime.now()
 	logger.info("Starting the training of {} MLs...".format(len(conflist)))
 	
+	trainworkdirs = []
 	for (dataconfpath, toolconfpath) in conflist:
 		
 		# We read in the configurations
 		dataconfig = readconfig(dataconfpath) # The data config (what to train usign which features)
 		toolconfig = readconfig(toolconfpath) # The Tenbilac config
-		trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name")) # We will pass this to Tenbilac
-
+		confname = dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name") # Will be passed to Tenbilac
+		trainworkdir = os.path.join(workbasedir, confname) # We will pass this to Tenbilac
+		trainworkdirs.append(confname)
+		
 		# We get the config in form of python lists:
 		inputlabels = list(eval(dataconfig.get("data", "inputlabels")))
 		auxinputlabels = list(eval(dataconfig.get("data", "auxinputlabels")))
@@ -67,7 +72,7 @@ def train(catalog, conflist, workbasedir):
 
 		
 		# And calling Tenbilac
-		tblconfiglist = [("setup", "workdir", trainworkdir)]
+		tblconfiglist = [("setup", "workdir", trainworkdir), ("setup", "name", confname)]
 		ten = tenbilac.com.Tenbilac(toolconfpath, tblconfiglist)
 		
 		ten.train(inputsdata, targetsdata, inputlabels, targetlabels)
@@ -77,8 +82,9 @@ def train(catalog, conflist, workbasedir):
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total time for training the %i MLs was %s" % (len(conflist), str(endtime - starttime)))
 	
+	return trainworkdirs
 
-def predict(catalog, conflist, workbasedir):
+def predict(catalog, conflist, workbasedir=None):
 	"""
 	Top level-function to make predictions. The only "tricky" thing here is that it returns a single catalog with all the new columns.
 	This catalog is built progressively: the second machine in your configlist could potentially use predictions from the first one as inputs.
@@ -88,7 +94,11 @@ def predict(catalog, conflist, workbasedir):
 	If any feature values of your catalog are masked, the corresponding rows in the output catalog will not be predicted,
 	and the prediction columns will get masked accordingly.
 	
-	Same arguments as for train.
+	Same arguments as for train, but conflist can *alternatively* consist of tuples ("ada5g1.cfg", "/path/to/tenbilac-workdir/to/use").
+		If the tenbilac configuration is given as a directory, then this directory is used to make predictions, intead of the
+		combination of workbasedir and the configuration names as done during the training.
+		The argument workbasedir is ignored, in this case. This feature makes it much simpler and safer to write standalone scripts 
+		that apply a bunch of trained Tenbilacs to data.
 	
 	"""
 	starttime = datetime.datetime.now()
@@ -98,12 +108,19 @@ def predict(catalog, conflist, workbasedir):
 	
 	for (dataconfpath, toolconfpath) in conflist:
 		
-		# We read in the configurations, as for the training
+		# We read in the configurations, as for the training, to get the Tenbilac workdir to use.
 		dataconfig = readconfig(dataconfpath)
-		toolconfig = readconfig(toolconfpath)
-		trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name"))
+		if os.path.isfile(toolconfpath):
+			toolconfig = readconfig(toolconfpath)
+			trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name"))
+		elif os.path.isdir(toolconfpath)
+			# Then we don't have to read this now. Tenbilac will take care of it.
+			trainworkdir = toolconfpath
+		else:
+			raise RuntimeError("Tenbilac config '{}' does not exist.".format(toolconfpath))
+		logger.info("Preparing for predictions usign the Tenbilac workdir '{}'...".format(trainworkdir))
 		
-		# We get the required config in form of python lists:
+		# We get the required data config in form of python lists:
 		inputlabels = list(eval(dataconfig.get("data", "inputlabels")))
 		predlabels = list(eval(dataconfig.get("data", "predlabels")))
 		
@@ -148,7 +165,7 @@ def readconfig(configpath):
 	config = SafeConfigParser(allow_no_value=True)
 	
 	if not os.path.exists(configpath):
-		raise RuntimeError("Config file '{}' does not exist!".format(self.configpath))
+		raise RuntimeError("Config file '{}' does not exist!".format(configpath))
 	logger.debug("Reading config from '{}'...".format(configpath))
 	config.read(configpath)
 	

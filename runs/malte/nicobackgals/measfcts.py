@@ -9,6 +9,7 @@ def default(catalog, stampsize):
 	
 	# Fourier
 	catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize, windowtype="Hann", prefix="fourierhann_")
+	catalog = megalut.meas.fourier.measfct(catalog, stampsize=stampsize, windowtype=None, prefix="fourier_")
 	
 	# mom
 	#catalog = megalut.meas.mom.measfct(catalog, stampsize=stampsize, centroweightsize=10, secondweightsizes=[3,5,8])
@@ -25,10 +26,8 @@ def default(catalog, stampsize):
 	
 	return catalog
 	
-	
 
-
-default_groupcols = [
+fourierhanncols = [
 'fourierhann_x',
 'fourierhann_y',
 'fourierhann_adamom_flag',
@@ -38,7 +37,23 @@ default_groupcols = [
 'fourierhann_adamom_g1',
 'fourierhann_adamom_g2',
 'fourierhann_adamom_sigma',
-'fourierhann_adamom_rho4',
+'fourierhann_adamom_rho4'
+]
+
+fouriercols = [
+'fourier_x',
+'fourier_y',
+'fourier_adamom_flag',
+'fourier_adamom_flux',
+'fourier_adamom_x',
+'fourier_adamom_y',
+'fourier_adamom_g1',
+'fourier_adamom_g2',
+'fourier_adamom_sigma',
+'fourier_adamom_rho4'
+]
+
+adamomcols = [
 'adamom_flag',
 'adamom_flux',
 'adamom_x',
@@ -46,28 +61,23 @@ default_groupcols = [
 'adamom_g1',
 'adamom_g2',
 'adamom_sigma',
-'adamom_rho4',
+'adamom_rho4'
+]
+
+skystatcols = [
 'skystd',
 'skymad',
 'skymean',
 'skymed',
 'skystampsum',
-'skyflag',
+'skyflag'
+]
+
+snrcols = [
 'snr'
 ]
 
-
-#'fourierhann_x',
-#'fourierhann_y',
-#'fourierhann_adamom_flag',
-#'fourierhann_adamom_flux',
-#'fourierhann_adamom_x',
-#'fourierhann_adamom_y',
-#'fourierhann_adamom_g1',
-#'fourierhann_adamom_g2',
-#'fourierhann_adamom_sigma',
-#'fourierhann_adamom_rho4'
-
+default_groupcols = fourierhanncols + fouriercols + adamomcols + skystatcols + snrcols
 
 
 
@@ -94,17 +104,6 @@ default_groupcols = [
 #'mom_qxy8'
 
 
-
-#'fourier_x',
-#'fourier_y',
-#'fourier_adamom_flag',
-#'fourier_adamom_flux',
-#'fourier_adamom_x',
-#'fourier_adamom_y',
-#'fourier_adamom_g1',
-#'fourier_adamom_g2',
-#'fourier_adamom_sigma',
-#'fourier_adamom_rho4',
 
 
 #'sewpy_XWIN_IMAGE',
