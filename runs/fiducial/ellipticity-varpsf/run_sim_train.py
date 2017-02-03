@@ -2,24 +2,30 @@ import os
 
 import megalut.sim
 import megalut.meas
+import megalut.tools as tls
 import measfcts
 import simparams
+import psf
 
 import includes
 
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simdir + "short"
+simdir = includes.simdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 sp = simparams.EllipticityVarPSF()
-sp.load_psf_field("psf_fields_euclid", 5)
+psf_field = psf.PSF_Field(kind="radial")
+psfdir = os.path.join(simdir, sp.name, "psf")
+psf_field.save(psfdir)
+psf_field.plot(psfdir)
+sp.set_psf_field(psf_field)
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_level = 0.
-n = 50
+n = 15
 nc = 5
 ncat = 1
 nrea = 2
