@@ -34,10 +34,10 @@ class EllipticityVarPSF(megalut.sim.params.Params):
 		"""
 	
 		########## PSF ##########
-		pos_psf_x, pos_psf_y = np.random.uniform(low=0., high=1., size=2)
+		pos_gal_x, pos_gal_y = np.random.uniform(low=0., high=1., size=2)
 		#tru_psf_sigma = 0.58174 #0.58174 # = 0.137(FWHM) / 2.355 * 10. (px scale is 1" in megalut, Euclid is 0.1")
 		
-		tru_psf_g1, tru_psf_g2, tru_psf_sigma = self.psf_field.eval(pos_psf_x, pos_psf_y)
+		tru_psf_g1, tru_psf_g2, tru_psf_sigma = self.psf_field.eval(pos_gal_x, pos_gal_y)
 		tru_psf_sigma = tru_psf_sigma * self.fwhm2sig
 
 		########## Shear #########	
@@ -96,6 +96,9 @@ class EllipticityVarPSF(megalut.sim.params.Params):
 			"tru_psf_sigma":tru_psf_sigma,
 			"tru_psf_g1":tru_psf_g1,
 			"tru_psf_g2":tru_psf_g2,
+			
+			"tru_gal_x_chip":pos_gal_x,
+			"tru_gal_y_chip":pos_gal_y,
 		}
 
 

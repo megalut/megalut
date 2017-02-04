@@ -2,6 +2,9 @@ import numpy as np
 import os
 import megalut.tools as tl
 
+import logging
+logger = logging.getLogger(__name__)
+
 def complex2geometrical(e1, e2, size=1., fact=1.):
 	"""
 	Convert e1, e2 to a, b, theta
@@ -49,12 +52,15 @@ class PSF_Field():
 			self.position_angle = np.random.uniform(0, np.pi)
 		elif self.kind == "euclid-like":
 			self._load_psf_field()
+			
+		logger.info('Created PSF field class, kind is {:s}, ellipt. is {:0.3f} and fwhm is {:0.3f}"'.format(kind, self.e, self.fwhm))
 
 	def _load_psf_field(self):
 		"""
 		Happy helper to load the Euclid-like files
 		"""
 		self.psf_g1_interp, self.psf_g2_interp, self.psf_fwhm_interp = tl.io.readpickle(self.fieldfname)
+		logger.info("Loaded Euclid-like psf field {}".format(self.fieldfname))
 
 	def eval(self, x, y):
 		"""
@@ -187,10 +193,11 @@ class PSF_Field():
 		if outdir is None:
 			plt.show()
 		else:
+			pltfn = os.path.join(outdir, "psf_field.png")
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
-			fig.savefig(os.path.join(outdir, "psf_field.png"))
-			
+			fig.savefig(pltfn)
+			logger.info("Saved PSF plots to {}".format(pltfn))
 if __name__ == "__main__":
 	# This is a demo of how the class PSF field works
 	

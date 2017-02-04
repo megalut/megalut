@@ -7,7 +7,7 @@ workdir = "./ellpt"
 
 stampsize = 48
 
-ncpu = 6
+ncpu = 8
 
 simdir = os.path.join(workdir, "sim")
 simvaldir = os.path.join(workdir, "simval")

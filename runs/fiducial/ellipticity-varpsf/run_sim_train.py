@@ -25,10 +25,10 @@ sp.set_psf_field(psf_field)
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_level = 0.
-n = 15
-nc = 5
+n = 10000
+nc = 2500
 ncat = 1
-nrea = 2
+nrea = 20
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -70,4 +70,3 @@ cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))
-
