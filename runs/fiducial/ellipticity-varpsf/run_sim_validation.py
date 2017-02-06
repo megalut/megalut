@@ -35,7 +35,7 @@ megalut.sim.run.multi(
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
-	savepsfimg=True, savetrugalimg=False
+	savepsfimg=False, savetrugalimg=False
 	)
 
 
