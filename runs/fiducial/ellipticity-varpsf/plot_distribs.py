@@ -5,7 +5,10 @@ import glob
 import os
 import numpy as np
 import astropy
-
+	
+from matplotlib.patches import Ellipse
+import psf 
+	
 import megalut.plot
 from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
@@ -14,15 +17,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-simdir = os.path.join(includes.simdir, "Ellipticity")
-simvaldir = os.path.join(includes.simvaldir, "Ellipticity")
+simdir = os.path.join(includes.simdir, "EllipticityVarPSF")
+simvaldir = os.path.join(includes.simvaldir, "EllipticityVarPSF")
 
 component = "1"
 main_pred = "s{}".format(component)
 main_feat = Feature("tru_{}".format(main_pred))
 
 	
-for idir in [simdir, simvaldir]:
+for idir in [simdir]:#, simvaldir]:
 	outdirplots = os.path.join(idir, "plots")
 	
 	if not os.path.exists(outdirplots):
@@ -58,7 +61,52 @@ for idir in [simdir, simvaldir]:
 	trradius = Feature("tru_rad", rea=reat)
 	trsb = Feature("tru_sb", rea=reat)
 	snr = Feature("snr", rea=reat)
+
+	# Now changing to the geometrical description of the PSF (and doing some rescaling)
+	e1 = cat["tru_psf_g1"][::10]
+	e2 = cat["tru_psf_g2"][::10]
+	r = cat["tru_psf_sigma"][::10]/2.35
+	x = cat["tru_gal_x_chip"][::10]
+	y = cat["tru_gal_y_chip"][::10]
 	
+	# Plotting the e1, e2 space as a quiver plot
+	fig = plt.figure(figsize=(22,6))
+	ax = plt.subplot(131)
+	plt.quiver(x, y, e1, e2)
+	plt.xlabel("X image")
+	plt.ylabel("Y image")
+	plt.title("e1 - e2 space")
+	plt.xlim(-0.05,1.05)
+	plt.ylim(-0.05,1.05)
+	
+	a, b, theta = psf.complex2geometrical(e1, e2, r * 0.5, fact=20)
+
+	# We can plot what the PSF will look like in the pixel space
+	ax = plt.subplot(132, aspect='equal')
+	
+	for x_, y_, a_, b_, t_ in zip(x, y, a * 0.1, b * 0.1, theta):
+		e = Ellipse((x_, y_), a_ , b_ , np.rad2deg(t_))
+		e.set_clip_box(ax.bbox)
+		e.set_alpha(0.4)
+		ax.add_artist(e)
+	plt.xlim(-0.05,1.05)
+	plt.ylim(-0.05,1.05)
+	plt.xlabel("X image")
+	plt.ylabel("Y image")
+	plt.title("image space (exaggerated)")
+	
+	# Plotting the FWHM
+	ax = plt.subplot(133, aspect='equal')
+	plt.scatter(x, y, s=r*200., c=r, edgecolors="None")
+	cb = plt.colorbar()
+	plt.xlabel("X image")
+	plt.ylabel("Y image")
+	cb.set_label('FWHM ["]')
+	ax.set_xlim([-0.05, 1.05])
+	ax.set_ylim([-0.05, 1.05])
+	megalut.plot.hist.hist(ax, cat, snr)
+	fig.savefig(os.path.join(outdirplots, "psf_field"))
+
 	fig = plt.figure()
 	ax = fig.add_subplot(1,1,1)
 	megalut.plot.hist.hist(ax, cat, snr)
