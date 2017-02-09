@@ -1,5 +1,5 @@
 """
-Quick and dirty GREAT3 class
+Top-level classes and functions to help running MegaLUT on GREAT3.
 """
 
 import logging
@@ -15,7 +15,7 @@ from megalut import tools
 
 class GREAT3Run(utils.Branch):
 	"""
-	This is a simple class to group frequently used variables.
+	This is a simple class to group frequently used variables, on top of the Branch class.
 	Unlike Branch, it does specify paths to MegaLUT-internal temporary files and directories, and handles a workdir.
 	"""
 	
