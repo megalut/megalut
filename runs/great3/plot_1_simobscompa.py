@@ -21,23 +21,26 @@ def main():
 
 	great3 = config.load_run()
 
-	spname = "G3Sersics_simobscompa"
-	#spname = run.simparams.name
-	subfield = 99
-	measdir = great3.path("simmeas","%03i" % subfield)
+	spname = "G3CGCSersics_simobscompa"
+	
+	for subfield in config.subfields:
+		
+		measdir = great3.path("simmeas","%03i" % subfield)
 
-	simcat = megalut.tools.io.readpickle(os.path.join(measdir, spname, "groupmeascat.pkl"))
-	print megalut.tools.table.info(simcat)
+		simcat = megalut.tools.io.readpickle(os.path.join(measdir, spname, "groupmeascat.pkl"))
+		#print megalut.tools.table.info(simcat)
 
-	#bestsub = megalut.tools.table.Selector("bestsub", [("is", "subfield", subfield)])
-	#simcat = bestsub.select(simcat)
-	#print megalut.tools.table.info(simcat)
+		#bestsub = megalut.tools.table.Selector("bestsub", [("is", "subfield", subfield)])
+		#simcat = bestsub.select(simcat)
+		#print megalut.tools.table.info(simcat)
 
 
-	obscat = megalut.tools.io.readpickle(great3.path("obs", "img_%i_meascat.pkl"%(subfield)))
-	print megalut.tools.table.info(obscat)
+		obscat = megalut.tools.io.readpickle(great3.path("obs", "img_%i_meascat.pkl"%(subfield)))
+		#print megalut.tools.table.info(obscat)
+	
+		plotpath = great3.path("simmeas","%03i" % subfield, spname, "simobscompa.png")
 
-	plot(simcat, obscat)
+		plot(simcat, obscat, filepath=plotpath)
 
 
 
@@ -83,7 +86,7 @@ def plot(simcat, obscat, filepath=None):
 
 
 
-	fig = plt.figure(figsize=(15, 10))
+	fig = plt.figure(figsize=(18, 12))
 	#fig = plt.figure(figsize=(8, 8))
 
 	ax = fig.add_subplot(3, 4, 1)
