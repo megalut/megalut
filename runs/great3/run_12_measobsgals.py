@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 great3 = config.load_run()
 
 
+
 incatfilepaths = []
 outcatfilepaths = []
 

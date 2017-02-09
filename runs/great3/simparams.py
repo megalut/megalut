@@ -6,7 +6,7 @@ import numpy as np
 
 
 
-class G3Sersics(megalut.sim.params.Params):
+class G3CGCSersics(megalut.sim.params.Params):
 
 
 	def __init__(self):
@@ -14,6 +14,7 @@ class G3Sersics(megalut.sim.params.Params):
 		self.snc_type = 1
 		self.shear = 0
 		self.noise_level = 1.0 # 0.92 is for subfield 99
+		self.disttmode = "G3"
 		
 
 	def stat(self):
@@ -42,17 +43,34 @@ class G3Sersics(megalut.sim.params.Params):
 		
 		########## Galaxy ##########
 		
-		tru_type = 1 # Seric
+
+		if self.distmode == "G3":
 		
-		tru_g = contracted_rayleigh(0.25, 0.7, 4)
-		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
-		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
-		
-		tru_sersicn =  0.5 + (float(iy)/float(ny)) * 4.0
-		
-		tru_sb = np.random.uniform(1.0, 5.0)
-		tru_rad = np.random.uniform(0.5, 3.0)
-		tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb
+			# Simple distributions roughly tuned to ressemble GREAT3
+			tru_type = 1 # Seric
+			tru_g = contracted_rayleigh(0.25, 0.7, 4)
+			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+			tru_sersicn =  0.5 + (float(iy)/float(ny))**2 * 3.5
+			tru_sb = np.random.uniform(2.0, 5.0)
+			tru_rad = np.random.uniform(0.5, 3.0)
+			tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+	
+		elif self.distmode == "uni":
+
+			# More "uniform" distribs for nicer filling in plots
+			tru_type = 1 # Seric
+			tru_g1 = np.random.uniform(-0.7, 0.7)
+			tru_g2 = np.random.uniform(-0.7, 0.7)
+			tru_g = np.hypot(tru_g1, tru_g2)
+			tru_theta = 0.0	
+			tru_sersicn =  0.5 + (float(iy)/float(ny)) * 3.5
+			tru_sb = np.random.uniform(2.0, 5.0)
+			tru_rad = np.random.uniform(0.5, 3.0)
+			tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+
+		else:
+			raise RuntimeError("Unknown distmode.")
 		
 
 		########## Noise ##########
