@@ -81,9 +81,9 @@ def _contour(ax, x, y, color="black", bins=10, minline=0.5, maxline=4.0, nlines=
 	])
 
 	# Plot the contours
-	#ax.contour(X2, Y2, H2.T, V, colors=color, **kwargs)
-	print V
-	ax.contour(X2, Y2, H2.T)
+	#ax.contour(X2, Y2, H2.T, V, colors=color, **kwargs) # Complains about repeated and non-sorted V values, so here is a quick fix, putting them in the right order:
+	V = sorted(list(set(V)))
+	ax.contour(X2, Y2, H2.T, V, colors=color, **kwargs)
 
 
 def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, plotpoints=True, **kwargs):
