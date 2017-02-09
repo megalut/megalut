@@ -81,7 +81,9 @@ def _contour(ax, x, y, color="black", bins=10, minline=0.5, maxline=4.0, nlines=
     ])
 
     # Plot the contours
-    ax.contour(X2, Y2, H2.T, V, colors=color, **kwargs)
+    #ax.contour(X2, Y2, H2.T, V, colors=color, **kwargs)
+	print V
+    ax.contour(X2, Y2, H2.T)
 
 
 def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, plotpoints=True, **kwargs):
