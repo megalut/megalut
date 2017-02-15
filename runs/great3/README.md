@@ -11,9 +11,6 @@ Contents
 --------
 
 
-- ``config_example.py``: Copy this into ``config.py`` and customize it with your settings.
-
-
 - ``run_*_.py``: Main demonstration pipeline, reproducing the paper figures.
 
 
@@ -34,7 +31,6 @@ Individual training
 
 One training per subfield, as the PSFs of different subfields are too different to mix them.
 
-- run_0
 - run_11
 - run_12
 
@@ -44,6 +40,8 @@ One training per subfield, as the PSFs of different subfields are too different 
 - run_3
 
 - run_5
+- run_51
+- run_52
 
 
 

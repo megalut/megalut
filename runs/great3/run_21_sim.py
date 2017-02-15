@@ -17,9 +17,6 @@ logger = logging.getLogger(__name__)
 import simparams
 import measfcts
 
-# Loading the run
-great3 = config.load_run()
-
 
 # Choose a model for the simulations
 
@@ -33,7 +30,7 @@ n = 400
 nc = 20
 nrea = 10 # Even without noise, there is still the position jitter and pixelization
 ncat = 5
-ncpu = config.ncpu
+ncpu = config.great3.ncpu
 
 """
 
@@ -66,27 +63,27 @@ ncpu = 25
 """
 
 
-for subfield in config.subfields:
+for subfield in config.great3.subfields:
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
 	if sp.noise_level != 0:
-		obscat = megalut.tools.io.readpickle(great3.path("obs", "img_%i_meascat.pkl" % subfield))
+		obscat = megalut.tools.io.readpickle(config.great3.path("obs", "img_%i_meascat.pkl" % subfield))
 		sp.noise_level = np.ma.mean(obscat["skymad"])
 		logger.info("Noise level set to {}".format(sp.noise_level))
 	
 	# Getting the path to the correct directories
-	simdir = great3.path("sim","%03i" % subfield)
-	measdir = great3.path("simmeas","%03i" % subfield)
+	simdir = config.great3.path("sim","%03i" % subfield)
+	measdir = config.great3.path("simmeas","%03i" % subfield)
 	
 	# Loading the PSF for the subfield
-	psfcat = megalut.tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	psfcat = megalut.tools.io.readpickle(config.great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	
 
 	# Simulating images
 	megalut.sim.run.multi(
 		simdir=simdir,
 		simparams=sp,
-		drawcatkwargs={"n":n, "nc":nc, "stampsize":great3.stampsize()},
+		drawcatkwargs={"n":n, "nc":nc, "stampsize":config.great3.stampsize()},
 		drawimgkwargs={}, 
 		psfcat=psfcat, psfselect="random",
 		ncat=ncat, nrea=nrea, ncpu=ncpu,
@@ -100,9 +97,9 @@ for subfield in config.subfields:
 		simparams=sp,
 		measdir=measdir,
 		measfct=measfcts.gal,
-		measfctkwargs={"branch":great3},
+		measfctkwargs={"branch":config.great3},
 		ncpu=ncpu,
-		skipdone=config.skipdone
+		skipdone=config.great3.skipdone
 	)
 
 
@@ -119,6 +116,3 @@ for subfield in config.subfields:
 
 
 
-## Remembering the name of the simparams:
-#great3.simparams_name = sp.name
-#great3.save_config()
