@@ -41,7 +41,9 @@ One training per subfield, as the PSFs of different subfields are too different 
 - run_21
 
 
+- run_3
 
+- run_5
 
 
 

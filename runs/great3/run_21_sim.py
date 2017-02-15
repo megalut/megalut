@@ -22,7 +22,7 @@ great3 = config.load_run()
 
 
 # Choose a model for the simulations
-"""
+
 sp = simparams.G3CGCSersics()
 sp.name = "G3CGCSersics_train_nn"
 sp.snc_type = 1
@@ -50,6 +50,7 @@ ncat = 1
 ncpu = 1
 
 
+"""
 """
 sp = simparams.G3CGCSersics()
 sp.name = "G3CGCSersics_valid" # To check the training, with shear and SNC, 500 cases
