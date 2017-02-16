@@ -16,9 +16,10 @@ great3 = mg3.great3.GREAT3Run(
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/2017_MegaLUT_GREAT3/csc_v1",
 	
 	#subfields = [0,1,2],
-	#subfields = [99],	# CGC best PSF subfields: [99, 156, 42],  worst : [2, 191, 166]
+	subfields = [94],
+	#subfields = [45],	# CSC best PSF subfields: [45, 75, 136],  worst : [143, 49, 150], 94 could not be measured!
 
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
