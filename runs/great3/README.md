@@ -4,7 +4,8 @@ About
 The current (Spring 2017) approach to GREAT3.
 We focus on the single-epoch known-PSF branches.
 
-There is no sophisticated "configuration" scheme here. Many settings are directly hard-coded in the scripts, as this seems to  make development easier.
+There is no sophisticated "configuration" scheme here. Many settings are directly hard-coded in the scripts.
+This make development easier, plus you learn more about the code.
 
 
 Contents
@@ -33,6 +34,7 @@ One training per subfield, as the PSFs of different subfields are too different 
 
 - run_11
 - run_12
+- run_13
 
 - run_21
 

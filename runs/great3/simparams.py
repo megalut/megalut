@@ -7,14 +7,23 @@ import numpy as np
 
 
 class G3CGCSersics(megalut.sim.params.Params):
+	"""
+	Sersic profiles for GREAT3 training, validation, and tests.
+	"""
 
-
-	def __init__(self):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, distmode="G3", obstype="ground"):
+		"""
+		- distmode switches between different parameter distributions
+		- obstype also affects parameter distributiosn
+		"""
 		megalut.sim.params.Params.__init__(self)
-		self.snc_type = 1
-		self.shear = 0
-		self.noise_level = 1.0 # 0.92 is for subfield 99
-		self.disttmode = "G3"
+		if name is not None:
+			self.name = name
+		self.snc_type = snc_type
+		self.shear = shear
+		self.noise_level = noise_level # 0.92 is for subfield 99 CGC
+		self.distmode = distmode
+		self.obstype = obstype
 		
 
 	def stat(self):
@@ -42,33 +51,56 @@ class G3CGCSersics(megalut.sim.params.Params):
 		
 		
 		########## Galaxy ##########
-		
+		tru_type = 1 # Seric
 
 		if self.distmode == "G3":
 		
 			# Simple distributions roughly tuned to ressemble GREAT3
-			tru_type = 1 # Seric
-			tru_g = contracted_rayleigh(0.25, 0.7, 4)
+			tru_g = contracted_rayleigh(0.2, 0.7, 4)
 			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
-			tru_sersicn =  0.5 + (float(iy)/float(ny))**2 * 3.5
-			tru_sb = np.random.uniform(2.0, 5.0)
-			tru_rad = np.random.uniform(0.5, 3.0)
-			tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+			
+			if self.obstype == "ground":
+				tru_rad = np.random.uniform(0.1, 3.0)
+				tru_sb = np.random.normal(1.5, 0.3)
+				tru_sersicn =  0.5 + (float(iy)/float(ny))**2 * 2.0
+				tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+				if tru_flux < 5: # Just a trick, as those don't exist in GREAT3 and are barely detected
+					tru_flux *= 10.0
+	
+			elif self.obstype == "space":
+				tru_rad = np.random.uniform(0.1, 10.0)
+				tru_sb = np.random.normal(0.2, 0.05)
+				tru_sersicn =  0.5 + (float(iy)/float(ny))**2 * 3.5
+				tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
 	
 		elif self.distmode == "uni":
 
 			# More "uniform" distribs for nicer filling in plots
-			tru_type = 1 # Seric
 			tru_g1 = np.random.uniform(-0.7, 0.7)
 			tru_g2 = np.random.uniform(-0.7, 0.7)
 			tru_g = np.hypot(tru_g1, tru_g2)
 			tru_theta = 0.0	
 			tru_sersicn =  0.5 + (float(iy)/float(ny)) * 3.5
-			tru_sb = np.random.uniform(2.0, 5.0)
-			tru_rad = np.random.uniform(0.5, 3.0)
-			tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+			
+			if self.obstype == "ground":
+				# Used for first training:
+				#tru_rad = np.random.uniform(0.5, 3.0)
+				#tru_sb = np.random.uniform(2.0, 5.0)
+				#tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+				tru_rad = np.random.uniform(0.1, 3.0)
+				tru_sb = np.random.uniform(0.8, 2.3)
+				tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
+				if tru_flux < 5: # Just a trick, as those don't exist in GREAT3 and are barely detected
+					tru_flux *= 10.0
+	
+			
+			elif self.obstype == "space":
+				tru_rad = np.random.uniform(0.1, 10.0)
+				tru_sb = np.random.uniform(0.15, 0.3)
+				tru_flux = 2.0 * np.pi * tru_rad * tru_rad * tru_sb # The 2 is from *half*-light-radius
 
+		
 		else:
 			raise RuntimeError("Unknown distmode.")
 		
