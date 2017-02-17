@@ -34,7 +34,7 @@ n = 400
 nc = 20
 nrea = 10 # Even without noise, there is still the position jitter and pixelization
 ncat = 5
-ncpu = config.great3.ncpu
+ncpu = 5 # config.great3.ncpu
 """
 
 """
@@ -72,6 +72,7 @@ ncpu = 25
 
 
 for subfield in config.great3.subfields:
+	
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
 	if sp.noise_level != 0:
@@ -122,11 +123,13 @@ for subfield in config.great3.subfields:
 	megalut.tools.table.keepunique(cat)
 	megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 
-
+	
 	# For shear sims, we group the results in cases of same true shears
 	if sp.shear > 0:
+		
+		#measdir = config.great3.path("simmeas","%03i" % subfield)
 		#cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-
+		
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 		megalut.tools.table.keepunique(cat)
 		#print megalut.tools.table.info(cat)
