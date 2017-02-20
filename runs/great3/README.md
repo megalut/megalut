@@ -1,7 +1,7 @@
 About
 =====
 
-The current (Fall 2016) approach to GREAT3.
+The current (Spring 2017) approach to GREAT3.
 We focus on the single-epoch known-PSF branches.
 
 There is no sophisticated "configuration" scheme here. Many settings are directly hard-coded in the scripts, as this seems to  make development easier.
@@ -9,9 +9,6 @@ There is no sophisticated "configuration" scheme here. Many settings are directl
 
 Contents
 --------
-
-
-- ``config_example.py``: Copy this into ``config.py`` and customize it with your settings.
 
 
 - ``run_*_.py``: Main demonstration pipeline, reproducing the paper figures.
@@ -27,6 +24,25 @@ Contents
 Different paths can be followed to "run". Here we describe those we care about. 
 
 We will at least try not to break these pipelines too badly when editing scripts.
+
+
+Individual training
+-------------------
+
+One training per subfield, as the PSFs of different subfields are too different to mix them.
+
+- run_11
+- run_12
+
+- run_21
+
+
+- run_3
+
+- run_5
+- run_51
+- run_52
+
 
 
 Common training

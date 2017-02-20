@@ -1,40 +1,73 @@
-import megalut.tools as tools
-import megalut.learn as learn
+import matplotlib
+matplotlib.use("AGG")
+
+
+import megalut.tools
+import megalut.learn
+import megalut
+import tenbilac
 
 import config
-import mymlparams
+import numpy as np
+import os
 
-import megalutgreat3 as mg3
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+#tbllogger = logging.getLogger("tenbilac")
 
-#TODO: What about the validation set?
 
-# Loading the correct configuration!
-great3 = mg3.great3.load_config(outdir='cgc')
+spname = "G3CGCSersics_train_nn"
 
-# Choose a training configuration
-trainparamslist = mymlparams.trainparams['list'] 
-trainname = mymlparams.trainparams['name'] 
+conflist = [
+	("mlconfig/ada4g1.cfg", "mlconfig/sum55.cfg"),
+	("mlconfig/ada4g2.cfg", "mlconfig/sum55.cfg"),
+]
 
-# The simulation used by default in training is the one defined in:
-# great3.simparams_name
-simparams_name = great3.simparams_name
 
-for subfield in config.subfields:
+for subfield in config.great3.subfields:
+	
+	
+	logger.info("Working on subfield {}".format(subfield))
 	
 	# Getting the path to the correct directories
-	simdir = great3.get_path("sim", "%03i" % subfield)
-	traindir = great3.get_path("ml", "%03i" % subfield, trainname, simparams_name)
+	measdir = config.great3.path("simmeas","%03i" % subfield)
+	traindir = config.great3.path("ml", "%03i" % subfield)
 	
-	# We load the right catalog (location depends on simname):
-	cat = tools.io.readpickle(great3.get_path("simmeas", "%03i" % subfield, simparams_name, "groupmeascat.pkl"))
+	# And to the catalogue
+	traincatpath = os.path.join(measdir, spname, "groupmeascat.pkl")
+	traincat = megalut.tools.io.readpickle(traincatpath)
+
+	# Preparing tenbilac logging:
+	#if not os.path.isdir(traindir):
+	#	os.makedirs(traindir)
+	#fh = logging.FileHandler(os.path.join(traindir, "log.txt"))
+	#fh.setLevel(logging.DEBUG)
 	
-	# Let's go for training
-	learn.run.train(cat, traindir, trainparamslist, ncpu=config.ncpu)
+	
+	# Running the training
+	#tbllogger.addHandler(fh)
+	#tbllogger.propagate = False
+	
+	dirnames = megalut.learn.tenbilacrun.train(traincat, conflist, traindir)
+	
+	#tbllogger.removeHandler(fh)
+	#tbllogger.propagate = True
+	
+	
+	# And saving a summary plot next to the tenbilac working directories
+	for dirname in dirnames:
+		tenbilacdirpath = os.path.join(traindir, dirname)
+		ten = tenbilac.com.Tenbilac(tenbilacdirpath)
+		ten._readmembers()
+		tenbilac.plot.summaryerrevo(ten.committee, filepath=os.path.join(traindir, "{}_summary.png".format(dirname)))
+
+
+
+
 
 # Remembering the name of the trainparams:
-great3.trainparams_name = trainname
-great3.trainparamslist = mymlparams.trainparams['list'] 
-great3.save_config()
+#great3.trainparams_name = trainname
+#great3.trainparamslist = mymlparams.trainparams['list'] 
+#great3.save_config()

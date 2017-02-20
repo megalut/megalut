@@ -31,7 +31,7 @@ def psf(catalog, branch=None):
 #		prefix="psf_sewpy_")
 	
 	# We run galsim_adamom :
-	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=branch.stampsize(), prefix="psf_adamom_")
+	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=branch.stampsize(), prefix="psf_adamom_", variant="wider")
 	
 	# We run skystats:
 	catalog = megalut.meas.skystats.measfct(catalog, stampsize=branch.stampsize(), prefix="psf_")

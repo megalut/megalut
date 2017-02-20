@@ -21,6 +21,9 @@ run = config.load_run()
 # Best subfield:
 subfield = 99
 
+spname = "G3Sersics_nn"
+#spname = run.simparams.name
+
 simcat = megalut.tools.io.readpickle(os.path.join(run.measdir, run.simparams.name, "groupmeascat.pkl"))
 #print megalut.tools.table.info(simcat)
 
