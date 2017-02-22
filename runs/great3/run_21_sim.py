@@ -39,6 +39,23 @@ ncpu = 5 # config.great3.ncpu
 
 """
 sp = simparams.G3CGCSersics(
+	name="G3CGCSersics_train",
+	snc_type=1,
+	shear=0,
+	noise_level=1.0, # Will get set to the correct level for each subfield.
+	obstype=config.great3.obstype,
+	distmode="uni",
+	)
+
+n = 400
+nc = 20
+nrea = 10 # Even without noise, there is still the position jitter and pixelization
+ncat = 5
+ncpu = 5 # config.great3.ncpu
+"""
+
+"""
+sp = simparams.G3CGCSersics(
 	name="G3CGCSersics_simobscompa",
 	snc_type=1,
 	shear=0,
@@ -55,7 +72,7 @@ ncat = 1
 ncpu = 1
 """
 
-
+"""
 sp = simparams.G3CGCSersics()
 sp.name = "G3CGCSersics_valid" # To check the training, with shear and SNC, 500 cases
 sp.snc_type = 10000
@@ -68,8 +85,35 @@ nc = 1
 nrea = 1
 ncat = 25
 ncpu = 25
+"""
 
+"""
+sp = simparams.G3CGCSersics_statell()
+sp.name = "G3CGCSersics_statell" # For weight training to predict ellipticites (not for shear)
+sp.snc_type = 1
+sp.shear = 0.0
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "G3"
+n = 100
+nc = 10
+nrea = 1
+ncat = 200
+ncpu = 25
+"""
 
+sp = simparams.G3CGCSersics_statshear()
+sp.name = "G3CGCSersics_statshear" # For weight training for shear
+sp.snc_type = 1
+sp.shear = 0.1
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "G3"
+n = 1000
+nc = 10
+nrea = 1
+ncat = 200
+ncpu = 25
 
 for subfield in config.great3.subfields:
 	
@@ -135,4 +179,12 @@ for subfield in config.great3.subfields:
 		#print megalut.tools.table.info(cat)
 		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
 
+	
+	# For statell sims, we group by ellipticity
+	if "statell" in sp.name:
+		
+		cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2"])
+		megalut.tools.table.keepunique(cat)
+		#print megalut.tools.table.info(cat)
+		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
 

@@ -138,6 +138,81 @@ class G3CGCSersics(megalut.sim.params.Params):
 		}
 	
 
+
+class G3CGCSersics_statshear(G3CGCSersics):
+	"""
+	To train weights for shear: constant shear per catalog
+	"""
+	
+	def __init__(self, **kwargs):
+		G3CGCSersics.__init__(self, **kwargs)
+		
+	def stat(self):
+		"""
+		Supercedes what draw returns, called once for each catalog
+		"""
+		
+		if self.shear > 0:
+			tru_s1 = np.random.uniform(-self.shear, self.shear)
+			tru_s2 = np.random.uniform(-self.shear, self.shear)	
+		else:
+			tru_s1 = 0.0
+			tru_s2 = 0.0
+		tru_mu = 1.0
+			
+		return {
+			"tru_s1" : tru_s1, # shear component 1, in "g" convention
+			"tru_s2" : tru_s2, # component 2
+			"tru_mu" : tru_mu, # magnification
+			"snc_type":self.snc_type
+		}
+	
+	
+
+
+class G3CGCSersics_statell(G3CGCSersics):
+	"""
+	To train weights, we need cases of different ellipticity
+	This is done by:
+	- using stat() to give ellipticity, superceding the ellipticity from draw()
+	- 1 rea, snc=1, make lots of catalogs, shear=0
+	
+	
+	Alternative: pick ellipticity on a grid using ix iy or from a given list, and group by g1 g2 ?
+	
+	"""
+
+	def __init__(self, **kwargs):
+		G3CGCSersics.__init__(self, **kwargs)
+		
+	def stat(self):
+		"""
+		Supercedes what draw returns, called once for each catalog
+		"""
+		
+		if self.distmode == "G3":
+			# Simple distributions roughly tuned to ressemble GREAT3
+			tru_g = contracted_rayleigh(0.2, 0.7, 4)
+			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+			
+		elif self.distmode == "uni":
+			# More "uniform" distribs for nicer filling in plots
+			tru_g1 = np.random.uniform(-0.7, 0.7)
+			tru_g2 = np.random.uniform(-0.7, 0.7)
+			tru_g = np.hypot(tru_g1, tru_g2)
+			tru_theta = 0.0	
+			
+		return {
+			"tru_g1" : tru_g1,
+			"tru_g2" : tru_g2,
+			"tru_g" : tru_g,
+			"tru_theta" : tru_theta,
+			"snc_type":self.snc_type
+		}
+			
+			
+
 def contracted_rayleigh(sigma, max_val, p):
 	"""
 	A distribution with finite support.

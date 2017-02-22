@@ -15,13 +15,7 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-spname = "G3CGCSersics_valid"
-
-
-# Select a new
-predname = "ada4_sum55_valid"
-#predname = "ada4_sum55_valid_weights"
-
+spname = "G3CGCSersics_statell"
 
 
 for subfield in config.great3.subfields:
@@ -34,16 +28,13 @@ for subfield in config.great3.subfields:
 	
 	conflist = [
 		("mlconfig/ada4g1.cfg", config.great3.path("ml", "%03i" % subfield, "ada4g1_sum55")),
-		("mlconfig/ada4g2.cfg", config.great3.path("ml", "%03i" % subfield, "ada4g2_sum55")),
-		#("mlconfig/ada2g1w.cfg", config.great3.path("ml", "%03i" % subfield, "ada2g1w_sum33w")),
-
-		
+		("mlconfig/ada4g2.cfg", config.great3.path("ml", "%03i" % subfield, "ada4g2_sum55"))
 	]
 	
 	
 	predcat = megalut.learn.tenbilacrun.predict(cat, conflist)
 
-	predcatpath = config.great3.path("ml", "%03i" % subfield, "predcat_{}.pkl".format(predname))
+	predcatpath = config.great3.path("simmeas", "%03i" % subfield, spname, "groupmeascat_cases_pred.pkl")
 	megalut.tools.io.writepickle(predcat, predcatpath)
 	
 	
