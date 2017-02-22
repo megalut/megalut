@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
-	psfcat=None, psfselect="random",
+	psfcat=None, psfselect="random", psfskipbad=False,
 	ncat=2, nrea=2, ncpu=1, savetrugalimg=False, savepsfimg=False):
 	"""
 	Uses stampgrid.drawcat and stampgrid.drawimg to draw several (ncat) catalogs
@@ -74,6 +74,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		to confusions.
 	:param psfselect: either "random" or "sequential", determines how the PSFs should be attributed
 		to the simulated galaxies.
+	:param psfskipbad: if True, skips PSFs from psfcat which have masked "psf_adamom_flux".
 	:param ncat: The number of catalogs to be generated.
 	:type ncat: int
 	:param nrea: The number of realizations per catalog to be generated.
@@ -160,10 +161,10 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 	# We have to be careful not to mix PSFs within blocks of shape noise cancellation.
 	if psfcat is not None:
 	
-		if "psf_adamom_flux" in psfcat.colnames:
-			logger.warning("Special hack: we kick out PSFs that could not be measured!")
+		if (psfskipbad is True) and ("psf_adamom_flux" in psfcat.colnames):
+			logger.info("We kick out PSFs that could not be measured!")
 			psfcat = psfcat[psfcat["psf_adamom_flux"].mask == False]
-		
+			logger.info("{} PSFs remain".format(len(psfcat)))
 	
 		# First we check that the PSF stuff looks fine:
 		if "img" not in psfcat.meta:
