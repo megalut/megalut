@@ -17,7 +17,7 @@ logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-spname = "G3CGCSersics_statell"
+spname = "G3CGCSersics_statshear"
 
 #predname = "ada4_sum55_valid"
 component = 1 # which shear component
@@ -32,8 +32,7 @@ def main():
 		catpath = os.path.join(measdir, spname, "groupmeascat_cases_pred_wpred.pkl")
 		cat = megalut.tools.io.readpickle(catpath)
 		#print megalut.tools.table.info(cat)
-		#cat = cat[0:1]
-	
+			
 		plotpath = None
 		#plotpath = config.great3.path("ml","%03i" % subfield, "valplot_{}_comp{}.png".format(predname, component))
 		
@@ -46,25 +45,26 @@ def main():
 def plot(cat, component, filepath=None):
 	
 	rea = "all"
+	rea = -20
 	ebarmode = "scatter"
 	
 	if component == 1:
 	
-		cat["pre_g1"] = cat["pre_g1_adamom"]
-		cat["pre_g1w_norm"] = cat["pre_g1w"] / np.max(cat["pre_g1w"])
+		cat["pre_s1"] = cat["pre_g1_adamom"]
+		cat["pre_s1w_norm"] = cat["pre_s1w"] / np.max(cat["pre_s1w"])
 
-		megalut.tools.table.addrmsd(cat, "pre_g1", "tru_g1")
-		megalut.tools.table.addstats(cat, "pre_g1", "pre_g1w")
+		megalut.tools.table.addrmsd(cat, "pre_s1", "tru_s1")
+		megalut.tools.table.addstats(cat, "pre_s1", "pre_s1w")
 		
-		pre_gcw = Feature("pre_g1w", rea=rea)
-		pre_gcw_norm = Feature("pre_g1w_norm", rea=rea)
+		pre_scw = Feature("pre_s1w", rea=rea)
+		pre_scw_norm = Feature("pre_s1w_norm", rea=rea)
 		
-		pre_gc = Feature("pre_g1", rea=rea)
+		pre_sc = Feature("pre_s1", rea=rea)
 		
-		pre_gc_bias = Feature("pre_g1_bias")
-		pre_gc_mean = Feature("pre_g1_mean")
-		pre_gc_wmean = Feature("pre_g1_wmean")
-		tru_gc = Feature("tru_g1")
+		pre_sc_bias = Feature("pre_s1_bias")
+		pre_sc_mean = Feature("pre_s1_mean", -0.13, 0.13)
+		pre_sc_wmean = Feature("pre_s1_wmean", -0.13, 0.13)
+		tru_sc = Feature("tru_s1", -0.13, 0.13)
 		
 		
 	elif component == 2:
@@ -76,26 +76,25 @@ def plot(cat, component, filepath=None):
 	fig = plt.figure(figsize=(24, 12))
 
 	ax = fig.add_subplot(3, 5, 1)
-	megalut.plot.hist.hist(ax, cat, pre_gcw)
+	megalut.plot.scatter.scatter(ax, cat, Feature("snr", rea=rea), pre_scw)
 	
 	ax = fig.add_subplot(3, 5, 2)
-	megalut.plot.hist.hist(ax, cat, pre_gcw_norm)
+	megalut.plot.scatter.scatter(ax, cat, Feature("adamom_sigma", rea=rea), Feature("adamom_flux", rea=rea), featc=pre_scw)
 	
 	ax = fig.add_subplot(3, 5, 3)
-	megalut.plot.scatter.scatter(ax, cat, Feature("adamom_sigma", rea=rea), Feature("adamom_flux", rea=rea), featc=pre_gcw)
+	megalut.plot.scatter.scatter(ax, cat, Feature("tru_rad", rea=rea), Feature("tru_flux", rea=rea), featc=pre_scw)
 
-	ax = fig.add_subplot(3, 5, 4)
-	megalut.plot.scatter.scatter(ax, cat, Feature("snr", rea=rea), pre_gcw)
-	
-	
 	
 	ax = fig.add_subplot(3, 5, 6)
-	megalut.plot.scatter.scatter(ax, cat, tru_gc, pre_gc_mean, showidline=True, metrics=True)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc_mean, showidline=True, metrics=True)
 	ax.set_title("Without weights")
 
 	ax = fig.add_subplot(3, 5, 7)
-	megalut.plot.scatter.scatter(ax, cat, tru_gc, pre_gc_wmean, showidline=True, metrics=True)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc_wmean, showidline=True, metrics=True)
 	ax.set_title("With weights")
+	
+	ax = fig.add_subplot(3, 5, 8)
+	megalut.plot.hist.hist(ax, cat, pre_scw)
 	
 	
 	

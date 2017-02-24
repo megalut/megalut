@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 
 spname = "G3CGCSersics_valid"
 
+#trainspname = "G3CGCSersics_train_nn"
+trainspname = "G3CGCSersics_train_shear_snc100"
 
 # Select a new
 predname = "ada4_sum55_valid"
@@ -33,9 +35,11 @@ for subfield in config.great3.subfields:
 	#print megalut.tools.table.info(cat)
 	
 	conflist = [
-		("mlconfig/ada4g1.cfg", config.great3.path("ml", "%03i" % subfield, "ada4g1_sum55")),
-		("mlconfig/ada4g2.cfg", config.great3.path("ml", "%03i" % subfield, "ada4g2_sum55")),
-		#("mlconfig/ada2g1w.cfg", config.great3.path("ml", "%03i" % subfield, "ada2g1w_sum33w")),
+		("mlconfig/ada4s1.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4s1_sum55")),
+		
+		
+		#("mlconfig/ada4g2.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4g2_sum55")),
+		#("mlconfig/ada2g1w.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada2g1w_sum33w")),
 
 		
 	]
@@ -43,7 +47,7 @@ for subfield in config.great3.subfields:
 	
 	predcat = megalut.learn.tenbilacrun.predict(cat, conflist)
 
-	predcatpath = config.great3.path("ml", "%03i" % subfield, "predcat_{}.pkl".format(predname))
+	predcatpath = config.great3.path("ml", "%03i" % subfield, trainspname, "predcat_{}.pkl".format(predname))
 	megalut.tools.io.writepickle(predcat, predcatpath)
 	
 	

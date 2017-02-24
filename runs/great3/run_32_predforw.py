@@ -15,7 +15,7 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-spname = "G3CGCSersics_statell"
+spname = "G3CGCSersics_statshear"
 
 
 for subfield in config.great3.subfields:

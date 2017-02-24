@@ -38,6 +38,35 @@ ncpu = 5 # config.great3.ncpu
 """
 
 """
+sp = simparams.G3CGCSersics()
+sp.name = "G3CGCSersics_train_shear_snc100" # For shear training, with SNC, 500 cases per call
+sp.snc_type = 100
+sp.shear = 0.1
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "uni"
+n = 20 # Don't put this to zero, otherwise only one sersicn is used.
+nc = 1
+nrea = 1
+ncat = 25
+ncpu = 25
+"""
+
+sp = simparams.G3CGCSersics()
+sp.name = "G3CGCSersics_train_shear_snc10000" # For shear training, with SNC, 500 cases per call
+sp.snc_type = 10000
+sp.shear = 0.1
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "uni"
+n = 20 # Don't put this to zero, otherwise only one sersicn is used.
+nc = 1
+nrea = 1
+ncat = 25
+ncpu = 25
+
+
+"""
 sp = simparams.G3CGCSersics(
 	name="G3CGCSersics_train",
 	snc_type=1,
@@ -49,9 +78,26 @@ sp = simparams.G3CGCSersics(
 
 n = 400
 nc = 20
-nrea = 10 # Even without noise, there is still the position jitter and pixelization
+nrea = 100 
 ncat = 5
 ncpu = 5 # config.great3.ncpu
+"""
+
+"""
+sp = simparams.G3CGCSersics(
+	name="G3CGCSersics_train_100rea",
+	snc_type=1,
+	shear=0,
+	noise_level=1.0, # Will get set to the correct level for each subfield.
+	obstype=config.great3.obstype,
+	distmode="uni",
+	)
+
+n = 400
+nc = 20
+nrea = 100 
+ncat = 5
+ncpu = 25 # config.great3.ncpu
 """
 
 """
@@ -102,18 +148,20 @@ ncat = 200
 ncpu = 25
 """
 
+"""
 sp = simparams.G3CGCSersics_statshear()
 sp.name = "G3CGCSersics_statshear" # For weight training for shear
-sp.snc_type = 1
+sp.snc_type = 4
 sp.shear = 0.1
 sp.noise_level = 1
 sp.obstype = config.great3.obstype
 sp.distmode = "G3"
-n = 1000
-nc = 10
+n = 2000
+nc = 50
 nrea = 1
 ncat = 200
 ncpu = 25
+"""
 
 for subfield in config.great3.subfields:
 	
@@ -177,7 +225,7 @@ for subfield in config.great3.subfields:
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 		megalut.tools.table.keepunique(cat)
 		#print megalut.tools.table.info(cat)
-		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
+		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl")) # Just overwrite, don't need the other one
 
 	
 	# For statell sims, we group by ellipticity
@@ -186,5 +234,5 @@ for subfield in config.great3.subfields:
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2"])
 		megalut.tools.table.keepunique(cat)
 		#print megalut.tools.table.info(cat)
-		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat_cases.pkl"))
+		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl")) # Just overwrite, don't need the other one
 

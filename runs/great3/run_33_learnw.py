@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 #tbllogger = logging.getLogger("tenbilac")
 
 
-spname = "G3CGCSersics_statell"
+spname = "G3CGCSersics_statshear"
 
 conflist = [
-	("mlconfig/ada2g1w.cfg", "mlconfig/sum1w.cfg")
+	("mlconfig/ada2s1w.cfg", "mlconfig/sum3w.cfg")
 ]
 
 selfpredict = True
@@ -39,7 +39,7 @@ for subfield in config.great3.subfields:
 	# And to the catalogue
 	traincatpath = os.path.join(measdir, spname, "groupmeascat_cases_pred.pkl")
 	traincat = megalut.tools.io.readpickle(traincatpath)
-	"""
+	
 	# Running the training	
 	dirnames = megalut.learn.tenbilacrun.train(traincat, conflist, traindir)
 		
@@ -49,7 +49,7 @@ for subfield in config.great3.subfields:
 		ten = tenbilac.com.Tenbilac(tenbilacdirpath)
 		ten._readmembers()
 		tenbilac.plot.summaryerrevo(ten.committee, filepath=os.path.join(traindir, "{}_summary.png".format(dirname)))
-	"""
+	
 	if selfpredict:
 		selfpredcat = megalut.learn.tenbilacrun.predict(traincat, conflist, traindir)
 		megalut.tools.io.writepickle(selfpredcat, os.path.join(measdir, spname, "groupmeascat_cases_pred_wpred.pkl"))
