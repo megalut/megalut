@@ -393,8 +393,8 @@ def bin(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title
 		try:
 			metrics = tools.metrics.metrics(cat, featx, featy, pre_is_res=True)
 			
-			#metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
-			metrics_text = "RMSD = %.5f\nm = %.1f +/- %.1f, c = %.1f +/- %.1f e-3" % (metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			#metrics_text = "RMSD = %.5f\nm = %.1f +/- %.1f, c = %.1f +/- %.1f e-3" % (metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 			
 			
 			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
