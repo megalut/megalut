@@ -508,24 +508,33 @@ def groupreshape(cat, groupcolnames):
 #####
 
 
-def addstats(cat, col, outcolprefix=None):
+def addstats(cat, col, wcol=None, outcolprefix=None):
 	"""
 	Adds columns containing some statistics of the values in each cell of col.
 	So this is for 2D columns. Togheter this the function "group", this replaces the old-style "groupstats".
 	
 	:param col: name of the (2D) column containing the data for which stats should be computed
+	:param wcol: name of the column containing some weights to be used, if desired.
 	
 	"""
 	if outcolprefix == None:
 		outcolprefix = col
-		
-	outcolnames = [outcolprefix + suffix for suffix in ["_mean", "_med", "_std", "_n"]]
+	
+	suffixes = ["_mean", "_med", "_std", "_n"]
+	if wcol is not None:
+		suffixes.append("_wmean")
+	
+	outcolnames = [outcolprefix + suffix for suffix in suffixes]
 	for outcolname in outcolnames:
 		if outcolname in cat.colnames:
 			raise RuntimeError("Column {} already exists, refusing to overwrite.".format(outcolname))
 	
 	if cat[col].ndim != 2:
 		raise RuntimeError("Column '{}' is not 2-dimensional, stats do not make sense!".format(col))
+	if wcol is not None:
+		if cat[col].shape != cat[wcol].shape:
+			raise RuntimeError("Data in col and wcol should have the same shape!") 
+		
 		
 	logger.info("Adding stats for column {} of shape {}...".format(col, cat[col].shape))
 	
@@ -533,6 +542,8 @@ def addstats(cat, col, outcolprefix=None):
 	cat[outcolprefix + "_med"] = np.ma.median(cat[col], axis=1)
 	cat[outcolprefix + "_std"] = np.ma.std(cat[col], axis=1)
 	cat[outcolprefix + "_n"] = np.ma.count(cat[col], axis=1)
+	if wcol is not None:
+		cat[outcolprefix + "_wmean"] = np.ma.mean(cat[col] * cat[wcol], axis=1) / np.ma.mean(cat[wcol], axis=1)
 	
 
 def addrmsd(cat, colm, colt, outcolprefix=None):

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, showidline=False, idlinekwargs=None,
-	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, **kwargs):
+	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, yisres=False, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -49,6 +49,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	:param sidehistkwargs: a dict of keyword arguments to be passed to these histograms.
 		Add range=None to these if you want all bins to be computed.
 	:param errorbarkwargs: a dict of keywords to be passed to errorbar()
+	:param yisres: if True, featy will be treated as residues when computing the metrics, and idline will be horizontal.
 	
 	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
 	
@@ -211,29 +212,35 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 	
 	if showidline: # Show the "diagonal" identity line
 	
-		# It would be nice to get this working with less code
-		# (usign get_lims and axes transforms, for instance)
-		# But in the meantime this seems to work fine.
-		# It has to be so complicated to keep the automatic ranges working if low and high are None !
-		
-		# For "low":
-		if featx.low is None or featy.low is None: # We use the data...
-			minid = max(np.min(data[featx.colname]), np.min(data[featy.colname]))
-		else:
-			minid = max(featx.low, featy.low)
-		# Same for "high":
-		if featx.high is None or featy.high is None: # We use the data...
-			maxid = min(np.max(data[featx.colname]), np.max(data[featy.colname]))
-		else:
-			maxid = min(featx.high, featy.high)
-			
+	
 		if idlinekwargs == None:
 			idlinekwargs = {}
 		myidlinekwargs = {"ls":"--", "color":"gray", "lw":1}
 		myidlinekwargs.update(idlinekwargs)	
+	
+		if yisres: # Then the line is horizontal at zero
+			ax.axhline(y=0, **myidlinekwargs)
+			
+		else: # We have to compute the endpoints
+	
+			# It would be nice to get this working with less code
+			# (usign get_lims and axes transforms, for instance)
+			# But in the meantime this seems to work fine.
+			# It has to be so complicated to keep the automatic ranges working if low and high are None !
 		
-		# And we plot the line:
-		ax.plot((minid, maxid), (minid, maxid), **myidlinekwargs)
+			# For "low":
+			if featx.low is None or featy.low is None: # We use the data...
+				minid = max(np.min(data[featx.colname]), np.min(data[featy.colname]))
+			else:
+				minid = max(featx.low, featy.low)
+			# Same for "high":
+			if featx.high is None or featy.high is None: # We use the data...
+				maxid = min(np.max(data[featx.colname]), np.max(data[featy.colname]))
+			else:
+				maxid = min(featx.high, featy.high)
+				
+			# And we plot the line:
+			ax.plot((minid, maxid), (minid, maxid), **myidlinekwargs)
 
 
 	ax.set_xlim(featx.low, featx.high)
@@ -260,7 +267,7 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		logger.info("Now computing metrics for this scatter plot...")
 		try:
 			#metrics = tools.metrics.metrics(cat, metrics_label, metrics_predlabel)
-			metrics = tools.metrics.metrics(cat, featx, featy)
+			metrics = tools.metrics.metrics(cat, featx, featy, pre_is_res=yisres)
 			
 			metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')

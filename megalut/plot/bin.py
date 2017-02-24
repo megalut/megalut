@@ -293,11 +293,13 @@ def res(ax, cat, feattru, featpre, featc=None, nbins=10, ncbins=3, ebarmode="bia
 
 
 def bin(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title=None, showidline=True, metrics=False,
-	ebarmode="scatter"):
+	ebarmode="scatter", yisres=True):
 	"""
 	Summarizes featy in bins of featx.
 	
 	:param ebarmode: controls what should be shown as error-bars
+	:param yisres: if True, featy will be treated as residues when computing the metrics, and idline will be horizontal.
+		Note that for a bin-plot, this is the default.
 	
 	"""
 
@@ -391,10 +393,10 @@ def bin(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title
 		
 		logger.info("Now computing metrics for this res plot...")
 		try:
-			metrics = tools.metrics.metrics(cat, featx, featy, pre_is_res=True)
+			metrics = tools.metrics.metrics(cat, featx, featy, pre_is_res=yisres)
 			
-			#metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
-			metrics_text = "RMSD = %.5f\nm = %.1f +/- %.1f, c = %.1f +/- %.1f e-3" % (metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			metrics_text = "predfrac: %.3f\nRMSD: %.5f\nm*1e3: %.1f +/- %.1f\nc*1e3: %.1f +/- %.1f" % (metrics["predfrac"], metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+			#metrics_text = "RMSD = %.5f\nm = %.1f +/- %.1f, c = %.1f +/- %.1f e-3" % (metrics["rmsd"], metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 			
 			
 			ax.annotate(metrics_text, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top')
