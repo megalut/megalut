@@ -11,6 +11,10 @@ import config
 import numpy as np
 import os
 
+from megalut.tools.feature import Feature
+import matplotlib.pyplot as plt
+
+import plot_2_valid
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
@@ -21,14 +25,18 @@ logger = logging.getLogger(__name__)
 #spname = "G3CGCSersics_train_nn"
 #spname = "G3CGCSersics_train_100rea"
 #spname = "G3CGCSersics_train_shear_snc100"
-spname = "G3CGCSersics_train_shear_snc10000"
+#spname = "G3CGCSersics_train_shear_snc10000"
+#spname = "G3CGCSersics_train_nn_2rea"
+#spname = "G3CGCSersics_train_nn_20rea"
+spname = "G3CGCSersics_train_shear_snc100_nn"
+#spname = "G3CGCSersics_train_shear_snc100_nn_G3"
 
-onlyallrea = True
+
+select = True
 
 conflist = [
 	#("mlconfig/ada4g1.cfg", "mlconfig/sum55.cfg"),
 	#("mlconfig/ada4g2.cfg", "mlconfig/sum55.cfg"),
-	
 	("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"),
 	
 ]
@@ -48,7 +56,7 @@ for subfield in config.great3.subfields:
 	cat = megalut.tools.io.readpickle(traincatpath)
 	#print megalut.tools.table.info(cat)
 	
-	if onlyallrea:
+	if select:
 		cat["adanbad"] = np.sum(cat["adamom_g1"].mask, axis=1)
 		s = megalut.tools.table.Selector("allrea", [
 			#("is", "adanbad", 0),
@@ -58,7 +66,8 @@ for subfield in config.great3.subfields:
 	
 	#exit()	
 	#print megalut.tools.table.info(cat)
-				
+	
+	"""		
 	# Running the training
 	dirnames = megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 	
@@ -68,5 +77,23 @@ for subfield in config.great3.subfields:
 		ten = tenbilac.com.Tenbilac(tenbilacdirpath)
 		ten._readmembers()
 		tenbilac.plot.summaryerrevo(ten.committee, filepath=os.path.join(traindir, "{}_summary.png".format(dirname)))
-
+	"""
 	# Self-predicting
+	
+	dirnames = ["ada4s1_sum55"]
+	cat = megalut.tools.io.readpickle(traincatpath)
+	for (dirname, conf) in zip(dirnames, conflist):
+
+		predcat = megalut.learn.tenbilacrun.predict(cat, [conf], traindir)
+		predcatpath = os.path.join(traindir, "{}_selfpred.pkl".format(dirname))
+		megalut.tools.io.writepickle(predcat, predcatpath)
+		figpredcatpath = os.path.join(traindir, "{}_selfpred.png".format(dirname))
+		
+		if "s2" in conf[0] or "g2" in conf[0]:
+			component = 2
+		else:
+			component = 1
+		plot_2_valid.plot(predcat, component, figpredcatpath)
+	
+	
+	

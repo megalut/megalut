@@ -17,9 +17,13 @@ logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-trainspname = "G3CGCSersics_train_shear_snc100"
+#trainspname = "G3CGCSersics_train_shear_snc100"
+trainspname = "G3CGCSersics_train_shear_snc10000"
 
 predname = "ada4_sum55_valid"
+#predname = "ada4_sum55"
+
+
 component = 1 # which shear component
 
 
@@ -41,13 +45,21 @@ def main():
 		plotpath = None
 		#plotpath = config.great3.path("ml","%03i" % subfield, "valplot_{}_comp{}.png".format(predname, component))
 		
-		plot(cat, component, filepath=plotpath)
+		s = megalut.tools.table.Selector("ok", [
+			("in", "snr_mean", 3, 15),
+			("min", "tru_rad", 0.5),
+			("in", "tru_rad", 0.5, 2.7),
+			("max", "adamom_frac", 0.02)
+		])
+		#s = None
+		
+		plot(cat, component, filepath=plotpath, select=s)
 		logger.info("Plotted to {}".format(plotpath))
 
 
 
 
-def plot(cat, component, filepath=None):
+def plot(cat, component, filepath=None, select=None):
 
 	#cat["adamom_log_flux"] = np.log10(cat["adamom_flux"])
 	cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
@@ -59,14 +71,8 @@ def plot(cat, component, filepath=None):
 	
 	#print min(cat["adamom_frac"]), max(cat["adamom_frac"]), np.median(cat["adamom_frac"])
 
-	s = megalut.tools.table.Selector("ok", [
-		("in", "snr_mean", 3, 15),
-		("min", "tru_rad", 0.5),
-		("in", "tru_rad", 0.5, 2.7),
-		("max", "adamom_frac", 0.02)
-		])
-
-	cat = s.select(cat)
+	if select is not None:
+		cat = s.select(cat)
 
 	#print min(cat["snr_mean"]), max(cat["snr_mean"]), np.median(cat["snr_mean"])
 	

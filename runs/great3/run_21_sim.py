@@ -38,6 +38,23 @@ ncpu = 5 # config.great3.ncpu
 """
 
 """
+sp = simparams.G3CGCSersics(
+	name="G3CGCSersics_train_nn_20rea",
+	snc_type=1,
+	shear=0,
+	noise_level=0.0,
+	obstype=config.great3.obstype,
+	distmode="uni",
+	)
+
+n = 400
+nc = 20
+nrea = 20 # Even without noise, there is still the position jitter and pixelization
+ncat = 5
+ncpu = 5 # config.great3.ncpu
+"""
+
+"""
 sp = simparams.G3CGCSersics()
 sp.name = "G3CGCSersics_train_shear_snc100" # For shear training, with SNC, 500 cases per call
 sp.snc_type = 100
@@ -52,6 +69,36 @@ ncat = 25
 ncpu = 25
 """
 
+"""
+sp = simparams.G3CGCSersics()
+sp.name = "G3CGCSersics_train_shear_snc100_nn" # For shear training, with SNC, 1000 cases per call
+sp.snc_type = 100
+sp.shear = 0.1
+sp.noise_level = 0
+sp.obstype = config.great3.obstype
+sp.distmode = "uni"
+n = 40 # Don't put this to zero, otherwise only one sersicn is used.
+nc = 1
+nrea = 1
+ncat = 25
+ncpu = 25
+"""
+
+sp = simparams.G3CGCSersics()
+sp.name = "G3CGCSersics_train_shear_snc100_nn_G3" # For shear training, with SNC, 1000 cases per call
+sp.snc_type = 100
+sp.shear = 0.1
+sp.noise_level = 0
+sp.obstype = config.great3.obstype
+sp.distmode = "G3"
+n = 40 # Don't put this to zero, otherwise only one sersicn is used.
+nc = 1
+nrea = 1
+ncat = 25
+ncpu = 25
+
+
+"""
 sp = simparams.G3CGCSersics()
 sp.name = "G3CGCSersics_train_shear_snc10000" # For shear training, with SNC, 500 cases per call
 sp.snc_type = 10000
@@ -65,7 +112,7 @@ nrea = 1
 ncat = 25
 ncpu = 25
 
-
+"""
 """
 sp = simparams.G3CGCSersics(
 	name="G3CGCSersics_train",
@@ -235,4 +282,7 @@ for subfield in config.great3.subfields:
 		megalut.tools.table.keepunique(cat)
 		#print megalut.tools.table.info(cat)
 		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl")) # Just overwrite, don't need the other one
+
+	
+
 

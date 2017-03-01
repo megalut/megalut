@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 # Select the
-predname = "ada4_sum55_valid"
+#predname = "ada4_sum55_valid"
+predname = "ada4_sum55"
 
 
 
