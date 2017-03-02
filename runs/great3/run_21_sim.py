@@ -2,6 +2,7 @@
 Simulates a dedicated training set for each subfield.
 """
 
+import argparse
 
 import megalut
 import megalut.meas
@@ -17,6 +18,14 @@ logger = logging.getLogger(__name__)
 import simparams
 import measfcts
 
+def define_parser():
+	"""Defines the command line arguments
+	"""
+	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	parser.add_argument('--set', required=True, help="Name of dataset to generate")
+	#parser.add_argument('--nside', type=int, default=100, help='Size of stampgrid, in stamps')
+	
+	return parser
 
 # Choose a model for the simulations
 
@@ -239,7 +248,7 @@ nrea = 1
 ncat = 200
 ncpu = 25
 """
-
+"""
 sp = simparams.G3CGCSersics_statshear()
 sp.name = "G3CGCSersics_valid_overall" # For overall validation with weights
 sp.snc_type = 4
@@ -252,10 +261,44 @@ nc = 50
 nrea = 1
 ncat = 200
 ncpu = 25
+"""
 
 
+def main(args):
+	
+	logger.info("Drawing sims for {}...".format(args.set))
+	
+	if args.set == "train-shear":
+		
+	
+	elif args.set == "overall-valid":
 
-for subfield in config.great3.subfields:
+		sp = simparams.G3Sersics_statshear(
+			name = "overall-valid", # For overall validation, we mimick a GREAT3 branch
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		drawconf = {
+			"n":2000,
+			"nc":50,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":25			
+		}
+
+		
+	else:
+		raise RuntimeError("Unknown set, see code for defined names.")
+	
+	
+	for subfield in config.great3.subfields:
+		run(subfield)
+
+
+def run(subfield, sp, drawconf):
 	
 	
 	# We have to read in the obs catalog of this subfield to get the noise of the sky:
@@ -330,4 +373,9 @@ for subfield in config.great3.subfields:
 
 	
 
+
+parser = define_parser()
+args = parser.parse_args()
+#print args
+main(args)
 
