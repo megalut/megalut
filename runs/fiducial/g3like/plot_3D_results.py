@@ -77,17 +77,17 @@ megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_mean")
 
 
 ax = fig.add_subplot(3, 5, 2)
-megalut.plot.scatter.scatter(ax, fields, Feature("tru_s1"),  Feature("pre_s1_bias"), metrics=True, linetofit="flat")
+megalut.plot.scatter.scatter(ax, fields, Feature("tru_s1"),  Feature("pre_s1_bias"), metrics=True, yisres=True)
 #megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_g"))
 
-ax = fig.add_subplot(3, 5, 3)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("dg"), featc=Feature("tru_rad"))
+#ax = fig.add_subplot(3, 5, 3)
+#megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("dg"), featc=Feature("tru_rad"))
 
-ax = fig.add_subplot(3, 5, 4)
+#ax = fig.add_subplot(3, 5, 4)
 #megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_sersicn"))
 
 ax = fig.add_subplot(3, 5, 5)
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_flux"))
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_flux"), metrics=True, yisres=True)
 
 #------------------- 2nd line
 ax = fig.add_subplot(3, 5, 6)
