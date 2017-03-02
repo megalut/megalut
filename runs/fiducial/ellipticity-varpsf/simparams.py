@@ -103,11 +103,11 @@ class EllipticityVarPSF(megalut.sim.params.Params):
 
 
 
-def contracted_rayleigh(sigma, max_val, p):
+def contracted_rayleigh(sigma, max_val, p, size=None):
 	"""
 	A distribution with finite support.
 	"""
-	tmp = np.random.rayleigh(sigma)
+	tmp = np.random.rayleigh(sigma, size=size)
 	return (tmp / np.power(1 + np.power(tmp / max_val, p), 1.0 / p))
 
 

@@ -21,9 +21,10 @@ conflist = [
 
 # Training
 catpath = os.path.join(includes.simdir, "Ellipticity", "groupmeascat.pkl")
+catpath = os.path.join(includes.simdir+"val", "Sersics_statshear", "groupmeascat_cases.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
-#print megalut.tools.table.info(cat)
+exit()
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
 #megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)

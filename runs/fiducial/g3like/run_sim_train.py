@@ -10,19 +10,18 @@ import includes
 import logging
 logger = logging.getLogger(__name__)
 
+simdir = includes.simdir
 
-
-# Let's simulate a validation dataset for ellipticity only
+# Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
-sp = simparams.Sersics_statshear()
-sp.shear = 0.1
-simdir = includes.simvaldir
-sp.snc_type = 4
-sp.noise_level = 0.8
-n = 2000
+sp = simparams.Ellipticity()
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.
+n = 1000
 nc = 1
-ncat = 25
-nrea = 1
+ncat = 10
+nrea = 10
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -60,7 +59,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))

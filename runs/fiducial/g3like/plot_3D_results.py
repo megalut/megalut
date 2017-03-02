@@ -1,0 +1,213 @@
+import megalut
+import includes
+import measfcts
+import glob
+import os
+import numpy as np
+import astropy
+
+import megalut.plot
+from megalut.tools.feature import Feature
+import matplotlib.pyplot as plt
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+traindir = os.path.join(includes.workdir, "train_simple")
+
+component = "1"
+main_pred = "s{}".format(component)
+main_feat = Feature("tru_{}".format(main_pred))
+
+
+
+
+
+outdirplots = os.path.join(traindir, "plots")
+if not os.path.exists(outdirplots):
+	os.mkdir(outdirplots)
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
+
+
+cat = megalut.tools.io.readpickle(valprecatpath)
+
+
+cat["pre_g1"] = cat["pre_g1_adamom"]
+#cat["pre_g1"] = cat["pre_g1_fourier"]
+
+megalut.tools.table.addstats(cat, "pre_g1")
+megalut.tools.table.addrmsd(cat, "pre_g1", "tru_g1")
+megalut.tools.table.addstats(cat, "snr")
+
+cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+s = megalut.tools.table.Selector("ok", [
+	("in", "snr_mean", 5, 150),
+	#("in", "tru_rad", 0, 11),
+	("max", "adamom_frac", 0.01)
+	]
+	)
+
+cat = s.select(cat)
+
+print megalut.tools.table.info(cat)
+
+tg = np.array(cat["tru_g1"])
+tg = np.repeat(tg.reshape((np.shape(cat["pre_g1"])[0], 1)), np.shape(cat["pre_g1"])[1], axis=1)
+cat["tg"] = tg
+cat["dg"] = cat["pre_g1"] - cat["tg"]
+
+import astropy.table
+fields = astropy.table.Table()
+fields["tru_s1"] = np.ma.mean(cat["tru_s1"], axis=0)
+fields["pre_s1"] = np.ma.mean(cat["pre_g1"], axis=0)
+fields["pre_s1_bias"] = np.ma.mean(cat["pre_g1"], axis=0) - fields["tru_s1"]
+
+
+
+ebarmode = "scatter"
+#--------------------------------------------------------------------------------------------------
+fig = plt.figure(figsize=(23, 13))
+
+
+
+#------------------- 1st line
+ax = fig.add_subplot(3, 5, 1)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_mean"), featc=Feature("snr_mean"), showidline=True)
+
+
+ax = fig.add_subplot(3, 5, 2)
+megalut.plot.scatter.scatter(ax, fields, Feature("tru_s1"),  Feature("pre_s1_bias"), metrics=True, linetofit="flat")
+#megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_g"))
+
+ax = fig.add_subplot(3, 5, 3)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("dg"), featc=Feature("tru_rad"))
+
+ax = fig.add_subplot(3, 5, 4)
+#megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_sersicn"))
+
+ax = fig.add_subplot(3, 5, 5)
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_g1"),  Feature("pre_g1_bias"), featc=Feature("tru_flux"))
+
+#------------------- 2nd line
+ax = fig.add_subplot(3, 5, 6)
+megalut.plot.scatter.scatter(ax, cat,  Feature("tru_g1"),  Feature("pre_g{}_bias".format(component)), featc=Feature("snr_mean"))
+
+ax = fig.add_subplot(3, 5, 7)
+megalut.plot.scatter.scatter(ax, cat,  Feature("tru_g1"),  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_sb"))
+
+ax = fig.add_subplot(3, 5, 8)
+megalut.plot.scatter.scatter(ax, cat,  Feature("tru_g1"),  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_rad"))
+
+ax = fig.add_subplot(3, 5, 9)
+megalut.plot.scatter.scatter(ax, cat,  Feature("tru_g1"),  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_sersicn"))
+
+ax = fig.add_subplot(3, 5, 10)
+megalut.plot.scatter.scatter(ax, cat,  Feature("tru_g1"),  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_g"))
+
+#------------------- 3rd line
+ax = fig.add_subplot(3, 5, 11)
+megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g{}_mean".format(component)), Feature("snr_mean"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 12)
+megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g{}_mean".format(component)), Feature("tru_flux"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 13)
+megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g{}_mean".format(component)), Feature("tru_rad"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 14)
+megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g{}_mean".format(component)), Feature("tru_sersicn"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 15)
+megalut.plot.bin.res(ax, cat, Feature("tru_g1"), Feature("pre_g{}_mean".format(component)), Feature("tru_g"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+
+plt.tight_layout()
+fig.savefig(os.path.join(outdirplots, "validation_{}.png".format(main_pred)))
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exit()
+print cat["pre_g1_bias"]
+# This is ugly, but will do for now
+arr = np.repeat(np.array(cat["pre_g1_bias"]).reshape(250,1), 400, axis=1)
+cat["pre_g1_bias_full"] = arr
+print '----------------------'
+cat["tru_{}_full".format(main_pred)] = np.repeat(np.array(cat["tru_{}".format(main_pred)]).reshape(250,1), 400, axis=1)
+main_feat_full = Feature("tru_{}_full".format(main_pred))
+print cat["tru_s1", "pre_g1_bias_full"]
+
+
+cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+print megalut.tools.table.info(cat)
+s = megalut.tools.table.Selector("ok", [
+	("in", "snr_mean", 5, 150),
+	#("in", "tru_rad", 0, 11),
+	("max", "adamom_frac", 0.01)
+	]
+	)
+
+cat = s.select(cat)
+
+
+ebarmode = "scatter"
+#--------------------------------------------------------------------------------------------------
+fig = plt.figure(figsize=(23, 13))
+
+
+
+#------------------- 1st line
+ax = fig.add_subplot(3, 5, 1)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_mean".format(component)), featc=Feature("snr_mean"), showidline=True)
+
+ax = fig.add_subplot(3, 5, 2)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("snr_mean"), featc=Feature("pre_g{}_bias".format(component)))
+
+ax = fig.add_subplot(3, 5, 3)
+megalut.plot.scatter.scatter(ax, cat, main_feat_full,  Feature("tru_rad"), featc=Feature("pre_g{}_bias_full".format(component)))
+plt.show()
+exit()
+ax = fig.add_subplot(3, 5, 4)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("tru_sersicn"), featc=Feature("pre_g{}_adamom".format(component)))
+plt.show()
+ax = fig.add_subplot(3, 5, 5)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("tru_g"), featc=Feature("pre_g{}_bias".format(component)))
+#------------------- 2nd line
+ax = fig.add_subplot(3, 5, 6)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("snr_mean"))
+
+ax = fig.add_subplot(3, 5, 7)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_sb"))
+
+ax = fig.add_subplot(3, 5, 8)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_rad"))
+
+ax = fig.add_subplot(3, 5, 9)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_sersicn"))
+
+ax = fig.add_subplot(3, 5, 10)
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_g"))
+#------------------- 3rd line
+ax = fig.add_subplot(3, 5, 11)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("snr_mean"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 12)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_flux"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 13)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_rad"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 14)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_sersicn"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+ax = fig.add_subplot(3, 5, 15)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_g"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+
+plt.tight_layout()
+fig.savefig(os.path.join(outdirplots, "validation_{}.png".format(main_pred)))
+plt.show()
