@@ -22,22 +22,22 @@ logger = logging.getLogger(__name__)
 #tbllogger = logging.getLogger("tenbilac")
 
 
-#spname = "G3CGCSersics_train_nn"
+spname = "G3CGCSersics_train_nn"
 #spname = "G3CGCSersics_train_100rea"
 #spname = "G3CGCSersics_train_shear_snc100"
 #spname = "G3CGCSersics_train_shear_snc10000"
 #spname = "G3CGCSersics_train_nn_2rea"
 #spname = "G3CGCSersics_train_nn_20rea"
-spname = "G3CGCSersics_train_shear_snc100_nn"
+#spname = "G3CGCSersics_train_shear_snc100_nn"
 #spname = "G3CGCSersics_train_shear_snc100_nn_G3"
 
 
 select = True
 
 conflist = [
-	#("mlconfig/ada4g1.cfg", "mlconfig/sum55.cfg"),
+	("mlconfig/ada4g1.cfg", "mlconfig/sum55.cfg"),
 	#("mlconfig/ada4g2.cfg", "mlconfig/sum55.cfg"),
-	("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"),
+	#("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"),
 	
 ]
 
@@ -57,17 +57,17 @@ for subfield in config.great3.subfields:
 	#print megalut.tools.table.info(cat)
 	
 	if select:
-		cat["adanbad"] = np.sum(cat["adamom_g1"].mask, axis=1)
-		s = megalut.tools.table.Selector("allrea", [
-			#("is", "adanbad", 0),
-			("max", "adanbad", 50),
+		
+		cat["meas_frac"] = (float(cat["adamom_g1"].shape[1]) - np.sum(cat["adamom_g1"].mask, axis=1))/float(cat["adamom_g1"].shape[1])
+		s = megalut.tools.table.Selector("fortrain", [
+			("min", "meas_frac", 0.9),
 		])
 		cat = s.select(cat)
 	
 	#exit()	
 	#print megalut.tools.table.info(cat)
 	
-	"""		
+	"""
 	# Running the training
 	dirnames = megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 	
@@ -77,11 +77,13 @@ for subfield in config.great3.subfields:
 		ten = tenbilac.com.Tenbilac(tenbilacdirpath)
 		ten._readmembers()
 		tenbilac.plot.summaryerrevo(ten.committee, filepath=os.path.join(traindir, "{}_summary.png".format(dirname)))
+	
 	"""
+	dirnames = ["ada4g1_sum55"]
+	
 	# Self-predicting
 	
-	dirnames = ["ada4s1_sum55"]
-	cat = megalut.tools.io.readpickle(traincatpath)
+	cat = megalut.tools.io.readpickle(traincatpath) # To get the full catalog with all cases
 	for (dirname, conf) in zip(dirnames, conflist):
 
 		predcat = megalut.learn.tenbilacrun.predict(cat, [conf], traindir)
@@ -93,7 +95,7 @@ for subfield in config.great3.subfields:
 			component = 2
 		else:
 			component = 1
-		plot_2_valid.plot(predcat, component, figpredcatpath)
+		plot_2_valid.plot(predcat, component, mode=config.trainmode, filepath=figpredcatpath)
 	
 	
 	

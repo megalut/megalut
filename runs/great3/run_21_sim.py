@@ -84,6 +84,7 @@ ncat = 25
 ncpu = 25
 """
 
+"""
 sp = simparams.G3CGCSersics()
 sp.name = "G3CGCSersics_train_shear_snc100_nn_G3" # For shear training, with SNC, 1000 cases per call
 sp.snc_type = 100
@@ -96,7 +97,36 @@ nc = 1
 nrea = 1
 ncat = 25
 ncpu = 25
+"""
 
+"""
+sp = simparams.G3CGCSersics()
+sp.name = "G3CGCSersics_valid_shear_snc100_G3" # For shear valid, with SNC, 1000 cases per call
+sp.snc_type = 100
+sp.shear = 0.1
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "G3"
+n = 40 # Don't put this to zero, otherwise only one sersicn is used.
+nc = 1
+nrea = 1
+ncat = 25
+ncpu = 25
+"""
+"""
+sp = simparams.G3CGCSersics()
+sp.name = "G3CGCSersics_valid_shear_snc1000_G3" # For shear valid, with SNC, 500 cases per call
+sp.snc_type = 1000
+sp.shear = 0.1
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "G3"
+n = 20 # Don't put this to zero, otherwise only one sersicn is used.
+nc = 1
+nrea = 1
+ncat = 25
+ncpu = 25
+"""
 
 """
 sp = simparams.G3CGCSersics()
@@ -209,6 +239,21 @@ nrea = 1
 ncat = 200
 ncpu = 25
 """
+
+sp = simparams.G3CGCSersics_statshear()
+sp.name = "G3CGCSersics_valid_overall" # For overall validation with weights
+sp.snc_type = 4
+sp.shear = 0.1
+sp.noise_level = 1
+sp.obstype = config.great3.obstype
+sp.distmode = "G3"
+n = 2000
+nc = 50
+nrea = 1
+ncat = 200
+ncpu = 25
+
+
 
 for subfield in config.great3.subfields:
 	

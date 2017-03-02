@@ -1,5 +1,5 @@
 """
-Validation plot
+Validation plot on training-like data structure, with one galaxy per case
 """
 
 import megalut
@@ -7,6 +7,7 @@ import megalutgreat3
 import megalut.plot
 from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
+import matplotlib.colors
 import numpy as np
 
 import config
@@ -18,9 +19,15 @@ logger = logging.getLogger(__name__)
 
 
 #trainspname = "G3CGCSersics_train_shear_snc100"
-trainspname = "G3CGCSersics_train_shear_snc10000"
+#trainspname = "G3CGCSersics_train_shear_snc10000"
+#trainspname = "G3CGCSersics_train_shear_snc100_nn_G3"
+trainspname = "G3CGCSersics_train_nn"
 
-predname = "ada4_sum55_valid"
+predname = "ada4_sum55_statshear"
+#predname = "ada4_sum55_valid"
+#predname = "ada4_sum55_valid_snc1000"
+
+
 #predname = "ada4_sum55"
 
 
@@ -51,7 +58,7 @@ def main():
 			("in", "tru_rad", 0.5, 2.7),
 			("max", "adamom_frac", 0.02)
 		])
-		#s = None
+		s = None
 		
 		plot(cat, component, filepath=plotpath, select=s)
 		logger.info("Plotted to {}".format(plotpath))
@@ -59,10 +66,18 @@ def main():
 
 
 
-def plot(cat, component, filepath=None, select=None):
+def plot(cat, component, mode="s", filepath=None, select=None):
 
 	#cat["adamom_log_flux"] = np.log10(cat["adamom_flux"])
-	cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+	#cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+	
+	prename = "pre_s{}".format(component)
+	
+	cat["pre_maskedfrac"] = np.sum(cat[prename].mask, axis=1) / float(cat[prename].shape[1])
+	#cat["pre_frac"] = (float(cat[prename].shape[1]) - np.sum(cat[prename].mask, axis=1)) / float(cat[prename].shape[1])
+	
+	pre_maskedfrac = Feature("pre_maskedfrac")
+	
 	megalut.tools.table.addstats(cat, "adamom_flux")
 	megalut.tools.table.addstats(cat, "adamom_sigma")
 	megalut.tools.table.addstats(cat, "snr")
@@ -72,27 +87,20 @@ def plot(cat, component, filepath=None, select=None):
 	#print min(cat["adamom_frac"]), max(cat["adamom_frac"]), np.median(cat["adamom_frac"])
 
 	if select is not None:
-		cat = s.select(cat)
+		cat = select.select(cat)
 
 	#print min(cat["snr_mean"]), max(cat["snr_mean"]), np.median(cat["snr_mean"])
 	
 	
-	if component == 1:
+	megalut.tools.table.addstats(cat, "pre_s{}".format(component))
+	megalut.tools.table.addrmsd(cat, "pre_s{}".format(component), "tru_{}{}".format(mode, component))
+	pre_sc_bias = Feature("pre_s{}_bias".format(component))
+	pre_sc_mean = Feature("pre_s{}_mean".format(component))
+	tru_sc = Feature("tru_{}{}".format(mode, component))
 	
-		megalut.tools.table.addstats(cat, "pre_s1")
-		megalut.tools.table.addrmsd(cat, "pre_s1", "tru_s1")
-		pre_sc_bias = Feature("pre_s1_bias")
-		pre_sc_mean = Feature("pre_s1_mean")
-		tru_sc = Feature("tru_s1")
+	
+	
 
-		
-	elif component == 2:
-		
-		megalut.tools.table.addstats(cat, "pre_s2")
-		megalut.tools.table.addrmsd(cat, "pre_s2", "tru_s2")
-		pre_sc_bias = Feature("pre_s2_bias")
-		pre_sc_mean = Feature("pre_s2_mean")
-		tru_sc = Feature("tru_s2")
 
 	ebarmode = "scatter"
 
@@ -102,9 +110,11 @@ def plot(cat, component, filepath=None, select=None):
 	megalut.plot.scatter.scatter(ax, cat, tru_sc,  pre_sc_mean, featc=snr_mean, showidline=True, metrics=True)
 	
 	ax = fig.add_subplot(3, 5, 2)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("snr_mean"), pre_sc_bias)
+	#megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("snr_mean"), pre_sc_bias)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("snr", rea=1), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 3)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("tru_rad"), pre_sc_bias)
+	cnorm = matplotlib.colors.SymLogNorm(linthresh=0.01)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("tru_rad"), pre_sc_bias, norm=cnorm)
 	ax = fig.add_subplot(3, 5, 4)
 	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("tru_sersicn"), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 5)
@@ -114,11 +124,14 @@ def plot(cat, component, filepath=None, select=None):
 	ax = fig.add_subplot(3, 5, 6)
 	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_sb"), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 7)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_frac"), pre_sc_bias)
+	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_frac"), pre_sc_bias)
+	megalut.plot.scatter.scatter(ax, cat, pre_maskedfrac, pre_sc_bias, sidehists=True)
+	
+	
 	ax = fig.add_subplot(3, 5, 8)
 	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_flux"), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 9)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_flux", rea=1), pre_sc_bias)
+	megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux"), pre_sc_bias, Feature("tru_rad"))
 	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_flux_mean"), pre_gc_bias)
 	ax = fig.add_subplot(3, 5, 10)
 	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_sigma", rea=1), pre_sc_bias)
@@ -141,6 +154,7 @@ def plot(cat, component, filepath=None, select=None):
 	plt.tight_layout()
 
 	if filepath:
+		logger.info("Writing plot to '{}'...".format(filepath))
 		plt.savefig(filepath)
 	else:
 		plt.show()
