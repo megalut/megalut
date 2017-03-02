@@ -34,10 +34,11 @@ logger = logging.getLogger(__name__)
 #traindir = os.path.join(config.workdir, "train_Nico4", "fh4g1_sum55")
 #traindir = os.path.join(config.workdir, "train_Nico4", "fh4g2_sum55")
 
-traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_mult22fmb")
+#traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_mult22fmb")
+traindir = os.path.join(config.workdir, "train_Nico4nn", "ada4g1_minimult21")
 
 #valprecatpath = os.path.join(traindir, "valprecat_lowSN.pkl")
-valprecatpath = os.path.join(traindir, "valprecat_3.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 
 

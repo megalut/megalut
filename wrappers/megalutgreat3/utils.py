@@ -12,7 +12,7 @@ class Branch:
 	So in fact there should be no MegaLUT related things in here.
 	"""
 
-	def __init__(self, experiment, obstype, sheartype, datadir=None):
+	def __init__(self, experiment, obstype, sheartype, datadir=".", truthdir="."):
 	
 		assert experiment in ['control', 'real_galaxy', 'variable_psf', 'multiepoch', 'full']
 		assert obstype in ['ground', 'space']
@@ -23,7 +23,8 @@ class Branch:
 		self.sheartype = sheartype
 	
 		self.datadir = datadir
-		"""Root directory of the unzipped GREAT3 data"""
+		self.truthdir = truthdir 
+		
 		
 	
 	def branchtuple(self):
@@ -86,15 +87,20 @@ class Branch:
 		return 1.0
 
 	
-	def branchdir(self):
+	def branchdir(self, truth=False):
 		"""
 		Where all the data is
+		If truth is True, returns the path within the truthdir instead.
 		"""
-		return os.path.join(self.datadir, "/".join(self.branchtuple()))
+		if truth is False:
+			return os.path.join(self.datadir, "/".join(self.branchtuple()))
+		else:
+			return os.path.join(self.truthdir, "/".join(self.branchtuple()))
 
 
-	# For now we only define here the "input" stuff, set by GREAT3.
-	# The MegaLUT output could be rethought, and is commented out.
+	# Now we only define here the paths to the "input" stuff, set by GREAT3.
+	# No MegaLUT-internal files!
+	
 	
 	def get_ftiles(self, xt, yt):
 		"""
@@ -132,5 +138,9 @@ class Branch:
 						(subfield,self.get_ftiles(xt,yt))) # This is set by GREAT3
 	
 	
+	def trushearfilepath(self, subfield, folder=None):
+		if folder is None:
+			folder = self.branchdir(truth=True)
+		return os.path.join(folder, 'shear_params-%03i.txt' % (subfield))
 	
 	

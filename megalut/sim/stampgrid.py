@@ -270,7 +270,7 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
 			psfpixelscale = getattr(psfinfo, "pixelscale", 1.0) # Using getattr so that it works with old objects as well
 			if psfpixelscale > 0.5:
-				logger.warning("You seem to be using a sampled PSF with large pixels (e.g., observed stars). I'll do my best and skip the pixel conv, but this might well lead to errors.")
+				#logger.warning("You seem to be using a sampled PSF with large pixels (e.g., observed stars). I'll do my best and skip the pixel conv, but this might well lead to errors.")
 				skip_pixel_conv = True
 			if flag != 0:
 				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
@@ -293,9 +293,9 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		if skip_pixel_conv == False:	
 			galconv.drawImage(gal_stamp, method="auto") # This will convolve by the image sampling pixel. Don't do this yourself ahead! 
 		else:
+			#logger.warning("NOT computing any pixel convolution")
 			galconv.drawImage(gal_stamp, method="no_pixel") # Simply uses pixel-center values. Know what you are doing, see doc of galsim. 
 
-		
 		
 		# And add noise to the convolved galaxy:
 		gal_stamp.addNoise(galsim.CCDNoise(rng, sky_level=float(row["tru_sky_level"]), gain=float(row["tru_gain"]), read_noise=float(row["tru_read_noise"])))

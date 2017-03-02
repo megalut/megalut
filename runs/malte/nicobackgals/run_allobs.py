@@ -198,15 +198,15 @@ def run(imgpath, incatpath, outcatpath, workdir, traindir, stampsize=60, nside=1
 	confdir = os.path.join(scriptdir, "nicoconfig", "2017-01-24")
 	
 	conflist = [
-		(os.path.join(confdir, "ada4g1.cfg"), os.path.join(confdir, "sum55.cfg")),
-		(os.path.join(confdir, "ada4g2.cfg"), os.path.join(confdir, "sum55.cfg")),
-		(os.path.join(confdir, "fh4g1.cfg"), os.path.join(confdir, "sum55.cfg")),
-		(os.path.join(confdir, "fh4g2.cfg"), os.path.join(confdir, "sum55.cfg"))
+		(os.path.join(confdir, "ada4g1.cfg"), os.path.join(traindir, "ada4g1_sum55")),
+		(os.path.join(confdir, "ada4g2.cfg"), os.path.join(traindir, "ada4g2_sum55")),
+		(os.path.join(confdir, "fh4g1.cfg"), os.path.join(traindir, "fh4g1_sum55")),
+		(os.path.join(confdir, "fh4g2.cfg"), os.path.join(traindir, "fh4g2_sum55"))
 	]
 
 	cat = megalut.tools.io.readpickle(meascatfilepath)
 	predcatfilepath = os.path.join(workdir, "predcat.pkl")
-	cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
+	cat = megalut.learn.tenbilacrun.predict(cat, conflist)
 	megalut.tools.io.writepickle(cat, predcatfilepath)
 
 	#print megalut.tools.table.info(cat)

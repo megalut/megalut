@@ -53,3 +53,12 @@ def readgalcat(branch, subfield, xt=None, yt=None):
 	return cat
 
 
+def readshear(filepath):
+	"""
+	Reads the "shear_params-000.txt" files and returns (g1, g2)
+	"""
+	logger.info("Reading shear from %s..." % (filepath))
+
+	data = np.loadtxt(filepath)
+	return data
+	

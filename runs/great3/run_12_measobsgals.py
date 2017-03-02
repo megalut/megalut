@@ -18,9 +18,6 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Loading the run
-great3 = config.load_run()
-
 
 incatfilepaths = []
 outcatfilepaths = []
@@ -28,13 +25,13 @@ outcatfilepaths = []
 
 # Prepare the input catalogs:
 
-for subfield in config.subfields:
+for subfield in config.great3.subfields:
 
 
-	starcat = megalut.tools.io.readpickle(great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	starcat = megalut.tools.io.readpickle(config.great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	#print starcat
 				
-	incat = megalutgreat3.io.readgalcat(great3, subfield)
+	incat = megalutgreat3.io.readgalcat(config.great3, subfield)
 	
 	
 	# We add PSF info to this field. PSFs are already measured, and we take a random one (among 9) for each galaxy.
@@ -56,28 +53,28 @@ for subfield in config.subfields:
 	# Add the reference to the img and psf stamps:
 	
 	incat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
-		filepath=great3.galimgfilepath(subfield),
+		filepath=config.great3.galimgfilepath(subfield),
 		xname="x",
 		yname="y",
-		stampsize=great3.stampsize(),
-		workdir=great3.path("obs", "img_%i_measworkdir" % subfield)
+		stampsize=config.great3.stampsize(),
+		workdir=config.great3.path("obs", "img_%i_measworkdir" % subfield)
 		)
 
 	incat.meta["psf"] = megalut.tools.imageinfo.ImageInfo(
-		filepath=great3.starimgfilepath(subfield),
+		filepath=config.great3.starimgfilepath(subfield),
 		xname="psfx",
 		yname="psfy",
-		stampsize=great3.stampsize(),
+		stampsize=config.great3.stampsize(),
 		workdir=None
 		)
 
 	# Write the input catalog
-	incatfilepath = great3.path("obs", "img_%i_incat.pkl" % subfield)
+	incatfilepath = config.great3.path("obs", "img_%i_incat.pkl" % subfield)
 	megalut.tools.io.writepickle(incat, incatfilepath)
 	incatfilepaths.append(incatfilepath)
 	
 	# Prepare the filepath for the output catalog
-	outcatfilepath = great3.path("obs", "img_%i_meascat.pkl" % subfield)
+	outcatfilepath = config.great3.path("obs", "img_%i_meascat.pkl" % subfield)
 	outcatfilepaths.append(outcatfilepath)
 
 
@@ -85,9 +82,9 @@ for subfield in config.subfields:
 
 
 # We pass some kwargs for the measfct
-measfctkwargs = {"branch":great3}
+measfctkwargs = {"branch":config.great3}
 
 # And we run with ncpu
 megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfcts.gal, measfctkwargs=measfctkwargs,
-					ncpu=config.ncpu, skipdone=config.skipdone)
+					ncpu=config.great3.ncpu, skipdone=config.great3.skipdone)
 

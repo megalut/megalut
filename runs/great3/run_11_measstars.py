@@ -16,18 +16,15 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-# Loading the run
-great3 = config.load_run()
 
-
-for subfield in config.subfields:
+for subfield in config.great3.subfields:
 
 
 	# We don't bother reading the starcat, and just make one
 	stars = []
 	for i in range(3):
 		for j in range(3):
-			stars.append( [0.5 + great3.stampsize()/2.0 + i*great3.stampsize(), 0.5 + great3.stampsize()/2.0 + j*great3.stampsize()] )
+			stars.append( [0.5 + config.great3.stampsize()/2.0 + i*config.great3.stampsize(), 0.5 + config.great3.stampsize()/2.0 + j*config.great3.stampsize()] )
 	stars = np.array(stars)
 	
 	starcat = astropy.table.Table([stars[:,0], stars[:,1]], names=('psfx', 'psfy'))
@@ -39,17 +36,17 @@ for subfield in config.subfields:
 	
 	# To measure the stars, we attach the image:
 	starcat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
-		filepath=great3.starimgfilepath(subfield),
+		filepath=config.great3.starimgfilepath(subfield),
 		xname="psfx",
 		yname="psfy",
-		stampsize=great3.stampsize(),
-		workdir=great3.path("obs", "star_%i_measworkdir" % subfield)
+		stampsize=config.great3.stampsize(),
+		workdir=config.great3.path("obs", "star_%i_measworkdir" % subfield)
 		)
 
-	starcat = measfcts.psf(starcat, branch=great3)
+	starcat = measfcts.psf(starcat, branch=config.great3)
 	#print starcat[["psfx", "psfy", "psf_sewpy_XWIN_IMAGE", "psf_sewpy_YWIN_IMAGE", "psf_adamom_x", "psf_adamom_y"]]
 	#print starcat
 
-	megalut.tools.io.writepickle(starcat, great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	megalut.tools.io.writepickle(starcat, config.great3.path("obs", "star_%i_meascat.pkl" % subfield))
 	
 

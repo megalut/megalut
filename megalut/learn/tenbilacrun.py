@@ -56,8 +56,10 @@ def train(catalog, conflist, workbasedir):
 		# Preparing the inputs
 		inputsdata = get3Ddata(catalog, inputlabels)
 		if len(auxinputlabels) != 0:
+			logger.info("We have auxinputs")
 			auxinputsdata = get3Ddata(catalog, auxinputlabels)
 		else:
+			logger.info("No auxinputs")
 			auxinputsdata = None
 		
 		# Preparing the targets
@@ -75,7 +77,7 @@ def train(catalog, conflist, workbasedir):
 		tblconfiglist = [("setup", "workdir", trainworkdir), ("setup", "name", confname)]
 		ten = tenbilac.com.Tenbilac(toolconfpath, tblconfiglist)
 		
-		ten.train(inputsdata, targetsdata, inputlabels, targetlabels)
+		ten.train(inputsdata, targetsdata, inputlabels, targetlabels, auxinputs=auxinputsdata)
 		
 	
 		

@@ -26,7 +26,7 @@ traincatpath = os.path.join(config.simdir, "Nico4nn", "groupmeascat.pkl")
 
 
 conflist = [
-	#("conf/ada4g1.cfg", "conf/sum55.cfg"),
+	("conf/ada4g1.cfg", "conf/sum55.cfg")
 	#("conf/ada4g2.cfg", "conf/sum55.cfg")
 	#("conf/ada4g1.cfg", "conf/sum55.cfg")
 	#("conf/ada4g2.cfg", "conf/sum55.cfg")
@@ -37,18 +37,18 @@ conflist = [
 	#("conf/fh4g2.cfg", "conf/sum55mbf1.cfg") # dit not run, look g1 first
 	#("conf/fh4g1.cfg", "conf/sum55_pretrained.cfg")
 	#("conf/ada4g1.cfg", "conf/mult33free.cfg")
-	("conf/ada4g1.cfg", "conf/mult22fmb.cfg")
+	#("conf/ada4g1.cfg", "conf/mult22fmb.cfg")
+	#("conf/ada4g1.cfg", "conf/minimult21.cfg")
 ]
 
 
-"""
+
 traincat = megalut.tools.io.readpickle(traincatpath)
 dirnames = megalut.learn.tenbilacrun.train(traincat, conflist, traindir)
 dirname = dirnames[0]
-#dirname = "fh4g1_sum55"
-"""
 
-dirname = "ada4g1_mult22fmb"
+#dirname = "fh4g1_sum55"
+#dirname = "ada4g1_mult22fmb"
 
 
 # Self-predicting
@@ -70,6 +70,7 @@ cat = megalut.tools.io.readpickle(valcatpath)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
 megalut.tools.io.writepickle(cat, valprecatpath)
 
+
 # Idem for the low-SN set:
 
 valcatpath = os.path.join(config.simdir, "Nico4shear_snc10000_lowSN", "groupmeascat_cases.pkl")
@@ -78,4 +79,5 @@ valprecatpath = os.path.join(traindir, dirname, "valprecat_lowSN.pkl")
 cat = megalut.tools.io.readpickle(valcatpath)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
 megalut.tools.io.writepickle(cat, valprecatpath)
+
 
