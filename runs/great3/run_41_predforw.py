@@ -15,29 +15,20 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-spname = "G3CGCSersics_statshear"
-trainspname = "G3CGCSersics_train_shear_snc100_nn_G3"
-
 
 for subfield in config.great3.subfields:
 
 	logger.info("Working on subfield {}".format(subfield))
 
-	catpath = config.great3.path("simmeas", "%03i" % subfield, spname, "groupmeascat.pkl")
+	catpath = config.great3.subpath(subfield, "simmeas", config.datasets["train-weight"], "groupmeascat.pkl")
 	cat = megalut.tools.io.readpickle(catpath)
 	#print megalut.tools.table.info(cat)
 	#exit()
 	
-	conflist = [	
-		("mlconfig/ada4s1.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4s1_sum55")),
-		
-		#("mlconfig/ada4g2.cfg", config.great3.path("ml", "%03i" % subfield, "ada4g2_sum55"))
-	]
-	
-	
-	predcat = megalut.learn.tenbilacrun.predict(cat, conflist)
+	traindir = config.great3.subpath(subfield, "ml", config.datasets["train-shear"])
+	predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist, traindir)
 
-	predcatpath = config.great3.path("simmeas", "%03i" % subfield, spname, "groupmeascat_pred.pkl")
+	predcatpath = config.great3.subpath(subfield, "simmeas", config.datasets["train-weight"], "groupmeascat_predforw.pkl")
 	megalut.tools.io.writepickle(predcat, predcatpath)
 	
 	

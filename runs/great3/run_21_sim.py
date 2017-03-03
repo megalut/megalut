@@ -56,7 +56,7 @@ def run(simtype=None):
 	
 	elif simtype == "valid-shear":
 	
-		sp = simparams.G3Sersics_statshear(
+		sp = simparams.G3Sersics(
 			name = "vs-shear-n-G3-snc1000",
 			snc_type = 1000, # A lot, but this also covers noise and sub-pixel alignment
 			shear = 0.1,
@@ -115,6 +115,26 @@ def run(simtype=None):
 			"groupmode":"shear"				
 		}
 
+
+	elif simtype == "simobscompa":
+
+		sp = simparams.G3Sersics_statshear(
+			name = "simobscompa-G3", # Drawing a few galaxies to compare their feature distribs with those of the "observations"
+			snc_type = 1,
+			shear = 0.0, # Would be OK to put a little shear, in fact, as the observations have some.
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 1000 galaxies, single realization
+		drawconf = {
+			"n":100,
+			"nc":5,  # To get a good samplign of sersicn (n / nc)
+			"nrea":1,
+			"ncat":10,
+			"ncpu":10,
+			"groupmode":None			
+		}
 		
 	else:
 		raise RuntimeError("Unknown simtype, see code for defined names.")
@@ -140,7 +160,7 @@ def runsub(subfield, sp, drawconf):
 	# Loading the PSF for the subfield
 	psfcat = megalut.tools.io.readpickle(config.great3.subpath(subfield, "obs", "star_meascat.pkl"))
 	
-
+	
 	# Simulating images
 	megalut.sim.run.multi(
 		simdir=simdir,
@@ -163,7 +183,7 @@ def runsub(subfield, sp, drawconf):
 		ncpu=drawconf["ncpu"],
 		skipdone=config.great3.skipdone
 	)
-
+	
 
 	cat = megalut.meas.avg.onsims(
 		measdir=measdir, 
@@ -175,13 +195,23 @@ def runsub(subfield, sp, drawconf):
 
 	megalut.tools.table.keepunique(cat)
 	megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-
 	
+	#cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+	#print megalut.tools.table.info(cat)
+	#exit()
+
 	# For shear sims, we group the results in cases of same true shears
 	if drawconf["groupmode"] == "shear":
 			
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 		megalut.tools.table.keepunique(cat)
+		
+		# For each case, we add the fraction of failed measurements
+		nrea = cat["adamom_g1"].shape[1]
+		logger.info("We have {} realizations".format(nrea))
+		cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
+		#print cat["adamom_failfrac"]
+
 		#print megalut.tools.table.info(cat)
 		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl")) # Just overwrite, don't need the other one
 

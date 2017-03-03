@@ -20,25 +20,20 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-
-	spname = "G3CGCSersics_simobscompa"
 	
 	for subfield in config.great3.subfields:
 		
-		measdir = config.great3.path("simmeas","%03i" % subfield)
+		spname = config.datasets["simobscompa"]
+		measdir = config.great3.subpath(subfield, "simmeas")
 
 		simcat = megalut.tools.io.readpickle(os.path.join(measdir, spname, "groupmeascat.pkl"))
 		#print megalut.tools.table.info(simcat)
 
-		#bestsub = megalut.tools.table.Selector("bestsub", [("is", "subfield", subfield)])
-		#simcat = bestsub.select(simcat)
-		#print megalut.tools.table.info(simcat)
 
-
-		obscat = megalut.tools.io.readpickle(config.great3.path("obs", "img_%i_meascat.pkl"%(subfield)))
+		obscat = megalut.tools.io.readpickle(config.great3.subpath(subfield, "obs", "img_meascat.pkl"))
 		#print megalut.tools.table.info(obscat)
 	
-		plotpath = config.great3.path("simmeas","%03i" % subfield, spname, "simobscompa.png")
+		plotpath = config.great3.subpath(subfield, "simmeas", "{}.png".format(spname))
 		
 		plot(simcat, obscat, filepath=plotpath)
 		logger.info("Plotted to {}".format(plotpath))
@@ -95,51 +90,53 @@ def plot(simcat, obscat, filepath=None):
 
 
 
-	fig = plt.figure(figsize=(16, 11))
+	fig = plt.figure(figsize=(24, 14))
 	#fig = plt.figure(figsize=(8, 8))
 
-	ax = fig.add_subplot(3, 4, 1)
+	ax = fig.add_subplot(3, 5, 1)
 
 	megalut.plot.contour.simobs(ax, simcat, obscat, adamom_g1, adamom_g2, plotpoints=False, nlines=2)
 	#megalut.plot.hist.hist(ax, simcat, snr, color="red", label="Training", normed=True)
 	#megalut.plot.hist.hist(ax, obscat, snr, color="blue", label="GREAT3", normed=True)
 
-	ax = fig.add_subplot(3, 4, 2)
+	ax = fig.add_subplot(3, 5, 2)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_g1, adamom_g2)
 	
-	ax = fig.add_subplot(3, 4, 3)
+	ax = fig.add_subplot(3, 5, 3)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, snr, adamom_sigma, legend=True)
 
-	ax = fig.add_subplot(3, 4, 4)
+	ax = fig.add_subplot(3, 5, 4)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_flux, adamom_sigma)
 
+	ax = fig.add_subplot(3, 5, 5)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, Feature("adamom_flux", 0, 80, rea=rea), Feature("adamom_sigma", 0.5, 3.5, rea=rea))
+	
 
-	ax = fig.add_subplot(3, 4, 5)
+	ax = fig.add_subplot(3, 5, 6)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_sb2, aperphot_sb3)
 
-	ax = fig.add_subplot(3, 4, 6)
+	ax = fig.add_subplot(3, 5, 7)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_sb5, aperphot_sb8)
 
-	ax = fig.add_subplot(3, 4, 7)
+	ax = fig.add_subplot(3, 5, 8)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_sbr1, aperphot_sbr2)
 
-	ax = fig.add_subplot(3, 4, 8)
+	ax = fig.add_subplot(3, 5, 9)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_log_flux, adamom_sigma)
 
 
-	ax = fig.add_subplot(3, 4, 9)
+
+
+	ax = fig.add_subplot(3, 5, 11)
 	megalut.plot.contour.simobs(ax, simcat, obscat, skymad, skymean, plotpoints=False)
 
-
-	ax = fig.add_subplot(3, 4, 10)
+	ax = fig.add_subplot(3, 5, 12)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, aperphot_log_sb2, aperphot_log_sb5)
 
-
-	
-	ax = fig.add_subplot(3, 4, 11)
+	ax = fig.add_subplot(3, 5, 13)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_rho4, adamom_sigma)
 
-	ax = fig.add_subplot(3, 4, 12)
+	ax = fig.add_subplot(3, 5, 14)
 	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_log_flux, adamom_rho4)
 	#ax.set_xscale("log", nonposx='clip')
 

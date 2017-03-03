@@ -9,34 +9,14 @@ import config
 import numpy as np
 import os
 
+import plot_2_val
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-#valspname = "G3CGCSersics_valid"
-#valspname = "G3CGCSersics_statshear"
 
-valspname = "G3CGCSersics_valid_shear_snc1000_G3"  # <--- to validate shear
-#valspname = "G3CGCSersics_valid_overall" # <--- to validate overall, with weights
-
-trainspname = "G3CGCSersics_train_nn"
-#trainspname = "G3CGCSersics_train_shear_snc100"
-#trainspname = "G3CGCSersics_train_shear_snc10000"
-#trainspname = "G3CGCSersics_train_nn_2rea"
-#trainspname = "G3CGCSersics_train_nn_20rea"
-#trainspname = "G3CGCSersics_train_shear_snc100_nn"
-#trainspname = "G3CGCSersics_train_shear_snc100_nn_G3"
-
-
-# Select a new
-
-
-predname = "ada4_sum55_statshear"
-#predname = "ada4_sum55_statshear_20000its"
-
-#predname = "ada4_sum55_valid_weights"
 
 
 
@@ -44,28 +24,41 @@ for subfield in config.great3.subfields:
 
 	logger.info("Working on subfield {}".format(subfield))
 
-	catpath = config.great3.path("simmeas", "%03i" % subfield, valspname, "groupmeascat.pkl")
-	cat = megalut.tools.io.readpickle(catpath)
-	#print megalut.tools.table.info(cat)
+	for conf in config.shearconflist: # We go through them one by one here.
+
+		catpath = config.great3.subpath(subfield, "simmeas", config.datasets["valid-shear"], "groupmeascat.pkl")
+		cat = megalut.tools.io.readpickle(catpath)
+		traindir = config.great3.subpath(subfield, "ml", config.datasets["train-shear"])
+
+		confname = megalut.learn.tenbilacrun.confnames([conf])[0]
+		predcat = megalut.learn.tenbilacrun.predict(cat, [conf], traindir)
+
+		valname = "pred_{}_with_{}_{}".format(config.datasets["valid-shear"], config.datasets["train-shear"], confname)	
+
+		predcatpath = config.great3.subpath(subfield, "val", valname + ".pkl")
+		figpredcatpath = config.great3.subpath(subfield, "val", valname + ".png")
+		
+		figgoodpredcatpath = config.great3.subpath(subfield, "val", valname + "_good.png")
+		predcat2 = predcat.copy()
+			
+		megalut.tools.io.writepickle(predcat, predcatpath)
 	
+		# And make the plot	
+		if "s2" in conf[0] or "g2" in conf[0]:
+			component = 2
+		else:
+			component = 1
+		plot_2_val.plot(predcat, component, mode=config.trainmode, filepath=figpredcatpath)
+		
+		s = megalut.tools.table.Selector("good", [
+			("max", "pre_maskedfrac", 0.1),
+		])
+		plot_2_val.plot(predcat2, component, mode=config.trainmode, select=s, filepath=figgoodpredcatpath)
+	
+	"""
 	conflist = [
 		#("mlconfig/ada4s1.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4s1_sum55")),
-		("mlconfig/ada4g1.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4g1_sum55")),
-		
-		#("mlconfig/ada4s1.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4s1_sum55")),
 		#("mlconfig/ada4s1.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4s1_sum55/mini_ada4s1_sum55_2017-02-26T09-46-42")),
-		
-		
-		#("mlconfig/ada4g2.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada4g2_sum55")),
-		#("mlconfig/ada2g1w.cfg", config.great3.path("ml", "%03i" % subfield, trainspname, "ada2g1w_sum33w")),
-
-		
 	]
-	
-	
-	predcat = megalut.learn.tenbilacrun.predict(cat, conflist)
-
-	predcatpath = config.great3.path("ml", "%03i" % subfield, trainspname, "predcat_{}.pkl".format(predname))
-	megalut.tools.io.writepickle(predcat, predcatpath)
-	
+	"""
 	

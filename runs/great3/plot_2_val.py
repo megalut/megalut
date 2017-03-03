@@ -18,20 +18,6 @@ logging.basicConfig(format=config.loggerformat, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-#trainspname = "G3CGCSersics_train_shear_snc100"
-#trainspname = "G3CGCSersics_train_shear_snc10000"
-#trainspname = "G3CGCSersics_train_shear_snc100_nn_G3"
-trainspname = "G3CGCSersics_train_nn"
-
-predname = "ada4_sum55_statshear"
-#predname = "ada4_sum55_valid"
-#predname = "ada4_sum55_valid_snc1000"
-
-
-#predname = "ada4_sum55"
-
-
-component = 1 # which shear component
 
 
 def main():
@@ -39,6 +25,8 @@ def main():
 
 	for subfield in config.great3.subfields:
 		
+		# To be updated if needed
+		"""
 		predcatpath = config.great3.path("ml", "%03i" % subfield, trainspname, "predcat_{}.pkl".format(predname))
 		cat = megalut.tools.io.readpickle(predcatpath)
 		print megalut.tools.table.info(cat)
@@ -52,17 +40,19 @@ def main():
 		plotpath = None
 		#plotpath = config.great3.path("ml","%03i" % subfield, "valplot_{}_comp{}.png".format(predname, component))
 		
+		
 		s = megalut.tools.table.Selector("ok", [
 			("in", "snr_mean", 3, 15),
 			("min", "tru_rad", 0.5),
 			("in", "tru_rad", 0.5, 2.7),
 			("max", "adamom_frac", 0.02)
 		])
+	
 		s = None
 		
 		plot(cat, component, filepath=plotpath, select=s)
 		logger.info("Plotted to {}".format(plotpath))
-
+		"""
 
 
 
@@ -75,6 +65,11 @@ def plot(cat, component, mode="s", filepath=None, select=None):
 	
 	cat["pre_maskedfrac"] = np.sum(cat[prename].mask, axis=1) / float(cat[prename].shape[1])
 	#cat["pre_frac"] = (float(cat[prename].shape[1]) - np.sum(cat[prename].mask, axis=1)) / float(cat[prename].shape[1])
+	
+	#b = cat["tru_s1", "pre_maskedfrac", "adamom_failfrac"]
+	#b.show_in_browser()
+	#exit()
+	#assert np.allclose(["pre_maskedfrac"], cat["adamom_failfrac"])
 	
 	pre_maskedfrac = Feature("pre_maskedfrac")
 	
@@ -122,20 +117,23 @@ def plot(cat, component, mode="s", filepath=None, select=None):
 
 	
 	ax = fig.add_subplot(3, 5, 6)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_sb"), pre_sc_bias)
+	megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux"), pre_sc_bias, Feature("tru_rad"))
 	ax = fig.add_subplot(3, 5, 7)
 	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_frac"), pre_sc_bias)
 	megalut.plot.scatter.scatter(ax, cat, pre_maskedfrac, pre_sc_bias, sidehists=True)
+	#ax.set_xscale("log", nonposy='clip')
 	
 	
 	ax = fig.add_subplot(3, 5, 8)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_flux"), pre_sc_bias)
+	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_flux"), pre_sc_bias, norm=cnorm)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_rad"), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 9)
-	megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux"), pre_sc_bias, Feature("tru_rad"))
+	#megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux"), pre_sc_bias, Feature("tru_rad"))
 	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_flux_mean"), pre_gc_bias)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_flux"), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 10)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_sigma", rea=1), pre_sc_bias)
-
+	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_sigma", rea=1), pre_sc_bias)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_sb"), pre_sc_bias)
 	
 	ax = fig.add_subplot(3, 5, 11)
 	megalut.plot.bin.res(ax, cat, tru_sc, pre_sc_mean, Feature("tru_sb"), ncbins=3, equalcount=True, ebarmode=ebarmode)

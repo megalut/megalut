@@ -7,6 +7,8 @@ This code illustrates the use of MegaLUT on GREAT3 data and reproduces the figur
 We focus on the single-epoch constant-PSF branches.
 
 The general idea of this "pipeline" is to be flexible enough to allow for easy experimentation.
+It makes it possible to test and compare different settings. 
+
 In principle, we'll run the scripts one after the other.
 There is no centralised configuration scheme for these scripts, and some settings are directly hard-coded.
 A first overview of the configuration:
@@ -32,6 +34,12 @@ A first overview of the configuration:
 
 
 
+
+Tutorial
+========
+
+
+To start discovering, simobscompa
 
 
 
