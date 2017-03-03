@@ -9,15 +9,11 @@ import config
 import numpy as np
 import os
 
+import plot_3_valw
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-
-
-valspname = "G3CGCSersics_valid_overall" # <--- to validate overall, with weights
-
-predname = "test1"
 
 
 
@@ -25,26 +21,35 @@ for subfield in config.great3.subfields:
 
 	logger.info("Working on subfield {}".format(subfield))
 
-	catpath = config.great3.path("simmeas", "%03i" % subfield, valspname, "groupmeascat.pkl")
+	catpath = config.great3.subpath(subfield, "simmeas", config.datasets["valid-overall"], "groupmeascat.pkl")
 	cat = megalut.tools.io.readpickle(catpath)
 	#print megalut.tools.table.info(cat)
 	
-	conflist = [
-			
-		("mlconfig/ada4s1.cfg", config.great3.path("ml", "%03i" % subfield, "G3CGCSersics_train_shear_snc100_nn_G3", "ada4s1_sum55")),
-		("mlconfig/ada2s1w.cfg", config.great3.path("ml", "%03i" % subfield, "G3CGCSersics_statshear", "ada2s1w_sum3w")),
+	
+	sheartraindir = config.great3.subpath(subfield, "ml", config.datasets["train-shear"])
+	predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
+	
+	if len(config.weightconflist) > 0:
 		
-	]
+		weighttraindir = config.great3.subpath(subfield, "ml", config.datasets["train-weight"])
+		predcat = megalut.learn.tenbilacrun.predict(predcat, config.weightconflist , weighttraindir)
+
+		
+	valname = "pred_{}".format(config.datasets["valid-overall"]) # Too messy to add everything here.
+	predcatpath = config.great3.subpath(subfield, "val", valname + ".pkl")
+	figpredcatpath = config.great3.subpath(subfield, "val", valname + ".png")
 	
-	predcat = megalut.learn.tenbilacrun.predict(cat, conflist)
-
-	#print np.sum(predcat["pre_s1"].mask)
-	#exit()
-
-	valdir = config.great3.path("val", "%03i" % subfield)
-	if not os.path.isdir(valdir):
-		os.makedirs(valdir)
-	predcatpath = os.path.join(valdir, "predcat_{}.pkl".format(predname))
 	megalut.tools.io.writepickle(predcat, predcatpath)
-	
-	
+
+	shearconfnames = megalut.learn.tenbilacrun.confnames(config.shearconflist)
+	for (confname, conf) in zip(shearconfnames, config.shearconflist):
+
+		predcatcopy = predcat.copy() # As plots modifies it.
+		if "s2" in conf[0] or "g2" in conf[0]:
+			component = 2
+		else:
+			component = 1
+		
+		figpredcatpath = config.great3.subpath(subfield, "val", valname + "_" + str(component) + ".png")
+		plot_3_valw.plot(predcatcopy, component, filepath=figpredcatpath)
+		

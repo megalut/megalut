@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 
 
 
-predname = "test1"
+#predname = "test1"
 
-component = 1 # which component
+#component = 1 # which component
 
 
 def main():
@@ -28,6 +28,8 @@ def main():
 
 	for subfield in config.great3.subfields:
 		
+		# Would need to be updated
+		"""
 		catpath = "/vol/fohlen11/fohlen11_1/mtewes/2017_MegaLUT_GREAT3/cgc_v1/ml/099/G3CGCSersics_train_nn/predcat_ada4_sum55_statshear.pkl"
 		#catpath = config.great3.path("val","%03i" % subfield, "predcat_{}.pkl".format(predname))
 		cat = megalut.tools.io.readpickle(catpath)
@@ -38,11 +40,11 @@ def main():
 		cat["pre_s1w"] = np.asarray(cat["snr"] > 5, dtype=float)
 		#cat["pre_s1w"] = np.asarray(cat["pre_s1w"] > 0.4, dtype=float)
 		
-		"""
+		
 		# Checking that the predictions are correctly masked:
-		assert np.sum(cat["adamom_g1"].mask) == np.sum(cat["pre_s1"].mask)
-		assert np.sum(cat["adamom_g1"].mask) == np.sum(cat["pre_s1w"].mask)
-		"""
+		#assert np.sum(cat["adamom_g1"].mask) == np.sum(cat["pre_s1"].mask)
+		#assert np.sum(cat["adamom_g1"].mask) == np.sum(cat["pre_s1w"].mask)
+		
 		
 		#print megalut.tools.table.info(cat)
 		#print cat["pre_s1", "snr", "pre_s1w"]
@@ -54,7 +56,7 @@ def main():
 		
 		plot(cat, component, filepath=plotpath, title = predname)
 		logger.info("Plotted to {}".format(plotpath))
-
+		"""
 
 
 
