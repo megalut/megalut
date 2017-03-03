@@ -1,3 +1,53 @@
+
+
+About
+=====
+
+This code illustrates the use of MegaLUT on GREAT3 data and reproduces the figures from our paper.
+We focus on the single-epoch constant-PSF branches.
+
+The general idea of this "pipeline" is to be flexible enough to allow for easy experimentation.
+In principle, we'll run the scripts one after the other.
+There is no centralised configuration scheme for these scripts, and some settings are directly hard-coded.
+A first overview of the configuration:
+
+  - config.py
+  	- paths to the GREAT3 data, what branch and what subfields to process
+	- what datasets to use for training and validation
+
+  - measfcts.py
+    - settings related to the feature measurements
+
+  - simparams.py
+    - description of the simulations, galaxy parameter distributions 
+
+  - run_21_sim.py
+    - the structures and sizes of the datasets to be simulated
+
+  - mlconfig/
+  	- Configurations for the machine learning with Tenbilac
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 About
 =====
 

@@ -19,7 +19,6 @@ import plot_2_valid
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
-#tbllogger = logging.getLogger("tenbilac")
 
 
 spname = "G3CGCSersics_train_nn"

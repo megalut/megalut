@@ -145,7 +145,7 @@ class G3Sersics_statshear(G3Sersics):
 	"""
 	
 	def __init__(self, **kwargs):
-		G3CGCSersics.__init__(self, **kwargs)
+		G3Sersics.__init__(self, **kwargs)
 		
 	def stat(self):
 		"""
