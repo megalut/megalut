@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 
+
 def train(catalog, conflist, workbasedir):
 	"""
 	Top-level function to train Tenbilacs with data from a MegaLUT catalog.
@@ -85,6 +86,23 @@ def train(catalog, conflist, workbasedir):
 	logger.info("Done, the total time for training the %i MLs was %s" % (len(conflist), str(endtime - starttime)))
 	
 	return trainworkdirs
+
+
+def confnames(conflist):
+	"""
+	Returns a list of names for the conflist items, which can be used as directories.
+	This is exactly what train also returns.
+	"""
+	output = []
+	for (dataconfpath, toolconfpath) in conflist:
+		# We read in the configurations
+		dataconfig = readconfig(dataconfpath) # The data config (what to train usign which features)
+		toolconfig = readconfig(toolconfpath) # The Tenbilac config
+		confname = dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name")
+		output.append(confname)
+	return output
+
+
 
 def predict(catalog, conflist, workbasedir=None):
 	"""
