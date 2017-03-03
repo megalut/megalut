@@ -132,6 +132,8 @@ def predict(catalog, conflist, workbasedir=None):
 		dataconfig = readconfig(dataconfpath)
 		if os.path.isfile(toolconfpath):
 			toolconfig = readconfig(toolconfpath)
+			if workbasedir is None:
+				raise RuntimeError("As config files (and not dirs) are given to predict, it also needs a workbasedir!")
 			trainworkdir = os.path.join(workbasedir, dataconfig.get("setup", "name") + "_" + toolconfig.get("setup", "name"))
 		elif os.path.isdir(toolconfpath):
 			# Then we don't have to read this now. Tenbilac will take care of it.
