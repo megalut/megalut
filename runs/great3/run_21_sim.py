@@ -34,7 +34,8 @@ def run(simtype=None):
 	logger.info("Drawing simtype {}...".format(simtype))
 	
 	if simtype == "train-shear":
-
+		
+		"""
 		sp = simparams.G3Sersics(
 			name = "ts-shear-nn-uni-snc100", # Cases have different shear, but mix galaxies
 			snc_type = 100,
@@ -52,7 +53,48 @@ def run(simtype=None):
 			"ncpu":25,
 			"groupmode":"shear"			
 		}
+		"""
+		"""
+		sp = simparams.G3Sersics(
+			name = "ts-shear-nn-G3-snc100", # Cases have different shear, but mix galaxies. G3 as useless to add others
+			snc_type = 100,
+			shear = 0.1,
+			noise_level = 0,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 1000 cases with 100 snc rea
+		drawconf = {
+			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
+			"nc":1,
+			"nrea":1,
+			"ncat":25,
+			"ncpu":25,
+			"groupmode":"shear"			
+		}
+		"""
+		sp = simparams.G3Sersics(
+			name = "ts-shear-nn-train-snc100", # Cases have different shear, but mix galaxies. G3 as useless to add others
+			snc_type = 100,
+			shear = 0.1,
+			noise_level = 0,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 cases with 100 snc rea
+		drawconf = {
+			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
+			"nc":1,
+			"nrea":1,
+			"ncat":25,
+			"ncpu":25,
+			"groupmode":"shear"			
+		}
 	
+		
+		
+		
+		
 	
 	elif simtype == "valid-shear":
 	
