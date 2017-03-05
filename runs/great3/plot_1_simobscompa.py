@@ -32,8 +32,10 @@ def main():
 
 		obscat = megalut.tools.io.readpickle(config.great3.subpath(subfield, "obs", "img_meascat.pkl"))
 		#print megalut.tools.table.info(obscat)
+		#obscat = obscat[:1000]
 	
 		plotpath = config.great3.subpath(subfield, "simmeas", "{}.png".format(spname))
+		#plotpath = None
 		
 		plot(simcat, obscat, filepath=plotpath)
 		logger.info("Plotted to {}".format(plotpath))
