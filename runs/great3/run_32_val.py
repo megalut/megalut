@@ -48,12 +48,12 @@ for subfield in config.great3.subfields:
 			component = 2
 		else:
 			component = 1
-		plot_2_val.plot(predcat, component, mode=config.trainmode, filepath=figpredcatpath)
+		plot_2_val.plot(predcat, component, mode="s", filepath=figpredcatpath)
 		
 		s = megalut.tools.table.Selector("good", [
 			("max", "pre_maskedfrac", 0.1),
 		])
-		plot_2_val.plot(predcat2, component, mode=config.trainmode, select=s, filepath=figgoodpredcatpath)
+		plot_2_val.plot(predcat2, component, mode="s", select=s, filepath=figgoodpredcatpath)
 	
 	"""
 	conflist = [

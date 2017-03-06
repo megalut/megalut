@@ -50,13 +50,13 @@ class G3Sersics(megalut.sim.params.Params):
 		"""
 		Galaxy ellipticity
 		"""
-		if self.distmode == "G3":
+		if self.distmode == "G3" or self.distmode == "train":
 			# Simple distributions roughly tuned to ressemble GREAT3
 			tru_g = contracted_rayleigh(0.2, 0.7, 4)
 			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 		
-		elif self.distmode == "uni" or self.distmode == "train":
+		elif self.distmode == "uni":
 			# More "uniform" distribs for nicer filling in plots
 			tru_g1 = np.random.uniform(-0.7, 0.7)
 			tru_g2 = np.random.uniform(-0.7, 0.7)

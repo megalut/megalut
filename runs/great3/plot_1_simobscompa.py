@@ -1,6 +1,8 @@
 """
 Classic simobscompa plot
 """
+import matplotlib
+matplotlib.use("AGG")
 
 import megalut
 import megalutgreat3
@@ -24,6 +26,12 @@ def main():
 	for subfield in config.great3.subfields:
 		
 		spname = config.datasets["simobscompa"]
+		plotpath = config.great3.subpath(subfield, "simmeas", "{}.png".format(spname))
+		#plotpath = None
+		if config.great3.skipdone and os.path.exists(plotpath):
+			logger.info("Subfield {} is already done".format(subfield))
+			continue
+		
 		measdir = config.great3.subpath(subfield, "simmeas")
 
 		simcat = megalut.tools.io.readpickle(os.path.join(measdir, spname, "groupmeascat.pkl"))
@@ -33,10 +41,7 @@ def main():
 		obscat = megalut.tools.io.readpickle(config.great3.subpath(subfield, "obs", "img_meascat.pkl"))
 		#print megalut.tools.table.info(obscat)
 		#obscat = obscat[:1000]
-	
-		plotpath = config.great3.subpath(subfield, "simmeas", "{}.png".format(spname))
-		#plotpath = None
-		
+			
 		plot(simcat, obscat, filepath=plotpath)
 		logger.info("Plotted to {}".format(plotpath))
 

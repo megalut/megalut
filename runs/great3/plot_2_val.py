@@ -58,6 +58,8 @@ def main():
 
 def plot(cat, component, mode="s", filepath=None, select=None):
 
+
+	logger.info("Running on component {} with mode {}".format(component, mode))
 	#cat["adamom_log_flux"] = np.log10(cat["adamom_flux"])
 	#cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
 	

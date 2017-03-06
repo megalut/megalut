@@ -37,61 +37,101 @@ def run(simtype=None):
 		
 		"""
 		sp = simparams.G3Sersics(
-			name = "ts-shear-nn-uni-snc100", # Cases have different shear, but mix galaxies
-			snc_type = 100,
-			shear = 0.1,
-			noise_level = 0,
-			obstype = config.great3.obstype,
-			distmode = "uni"
-		)
-		# 1000 cases with 100 snc rea
-		drawconf = {
-			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
-			"nc":1,
-			"nrea":1,
-			"ncat":25,
-			"ncpu":25,
-			"groupmode":"shear"			
-		}
-		"""
-		"""
-		sp = simparams.G3Sersics(
-			name = "ts-shear-nn-G3-snc100", # Cases have different shear, but mix galaxies. G3 as useless to add others
-			snc_type = 100,
+			name = "ts-shear-nn-G3-snc20", # Cases have different shear, but mix galaxies. G3 as best guess.
+			snc_type = 20,
 			shear = 0.1,
 			noise_level = 0,
 			obstype = config.great3.obstype,
 			distmode = "G3"
 		)
-		# 1000 cases with 100 snc rea
+		# 1000 cases with 20 snc rea
 		drawconf = {
 			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
 			"nc":1,
 			"nrea":1,
 			"ncat":25,
 			"ncpu":25,
-			"groupmode":"shear"			
+			"groupmode":"s"			
 		}
 		"""
+		
+		"""
 		sp = simparams.G3Sersics(
-			name = "ts-shear-nn-train-snc100", # Cases have different shear, but mix galaxies. G3 as useless to add others
-			snc_type = 100,
+			name = "ts-shear-nn-train-snc20", # Cases have different shear, but mix galaxies. G3 as useless to add others
+			snc_type = 20,
 			shear = 0.1,
 			noise_level = 0,
 			obstype = config.great3.obstype,
 			distmode = "train"
 		)
-		# 1000 cases with 100 snc rea
+		# 1000 cases with 20 snc rea
 		drawconf = {
 			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
 			"nc":1,
 			"nrea":1,
 			"ncat":25,
 			"ncpu":25,
-			"groupmode":"shear"			
+			"groupmode":"s"			
 		}
-	
+		"""
 		
+		sp = simparams.G3Sersics(
+			name = "ts-ell-nn-train-rea20", # Ellipticity training, without noise
+			snc_type = 1,
+			shear = 0,
+			noise_level = 0,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 cases with 20 rea
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":20,
+			"ncat":1,
+			"ncpu":20,
+			"groupmode":"g"			
+		}
+		"""
+		
+		sp = simparams.G3Sersics(
+			name = "ts-ell-n-train-rea100", # Ellipticity training, with noise
+			snc_type = 1,
+			shear = 0,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 cases with 100 rea
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":100,
+			"ncat":1,
+			"ncpu":20,
+			"groupmode":"g"			
+		}
+		
+		"""
+		"""
+		sp = simparams.G3Sersics(
+			name = "ts-ell-n-train-rea500", # Ellipticity training, with noise
+			snc_type = 1,
+			shear = 0,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 cases with 500 rea
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":500,
+			"ncat":1,
+			"ncpu":20,
+			"groupmode":"g"			
+		}
+		"""
 		
 		
 		
@@ -100,20 +140,20 @@ def run(simtype=None):
 	
 		sp = simparams.G3Sersics(
 			name = "vs-shear-n-G3-snc1000",
-			snc_type = 1000, # A lot, but this also covers noise and sub-pixel alignment
+			snc_type = 1000, # A lot, but this also covers noise and sub-pixel alignment. Hard to get more.
 			shear = 0.1,
 			noise_level = 1,
 			obstype = config.great3.obstype,
 			distmode = "G3"
 		)
-		# 500 cases (different galaxies and shears), 1000 snc realizations
+		# 1000 cases (different galaxies and shears), 1000 snc realizations
 		drawconf = {
 			"n": 20, # Don't put this to zero, otherwise only one sersicn is used.
 			"nc":1,
 			"nrea":1,
-			"ncat":25,
+			"ncat":50,
 			"ncpu":25,
-			"groupmode":"shear"				
+			"groupmode":"s"				
 		}
 	
 	
@@ -134,7 +174,7 @@ def run(simtype=None):
 			"nrea":1,
 			"ncat":200,
 			"ncpu":25,
-			"groupmode":"shear"				
+			"groupmode":"s"				
 		}
 	
 	elif simtype == "valid-overall":
@@ -154,7 +194,7 @@ def run(simtype=None):
 			"nrea":1,
 			"ncat":200,
 			"ncpu":25,
-			"groupmode":"shear"				
+			"groupmode":"s"				
 		}
 
 
@@ -175,7 +215,7 @@ def run(simtype=None):
 			"nrea":1,
 			"ncat":10,
 			"ncpu":10,
-			"groupmode":None			
+			"groupmode":None
 		}
 		
 	else:
@@ -243,11 +283,13 @@ def runsub(subfield, sp, drawconf):
 	#exit()
 
 	# For shear sims, we group the results in cases of same true shears
-	if drawconf["groupmode"] == "shear":
+	if drawconf["groupmode"] == "s":
 			
 		cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 		megalut.tools.table.keepunique(cat)
 		
+	if drawconf["groupmode"] in ["s", "g"]:
+	
 		# For each case, we add the fraction of failed measurements
 		nrea = cat["adamom_g1"].shape[1]
 		logger.info("We have {} realizations".format(nrea))
@@ -257,6 +299,9 @@ def runsub(subfield, sp, drawconf):
 		#print megalut.tools.table.info(cat)
 		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl")) # Just overwrite, don't need the other one
 
+	
+	
+	
 	
 	"""
 	# For statell sims, we group by ellipticity
