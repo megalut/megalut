@@ -66,34 +66,30 @@ def plot(cat, component, filepath=None, title=None):
 	rea = -20
 	ebarmode = "scatter"
 	
-	if component == 1:
-	
-		# Adding weights if absent:
-		if not "pre_s1w" in cat.colnames:
-			cat["pre_s1w"] = np.ones(cat["adamom_g1"].shape)
-	
-		cat["pre_s1w_norm"] = cat["pre_s1w"] / np.max(cat["pre_s1w"])
 
-		megalut.tools.table.addrmsd(cat, "pre_s1", "tru_s1")
-		megalut.tools.table.addstats(cat, "pre_s1", "pre_s1w")
-		cat["pre_s1_wbias"] = cat["pre_s1_wmean"] - cat["tru_s1"]
-		
-		pre_scw = Feature("pre_s1w", rea=rea)
-		pre_scw_norm = Feature("pre_s1w_norm", rea=rea)
-		
-		pre_sc = Feature("pre_s1", rea=rea)
-		
-		pre_sc_bias = Feature("pre_s1_bias")
-		pre_sc_wbias = Feature("pre_s1_wbias")
-		
-		pre_sc_mean = Feature("pre_s1_mean", -0.13, 0.13)
-		pre_sc_wmean = Feature("pre_s1_wmean", -0.13, 0.13)
-		
-		tru_sc = Feature("tru_s1", -0.13, 0.13)
-		
-		
-	elif component == 2:
-		pass
+	
+	# Adding weights if absent:
+	if not "pre_s{}w".format(component) in cat.colnames:
+		cat["pre_s{}w".format(component)] = np.ones(cat["adamom_g1"].shape)
+		cat["pre_s{}w_norm".format(component)] = cat["pre_s{}w".format(component)] / np.max(cat["pre_s{}w".format(component)])
+	
+	megalut.tools.table.addrmsd(cat, "pre_s{}".format(component), "tru_s{}".format(component))
+
+	megalut.tools.table.addstats(cat, "pre_s{}".format(component), "pre_s{}w".format(component))
+	cat["pre_s{}_wbias".format(component)] = cat["pre_s{}_wmean".format(component)] - cat["tru_s{}".format(component)]
+	
+	pre_scw = Feature("pre_s{}w".format(component), rea=rea)
+	pre_scw_norm = Feature("pre_s{}w_norm".format(component), rea=rea)
+	
+	pre_sc = Feature("pre_s{}".format(component), rea=rea)
+	
+	pre_sc_bias = Feature("pre_s{}_bias".format(component))
+	pre_sc_wbias = Feature("pre_s{}_wbias".format(component))
+	
+	pre_sc_mean = Feature("pre_s{}_mean".format(component), -0.13, 0.13)
+	pre_sc_wmean = Feature("pre_s{}_wmean".format(component), -0.13, 0.13)
+	
+	tru_sc = Feature("tru_s{}".format(component), -0.13, 0.13)
 		
 
 

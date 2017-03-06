@@ -21,15 +21,6 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-"""
-conflist = []
-if "1" in config.runcomp:
-	conflist.append(("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"))
-if "2" in config.runcomp:
-	conflist.append(("mlconfig/ada4s2.cfg", "mlconfig/sum55.cfg"))
-
-"""
-
 select = True
 
 

@@ -37,7 +37,11 @@ class G3Sersics(megalut.sim.params.Params):
 		if self.shear > 0:
 			tru_s1 = np.random.uniform(-self.shear, self.shear)
 			tru_s2 = np.random.uniform(-self.shear, self.shear)	
-		
+			
+			#tru_s = 0.1
+			#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
+			#(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
+			
 		else:
 			tru_s1 = 0.0
 			tru_s2 = 0.0

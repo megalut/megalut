@@ -135,7 +135,9 @@ def plot(cat, component, mode="s", filepath=None, select=None):
 	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_flux"), pre_sc_bias)
 	ax = fig.add_subplot(3, 5, 10)
 	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("adamom_sigma", rea=1), pre_sc_bias)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_sb"), pre_sc_bias)
+	#megalut.plot.scatter.scatter(ax, cat, tru_sc,  Feature("tru_sb"), pre_sc_bias)
+	megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux"), Feature("pre_s{}".format(component), rea=1), Feature("tru_rad"))
+	
 	
 	ax = fig.add_subplot(3, 5, 11)
 	megalut.plot.bin.res(ax, cat, tru_sc, pre_sc_mean, Feature("tru_sb"), ncbins=3, equalcount=True, ebarmode=ebarmode)
