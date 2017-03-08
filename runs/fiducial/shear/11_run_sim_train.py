@@ -16,12 +16,12 @@ simdir = includes.simdir
 # We do not need Shape Noise Cancellation and no shear needeed
 sp = simparams.Ellipticity()
 sp.shear = 0.1
-sp.snc_type = 1
+sp.snc_type = 100
 sp.noise_level = 0.
-n = 1000
+n = 40
 nc = 1
-ncat = 10
-nrea = 10
+ncat = 50
+nrea = 1
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -59,7 +59,10 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+if sp.shear > 0:
+	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+else:
+	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))

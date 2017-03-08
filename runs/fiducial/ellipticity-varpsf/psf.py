@@ -30,7 +30,7 @@ class PSF_Field():
 	
 	def __init__(self, kind, cx=0.5, cy=0.5, e_max=0.015, fwhm_max=0.14, fieldfname=None):
 		"""
-		:param kind: a string either "radial", "tangential", "e1", "e2", "fwhm", "euclid-like". They represent how the ellipticity varies.
+		:param kind: a string either "radial", "tangential", "e1", "e2", "fwhm", "e1e2", "euclid-like". They represent how the ellipticity varies.
 		:param e_max: the maximum value of the ellipiticty
 		:param fwhm_max: idem, FWHM in arcsec
 		:param cx: x coordinate of center of frame
@@ -46,12 +46,16 @@ class PSF_Field():
 		
 		
 		self.e = np.random.uniform(low=self.e_max*0.8, high=self.e_max)
-		self.fwhm = np.random.uniform(low=self.fwhm_max*0.8, high=self.fwhm_max)
+		self.fwhm = np.random.uniform(low=self.fwhm_max*0.9, high=self.fwhm_max)
 		self.dR = np.hypot(self.cx, self.cy)
 		if self.kind == "fwhm":
 			self.position_angle = np.random.uniform(0, np.pi)
 		elif self.kind == "euclid-like":
 			self._load_psf_field()
+		elif self.kind == "e1e2":
+			self.a = np.random.uniform(-.01, .01)
+			self.b = np.random.uniform(-.01, .01)
+			self.c = np.random.uniform(-.01, .01)
 			
 		logger.info('Created PSF field class, kind is {:s}, ellipt. is {:0.3f} and fwhm is {:0.3f}"'.format(kind, self.e, self.fwhm))
 
@@ -70,6 +74,7 @@ class PSF_Field():
 		* `tangential`: to simulate a PSF that is tangent to the center. FWHM is same as radial
 		* `e1`: only e1 changes as a function of x, from -1 to 1. e2 and FWHM constant
 		* `e2`: only e2 changes as a function of y, from -1 to 1. e1 and FWHM constant
+		* `e1e2`: radial in e1 e2 plane.
 		* `fwhm`: only FWHM changes as a function of x, from -1 to 1. Constant ellipticity
 		* `euclid-like`: loads a Euclid-like PSF field generated from realistic parameters
 		
@@ -125,11 +130,20 @@ class PSF_Field():
 			e1, e2 = geometrical2complex(a, b, self.position_angle)
 			
 			r = self.fwhm * (1.+dr/self.dR * 0.5) / 1.5
-				
+		elif self.kind == "e1e2":
+			dx = x - self.cx 
+			dy = y - self.cy
+			dr = np.hypot(dx, dy)
+
+			e1 = np.ones_like(x) * self.e * dx / (self.cx)
+			e2 = np.ones_like(x) * self.e * dy / (self.cy)
+			
+			r = self.a * dx + self.b * dy + self.c * self.fwhm + self.fwhm
+						
 		elif self.kind == "euclid-like":
-			e1 = self.psf_g1_interp(x, y)
-			e2 = self.psf_g2_interp(x, y)
-			r = self.psf_fwhm_interp(x, y)
+			e1 = self.psf_g1_interp.ev(x, y)
+			e2 = self.psf_g2_interp.ev(x, y)
+			r = self.psf_fwhm_interp.ev(x, y)
 				
 		else:
 			raise NotImplemented()
@@ -208,7 +222,7 @@ if __name__ == "__main__":
 	fieldnum = 0
 	
 	# Iterating over all field types
-	for kind in ["e1", "e2", "fwhm", "radial", "tangential", "euclid-like"]:
+	for kind in ["e1e2", "e1", "e2", "fwhm", "radial", "tangential", "euclid-like"]:
 		
 		# The Euclid-like field requires a filepath...
 		if kind is "euclid-like":
