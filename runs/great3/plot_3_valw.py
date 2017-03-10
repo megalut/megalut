@@ -66,11 +66,28 @@ def plot(cat, component, filepath=None, title=None):
 	rea = -20
 	ebarmode = "scatter"
 	
-
-	
 	# Adding weights if absent:
 	if not "pre_s{}w".format(component) in cat.colnames:
+		
+		# First putting all weights to 1.0:
 		cat["pre_s{}w".format(component)] = np.ones(cat["adamom_g1"].shape)
+		
+		"""
+		# Keeping only the best half of SNR
+		megalut.tools.table.addstats(cat, "snr")
+		for row in cat:
+			row["pre_s{}w".format(component)] = np.array(row["snr"] > row["snr_med"], dtype=np.float)
+		"""
+		
+		# Keeping the best half of sigma
+		megalut.tools.table.addstats(cat, "adamom_sigma")
+		for row in cat:
+			row["pre_s{}w".format(component)] = np.array(row["adamom_sigma"] > row["adamom_sigma_med"], dtype=np.float)
+		
+		
+		
+		#print megalut.tools.table.info(cat)
+		
 		cat["pre_s{}w_norm".format(component)] = cat["pre_s{}w".format(component)] / np.max(cat["pre_s{}w".format(component)])
 	
 	megalut.tools.table.addrmsd(cat, "pre_s{}".format(component), "tru_s{}".format(component))

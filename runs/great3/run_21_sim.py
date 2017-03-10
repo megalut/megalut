@@ -35,29 +35,11 @@ def run(simtype=None):
 	
 	if simtype == "train-shear":
 		
-		"""
-		sp = simparams.G3Sersics(
-			name = "ts-shear-nn-G3-snc20", # Cases have different shear, but mix galaxies. G3 as best guess.
-			snc_type = 20,
-			shear = 0.1,
-			noise_level = 0,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 1000 cases with 20 snc rea
-		drawconf = {
-			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
-			"nc":1,
-			"nrea":1,
-			"ncat":25,
-			"ncpu":25,
-			"groupmode":"s"			
-		}
-		"""
+		
 		
 		"""
 		sp = simparams.G3Sersics(
-			name = "ts-shear-nn-train-snc20", # Cases have different shear, but mix galaxies. G3 as useless to add others
+			name = "ts-shear-nn-train-snc20", # Cases have different shear and different galaxies (one per case). Train distribs.
 			snc_type = 20,
 			shear = 0.1,
 			noise_level = 0,
@@ -76,24 +58,24 @@ def run(simtype=None):
 		"""
 		
 		sp = simparams.G3Sersics(
-			name = "ts-ell-nn-train-rea20", # Ellipticity training, without noise
+			name = "ts-ell-nn-train-rea10", # Ellipticity training, without noise
 			snc_type = 1,
 			shear = 0,
 			noise_level = 0,
 			obstype = config.great3.obstype,
 			distmode = "train"
 		)
-		# 1000 cases with 20 rea
+		# 1000 cases with 10 rea
 		drawconf = {
 			"n":1000,
 			"nc":10,
-			"nrea":20,
+			"nrea":10,
 			"ncat":1,
-			"ncpu":20,
+			"ncpu":10,
 			"groupmode":"g"			
 		}
-		"""
 		
+		"""
 		sp = simparams.G3Sersics(
 			name = "ts-ell-n-train-rea100", # Ellipticity training, with noise
 			snc_type = 1,
@@ -112,25 +94,6 @@ def run(simtype=None):
 			"groupmode":"g"			
 		}
 		
-		"""
-		"""
-		sp = simparams.G3Sersics(
-			name = "ts-ell-n-train-rea500", # Ellipticity training, with noise
-			snc_type = 1,
-			shear = 0,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "train"
-		)
-		# 1000 cases with 500 rea
-		drawconf = {
-			"n":1000,
-			"nc":10,
-			"nrea":500,
-			"ncat":1,
-			"ncpu":20,
-			"groupmode":"g"			
-		}
 		"""
 		
 		
@@ -159,6 +122,7 @@ def run(simtype=None):
 	
 	elif simtype == "train-weight":
 		
+		"""
 		sp = simparams.G3Sersics_statshear(
 			name = "tw-200c-8000r", # Cases have different shear, but mix galaxies
 			snc_type = 4,
@@ -176,6 +140,83 @@ def run(simtype=None):
 			"ncpu":25,
 			"groupmode":"s"				
 		}
+		"""
+		"""
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-200c-800r", # Cases have different shear, but mix galaxies
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 200 cases, 800 realizations. Need to explore if less is ok as well.
+		drawconf = {
+			"n":200,
+			"nc":5,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":20,
+			"groupmode":"s"				
+		}
+		"""
+		"""
+		########### The fiducial reference #############
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-200c-5000r", # Cases have different shear, but mix galaxies
+			snc_type = 500,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 200 cases, 10 galaxies per case with snc 500 = 5000 realizations. Need to explore if less is ok as well.
+		drawconf = {
+			"n":10,
+			"nc":1,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":25,
+			"groupmode":"s"				
+		}
+		"""
+		"""
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-200c-500r", # Cases have different shear, but mix galaxies
+			snc_type = 50,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 200 cases, 10 galaxies per case with snc 50 = 500 realizations.
+		drawconf = {
+			"n":10,
+			"nc":1,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":25,
+			"groupmode":"s"				
+		}
+		"""
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-500c-200r", # Cases have different shear, but mix galaxies
+			snc_type = 20,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 500 cases, 10 galaxies per case with snc 20 = 200 realizations.
+		drawconf = {
+			"n":10,
+			"nc":1,
+			"nrea":1,
+			"ncat":500,
+			"ncpu":25,
+			"groupmode":"s"				
+		}
+		
 	
 	elif simtype == "valid-overall":
 

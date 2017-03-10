@@ -21,25 +21,28 @@ for subfield in config.great3.subfields:
 
 	logger.info("Working on subfield {}".format(subfield))
 
-	catpath = config.great3.subpath(subfield, "simmeas", config.datasets["valid-overall"], "groupmeascat.pkl")
-	cat = megalut.tools.io.readpickle(catpath)
-	#print megalut.tools.table.info(cat)
-	
-	
-	sheartraindir = config.great3.subpath(subfield, "ml", config.datasets["train-shear"])
-	predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
-	
-	if len(config.weightconflist) > 0:
-		
-		weighttraindir = config.great3.subpath(subfield, "ml", config.datasets["train-weight"])
-		predcat = megalut.learn.tenbilacrun.predict(predcat, config.weightconflist , weighttraindir)
-
-		
 	valname = "pred_{}".format(config.datasets["valid-overall"]) # Too messy to add everything here.
 	predcatpath = config.great3.subpath(subfield, "val", valname + ".pkl")
 	figpredcatpath = config.great3.subpath(subfield, "val", valname + ".png")
+
+	skip = False # Set to true to just make the plot without recomputing predictions
+	if skip == False:
+		catpath = config.great3.subpath(subfield, "simmeas", config.datasets["valid-overall"], "groupmeascat.pkl")
+		cat = megalut.tools.io.readpickle(catpath)
+		#print megalut.tools.table.info(cat)
 	
-	megalut.tools.io.writepickle(predcat, predcatpath)
+	
+		sheartraindir = config.great3.subpath(subfield, "ml", config.datasets["train-shear"])
+		predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
+	
+		if len(config.weightconflist) > 0:
+		
+			weighttraindir = config.great3.subpath(subfield, "ml", config.datasets["train-weight"])
+			predcat = megalut.learn.tenbilacrun.predict(predcat, config.weightconflist , weighttraindir)
+		
+		megalut.tools.io.writepickle(predcat, predcatpath)
+	else:
+		predcat = megalut.tools.io.readpickle(predcatpath)
 
 	shearconfnames = megalut.learn.tenbilacrun.confnames(config.shearconflist)
 	for (confname, conf) in zip(shearconfnames, config.shearconflist):
