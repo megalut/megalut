@@ -118,7 +118,11 @@ def plot(cat, component, filepath=None, title=None):
 	megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc, pre_scw)
 	
 	ax = fig.add_subplot(3, 4, 5)
-	megalut.plot.scatter.scatter(ax, cat, Feature("snr", rea=rea), pre_scw)
+	if component ==1:
+		theother=Feature("tru_g2", rea=rea)
+	else:
+		theother=Feature("tru_g1", rea=rea)
+	megalut.plot.scatter.scatter(ax, cat, Feature("snr", rea=rea), pre_scw, theother)
 	
 	ax = fig.add_subplot(3, 4, 6)
 	megalut.plot.hist.hist(ax, cat, pre_scw)

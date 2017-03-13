@@ -20,12 +20,12 @@ great3 = mg3.great3.GREAT3Run(
 
 	#subfields = range(0, 200),
 	
-	subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
+	#subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
 
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
-	#subfields = range(150, 200),
+	subfields = range(150, 200),
 
 	ncpu = 20,
 	skipdone = True
@@ -42,11 +42,15 @@ datasets = {
 	"train-shear":"ts-ell-nn-train-rea10",
 	
 	"valid-shear":"vs-shear-n-G3-snc1000",
+	
 	#"train-weight":"tw-20c-2000r",
 	#"train-weight":"tw-200c-5000r",
 	#"train-weight":"tw-200c-500r",
-	"train-weight":"tw-200c-800r",
-	
+	#"train-weight":"tw-200c-800r",
+	#"train-weight":"tw-500c-200r",
+	#"train-weight":"tw-100c-400r",
+	#"train-weight":"tw-100c-1000r",
+	"train-weight":"tw-200c-1000r",
 	
 	"valid-overall":"vo-200c-8000r",
 	"simobscompa":"simobscompa-G3"
@@ -66,8 +70,14 @@ shearconflist = [
 weightconflist = [
 	#("mlconfig/ada2s1w.cfg", "mlconfig/sum3w.cfg"),
 	
-	("mlconfig/ada4s1w.cfg", "mlconfig/sum55w.cfg"),
+	#("mlconfig/ada4s1w.cfg", "mlconfig/sum55w.cfg"),
 	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33w.cfg"),
+	
+	("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmass.cfg"),
+	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmass.cfg"),
+
+	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33w_nomb.cfg"),
+	#("mlconfig/ada4s1w.cfg", "mlconfig/sum3w.cfg"),
 ]
 
 #weightconflist = []

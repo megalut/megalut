@@ -199,6 +199,7 @@ def run(simtype=None):
 			"groupmode":"s"				
 		}
 		"""
+		"""
 		sp = simparams.G3Sersics_statshear(
 			name = "tw-500c-200r", # Cases have different shear, but mix galaxies
 			snc_type = 20,
@@ -216,8 +217,66 @@ def run(simtype=None):
 			"ncpu":25,
 			"groupmode":"s"				
 		}
-		
+		"""
+		"""
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-100c-400r", # Cases have different shear, but mix galaxies
+			snc_type = 8,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 100 cases, 400 realizations.
+		drawconf = {
+			"n":50,
+			"nc":2,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":20,
+			"groupmode":"s"				
+		}
+		"""
+		"""
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-100c-1000r", # Cases have different shear, but mix galaxies
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 100 cases, 1000 realizations with small snc
+		drawconf = {
+			"n":250,
+			"nc":10,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":25,
+			"groupmode":"s"				
+		}
+		"""
+		# Is this it? 
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-200c-1000r", # Cases have different shear, but mix galaxies
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 200 cases, 1000 realizations with small snc
+		drawconf = {
+			"n":250,
+			"nc":10,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":10,
+			"groupmode":"s"				
+		}
 	
+		
+
 	elif simtype == "valid-overall":
 
 		sp = simparams.G3Sersics_statshear(
