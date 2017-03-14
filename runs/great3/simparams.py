@@ -79,8 +79,8 @@ class G3Sersics(megalut.sim.params.Params):
 			if self.obstype == "ground":
 				tru_rad = trunc_gaussian(1.0, 0.8, 0.75, 3.0)
 			elif self.obstype == "space":
-				raise RuntimeError("Check this")
-				tru_rad = np.random.uniform(0.1, 10.0) # Check this, seems small!
+				#tru_rad = trunc_gaussian(3.0, 2.4, 2.25, 9.0) # Just a factor 3 larger than "ground", given that it's in pixels.
+				tru_rad = trunc_gaussian(2.5, 3.5, 1.25, 10.0)
 		
 		elif self.distmode == "uni":
 			
@@ -94,7 +94,7 @@ class G3Sersics(megalut.sim.params.Params):
 			if self.obstype == "ground":
 				tru_rad = np.random.uniform(0.75, 3.0)
 			elif self.obstype == "space":
-				tru_rad = np.random.uniform(0.75, 10.0)
+				tru_rad = np.random.uniform(1.25, 10.0)
 		
 		return {"tru_rad":tru_rad}
 		
@@ -123,23 +123,24 @@ class G3Sersics(megalut.sim.params.Params):
 	def draw_sb(self):
 		"""
 		Galaxy surface brightness
+		Note that this is currently not used anymore for GREAT3.
 		"""
 		
-		if self.distmode == "G3":
-			
-			if self.obstype == "ground":		
-				tru_sb = np.random.normal(1.5, 0.75)
-			elif self.obstype == "space":	
-				tru_sb = np.random.normal(0.2, 0.05)
+#		if self.distmode == "G3":
+#			
+#			if self.obstype == "ground":		
+#				tru_sb = np.random.normal(1.5, 0.75)
+#			elif self.obstype == "space":	
+#				tru_sb = np.random.normal(0.2, 0.05)
+#		
+#		elif self.distmode == "uni" or self.distmode == "train":
+#			
+#			if self.obstype == "ground":				
+#				tru_sb = np.random.uniform(0.8, 2.3)
+#			elif self.obstype == "space":
+#				tru_sb = np.random.uniform(0.15, 0.30)
 		
-		elif self.distmode == "uni" or self.distmode == "train":
-			
-			if self.obstype == "ground":				
-				tru_sb = np.random.uniform(0.8, 2.3)
-			elif self.obstype == "space":
-				tru_sb = np.random.uniform(0.15, 0.30)
-		
-		
+		tru_sb = -1.0
 		return {"tru_sb":tru_sb}
 
 
@@ -154,8 +155,7 @@ class G3Sersics(megalut.sim.params.Params):
 				tru_flux = trunc_gaussian(15, 20, 10, 200)		
 				
 			elif self.obstype == "space":	
-				# CHECK THIS
-				tru_flux = np.random.normal(0.2, 0.05)
+				tru_flux = trunc_gaussian(0, 30, 10, 200)
 		
 		elif self.distmode == "uni":
 		
@@ -163,8 +163,7 @@ class G3Sersics(megalut.sim.params.Params):
 				tru_flux = np.random.uniform(5, 80)
 				
 			elif self.obstype == "space":
-				# CHECK THIS
-				tru_flux = np.random.uniform(0.15, 0.30)
+				tru_flux = np.random.uniform(5, 80)
 		
 		
 		elif self.distmode == "train":
@@ -173,8 +172,7 @@ class G3Sersics(megalut.sim.params.Params):
 				tru_flux = np.random.uniform(10, 100)
 				
 			elif self.obstype == "space":
-				# CHECK THIS
-				tru_flux = np.random.uniform(0.15, 0.30)
+				tru_flux = np.random.uniform(10, 100)
 	
 	
 		return {"tru_flux":tru_flux}

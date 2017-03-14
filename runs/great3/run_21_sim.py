@@ -300,6 +300,7 @@ def run(simtype=None):
 
 	elif simtype == "simobscompa":
 
+		
 		sp = simparams.G3Sersics_statshear(
 			name = "simobscompa-G3", # Drawing a few galaxies to compare their feature distribs with those of the "observations"
 			snc_type = 1,
@@ -317,6 +318,29 @@ def run(simtype=None):
 			"ncpu":10,
 			"groupmode":None
 		}
+		"""
+		
+		sp = simparams.G3Sersics_statshear(
+			name = "simobscompa-train", # Drawing a few galaxies to compare their feature distribs with those of the "observations"
+			snc_type = 1,
+			shear = 0.0, # Would be OK to put a little shear, in fact, as the observations have some.
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 galaxies, single realization
+		drawconf = {
+			"n":100,
+			"nc":5,  # To get a good samplign of sersicn (n / nc)
+			"nrea":1,
+			"ncat":10,
+			"ncpu":10,
+			"groupmode":None
+		}
+		
+		"""
+		
+		
 		
 	else:
 		raise RuntimeError("Unknown simtype, see code for defined names.")
