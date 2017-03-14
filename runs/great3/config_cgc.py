@@ -18,7 +18,7 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = [0,1,2],
 	#subfields = [99],	# CGC best PSF subfields: [99, 156, 42],  worst : [2, 191, 166]
 
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 	
 	#subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
 
@@ -26,6 +26,9 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
 	#subfields = range(150, 200),
+
+	#subfields = range(0, 100),
+	#subfields = range(100, 200),
 
 	ncpu = 20,
 	skipdone = True

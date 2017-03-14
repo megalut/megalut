@@ -16,7 +16,7 @@ great3 = mg3.great3.GREAT3Run(
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/2017_MegaLUT_GREAT3/rgc_v2",
 	
 
-	subfields = range(0, 200),
+#	subfields = range(0, 200),
 	
 	#subfields = [1092], # Copy of 92, the field with the best PSF, for some tests
 
@@ -24,6 +24,9 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
 	#subfields = range(150, 200),
+
+	#subfields = range(0, 100),
+	subfields = range(100, 200),
 
 	ncpu = 25,
 	skipdone = False
