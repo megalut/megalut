@@ -56,7 +56,7 @@ def main():
 
 
 
-def plot(cat, component, mode="s", filepath=None, select=None):
+def plot(cat, component, mode="s", filepath=None, select=None, withweights=False):
 
 
 	logger.info("Running on component {} with mode {}".format(component, mode))
@@ -89,15 +89,27 @@ def plot(cat, component, mode="s", filepath=None, select=None):
 	#print min(cat["snr_mean"]), max(cat["snr_mean"]), np.median(cat["snr_mean"])
 	
 	
-	megalut.tools.table.addstats(cat, "pre_s{}".format(component))
 	megalut.tools.table.addrmsd(cat, "pre_s{}".format(component), "tru_{}{}".format(mode, component))
-	pre_sc_bias = Feature("pre_s{}_bias".format(component))
-	pre_sc_mean = Feature("pre_s{}_mean".format(component))
+	
+	if withweights == False:
+		megalut.tools.table.addstats(cat, "pre_s{}".format(component))
+		pre_sc_bias = Feature("pre_s{}_bias".format(component))
+		pre_sc_mean = Feature("pre_s{}_mean".format(component))
+
+	else: # Then we use weights if available)
+		
+		if not "pre_s{}w".format(component) in cat.colnames:
+			# It doesn't make sense to fake them for this plot, just skip it!
+			logger.warning("No weights available, skipping")
+			return
+
+		megalut.tools.table.addstats(cat, "pre_s{}".format(component), wcol="pre_s{}w".format(component))
+		cat["pre_s{}_wbias".format(component)] = cat["pre_s{}_wmean".format(component)] - cat["tru_{}{}".format(mode, component)]
+		pre_sc_bias = Feature("pre_s{}_wbias".format(component))
+		pre_sc_mean = Feature("pre_s{}_wmean".format(component))
+	
 	tru_sc = Feature("tru_{}{}".format(mode, component))
 	
-	
-	
-
 
 	ebarmode = "scatter"
 
