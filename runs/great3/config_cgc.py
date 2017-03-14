@@ -20,7 +20,7 @@ great3 = mg3.great3.GREAT3Run(
 
 	#subfields = range(0, 200),
 	
-	#subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
+	subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
 
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),

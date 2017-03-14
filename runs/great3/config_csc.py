@@ -18,9 +18,9 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = [94],
 	#subfields = [45],	# CSC best PSF subfields: [45, 75, 136],  worst : [143, 49, 150], 94 could not be measured!
 	
-	#subfields = [1045],
+	subfields = [1045],
 	
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
