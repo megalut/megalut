@@ -56,7 +56,8 @@ def run(simtype=None):
 			"groupmode":"s"			
 		}
 		"""
-		
+		"""
+		### The fiducial, used for mass-production of ground:
 		sp = simparams.G3Sersics(
 			name = "ts-ell-nn-train-rea10", # Ellipticity training, without noise
 			snc_type = 1,
@@ -76,6 +77,8 @@ def run(simtype=None):
 		}
 		
 		"""
+		
+		# Something we can afford, with noise, to see if noise-bias gets reduced: 
 		sp = simparams.G3Sersics(
 			name = "ts-ell-n-train-rea100", # Ellipticity training, with noise
 			snc_type = 1,
@@ -94,7 +97,7 @@ def run(simtype=None):
 			"groupmode":"g"			
 		}
 		
-		"""
+		
 		
 		
 		
@@ -161,7 +164,7 @@ def run(simtype=None):
 		}
 		"""
 		"""
-		########### The fiducial reference #############
+		########### The old fiducial reference #############
 		sp = simparams.G3Sersics_statshear(
 			name = "tw-200c-5000r", # Cases have different shear, but mix galaxies
 			snc_type = 500,
@@ -256,7 +259,9 @@ def run(simtype=None):
 			"groupmode":"s"				
 		}
 		"""
-		# Is this it? 
+		
+		
+		####### The new ficducial, the ones running in mass-production ##########
 		sp = simparams.G3Sersics_statshear(
 			name = "tw-200c-1000r", # Cases have different shear, but mix galaxies
 			snc_type = 4,
@@ -274,7 +279,29 @@ def run(simtype=None):
 			"ncpu":10,
 			"groupmode":"s"				
 		}
-	
+		
+				
+		"""
+		# Experimenting with much more realizations, to see if bias on vo persists...
+		# Seems to work, but expensive, and only small progress.
+		sp = simparams.G3Sersics_statshear(
+			name = "tw-100c-10000r", # Cases have different shear, but mix galaxies
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 100 cases, 10000 realizations with small snc
+		drawconf = {
+			"n":2500,
+			"nc":50,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":10,
+			"groupmode":"s"				
+		}
+		"""
 		
 
 	elif simtype == "valid-overall":
