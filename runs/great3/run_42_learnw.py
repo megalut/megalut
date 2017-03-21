@@ -35,7 +35,7 @@ for subfield in config.great3.subfields:
 	
 	# Running the training	
 	dirnames = megalut.learn.tenbilacrun.train(cat, config.weightconflist, traindir)
-	
+	#dirnames = ["ada4s1w_sum33wmassshort", "ada4s2w_sum33wmassshort"]
 	
 	# Summary plot and self-predictions
 	for dirname in dirnames:
