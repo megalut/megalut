@@ -35,9 +35,14 @@ great3 = mg3.great3.GREAT3Run(
 ### Script configuration ###
 
 datasets = {
-	"train-shear":"ts-ell-nn-train-rea10",	
+	#"train-shear":"ts-ell-nn-train-rea10",
+	"train-shear":"ts-ell-n-train-rea100",
+	
+		
 	"valid-shear":"vs-shear-n-G3-snc1000",
-	"train-weight":"tw-200c-1000r",	
+	#"train-weight":"tw-200c-1000r",
+	"train-weight":"tw-100c-10000r",
+	
 	"valid-overall":"vo-200c-8000r",
 	"simobscompa":"simobscompa-G3",
 	#"simobscompa":"simobscompa-train",
@@ -48,11 +53,19 @@ datasets = {
 shearconflist = [
 	("mlconfig/ada4g1.cfg", "mlconfig/sum55mass.cfg"), # Comment a line to run on only one component
 	("mlconfig/ada4g2.cfg", "mlconfig/sum55mass.cfg")
+	#("mlconfig/ada4g1.cfg", "mlconfig/sum55mab.cfg"), # Comment a line to run on only one component
+	#("mlconfig/ada4g2.cfg", "mlconfig/sum55mab.cfg")
+
+
 ]
 
 weightconflist = [
 	("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmass.cfg"),
-	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmass.cfg")
+	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmass.cfg"),
+	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmab.cfg"),
+	#("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmab.cfg"),
+	
+	
 ]
 
 #weightconflist = []
