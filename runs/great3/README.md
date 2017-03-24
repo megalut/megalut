@@ -4,18 +4,21 @@ About
 =====
 
 This code illustrates the use of MegaLUT on GREAT3 data and reproduces the figures from our paper.
-We focus on the single-epoch constant-PSF branches.
+We focus on the constant-shear single-epoch constant-PSF branches, but running on the corresponding variable-shear branches is equally simple.
 
-The general idea of this "pipeline" is to be flexible enough to allow for easy experimentation.
-It makes it possible to test and compare different settings. 
+A goal of this "pipeline" is to remain flexible enough to allow for easy experimentation. It should be relatively easy to test and compare different settings. 
 
 In principle, we'll run the scripts one after the other.
-There is no centralised configuration scheme for these scripts, and some settings are directly hard-coded.
-A first overview of the configuration:
+There is no centralised configuration scheme for these scripts. Before describing the scripts, here is a first overview of the configuration. You could have a look at those files, just to get a feeling of what's in there:
 
   - config.py
+  	This is the top-level configuration file. It contains:
   	- paths to the GREAT3 data, what branch and what subfields to process
-	- what datasets to use for training and validation
+	- which datasets (defined by "simnames") to use for training and validation
+	- which configuration-files to use for the machine learning
+
+	The contents of this config.py depend on your environment. To get startet, copy one of our configs (e.g., config_cgc.py) into
+	config.py and edit the various paths as needed.
 
   - measfcts.py
     - settings related to the feature measurements
@@ -24,13 +27,11 @@ A first overview of the configuration:
     - description of the simulations, galaxy parameter distributions 
 
   - run_21_sim.py
-    - the structures and sizes of the datasets to be simulated
+  	Hardcoded in this script are the descriptions of the structures and sizes of the datasets to be simulated, i.e.
+	the definition of the "simnames".
 
   - mlconfig/
-  	- Configurations for the machine learning with Tenbilac
-
-
-
+  	Files in here are configurations for the machine learning with Tenbilac.
 
 
 
