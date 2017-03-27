@@ -14,17 +14,21 @@ great3 = mg3.great3.GREAT3Run(
 	datadir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3",
 	truthdir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3/truth", # Only needed for final analysis plots
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/2017_MegaLUT_GREAT3/csc_v2",
+	g3publicdir = "/users/mtewes/code/great3-public",
 	
 	#subfields = [94],
 	#subfields = [45],	# CSC best PSF subfields: [45, 75, 136],  worst : [143, 49, 150], 94 could not be measured!
 	
-	subfields = [1045],
+	#subfields = [1045],
 	
 	#subfields = range(0, 200),
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
-	#subfields = range(150, 200),
+	subfields = range(150, 200),
+	
+	
+	#subfields = range(84, 100),
 	
 	ncpu = 4,
 	skipdone = False
@@ -35,13 +39,13 @@ great3 = mg3.great3.GREAT3Run(
 ### Script configuration ###
 
 datasets = {
-	#"train-shear":"ts-ell-nn-train-rea10",
-	"train-shear":"ts-ell-n-train-rea100",
+	"train-shear":"ts-ell-nn-train-rea10",
+	#"train-shear":"ts-ell-n-train-rea100",
 	
 		
 	"valid-shear":"vs-shear-n-G3-snc1000",
-	#"train-weight":"tw-200c-1000r",
-	"train-weight":"tw-100c-10000r",
+	"train-weight":"tw-200c-1000r",
+	#"train-weight":"tw-100c-10000r",
 	
 	"valid-overall":"vo-200c-8000r",
 	"simobscompa":"simobscompa-G3",
@@ -60,8 +64,8 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmass.cfg"),
-	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmass.cfg"),
+	("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmassshort.cfg"),
+	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmassshort.cfg"),
 	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmab.cfg"),
 	#("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmab.cfg"),
 	

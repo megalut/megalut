@@ -1,5 +1,6 @@
 """
-Simulates a dedicated training set for each subfield.
+Simulates a dedicated training or validation set for each subfield.
+This scirpt takes an argument, run it with -h to get help.
 """
 
 import argparse
@@ -19,47 +20,22 @@ import simparams
 import measfcts
 
 
-def define_parser():
-	"""Defines the command line arguments
-	"""
-	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-	parser.add_argument('--set', required=True, help="Name of dataset to generate")
-	#parser.add_argument('--nside', type=int, default=100, help='Size of stampgrid, in stamps')
-	
-	return parser
-
 
 def run(simtype=None):
 	
-	logger.info("Drawing simtype {}...".format(simtype))
+	simname = config.datasets[simtype]
 	
-	if simtype == "train-shear":
+	logger.info("Drawing simtype {} => {}...".format(simtype, simname))
+	
+	
+	############## First, the fiducial sets, as small and fast as possible, to give a baseline.
+	
+	if simname == "ts-ell-nn-train-rea10":
 		
-		
-		
-		"""
+		# The fiducial train-shear: **** ellipticity training, without noise **** (yes, that's a big compromise, for GREAT3).
+		# The "nn" stands for "no noise"
 		sp = simparams.G3Sersics(
-			name = "ts-shear-nn-train-snc20", # Cases have different shear and different galaxies (one per case). Train distribs.
-			snc_type = 20,
-			shear = 0.1,
-			noise_level = 0,
-			obstype = config.great3.obstype,
-			distmode = "train"
-		)
-		# 1000 cases with 20 snc rea
-		drawconf = {
-			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
-			"nc":1,
-			"nrea":1,
-			"ncat":25,
-			"ncpu":25,
-			"groupmode":"s"			
-		}
-		"""
-		"""
-		### The fiducial, used for mass-production of ground:
-		sp = simparams.G3Sersics(
-			name = "ts-ell-nn-train-rea10", # Ellipticity training, without noise
+			name = simname,
 			snc_type = 1,
 			shear = 0,
 			noise_level = 0,
@@ -75,37 +51,12 @@ def run(simtype=None):
 			"ncpu":10,
 			"groupmode":"g"			
 		}
-		
-		"""
-		
-		# Something we can afford, with noise, to see if noise-bias gets reduced: 
-		sp = simparams.G3Sersics(
-			name = "ts-ell-n-train-rea100", # Ellipticity training, with noise
-			snc_type = 1,
-			shear = 0,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "train"
-		)
-		# 1000 cases with 100 rea
-		drawconf = {
-			"n":1000,
-			"nc":10,
-			"nrea":100,
-			"ncat":1,
-			"ncpu":20,
-			"groupmode":"g"			
-		}
-		
-		
-		
-		
-		
+
+	elif simname == "vs-shear-n-G3-snc1000":
 	
-	elif simtype == "valid-shear":
-	
+		# The fiducial valid-shear. Heavy !
 		sp = simparams.G3Sersics(
-			name = "vs-shear-n-G3-snc1000",
+			name = simname,
 			snc_type = 1000, # A lot, but this also covers noise and sub-pixel alignment. Hard to get more.
 			shear = 0.1,
 			noise_level = 1,
@@ -114,7 +65,7 @@ def run(simtype=None):
 		)
 		# 1000 cases (different galaxies and shears), 1000 snc realizations
 		drawconf = {
-			"n": 20, # Don't put this to zero, otherwise only one sersicn is used.
+			"n": 20, # Don't put this to one, otherwise only one sersicn is used...
 			"nc":1,
 			"nrea":1,
 			"ncat":50,
@@ -123,147 +74,11 @@ def run(simtype=None):
 		}
 	
 	
-	elif simtype == "train-weight":
-		
-		"""
+	elif simname == "tw-200c-1000r":
+	
+		# The ficducial train-weight. Heavy, but can't make this smaller. Cases have different shear, but mix galaxies
 		sp = simparams.G3Sersics_statshear(
-			name = "tw-200c-8000r", # Cases have different shear, but mix galaxies
-			snc_type = 4,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 200 cases, 8000 realizations. Need to explore if less is ok as well.
-		drawconf = {
-			"n":2000,
-			"nc":50,
-			"nrea":1,
-			"ncat":200,
-			"ncpu":25,
-			"groupmode":"s"				
-		}
-		"""
-		"""
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-200c-800r", # Cases have different shear, but mix galaxies
-			snc_type = 4,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 200 cases, 800 realizations. Need to explore if less is ok as well.
-		drawconf = {
-			"n":200,
-			"nc":5,
-			"nrea":1,
-			"ncat":200,
-			"ncpu":20,
-			"groupmode":"s"				
-		}
-		"""
-		"""
-		########### The old fiducial reference #############
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-200c-5000r", # Cases have different shear, but mix galaxies
-			snc_type = 500,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 200 cases, 10 galaxies per case with snc 500 = 5000 realizations. Need to explore if less is ok as well.
-		drawconf = {
-			"n":10,
-			"nc":1,
-			"nrea":1,
-			"ncat":200,
-			"ncpu":25,
-			"groupmode":"s"				
-		}
-		"""
-		"""
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-200c-500r", # Cases have different shear, but mix galaxies
-			snc_type = 50,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 200 cases, 10 galaxies per case with snc 50 = 500 realizations.
-		drawconf = {
-			"n":10,
-			"nc":1,
-			"nrea":1,
-			"ncat":200,
-			"ncpu":25,
-			"groupmode":"s"				
-		}
-		"""
-		"""
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-500c-200r", # Cases have different shear, but mix galaxies
-			snc_type = 20,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 500 cases, 10 galaxies per case with snc 20 = 200 realizations.
-		drawconf = {
-			"n":10,
-			"nc":1,
-			"nrea":1,
-			"ncat":500,
-			"ncpu":25,
-			"groupmode":"s"				
-		}
-		"""
-		"""
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-100c-400r", # Cases have different shear, but mix galaxies
-			snc_type = 8,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 100 cases, 400 realizations.
-		drawconf = {
-			"n":50,
-			"nc":2,
-			"nrea":1,
-			"ncat":100,
-			"ncpu":20,
-			"groupmode":"s"				
-		}
-		"""
-		"""
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-100c-1000r", # Cases have different shear, but mix galaxies
-			snc_type = 4,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 100 cases, 1000 realizations with small snc
-		drawconf = {
-			"n":250,
-			"nc":10,
-			"nrea":1,
-			"ncat":100,
-			"ncpu":25,
-			"groupmode":"s"				
-		}
-		"""
-		
-		
-		####### The new ficducial, the ones running in mass-production ##########
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-200c-1000r", # Cases have different shear, but mix galaxies
+			name = simname,
 			snc_type = 4,
 			shear = 0.1,
 			noise_level = 1,
@@ -279,35 +94,13 @@ def run(simtype=None):
 			"ncpu":10,
 			"groupmode":"s"				
 		}
-		
-				
-		"""
-		# Experimenting with much more realizations, to see if bias on vo persists...
-		# Seems to work, but expensive, and only small progress.
-		sp = simparams.G3Sersics_statshear(
-			name = "tw-100c-10000r", # Cases have different shear, but mix galaxies
-			snc_type = 4,
-			shear = 0.1,
-			noise_level = 1,
-			obstype = config.great3.obstype,
-			distmode = "G3"
-		)
-		# 100 cases, 10000 realizations with small snc
-		drawconf = {
-			"n":2500,
-			"nc":50,
-			"nrea":1,
-			"ncat":100,
-			"ncpu":10,
-			"groupmode":"s"				
-		}
-		"""
-		
 
-	elif simtype == "valid-overall":
+	
+	elif simname == "vo-200c-8000r":
 
+		# For overall validation, we almost mimick a full GREAT3 branch, huge!
 		sp = simparams.G3Sersics_statshear(
-			name = "vo-200c-8000r", # For overall validation, we almost mimick a full GREAT3 branch
+			name = simname,
 			snc_type = 4,
 			shear = 0.1,
 			noise_level = 1,
@@ -325,54 +118,127 @@ def run(simtype=None):
 		}
 
 
-	elif simtype == "simobscompa":
+	elif simname == "simobscompa-G3":
 
-		
+		# Drawing 10'000 galaxies to compare their feature distribs with those of the "observations". Just for plots and tests.
 		sp = simparams.G3Sersics_statshear(
-			name = "simobscompa-G3", # Drawing a few galaxies to compare their feature distribs with those of the "observations"
+			name = simname,
 			snc_type = 1,
 			shear = 0.0, # Would be OK to put a little shear, in fact, as the observations have some.
 			noise_level = 1,
 			obstype = config.great3.obstype,
 			distmode = "G3"
 		)
-		# 1000 galaxies, single realization
+		# 10'000 galaxies, single realization
 		drawconf = {
-			"n":100,
+			"n":1000,
 			"nc":5,  # To get a good samplign of sersicn (n / nc)
 			"nrea":1,
 			"ncat":10,
 			"ncpu":10,
 			"groupmode":None
 		}
-		"""
+
+	elif simname == "simobscompa-train":
 		
+		# As above, but with "train" distributions (instead of G3). Just for plots and tests.
 		sp = simparams.G3Sersics_statshear(
-			name = "simobscompa-train", # Drawing a few galaxies to compare their feature distribs with those of the "observations"
+			name = simname,
 			snc_type = 1,
 			shear = 0.0, # Would be OK to put a little shear, in fact, as the observations have some.
 			noise_level = 1,
 			obstype = config.great3.obstype,
 			distmode = "train"
 		)
-		# 1000 galaxies, single realization
+		# 10'000 galaxies, single realization
 		drawconf = {
-			"n":100,
+			"n":1000,
 			"nc":5,  # To get a good samplign of sersicn (n / nc)
 			"nrea":1,
 			"ncat":10,
 			"ncpu":10,
 			"groupmode":None
 		}
+
+	
+	########## Now, some alternative datasets, to test out other approaches.
+	
+	elif simname == "ts-shear-nn-train-snc20":
 		
-		"""
+		# For train-shear
+		# Really train for shear, not for ellipticity. Still without noise here.
+		# A bit close to what you ideally want to do.
+		# Cases have different shear and different galaxies (one per case). Train distribs.
+		sp = simparams.G3Sersics(
+			name = simname,
+			snc_type = 20,
+			shear = 0.1,
+			noise_level = 0,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 cases with 20 snc rea
+		drawconf = {
+			"n":40, # Don't put this to zero, otherwise only one sersicn is used.
+			"nc":1,
+			"nrea":1,
+			"ncat":25,
+			"ncpu":25,
+			"groupmode":"s"			
+		}
+
+	
+	elif simname == "ts-ell-n-train-rea100":		
 		
+		# Something we can afford, with noise, to see if noise-bias gets reduced: 
+		sp = simparams.G3Sersics(
+			name = simname,
+			snc_type = 1,
+			shear = 0,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "train"
+		)
+		# 1000 cases with 100 rea
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":100,
+			"ncat":1,
+			"ncpu":20,
+			"groupmode":"g"			
+		}
+	
+	
+	elif simname == "tw-100c-10000r":
+		
+		# A huge weight training set
+		# Cases have different shear, but mix galaxies
+		# Experimenting with much more realizations, to see if bias on vo persists...
+		# Seems to work, but expensive, and overall improvement is not interesting for GREAT3.
+		
+		sp = simparams.G3Sersics_statshear(
+			name = simname,
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 100 cases, 10000 realizations with small snc
+		drawconf = {
+			"n":2500,
+			"nc":50,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":10,
+			"groupmode":"s"				
+		}
 		
 		
 	else:
-		raise RuntimeError("Unknown simtype, see code for defined names.")
-	
-	
+		raise RuntimeError("Unknown simname, see code for defined names.")
+
 	for subfield in config.great3.subfields:
 		runsub(subfield, sp, drawconf)
 
@@ -449,10 +315,6 @@ def runsub(subfield, sp, drawconf):
 
 		#print megalut.tools.table.info(cat)
 		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl")) # Just overwrite, don't need the other one
-
-	
-	
-	
 	
 	"""
 	# For statell sims, we group by ellipticity
@@ -468,11 +330,14 @@ def runsub(subfield, sp, drawconf):
 
 if __name__ == '__main__':
 
+	possible_simtypes = ["train-shear", "valid-shear", "train-weight", "valid-overall", "simobscompa"]
+
 	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-	parser.add_argument('simtype', help='Type of dataset to simulate')
+	parser.add_argument('simtype', help='Type of dataset to simulate, must be in {}'.format(possible_simtypes))
 	args = parser.parse_args()
-	#print args
-	#exit()
+	
+	if args.simtype not in possible_simtypes:
+		raise RuntimeError("Unknown simtype, must be in {}".format(possible_simtypes))
 	
 	run(simtype=args.simtype)
 

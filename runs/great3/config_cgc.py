@@ -14,6 +14,8 @@ great3 = mg3.great3.GREAT3Run(
 	datadir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3",
 	truthdir = "/vol/fohlen11/fohlen11_1/mtewes/GREAT3/truth", # Only needed for final analysis plots
 	workdir = "/vol/fohlen11/fohlen11_1/mtewes/2017_MegaLUT_GREAT3/cgc_v2",
+	g3publicdir = "/users/mtewes/code/great3-public",
+	
 	
 	#subfields = [0,1,2],
 	#subfields = [99],	# CGC best PSF subfields: [99, 156, 42],  worst : [2, 191, 166]
