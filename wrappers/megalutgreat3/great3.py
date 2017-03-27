@@ -19,7 +19,7 @@ class GREAT3Run(utils.Branch):
 	Unlike Branch, it does specify paths to MegaLUT-internal temporary files and directories, and handles a workdir.
 	"""
 	
-	def __init__(self, experiment, obstype, sheartype, datadir, truthdir, workdir, subfields=None, ncpu=None, skipdone=False):
+	def __init__(self, experiment, obstype, sheartype, datadir, truthdir, workdir, g3publicdir, subfields=None, ncpu=None, skipdone=False):
 		
 		utils.Branch.__init__(self, experiment, obstype, sheartype, datadir, truthdir)
 		logger.info("Getting ready to work on branch %s-%s-%s" % (experiment, obstype, sheartype))
@@ -29,6 +29,8 @@ class GREAT3Run(utils.Branch):
 			logger.warning("Better specify a workdir, I think.")
 			self.workdir = "./%s" % (self.get_branchacronym())
 		self.mkdirs()
+		
+		self.g3publicdir = g3publicdir
 		
 		self.subfields=subfields
 		if self.subfields is None:
