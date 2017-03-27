@@ -16,6 +16,7 @@ traindir = os.path.join(includes.workdir, "train_simple")
 
 conflist = [
 	("config/ada3g1.cfg", "config/Net.cfg"),
+	("config/ada3g2.cfg", "config/Net.cfg"),
 ]
 
 

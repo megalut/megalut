@@ -16,15 +16,14 @@ traindir = os.path.join(includes.workdir, "train_simple")
 
 conflist = [
 	("config/ada3g1.cfg", "config/Net.cfg"),
+	("config/ada3g2.cfg", "config/Net.cfg"),
 ]
 
 
 # Training
 catpath = os.path.join(includes.simdir, "Ellipticity", "groupmeascat.pkl")
-catpath = os.path.join(includes.simdir+"val", "Sersics_statshear", "groupmeascat_cases.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
-exit()
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
 #megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)

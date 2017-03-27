@@ -21,7 +21,7 @@ sp.noise_level = 0.8
 n = 250
 nc = 1
 ncat = 150
-nrea = 10
+nrea = 20
 
 megalut.sim.run.multi(
 	simdir=simdir,

@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, showidline=False, idlinekwargs=None,
-	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, yisres=False, **kwargs):
+	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, yisres=False, showcolorbar=True, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -128,11 +128,11 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **myerrorbarkwargs)
 		
 		stuff = ax.scatter(data[featx.colname], data[featy.colname], c=data[featc.colname], **mykwargs)
-		divider = make_axes_locatable(ax)
-		cax = divider.append_axes("right", "5%", pad="3%")
-		cax = plt.colorbar(stuff, cax)
-		cax.set_label(featc.nicename)
-	
+		if showcolorbar:
+			divider = make_axes_locatable(ax)
+			cax = divider.append_axes("right", "5%", pad="-0%")
+			cax = plt.colorbar(stuff, cax)
+			cax.set_label(featc.nicename)
 			
 	else: # We will use plot()
 	
