@@ -129,8 +129,11 @@ plt.subplots_adjust(hspace=0.27)
 plt.subplots_adjust(right=0.98)
 plt.subplots_adjust(top=0.98)
 import matplotlib.transforms as mtransforms
+no_legend = True
 
 assert "res" not in cat.colnames
+lintresh = 2e-3
+
 for iplot, featc in enumerate(param_feats):
 	
 	coln = (iplot + 1) % 2
@@ -139,7 +142,7 @@ for iplot, featc in enumerate(param_feats):
 	trans = mtransforms.blended_transform_factory(ax.transAxes, ax.transData)
 	
 	
-	ax.fill_between([0, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey', transform=trans)
+	ax.fill_between([0, 1], -lintresh, lintresh, alpha=0.2, facecolor='darkgrey', transform=trans)
 	ax.axhline(0, ls='--', color='k')
 	ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
 	
@@ -209,6 +212,7 @@ for iplot, featc in enumerate(param_feats):
 			
 		ax.errorbar(cbinsumma["xbincents"]+offset, ms, yerr=merrs, color=color, marker=markm, label=labelm)
 		ax.errorbar(cbinsumma["xbincents"]+offset, cs, yerr=cerrs, color=color, marker=markc, ls=':', label=labelc)
+
 	#ax.set_xlim([minshear, maxshear])
 	if coln == 0:
 		ax.set_ylabel("")
@@ -217,10 +221,19 @@ for iplot, featc in enumerate(param_feats):
 	#	ax.set_xlabel(r"$\mathrm{True\ shear}$")
 	#else:
 	#	ax.set_xticklabels([])
+	
+	
+	ax.set_yscale('symlog', linthreshy=lintresh)
 	ax.set_xlabel(featc.nicename)
-	#ax.annotate(featc.nicename, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(0.9, 0.9), ha='right', va='top')
-	if iplot == 0:
-		plt.legend(loc="best", handletextpad=0.07,fontsize="small", framealpha=0.5, columnspacing=0.1)
+	if featc.colname == "tru_g" or (iplot == len(param_feats) + 1 and no_legend):
+		plt.legend(loc="best", handletextpad=0.07,fontsize="small", framealpha=0.5, columnspacing=0.1, ncol=2)
+		no_legend = False
+	#from matplotlib.ticker import MultipleLocator
+	#minorLocator   = MultipleLocator(1)
+	#ax.yaxis.set_minor_locator(minorLocator)
+	from matplotlib.ticker import AutoMinorLocator, LogLocator
+	ax.xaxis.set_minor_locator(LogLocator(5))
+	ax.yaxis.set_minor_locator(LogLocator(10,subs=[2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
 
 megalut.plot.figures.savefig(os.path.join(outdir, "conditional_bias"), fig, fancy=True, pdf_transparence=True)
 plt.show()
