@@ -5,6 +5,7 @@ import glob
 import os
 import numpy as np
 import astropy
+from matplotlib.ticker import AutoMinorLocator, LogLocator
 
 import megalut.plot
 from megalut.tools.feature import Feature
@@ -29,11 +30,11 @@ nbins = 10
 ncbins = 10
 
 param_feats = [
-		Feature("snr_mean", nicename=r"$\mathrm{Mean}\ S/N$"),
-		Feature("tru_flux", nicename=r"$\mathrm{True\ flux}$"),
-		Feature("tru_rad", nicename=r"$\mathrm{True\ FWHM}$"),
-		Feature("tru_sersicn", nicename=r"$\mathrm{True\ Sersic}\ n$"),
-		Feature("tru_g", nicename=r"$\mathrm{True\ ellipticity}$"),
+		Feature("snr_mean", nicename=r"${\tt snr\_mean}$"),#r"$\mathrm{Mean}\ S/N$"),
+		Feature("tru_flux", nicename=r"${\tt tru\_flux}$"),#r"$\mathrm{True\ flux}$"),
+		Feature("tru_rad", nicename=r"${\tt tru\_rad}$"),#r"$\mathrm{True\ FWHM}$"),
+		Feature("tru_sersicn", nicename=r"${\tt tru\_sersicn}$"),#r"$\mathrm{True\ Sersic}\ n$"),
+		Feature("tru_g", nicename=r"${\tt tru\_g}$"),#r"$\mathrm{True\ ellipticity}$"),
 		]
 
 
@@ -231,9 +232,10 @@ for iplot, featc in enumerate(param_feats):
 	#from matplotlib.ticker import MultipleLocator
 	#minorLocator   = MultipleLocator(1)
 	#ax.yaxis.set_minor_locator(minorLocator)
-	from matplotlib.ticker import AutoMinorLocator, LogLocator
+	
 	ax.xaxis.set_minor_locator(LogLocator(5))
 	ax.yaxis.set_minor_locator(LogLocator(10,subs=[2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
+	ax.set_ylim([-.1, .1])
 
 megalut.plot.figures.savefig(os.path.join(outdir, "conditional_bias"), fig, fancy=True, pdf_transparence=True)
 plt.show()
