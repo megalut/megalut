@@ -160,6 +160,50 @@ def run(simtype=None):
 			"groupmode":None
 		}
 
+	########### Mimicing GREAT3 subfields
+
+	elif simname == "sersicG3subfield":
+		
+		# We mimic a GREAT3 subfield. Single static shear, 10'000 gals, with SNC 2
+		# Run this for every "subfield".
+		sp = simparams.G3Sersics_statshear(
+			name = simname,
+			snc_type = 2,
+			shear = 0.05,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 10'000 galaxies, single realization
+		drawconf = {
+			"n":5000, # 2x, with SNC
+			"nc":50,  # To get a good samplign of sersicn (n / nc)
+			"nrea":1,
+			"ncat":1, # To get a single shear value
+			"ncpu":1,
+			"groupmode":None
+		}
+
+	elif simname == "sersicG3subfield_nosnc":
+		
+		# Idem, but without SNC, to check for differences
+		sp = simparams.G3Sersics_statshear(
+			name = simname,
+			snc_type = 1,
+			shear = 0.05,
+			noise_level = 1,
+			obstype = config.great3.obstype,
+			distmode = "G3"
+		)
+		# 10'000 galaxies, single realization
+		drawconf = {
+			"n":10000,
+			"nc":100,  # To get a good samplign of sersicn (n / nc)
+			"nrea":1,
+			"ncat":1, # To get a single shear value
+			"ncpu":1,
+			"groupmode":None
+		}
 	
 	########## Now, some alternative datasets, to test out other approaches.
 	
@@ -330,7 +374,7 @@ def runsub(subfield, sp, drawconf):
 
 if __name__ == '__main__':
 
-	possible_simtypes = ["train-shear", "valid-shear", "train-weight", "valid-overall", "simobscompa"]
+	possible_simtypes = ["train-shear", "valid-shear", "train-weight", "valid-overall", "simobscompa", "mimic-great3"]
 
 	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 	parser.add_argument('simtype', help='Type of dataset to simulate, must be in {}'.format(possible_simtypes))
