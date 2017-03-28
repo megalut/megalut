@@ -21,11 +21,11 @@ great3 = mg3.great3.GREAT3Run(
 	
 	#subfields = [1045],
 	
-	#subfields = range(0, 200),
+	subfields = range(0, 200),
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
-	subfields = range(150, 200),
+	#subfields = range(150, 200),
 	
 	
 	#subfields = range(84, 100),
@@ -50,6 +50,9 @@ datasets = {
 	"valid-overall":"vo-200c-8000r",
 	"simobscompa":"simobscompa-G3",
 	#"simobscompa":"simobscompa-train",
+	
+	#"mimic-great3":"sersicG3subfield"
+	"mimic-great3":"sersicG3subfield_nosnc"
 	
 }
 

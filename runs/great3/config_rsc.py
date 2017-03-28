@@ -17,10 +17,14 @@ great3 = mg3.great3.GREAT3Run(
 	g3publicdir = "/users/mtewes/code/great3-public",
 	
 	
-	#subfields = range(0, 200),
+	#subfields = [1194], # A copy of 194, the subfield with the smallest PSF
 	
-	#subfields = range(0, 100),
-	subfields = range(100, 200),
+	subfields = range(0, 200),
+	
+	#subfields = range(0, 66),
+	#subfields = range(66, 133),
+	#subfields = range(133, 200),
+	
 	
 	
 	#subfields = range(0, 50),
@@ -42,7 +46,9 @@ datasets = {
 	"train-weight":"tw-200c-1000r",
 	
 	"valid-overall":"vo-200c-8000r",
-	"simobscompa":"simobscompa-G3",
+
+	"simobscompa":"simobscompa-g3",
+	#"simobscompa":"simobscompa-train",
 	
 }
 

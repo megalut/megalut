@@ -40,6 +40,11 @@ Tutorial
 ========
 
 
+To test the effect of different settings in the simparams.py, you can reduce the number of cases, 1000 galaxies are sufficient for nice histograms. Also, make sure you remove previous files of the same simname, or the new sims will be added to them, mixing settings!
+
+
+
+
 To start discovering, simobscompa
 
 
