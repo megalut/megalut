@@ -30,8 +30,9 @@ cat["pre_s1w_res"] = cat["pre_s1w"] - cat["tru_s1"]
 cat["pre_s2w_res"] = cat["pre_s2w"] - cat["tru_s2"]
 
 
-print megalut.tools.table.info(cat)
+#print megalut.tools.table.info(cat)
 
+mets = megalutgreat3.utils.metrics(cat, ("tru_s1", "tru_s2"), ("pre_s1w", "pre_s2w"), psfgcols=("tru_psf_g1", "tru_psf_g2"))
 
 
 def labeloutliers(ax, cat, pre, tru, thr=0.01):
