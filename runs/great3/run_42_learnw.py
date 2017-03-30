@@ -1,6 +1,7 @@
 import matplotlib
 matplotlib.use("AGG")
 
+import argparse
 
 import megalut.tools
 import megalut.learn
@@ -10,6 +11,8 @@ import tenbilac
 import config
 import numpy as np
 import os
+import glob
+import shutil
 
 import plot_3_valw
 
@@ -18,6 +21,10 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('-s', '--startfrom', type=int, help='Subfield from which to start the training')
+args = parser.parse_args()
 
 
 for subfield in config.great3.subfields:
@@ -32,6 +39,30 @@ for subfield in config.great3.subfields:
 	# And to the catalogue
 	traincatpath = os.path.join(measdir, "groupmeascat_predforw.pkl")
 	cat = megalut.tools.io.readpickle(traincatpath)
+		
+	
+	# Now we might want to copy an existing training to start from there.
+	if args.startfrom is not None:
+		logger.info("Copying existing training from {}...".format(args.startfrom))
+	
+		dirnames = megalut.learn.tenbilacrun.confnames(config.weightconflist)
+		for (dirname, conf) in zip(dirnames, config.weightconflist):
+			newtraindirpath = os.path.join(traindir, dirname)
+			if os.path.isdir(newtraindirpath):
+				raise RuntimeError("A training already exists, but you want me to start from another one")
+			
+			#pretrainminipaths = sorted(glob.glob(config.great3.subpath(args.startfrom, "ml", config.datasets["train-weight"], dirname, "mini_*")))
+			#if len(pretrainminipaths) == 0:
+			#	raise RuntimeError("Could not find pre-training!")
+			#pretrainpath = pretrainminipaths[-1] # Taking the last one
+			
+			# Let's not take mini, but the full one
+			pretrainpath = config.great3.subpath(args.startfrom, "ml", config.datasets["train-weight"], dirname)
+
+			logger.info("Copying {} into {}...".format(pretrainpath, newtraindirpath))
+			shutil.copytree(pretrainpath, newtraindirpath)
+
+			print "##############################   Is it ok to keep the normer ?"
 	
 	# Running the training	
 	dirnames = megalut.learn.tenbilacrun.train(cat, config.weightconflist, traindir)
