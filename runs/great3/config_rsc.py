@@ -17,9 +17,9 @@ great3 = mg3.great3.GREAT3Run(
 	g3publicdir = "/users/mtewes/code/great3-public",
 	
 	
-	#subfields = [1194], # A copy of 194, the subfield with the smallest PSF
+	subfields = [1194], # A copy of 194, the subfield with the smallest PSF
 	
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 	
 	#subfields = range(0, 66),
 	#subfields = range(66, 133),
@@ -61,8 +61,8 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmassshort.cfg"),
-	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmassshort.cfg"),
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum55wmass.cfg"),
+	("mlconfig/ada5s2w.cfg", "mlconfig/sum55wmass.cfg"),
 	
 	
 ]
@@ -71,4 +71,4 @@ weightconflist = [
 
 trainmode = "g" # When training for ellipticity, switch this to "g". It's for the plots.
 
-predcode = "1" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
+predcode = "2" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.

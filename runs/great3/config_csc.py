@@ -19,9 +19,9 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = [94],
 	#subfields = [45],	# CSC best PSF subfields: [45, 75, 136],  worst : [143, 49, 150], 94 could not be measured!
 	
-	#subfields = [1045],
+	subfields = [1045],
 	
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
@@ -48,8 +48,8 @@ datasets = {
 	#"train-weight":"tw-100c-10000r",
 	
 	"valid-overall":"vo-200c-8000r",
-	"simobscompa":"simobscompa-G3",
-	#"simobscompa":"simobscompa-train",
+	#"simobscompa":"simobscompa-G3",
+	"simobscompa":"simobscompa-train",
 	
 	#"mimic-great3":"sersicG3subfield"
 	"mimic-great3":"sersicG3subfield_nosnc"

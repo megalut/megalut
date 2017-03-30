@@ -17,10 +17,10 @@ great3 = mg3.great3.GREAT3Run(
 	g3publicdir = "/users/mtewes/code/great3-public",
 	
 
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 	#subfields = range(160, 170),
 	
-	#subfields = [1092], # Copy of 92, the field with the best PSF, for some tests
+	subfields = [1092], # Copy of 92, the field with the best PSF, for some tests
 
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
@@ -45,6 +45,9 @@ datasets = {
 	"train-weight":"tw-200c-1000r",	
 	"valid-overall":"vo-200c-8000r",
 	"simobscompa":"simobscompa-G3"
+	#"simobscompa":"simobscompa-train"
+	
+	
 }
 
 
