@@ -1,11 +1,7 @@
-import megalut
 import includes
 import measfcts
-import glob
 import os
 import numpy as np
-import astropy
-from matplotlib.ticker import AutoMinorLocator, LogLocator
 import matplotlib.ticker as ticker
 
 import megalut.plot
