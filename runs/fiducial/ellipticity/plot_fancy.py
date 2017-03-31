@@ -224,7 +224,7 @@ for iplot, featc in enumerate(param_feats):
 	
 	ax.set_ylim([-.1, .1])
 	
-	ax.xaxis.set_minor_locator(LogLocator(5))
+	ax.xaxis.set_minor_locator(ticker.LogLocator(5))
 	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-4)])#, np.arange(lintresh, 1e-2, 9)])
 	s = ax.yaxis._scale
 	ax.yaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
