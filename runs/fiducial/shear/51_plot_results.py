@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 predname = "test1"
 
-component = 1 # which component
+component = 2 # which component
 
 
 def main():
@@ -86,7 +86,28 @@ def plot(cat, component, filepath=None, title=None):
 		
 		
 	elif component == 2:
-		pass
+		# Adding weights if absent:
+		if not "pre_s2w" in cat.colnames:
+			cat["pre_s2w"] = np.ones(cat["adamom_g2"].shape)
+	
+		cat["pre_s2w_norm"] = cat["pre_s2w"] / np.max(cat["pre_s2w"])
+
+		megalut.tools.table.addrmsd(cat, "pre_s2", "tru_s2")
+		megalut.tools.table.addstats(cat, "pre_s2", "pre_s2w")
+		cat["pre_s2_wbias"] = cat["pre_s2_wmean"] - cat["tru_s2"]
+		
+		pre_scw = Feature("pre_s2w", rea=rea)
+		pre_scw_norm = Feature("pre_s2w_norm", rea=rea)
+		
+		pre_sc = Feature("pre_s2", rea=rea)
+		
+		pre_sc_bias = Feature("pre_s2_bias")
+		pre_sc_wbias = Feature("pre_s2_wbias")
+		
+		pre_sc_mean = Feature("pre_s2_mean", -0.13, 0.13)
+		pre_sc_wmean = Feature("pre_s2_wmean", -0.13, 0.13)
+		
+		tru_sc = Feature("tru_s2", -0.13, 0.13)
 		
 
 

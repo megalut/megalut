@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 traindir = os.path.join(includes.workdir, "train_simple")
 
 conflist = [
-	("config/ada3s1.cfg", "config/Net.cfg"),
+	("config/ada3s2.cfg", "config/Net.cfg"),
 ]
 
 

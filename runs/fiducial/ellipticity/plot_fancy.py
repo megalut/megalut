@@ -6,6 +6,7 @@ import os
 import numpy as np
 import astropy
 from matplotlib.ticker import AutoMinorLocator, LogLocator
+import matplotlib.ticker as ticker
 
 import megalut.plot
 from megalut.tools.feature import Feature
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 traindir = os.path.join(includes.workdir, "train_simple")
-outdir = os.path.join(includes.workdir, "train_simple", "plots")
+outdir = os.path.join(traindir, "plots")
 
 megalut.plot.figures.set_fancy(14)
 
@@ -123,9 +124,10 @@ megalut.plot.figures.savefig(os.path.join(outdir, "overall_bias"), fig, fancy=Tr
 #------------------------------------------------------------
 #------------------------------------------------------------
 isubfig = 1
-nlines = int(np.ceil(len(param_feats) / 2.))
-fig = plt.figure(figsize=(8, 3 * nlines))
-plt.subplots_adjust(wspace=0.2)
+ncol = 3
+nlines = int(np.ceil(len(param_feats) / (ncol*1.)))
+fig = plt.figure(figsize=(12, 3 * nlines))
+plt.subplots_adjust(wspace=0.07)
 plt.subplots_adjust(hspace=0.27)
 plt.subplots_adjust(right=0.98)
 plt.subplots_adjust(top=0.98)
@@ -135,14 +137,12 @@ no_legend = True
 assert "res" not in cat.colnames
 lintresh = 2e-3
 
+coln = 0
 for iplot, featc in enumerate(param_feats):
 	
-	coln = (iplot + 1) % 2
-	ax = fig.add_subplot(nlines, 2, isubfig + iplot)
+	ax = fig.add_subplot(nlines, ncol, isubfig + iplot)
 	
 	trans = mtransforms.blended_transform_factory(ax.transAxes, ax.transData)
-	
-	
 	ax.fill_between([0, 1], -lintresh, lintresh, alpha=0.2, facecolor='darkgrey', transform=trans)
 	ax.axhline(0, ls='--', color='k')
 	ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
@@ -214,10 +214,6 @@ for iplot, featc in enumerate(param_feats):
 		ax.errorbar(cbinsumma["xbincents"]+offset, ms, yerr=merrs, color=color, marker=markm, label=labelm)
 		ax.errorbar(cbinsumma["xbincents"]+offset, cs, yerr=cerrs, color=color, marker=markc, ls=':', label=labelc)
 
-	#ax.set_xlim([minshear, maxshear])
-	if coln == 0:
-		ax.set_ylabel("")
-		
 	#if (isubfig + iplot)/2+1 == nlines:
 	#	ax.set_xlabel(r"$\mathrm{True\ shear}$")
 	#else:
@@ -236,6 +232,19 @@ for iplot, featc in enumerate(param_feats):
 	ax.xaxis.set_minor_locator(LogLocator(5))
 	ax.yaxis.set_minor_locator(LogLocator(10,subs=[2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
 	ax.set_ylim([-.1, .1])
+	
+	if featc.low is not None and featc.high is not None:
+		ax.set_xlim([featc.low, featc.high])
+		#ax.locator_params(axis='x', nticks=2)
+		tick_spacing = (featc.high - featc.low) / 5.
+		ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+		ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.3f'))
+		
+	if coln > 0:
+		ax.set_ylabel("")
+		ax.set_yticks([])
 
+	coln += 1
+	if coln == ncol: coln = 0
 megalut.plot.figures.savefig(os.path.join(outdir, "conditional_bias"), fig, fancy=True, pdf_transparence=True)
 plt.show()
