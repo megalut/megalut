@@ -34,6 +34,7 @@ def set_fancy(txtsize=16):
 	#rc('font',**{'family':'serif','serif':['Palatino'],'size':16})
 	rc('font',**{'size':txtsize})
 	rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+	#rc('font', **{'family':'sans-serif','sans-serif':['DevaVu Sans']})
 	rc('text', usetex=True)
 
 

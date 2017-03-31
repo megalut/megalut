@@ -31,11 +31,11 @@ nbins = 10
 ncbins = 10
 
 param_feats = [
-		Feature("snr_mean", nicename=r"${\tt snr\_mean}$"),#r"$\mathrm{Mean}\ S/N$"),
-		Feature("tru_flux", nicename=r"${\tt tru\_flux}$"),#r"$\mathrm{True\ flux}$"),
-		Feature("tru_rad", nicename=r"${\tt tru\_rad}$"),#r"$\mathrm{True\ FWHM}$"),
-		Feature("tru_sersicn", nicename=r"${\tt tru\_sersicn}$"),#r"$\mathrm{True\ Sersic}\ n$"),
-		Feature("tru_g", nicename=r"${\tt tru\_g}$"),#r"$\mathrm{True\ ellipticity}$"),
+		Feature("snr_mean", nicename=r"$S/N$"),
+		Feature("tru_flux", nicename=r"$F\,\mathrm{[ADU]}$"),
+		Feature("tru_rad", nicename=r"$R\,\mathrm{[px]}$"),
+		Feature("tru_sersicn", nicename=r"$n$"),
+		Feature("tru_g", nicename=r"$e$"),
 		]
 
 
@@ -225,13 +225,15 @@ for iplot, featc in enumerate(param_feats):
 	if featc.colname == "tru_g" or (iplot == len(param_feats) + 1 and no_legend):
 		plt.legend(loc="best", handletextpad=0.07,fontsize="small", framealpha=0.5, columnspacing=0.1, ncol=2)
 		no_legend = False
-	#from matplotlib.ticker import MultipleLocator
-	#minorLocator   = MultipleLocator(1)
-	#ax.yaxis.set_minor_locator(minorLocator)
+	
+	ax.set_ylim([-.1, .1])
 	
 	ax.xaxis.set_minor_locator(LogLocator(5))
-	ax.yaxis.set_minor_locator(LogLocator(10,subs=[2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
-	ax.set_ylim([-.1, .1])
+	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-4)])#, np.arange(lintresh, 1e-2, 9)])
+	s = ax.yaxis._scale
+	ax.yaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
+	ticks = np.concatenate([ticks, ax.yaxis.get_minor_locator().tick_values(-.1, .1)])
+	ax.yaxis.set_minor_locator(ticker.FixedLocator(ticks))
 	
 	if featc.low is not None and featc.high is not None:
 		ax.set_xlim([featc.low, featc.high])
@@ -242,7 +244,7 @@ for iplot, featc in enumerate(param_feats):
 		
 	if coln > 0:
 		ax.set_ylabel("")
-		ax.set_yticks([])
+		ax.set_yticklabels([])
 
 	coln += 1
 	if coln == ncol: coln = 0
