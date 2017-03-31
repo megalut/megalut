@@ -19,9 +19,10 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = [94],
 	#subfields = [45],	# CSC best PSF subfields: [45, 75, 136],  worst : [143, 49, 150], 94 could not be measured!
 	
-	subfields = [1045],
+	#subfields = [1045],
+	#subfields = [0],
 	
-	#subfields = range(0, 200),
+	subfields = range(0, 200),
 	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
@@ -51,8 +52,8 @@ datasets = {
 	#"simobscompa":"simobscompa-G3",
 	"simobscompa":"simobscompa-train",
 	
-	#"mimic-great3":"sersicG3subfield"
-	"mimic-great3":"sersicG3subfield_nosnc"
+	"mimic-great3":"sersicG3subfield"
+	#"mimic-great3":"sersicG3subfield_nosnc"
 	
 }
 
@@ -67,11 +68,16 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmassshort.cfg"),
-	("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmassshort.cfg"),
+	# Used for mass:
+	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmassshort.cfg"),  ## predcode 1
+	#("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmassshort.cfg"),
+	
 	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmab.cfg"),
 	#("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmab.cfg"),
 	
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum55wmass500.cfg"),  ## predcode 2
+	("mlconfig/ada5s2w.cfg", "mlconfig/sum55wmass500.cfg"),
+
 	
 ]
 
@@ -79,4 +85,4 @@ weightconflist = [
 
 trainmode = "g" # When training for ellipticity, switch this to "g". It's for the plots.
 
-predcode = "1" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
+predcode = "2" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
