@@ -25,7 +25,7 @@ class G3Sersics(megalut.sim.params.Params):
 			self.name = name
 		self.snc_type = snc_type
 		self.shear = shear
-		self.noise_level = noise_level # 0.92 is for subfield 99 CGC
+		self.noise_level = noise_level
 		self.distmode = distmode
 		self.obstype = obstype
 		
@@ -123,7 +123,7 @@ class G3Sersics(megalut.sim.params.Params):
 	def draw_sb(self):
 		"""
 		Galaxy surface brightness
-		Note that this is currently not used anymore for GREAT3.
+		Note that this is not used for GREAT3.
 		"""
 		
 #		if self.distmode == "G3":
