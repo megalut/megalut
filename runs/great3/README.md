@@ -123,30 +123,67 @@ Finally, you could also generate (for each subfield)
 
 
 ### run_31_learn.py
+
+This script trains the shear prediction. It uses the "train-shear" dataset from the previous step.
+A training is controlled by 2 types of configurations, and the `shearconflist` of `config.py` contains, for each component, a tuple of 2 paths pointing at the corresponding configuration files:
+
+- `mlconfig/ada...`
+	- what features and inputs should be fed into Tenbilac, and how the predicted output data should be named.
+
+- `mlconfig/sum...`
+	- These are Tenbilac configuration files, with all the Tenbilac settings (what network architecture, which error function, how many iterations, etc).
+
+Runnign the scirpt creates a directory in `workdir/subfield/ml` in which all the network parameters are saved. In addition, this script also saves two PNG plots about the training.
+
 ### run_32_val.py
+
+
 ### run_33_valw.py
+
+
 ### run_41_predforw.py
+
+We now come to the weight training, using the "train-weight" dataset. Before we can start with the training itself, this script applies the above shear estimator to predict the shear for every galaxy of the "train-weight" dataset.
+
+
 ### run_42_learnw.py
+
+Very similar to run_31_learn.py.
+
+
+
 ### run_43_valw.py
+
+
 ### run_51_predg3obs.py
+
+Predicts shear and weights (using the shearconflist and weightconflist specified in `config.py`) for the GREAT3 subfield galaxies.
+
+In `config.py`, you can specify a "predcode" at the very bottom. From this script on, change this number if you want to use several sets of shear estimators and/or weights. The number is used in filenames to distinguish between these repeated runs. Not changing it would overwrite files.
+
+
 ### run_52_groupg3obs.py
+
+Computes the average weighted shear in each GREAT3 subfield, saving this (as well as the true shear, the orientation of the PSF) into a small table.
+
 ### run_53_evag3obs.py
+
+Uses this small table to compute metrics and plot results.
+ **You can now also run paperfig_2_evag3obs.py to reproduce the related figure in our paper**.
+
 ### run_61_prepsubmission.py
 ### run_62_officialevasubmission.py
+
+These scripts 61 and 62 allow you to get the same metrics as the 52-53 scripts, but using the acutal 
+For this to work, clone `https://github.com/barnabytprowe/great3-public` on your system, and specify the `g3publicdir` (pointing to the clone) in your `config.py`.
+
 ### run_71_predg3mocks.py
 ### run_72_groupg3mocks.py
 ### run_73_evag3mocks.py
 
+These 3 last scripts do the same as 51-53, but run on the "fiducial" dataset (generated via `run_sim_21.py mimic-great3` instead of the 
 
-To start discovering, simobscompa
-
-
-
-After this, we manually duplicated the directory (within workdir) corresponding to the best PSF, adding 1000 to its number, to have a playground subfield to test settings. This is why some scripts might refer to, e.g., subfield 1194 for branch RSC, which is just a copy of subfield 194.
-
-
-
-
+Output files are different, this will not overwrite anything from the "50" or "60" scripts, but the `config.predcode` setting still applies, if you want to compare several results.
 
 
 
