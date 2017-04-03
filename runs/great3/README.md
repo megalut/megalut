@@ -71,7 +71,7 @@ You can then launch the first script, also to test that everythign is in place. 
 
 This is a rather fast one. It runs a shape measurement (apaptive moments) on the 9 "star" stamps of each subfield of the given branch.
 
-MegaLUT uses astropy tables to hold all catalogs. And it saves these tables into python "pickle" files. The result of this script is such a catalog, in your workdir/subfield/obs: "star_meascat.pkl". 
+MegaLUT uses astropy tables to hold all catalogs. And it saves these tables into python pickle files. The result of this script is such a catalog, in your workdir/subfield/obs: `star_meascat.pkl`. 
 
 ### run_12_measobsgals.py
 
@@ -83,10 +83,29 @@ As for the previous one, this script also write its measurements into pkl catalo
 
 ### run_13_checkpsfs.py
 
+This is very fast an easy: it just prints out a sorted table of subfields according to the measured PSF size.
+It allows you to identify the subfield with the sharpest PSF (smallest `psf_adamom_sigma`), e.g. for checking that training galaxies match to the "observations".
+
+**Hint**: in your workdir, duplicated the subfield-directory with the best PSF by adding 1000 (for CGC, that's `cp -r ./99 ./1099`). This is convenient to test scripts without messing up the actual subfields on which you want to run the full pipeline later.  
 
 ### run_21_sim.py
 
-To test the effect of different settings in the simparams.py, you can reduce the number of cases, 1000 galaxies are sufficient for nice histograms. Also, make sure you remove previous files of the same simname, or the new sims will be added to them, mixing settings!
+This script takes a command line argument (namely one "key" of the datasets-directory in config.py), and ultimately you'll run it several times to generate different datasets.
+
+Let's start by checking that our simulation parameters roughly cover the GREAT3 galaxies. 
+
+Start by setting `subfields = [1099]`, just for your tests.
+
+Make sure that in your `config.py` datasets, "simobscompa" points to "simobscompa-G3". "G3" distributions are relatively close to GREAT3, while "train" distributions (i.e., `simobscompa-train`) are more uniform.
+
+Then, run `python run_21_sim.py simobscompa` which draws one simulated "subfield" with 10'000 galaxies without shear, and directly runs the feature measruement on these galaxies. You'll find the generated files in the corresponding `sim` and `simmeas` directories in `workdir/1099`.
+
+Once this is done, you can run `plot_1_simobscompa.py`, which compares the distribution of feature measurements on GREAT3 and on your simulations with many panels. **You can now also run paperfig_1_simobscompa.py to reproduce the related figure in our paper**.
+
+To experiement with different distributions, you would make adjustements in `simparams.py`. Parameters regarding the "structure" and size of the simulations would have to be set directly in `run_21_sim.py`. Note that 1000 galaxies are sufficient for nice histograms. **Make sure to manually remove previous output files of the same simname, or the new sims will be added to them, mixing settings!**.
+
+
+
 
 
 ### run_31_learn.py
