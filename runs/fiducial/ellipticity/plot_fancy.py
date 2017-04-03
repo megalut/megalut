@@ -27,9 +27,9 @@ nbins = 10
 ncbins = 10
 
 param_feats = [
-		Feature("snr_mean", nicename=r"$S/N$"),
-		Feature("tru_flux", nicename=r"$F\,\mathrm{[ADU]}$"),
-		Feature("tru_rad", nicename=r"$R\,\mathrm{[px]}$"),
+		Feature("snr_mean", nicename=r"S/N"),
+		Feature("tru_flux", nicename=r"$F$ [ADU]"),
+		Feature("tru_rad", nicename=r"$R$ [px]$"),
 		Feature("tru_sersicn", nicename=r"$n$"),
 		Feature("tru_g", nicename=r"$e$"),
 		]
@@ -85,8 +85,8 @@ ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), \
 	featc=Feature("snr_mean"), marker='.', cmap="plasma", showcolorbar=False, vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"$\mathrm{True\ shear\ \gamma_%s}$" % component)
-ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
+ax.set_xlabel(r"True shear $\gamma_{%s}$" % component)
+ax.set_ylabel(r"Shear bias")
 
 
 metrics = megalut.tools.metrics.metrics(cat, main_feat,  Feature("pre_g{}_bias".format(component)), pre_is_res=True)
@@ -104,8 +104,8 @@ ax = fig.add_subplot(1, 2, 2)
 ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component2)), 
-	featc=Feature("snr_mean", nicename=r"$\mathrm{Mean}\ S/N$"), marker='.', cmap="plasma", vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"$\mathrm{True\ shear\ \gamma_%s}$" % component2)
+	featc=Feature("snr_mean", nicename="S/N"), marker='.', cmap="plasma", vmin=minsnr, vmax=maxsnr)
+ax.set_xlabel(r"True shear $\gamma_{%s}$" % component2)
 metrics = megalut.tools.metrics.metrics(cat, main_feat,  Feature("pre_g{}_bias".format(component2)), pre_is_res=True)
 
 ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
@@ -141,7 +141,7 @@ for iplot, featc in enumerate(param_feats):
 	trans = mtransforms.blended_transform_factory(ax.transAxes, ax.transData)
 	ax.fill_between([0, 1], -lintresh, lintresh, alpha=0.2, facecolor='darkgrey', transform=trans)
 	ax.axhline(0, ls='--', color='k')
-	ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
+	ax.set_ylabel(r"Shear bias")
 	
 	for icomp, comp in enumerate([component, component2]):
 		
@@ -218,11 +218,11 @@ for iplot, featc in enumerate(param_feats):
 	
 	ax.set_yscale('symlog', linthreshy=lintresh)
 	ax.set_xlabel(featc.nicename)
-	if featc.colname == "tru_g" or (iplot == len(param_feats) + 1 and no_legend):
+	if featc.colname == "tru_g" or (iplot == len(param_feats) - 1 and no_legend):
 		plt.legend(loc="best", handletextpad=0.07,fontsize="small", framealpha=0.5, columnspacing=0.1, ncol=2)
 		no_legend = False
 	
-	ax.set_ylim([-.1, .1])
+	ax.set_ylim([-1e-1, 1e-1])
 	
 	ax.xaxis.set_minor_locator(ticker.LogLocator(5))
 	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-4)])#, np.arange(lintresh, 1e-2, 9)])

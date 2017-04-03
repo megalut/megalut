@@ -33,8 +33,8 @@ def set_fancy(txtsize=16):
 	from matplotlib import rc
 	#rc('font',**{'family':'serif','serif':['Palatino'],'size':16})
 	rc('font',**{'size':txtsize})
-	rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
-	#rc('font', **{'family':'sans-serif','sans-serif':['DevaVu Sans']})
+	#rc('font', **{'family': 'serif', 'serif': ['Computer Modern']})
+	rc('font', **{'family':'sans-serif','sans-serif':['Arial']})
 	rc('text', usetex=True)
 
 
