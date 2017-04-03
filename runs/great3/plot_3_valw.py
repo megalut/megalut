@@ -18,46 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 
-#predname = "test1"
-
-#component = 1 # which component
-
-
 def main():
 
+	print "This is no longer a standalone script"
 
-	for subfield in config.great3.subfields:
-		
-		# Would need to be updated
-		"""
-		catpath = "/vol/fohlen11/fohlen11_1/mtewes/2017_MegaLUT_GREAT3/cgc_v1/ml/099/G3CGCSersics_train_nn/predcat_ada4_sum55_statshear.pkl"
-		#catpath = config.great3.path("val","%03i" % subfield, "predcat_{}.pkl".format(predname))
-		cat = megalut.tools.io.readpickle(catpath)
-		#print megalut.tools.table.info(cat)
-			
-		
-		#print "HACK HACK HACK"	
-		cat["pre_s1w"] = np.asarray(cat["snr"] > 5, dtype=float)
-		#cat["pre_s1w"] = np.asarray(cat["pre_s1w"] > 0.4, dtype=float)
-		
-		
-		# Checking that the predictions are correctly masked:
-		#assert np.sum(cat["adamom_g1"].mask) == np.sum(cat["pre_s1"].mask)
-		#assert np.sum(cat["adamom_g1"].mask) == np.sum(cat["pre_s1w"].mask)
-		
-		
-		#print megalut.tools.table.info(cat)
-		#print cat["pre_s1", "snr", "pre_s1w"]
-		#exit()
-			
-		
-		plotpath = None
-		#plotpath = config.great3.path("ml","%03i" % subfield, "valplot_{}_comp{}.png".format(predname, component))
-		
-		plot(cat, component, filepath=plotpath, title = predname)
-		logger.info("Plotted to {}".format(plotpath))
-		"""
-
+	
 
 
 def plot(cat, component, filepath=None, title=None):

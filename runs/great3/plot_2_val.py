@@ -22,37 +22,7 @@ logger = logging.getLogger(__name__)
 
 def main():
 
-
-	for subfield in config.great3.subfields:
-		
-		# To be updated if needed
-		"""
-		predcatpath = config.great3.path("ml", "%03i" % subfield, trainspname, "predcat_{}.pkl".format(predname))
-		cat = megalut.tools.io.readpickle(predcatpath)
-		print megalut.tools.table.info(cat)
-
-
-		#bestsub = megalut.tools.table.Selector("bestsub", [("is", "subfield", subfield)])
-		#simcat = bestsub.select(simcat)
-		#print megalut.tools.table.info(simcat)
-
-	
-		plotpath = None
-		#plotpath = config.great3.path("ml","%03i" % subfield, "valplot_{}_comp{}.png".format(predname, component))
-		
-		
-		s = megalut.tools.table.Selector("ok", [
-			("in", "snr_mean", 3, 15),
-			("min", "tru_rad", 0.5),
-			("in", "tru_rad", 0.5, 2.7),
-			("max", "adamom_frac", 0.02)
-		])
-	
-		s = None
-		
-		plot(cat, component, filepath=plotpath, select=s)
-		logger.info("Plotted to {}".format(plotpath))
-		"""
+	print "This is no longer a standalone script"
 
 
 
