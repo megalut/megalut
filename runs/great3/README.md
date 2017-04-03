@@ -215,12 +215,16 @@ For this to work, clone `https://github.com/barnabytprowe/great3-public` on your
 ### run_72_groupg3mocks.py
 ### run_73_evag3mocks.py
 
-These 3 last scripts do the same as 5X, but run on the "fiducial" dataset (generated via `run_sim_21.py mimic-great3` instead of the 
+These 3 last scripts do the same as 5X, but run on the "fiducial" dataset (generated via `run_sim_21.py mimic-great3` instead of the actual GREAT3 data.
 
 Output files are different, this will not overwrite anything from the 5X or 6X scripts, but the `config.predcode` setting still applies, if you want to compare several results.
 
 
 
+
+### run_81_collectplots.py
+
+A helper to copy files from each subfield into one same directory, for instance to quickly skim through check-plots of each subfield.
 
 
 
