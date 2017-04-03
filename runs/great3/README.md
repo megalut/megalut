@@ -14,7 +14,7 @@ A goal of this "pipeline" is to remain flexible enough to allow for easy experim
 Tutorial
 ========
 
-In principle, we'll run the scripts one after the other, in there alphabetical order (given by the numbers in their filenames). A description of the workflow will be given below. But Before describing the scripts, here is a first overview of the configuration.
+In principle, we'll run the scripts one after the other, in there alphabetical order (given by the numbers in their filenames). A description of the workflow will be given below. But before describing the scripts, here is a first overview of the configuration.
 
 
 Overview of the configuration
@@ -40,7 +40,7 @@ Before starting to run anything, we suggest that you have a look at the followin
 
   - run_21_sim.py :
   	Hardcoded in this script are the descriptions of the structures and sizes of the datasets to be simulated, i.e.
-	the definition of the "simnames" encountered in config.py.
+	the definition of the names encountered in config.py.
 
   - mlconfig/
   	Files in here are configurations for the machine learning with Tenbilac.
@@ -58,18 +58,18 @@ If not mentionned otherwise, the scripts take no command line arguments.
 Before running any script, make sure to set the correct range of subfields on which you want to run in config.py.
 The scripts typically contain loops over all the specified subfields.
 
-Some scritps will use multiprocessing to run on several cpus. Related settings will also be described below.
-And we'll also highlight some other settings.
+Some scritps will use multiprocessing to run on several cpus. Related settings will be described in the following.
 
 
-Let's start!
+_Let's start!_
 
 First, copy the file `config_cgc.py` into `config.py`, and edit the obvious lines: set the datadir correctly, and point to an empty workdir (an create it) somewhere on your disk.
-You can then launch the first script, also to test that everythign is in place. We'll need this data for all subfields, but you could also start by setting `subfields = [0]` in your `config.py` to get a first idea. Afterwards, run it again with `subfields = range(0, 200)` (or `subfields = range(1, 200)`, as 0 is already done). Of course, this can also be done with all the other scripts.
+You are then ready for the first script, also to test that everythign is in place:
 
 ### run_11_measstars.py
 
 This is a rather fast one. It runs a shape measurement (apaptive moments) on the 9 "star" stamps of each subfield of the given branch.
+We'll need this data for all subfields, but you could also start by setting `subfields = [0]` in your `config.py` to get a first idea. Afterwards, run it again with `subfields = range(0, 200)` (or `subfields = range(1, 200)`, as 0 is already done). Of course, such a split in subfields can also be done with all the other scripts.
 
 MegaLUT uses astropy tables to hold all catalogs. And it saves these tables into python pickle files. The result of this script is such a catalog, in your workdir/subfield/obs: `star_meascat.pkl`. 
 
