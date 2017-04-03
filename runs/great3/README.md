@@ -64,25 +64,45 @@ And we'll also highlight some other settings.
 
 Let's start!
 
-First, copy the file config_cgc.py into config.py, and edit the obvious lines: set the datadir correctly, and point to an empty workdir (an create it) somewhere on your disk.
-You can then launch the first script, also to test that everythign is in place:
+First, copy the file `config_cgc.py` into `config.py`, and edit the obvious lines: set the datadir correctly, and point to an empty workdir (an create it) somewhere on your disk.
+You can then launch the first script, also to test that everythign is in place. We'll need this data for all subfields, but you could also start by setting `subfields = [0]` in your `config.py` to get a first idea. Afterwards, run it again with `subfields = range(0, 200)` (or `subfields = range(1, 200)`, as 0 is already done). Of course, this can also be done with all the other scripts.
 
-- run_11_measstars.py
+### run_11_measstars.py
 
 This is a rather fast one. It runs a shape measurement (apaptive moments) on the 9 "star" stamps of each subfield of the given branch.
 
-MegaLUT uses astropy tables to hold all catalogs. And it saves these tables into python "pickle" files. The result of this script is such a catalog, in your workdir/subfield/obs: "star_meascat.pkl".
+MegaLUT uses astropy tables to hold all catalogs. And it saves these tables into python "pickle" files. The result of this script is such a catalog, in your workdir/subfield/obs: "star_meascat.pkl". 
 
-- run_12_measobsgals.py
+### run_12_measobsgals.py
+
+This is a not-that-fast one, it measures the features on the GREAT3 galaxies (we call them "obs", for "observed", to distinguish them from MegaLUT-internal simulations).
+
+This script uses multiprocessing: before starting it, set the option `ncpu` in config.py to the number of cpus you want to use. 
+
+As for the previous one, this script also write its measurements into pkl catalogs.
+
+### run_13_checkpsfs.py
 
 
-
-
-
+### run_21_sim.py
 
 To test the effect of different settings in the simparams.py, you can reduce the number of cases, 1000 galaxies are sufficient for nice histograms. Also, make sure you remove previous files of the same simname, or the new sims will be added to them, mixing settings!
 
 
+### run_31_learn.py
+### run_32_val.py
+### run_33_valw.py
+### run_41_predforw.py
+### run_42_learnw.py
+### run_43_valw.py
+### run_51_predg3obs.py
+### run_52_groupg3obs.py
+### run_53_evag3obs.py
+### run_61_prepsubmission.py
+### run_62_officialevasubmission.py
+### run_71_predg3mocks.py
+### run_72_groupg3mocks.py
+### run_73_evag3mocks.py
 
 
 To start discovering, simobscompa
@@ -103,71 +123,4 @@ After this, we manually duplicated the directory (within workdir) corresponding 
 
 
 
-
-About
-=====
-
-The current (Spring 2017) approach to GREAT3.
-We focus on the single-epoch known-PSF branches.
-
-There is no sophisticated "configuration" scheme here. Many settings are directly hard-coded in the scripts.
-This make development easier, plus you learn more about the code.
-
-
-Contents
---------
-
-
-- ``run_*_.py``: Main demonstration pipeline, reproducing the paper figures.
-
-
-
-
-
-
-"Pipelines"
-===========
-
-Different paths can be followed to "run". Here we describe those we care about. 
-
-We will at least try not to break these pipelines too badly when editing scripts.
-
-
-Individual training
--------------------
-
-One training per subfield, as the PSFs of different subfields are too different to mix them.
-
-- run_11
-- run_12
-- run_13
-
-- run_21
-
-
-- run_3
-
-- run_5
-- run_51
-- run_52
-
-
-
-Common training
----------------
-
-Have one "common training" for a branch, that is, mix all PSFs from the different subfields.
-
-Sept. 2016, Malte is working on this.
-
-- run_0
-- run_11
-- run_12
-- run_13
-- run_15, to find the best subfield
-
-Then, if the sims are not yet tuned, iterate on
-- editing simparams (snc_type can be set to 1, config.subfields just to the best subfield)
-- run_22 (pick different sp.name for your tests)
-- plot_1
 
