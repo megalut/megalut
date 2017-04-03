@@ -15,7 +15,7 @@ A goal of this "pipeline" is to remain flexible enough to allow for easy experim
 Installation
 ============
 
-The pipeline uses pyhton 2.7 and the usual "scipy stack" (numpy, scipy, matplotlib). In addition, you will need:
+The pipeline uses python 2.7 and the usual "scipy stack" (numpy, scipy, matplotlib). In addition, you will need:
 
 - GalSim (1.4 or above) https://github.com/GalSim-developers/GalSim
 - astropy (1.1 or above)
@@ -127,7 +127,7 @@ To proceed with the pipeline and train the machine learning, we need to simulate
 - `python run_21_sim.py train-shear`
 - `python run_21_sim.py train-weight`
 
-These are both rather massive. The script uses multiprocessing, but this time the number of cpus is directly set into `run_21_sim.py` as it depends a bit on the structure of the dataset to generate.
+These are both rather massive. The script uses multiprocessing, but this time the number of CPUs is directly set into `run_21_sim.py` as it depends a bit on the structure of the dataset to generate.
 
 Optional: if you want to perform some validations, typically to test machine learning settings, you could also generate
 - `python run_21_sim.py valid-shear`
@@ -151,7 +151,10 @@ A training is controlled by 2 types of configurations, and the `shearconflist` o
 - `mlconfig/sum*.cfg`
 	- These are Tenbilac configuration files, with all the Tenbilac settings (what network architecture, which error function, how many iterations, etc).
 
-Runnign the scirpt creates a directory in `workdir/subfield/ml` in which all the network parameters are saved. In addition, this script also saves two PNG plots about the training. One shows the evolution of the cost function value, the other one shows results of self-predictions on the training set.
+The training is a massive task, comparable to the generation of the training dataset. So again, this script uses multliple CPUs. This time, **the number of CPUs** (as well as the number of committee members -- which is currently the only think that runs in parallel) **is set in the Tenbilac configuration file**. 
+
+
+Running the scirpt creates a directory in `workdir/subfield/ml` in which all the network parameters are saved. In addition, this script also saves two PNG plots about the training. One shows the evolution of the cost function value, the other one shows results of self-predictions on the training set.
 
 ### run_32_val.py
 
