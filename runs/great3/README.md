@@ -3,9 +3,9 @@
 About
 =====
 
-Code in here might be useful to play with GREAT3, but is not meant (i.e., does not have the quality) to be reused for other purposes or surveys.
 
-This code illustrates the use of MegaLUT on GREAT3 data and reproduces the figures from our paper.
+This code illustrates the use of MegaLUT on GREAT3 data and reproduces the related figures from our paper. The scripts might be useful to play with GREAT3, but are not meant and do not have the quality to be reused for other purposes or surveys.
+
 We focus on the constant-shear single-epoch constant-PSF branches, but running on the corresponding variable-shear branches is equally simple.
 
 A goal of this "pipeline" is to remain flexible enough to allow for easy experimentation. It should be relatively easy to test and compare different settings. 
@@ -14,7 +14,7 @@ A goal of this "pipeline" is to remain flexible enough to allow for easy experim
 Tutorial
 ========
 
-In principle, we'll run the scripts one after the other. A description of the workflow will be given below. But Before describing the scripts, here is a first overview of the configuration.
+In principle, we'll run the scripts one after the other, in there alphabetical order (given by the numbers in their filenames). A description of the workflow will be given below. But Before describing the scripts, here is a first overview of the configuration.
 
 
 Overview of the configuration
@@ -23,7 +23,7 @@ Overview of the configuration
 There is no centralised configuration scheme for these scripts.
 Before starting to run anything, we suggest that you have a look at the following files, to get a feeling of what's in there:
 
-  - config.py
+  - config.py (or config_cgc.py etc):
   	This is the top-level configuration file. It contains:
   	- paths to the GREAT3 data, what branch and what subfields to process
 	- which datasets (defined by "simnames") to use for training and validation (those are defined in run_21_sim.py and simparams.py, described below)
@@ -32,13 +32,13 @@ Before starting to run anything, we suggest that you have a look at the followin
 	The contents of this config.py will depend on your environment. To get startet, copy one of our configs (e.g., config_cgc.py) into
 	config.py and edit the various paths as needed.
 
-  - measfcts.py
+  - measfcts.py :
     - settings related to the feature measurements, in particular what should get measured
 
-  - simparams.py
+  - simparams.py :
     - description of the simulations, galaxy parameter distributions 
 
-  - run_21_sim.py
+  - run_21_sim.py :
   	Hardcoded in this script are the descriptions of the structures and sizes of the datasets to be simulated, i.e.
 	the definition of the "simnames" encountered in config.py.
 
@@ -53,18 +53,28 @@ Before starting to run anything, we suggest that you have a look at the followin
 Workflow
 --------
 
-Most scripts take no command line arguments, otherwise we'll mention it.
-Some scritps will use multiprocessing to run on several cpus. Related settings are described below.
+If not mentionned otherwise, the scripts take no command line arguments. 
 
 Before running any script, make sure to set the correct range of subfields on which you want to run in config.py.
-The scripts contain loops over all the specified subfields.
+The scripts typically contain loops over all the specified subfields.
+
+Some scritps will use multiprocessing to run on several cpus. Related settings will also be described below.
+And we'll also highlight some other settings.
 
 
-run_11_measstars.py (fast)
+Let's start!
+
+First, copy the file config_cgc.py into config.py, and edit the obvious lines: set the datadir correctly, and point to an empty workdir (an create it) somewhere on your disk.
+You can then launch the first script, also to test that everythign is in place:
+
+- run_11_measstars.py
+
+This is a rather fast one. It runs a shape measurement (apaptive moments) on the 9 "star" stamps of each subfield of the given branch.
 
 MegaLUT uses astropy tables to hold all catalogs. And it saves these tables into python "pickle" files. The result of this script is such a catalog, in your workdir/subfield/obs: "star_meascat.pkl".
 
-run_12_measobsgals.py (medium)
+- run_12_measobsgals.py
+
 
 
 
