@@ -104,7 +104,21 @@ Once this is done, you can run `plot_1_simobscompa.py`, which compares the distr
 
 To experiement with different distributions, you would make adjustements in `simparams.py`. Parameters regarding the "structure" and size of the simulations would have to be set directly in `run_21_sim.py`. Note that 1000 galaxies are sufficient for nice histograms. **Make sure to manually remove previous output files of the same simname, or the new sims will be added to them, mixing settings!**.
 
+To proceed with the pipeline and train the machine learning, we need to simulate at least to datasets per subfield: one to train ellipticity estimates (called shear, but real shear estimatse turns out to be unnecessarily slow here, so in fact we'll learn to predict ellipticity of our simply Sersic profiles), and one to train weights. To get these datasets, for **each subfield**, we need:
+- `python run_21_sim.py train-shear`
+- `python run_21_sim.py train-weight`
 
+These are both rather massive. The script uses multiprocessing, but this time the number of cpus is directly set into `run_21_sim.py` as it depends a bit on the structure of the dataset to generate.
+
+
+If you want to perform some validations, typically to test machine learning settings, you could also generate
+- `python run_21_sim.py valid-shear`
+- `python run_21_sim.py valid-overall`
+... but this is even more massive (it's an entire GREAT3 branch per subfield), and you certainly don't want this for every subfield.
+
+Finally, you could also generate (for each subfield)
+- `python run_21_sim.py mimic-great3`
+... which creates 10'000 Sersic galaxies (including a simple shape noise cancellation) giving a "fiducial" branch whose galaxies share the same properties as the ones used for training.
 
 
 
