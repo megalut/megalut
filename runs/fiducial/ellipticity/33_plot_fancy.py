@@ -27,11 +27,11 @@ nbins = 10
 ncbins = 10
 
 param_feats = [
-		Feature("snr_mean", nicename=r"S/N"),
-		Feature("tru_flux", nicename=r"$F$ [ADU]"),
-		Feature("tru_rad", nicename=r"$R$ [px]$"),
-		Feature("tru_sersicn", nicename=r"$n$"),
-		Feature("tru_g", nicename=r"$e$"),
+		Feature("snr_mean", nicename=r"S/N", low=0, high=100),
+		#Feature("tru_flux", nicename=r"$F$ [counts]"),
+		#Feature("tru_rad", nicename=r"$R$ [px]$"),
+		#Feature("tru_sersicn", nicename=r"$n$"),
+		#Feature("tru_g", nicename=r"$e$"),
 		]
 
 
@@ -224,8 +224,7 @@ for iplot, featc in enumerate(param_feats):
 	
 	ax.set_ylim([-1e-1, 1e-1])
 	
-	ax.xaxis.set_minor_locator(ticker.LogLocator(5))
-	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-4)])#, np.arange(lintresh, 1e-2, 9)])
+	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-3)])#, np.arange(lintresh, 1e-2, 9)])
 	s = ax.yaxis._scale
 	ax.yaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
 	ticks = np.concatenate([ticks, ax.yaxis.get_minor_locator().tick_values(-.1, .1)])
