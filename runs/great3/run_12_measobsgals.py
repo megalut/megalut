@@ -27,8 +27,9 @@ outcatfilepaths = []
 
 for subfield in config.great3.subfields:
 
+	config.great3.mkdirs(subfield)
 
-	starcat = megalut.tools.io.readpickle(config.great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	starcat = megalut.tools.io.readpickle(config.great3.subpath(subfield, "obs", "star_meascat.pkl"))
 	#print starcat
 				
 	incat = megalutgreat3.io.readgalcat(config.great3, subfield)
@@ -57,7 +58,7 @@ for subfield in config.great3.subfields:
 		xname="x",
 		yname="y",
 		stampsize=config.great3.stampsize(),
-		workdir=config.great3.path("obs", "img_%i_measworkdir" % subfield)
+		workdir=config.great3.subpath(subfield, "obs", "img_measworkdir")
 		)
 
 	incat.meta["psf"] = megalut.tools.imageinfo.ImageInfo(
@@ -69,12 +70,12 @@ for subfield in config.great3.subfields:
 		)
 
 	# Write the input catalog
-	incatfilepath = config.great3.path("obs", "img_%i_incat.pkl" % subfield)
+	incatfilepath = config.great3.subpath(subfield, "obs", "img_incat.pkl")
 	megalut.tools.io.writepickle(incat, incatfilepath)
 	incatfilepaths.append(incatfilepath)
 	
 	# Prepare the filepath for the output catalog
-	outcatfilepath = config.great3.path("obs", "img_%i_meascat.pkl" % subfield)
+	outcatfilepath = config.great3.subpath(subfield, "obs", "img_meascat.pkl")
 	outcatfilepaths.append(outcatfilepath)
 
 

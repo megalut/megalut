@@ -23,7 +23,7 @@ psf_adamom_sigmas = []
 
 for (i, subfield) in enumerate(config.great3.subfields):
 
-	catpath = config.great3.path("obs", "star_%i_meascat.pkl" % subfield)
+	catpath = config.great3.subpath(subfield, "obs", "star_meascat.pkl")
 	cat = megalut.tools.io.readpickle(catpath)
 	#print megalut.tools.table.info(cat)
 	

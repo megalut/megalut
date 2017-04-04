@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 for subfield in config.great3.subfields:
 
+	config.great3.mkdirs(subfield)
 
 	# We don't bother reading the starcat, and just make one
 	stars = []
@@ -40,13 +41,13 @@ for subfield in config.great3.subfields:
 		xname="psfx",
 		yname="psfy",
 		stampsize=config.great3.stampsize(),
-		workdir=config.great3.path("obs", "star_%i_measworkdir" % subfield)
+		workdir=config.great3.subpath(subfield, "obs", "star_measworkdir")
 		)
 
 	starcat = measfcts.psf(starcat, branch=config.great3)
 	#print starcat[["psfx", "psfy", "psf_sewpy_XWIN_IMAGE", "psf_sewpy_YWIN_IMAGE", "psf_adamom_x", "psf_adamom_y"]]
 	#print starcat
 
-	megalut.tools.io.writepickle(starcat, config.great3.path("obs", "star_%i_meascat.pkl" % subfield))
+	megalut.tools.io.writepickle(starcat, config.great3.subpath(subfield, "obs", "star_meascat.pkl"))
 	
 

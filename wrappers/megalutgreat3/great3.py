@@ -19,7 +19,7 @@ class GREAT3Run(utils.Branch):
 	Unlike Branch, it does specify paths to MegaLUT-internal temporary files and directories, and handles a workdir.
 	"""
 	
-	def __init__(self, experiment, obstype, sheartype, datadir, truthdir, workdir, subfields=None, ncpu=None, skipdone=False):
+	def __init__(self, experiment, obstype, sheartype, datadir, truthdir, workdir, g3publicdir, subfields=None, ncpu=None, skipdone=False):
 		
 		utils.Branch.__init__(self, experiment, obstype, sheartype, datadir, truthdir)
 		logger.info("Getting ready to work on branch %s-%s-%s" % (experiment, obstype, sheartype))
@@ -28,7 +28,9 @@ class GREAT3Run(utils.Branch):
 		if self.workdir == None:
 			logger.warning("Better specify a workdir, I think.")
 			self.workdir = "./%s" % (self.get_branchacronym())
-		self._mkdirs()
+		self.mkdirs()
+		
+		self.g3publicdir = g3publicdir
 		
 		self.subfields=subfields
 		if self.subfields is None:
@@ -53,7 +55,7 @@ class GREAT3Run(utils.Branch):
 		return "GREAT3Run on branch %s in workdir '%s'" % (self.get_branchacronym(), self.workdir)
 
 		
-	def _mkdirs(self):
+	def mkdirs(self, subfield=None):
 		"""
 		Creates the working directories. 
 		"""
@@ -61,10 +63,16 @@ class GREAT3Run(utils.Branch):
 		if not os.path.isdir(self.workdir):
 			os.makedirs(self.workdir)
 	
-		# Now must create the sub-directories:
-		for subfolder in ["obs","sim","ml","pred","out"]:
-			if not os.path.isdir(self.path(subfolder)):
-				os.makedirs(self.path(subfolder))
+		if subfield is not None:
+			dirpath = self.subpath(subfield)
+			if not os.path.isdir(dirpath):
+				os.makedirs(dirpath)
+				
+			# Now must create the sub-directories:
+			for subfolder in ["obs","sim","ml","pred","out","val"]:
+				dirpath = self.subpath(subfield, subfolder)
+				if not os.path.isdir(dirpath):
+					os.makedirs(dirpath)
 
 
 	def path(self,*args):
@@ -81,6 +89,15 @@ class GREAT3Run(utils.Branch):
 		"""
 		return os.path.join(self.workdir,"/".join(args))
 	
+	
+	def subpath(self, subfield, *args):
+		"""
+		Similar, but first argument is a subfield number
+		"""
+		
+		
+		
+		return os.path.join(self.workdir, "%03i" % subfield, "/".join(args))
 	
 
 	# Files that MegaLUT will write: 
