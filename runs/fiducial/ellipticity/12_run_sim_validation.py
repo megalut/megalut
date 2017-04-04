@@ -2,33 +2,26 @@ import os
 
 import megalut.sim
 import megalut.meas
-import megalut.tools as tls
 import measfcts
 import simparams
-import psf
 
 import includes
 
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simdir
 
-# Let's train for ellipticity
-# We do not need Shape Noise Cancellation and no shear needeed
-sp = simparams.EllipticityVarPSF()
-psf_field = psf.PSF_Field(kind="radial")
-psfdir = os.path.join(simdir, sp.name, "psf")
-psf_field.save(psfdir)
-psf_field.plot(psfdir)
-sp.set_psf_field(psf_field)
-sp.shear = 0
-sp.snc_type = 1
-sp.noise_level = 0.
-n = 10000
-nc = 2500
-ncat = 1
-nrea = 20
+
+# Let's simulate a validation dataset for ellipticity only
+sp = simparams.Ellipticity()
+sp.shear = 0.1
+simdir = includes.simvaldir
+sp.snc_type = 10000
+sp.noise_level = 0.8
+n = 1
+nc = 1
+ncat = 2500
+nrea = 1
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -37,7 +30,7 @@ megalut.sim.run.multi(
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
-	savepsfimg=True, savetrugalimg=False
+	savepsfimg=False, savetrugalimg=False
 	)
 
 
@@ -66,7 +59,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))
