@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None, showidline=False, idlinekwargs=None,
-	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, yisres=False, showcolorbar=True, **kwargs):
+	metrics=False, sidehists=False, sidehistkwargs=None, errorbarkwargs=None, yisres=False, hidecbar=False, **kwargs):
 	"""
 	A simple scatter plot of cat, between two Features. A third Feature, featc, gives an optional colorbar.
 	
@@ -50,6 +50,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		Add range=None to these if you want all bins to be computed.
 	:param errorbarkwargs: a dict of keywords to be passed to errorbar()
 	:param yisres: if True, featy will be treated as residues when computing the metrics, and idline will be horizontal.
+	
+	:param hidecbar: if True, the colorbar is not drawn.
 	
 	Any further kwargs are either passed to ``plot()`` (if no featc is given) or to ``scatter()``.
 	
@@ -128,11 +130,13 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **myerrorbarkwargs)
 		
 		stuff = ax.scatter(data[featx.colname], data[featy.colname], c=data[featc.colname], **mykwargs)
-		if showcolorbar:
+
+		if hidecbar is False:
 			divider = make_axes_locatable(ax)
-			cax = divider.append_axes("right", "5%", pad="-0%")
+			cax = divider.append_axes("right", "5%", pad="3%")
 			cax = plt.colorbar(stuff, cax)
 			cax.set_label(featc.nicename)
+
 			
 	else: # We will use plot()
 	

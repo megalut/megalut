@@ -91,7 +91,7 @@ ax = fig.add_subplot(1, 2, 1)
 ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), \
-	featc=Feature("snr_mean"), marker='.', cmap="plasma", showcolorbar=False, vmin=minsnr, vmax=maxsnr)
+	featc=Feature("snr_mean"), marker='.', cmap="plasma", hidecbar=True, vmin=minsnr, vmax=maxsnr)
 ax.set_xlabel(r"$\mathrm{True\ shear\ \gamma_%s}$" % component)
 ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
 
