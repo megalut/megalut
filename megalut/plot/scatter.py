@@ -130,13 +130,13 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			ax.errorbar(data[featx.colname], data[featy.colname], xerr=xerr, yerr=yerr, **myerrorbarkwargs)
 		
 		stuff = ax.scatter(data[featx.colname], data[featy.colname], c=data[featc.colname], **mykwargs)
-		
+
 		if hidecbar is False:
 			divider = make_axes_locatable(ax)
 			cax = divider.append_axes("right", "5%", pad="3%")
 			cax = plt.colorbar(stuff, cax)
 			cax.set_label(featc.nicename)
-	
+
 			
 	else: # We will use plot()
 	

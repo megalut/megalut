@@ -14,14 +14,14 @@ logger = logging.getLogger(__name__)
 
 # Let's simulate a validation dataset for ellipticity only
 # We do not need Shape Noise Cancellation and no shear needeed
-sp = simparams.Ellipticity()
+sp = simparams.Sersics_statshear()
 sp.shear = 0.1
 simdir = includes.simvaldir
-sp.snc_type = 10000
+sp.snc_type = 4
 sp.noise_level = 0.8
-n = 1
+n = 1000
 nc = 1
-ncat = 2500
+ncat = 100
 nrea = 1
 
 megalut.sim.run.multi(

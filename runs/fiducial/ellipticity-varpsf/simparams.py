@@ -4,7 +4,7 @@ import numpy as np
 import random # np.random.choice is only available for newer numpys...
 import os
 
-class Ellipticity(megalut.sim.params.Params):
+class EllipticityVarPSF(megalut.sim.params.Params):
 	
 	def __init__(self):
 		megalut.sim.params.Params.__init__(self)
@@ -12,26 +12,34 @@ class Ellipticity(megalut.sim.params.Params):
 		self.snc_type = 1
 		self.shear = 0.0
 		self.noise_level = 0.8
-
-
+		self.fwhm2sig = 5. / (np.sqrt(2. * np.log(2.)))
+		
+		
 	def stat(self):
 		"""
 		stat: called for each catalog (stat is for stationnary)
 		"""
 		return {"snc_type":self.snc_type}
 	
-	
+	def set_psf_field(self, field):
+		"""
+		Incorporates the PSF field. See `psf.py` for more infos on the calls.
+		"""		
+		
+		self.psf_field = field
+		
 	def draw(self, ix, iy, nx, ny):
 		"""
 		draw: called for each galaxy	
 		"""
 	
 		########## PSF ##########
-		tru_psf_sigma = 2.0
-		tru_psf_g1 = 0.0
-		tru_psf_g2 = 0.0
-	
-	
+		pos_gal_x, pos_gal_y = np.random.uniform(low=0., high=1., size=2)
+		#tru_psf_sigma = 0.58174 #0.58174 # = 0.137(FWHM) / 2.355 * 10. (px scale is 1" in megalut, Euclid is 0.1")
+		
+		tru_psf_g1, tru_psf_g2, tru_psf_sigma = self.psf_field.eval(pos_gal_x, pos_gal_y)
+		tru_psf_sigma = tru_psf_sigma * self.fwhm2sig
+
 		########## Shear #########	
 
 		if self.shear > 0:
@@ -55,7 +63,7 @@ class Ellipticity(megalut.sim.params.Params):
 		#surface_brigthness = np.random.normal(1., 0.02)
 		surface_brigthness = np.random.uniform(0.8, 1.2)
 		
-		tru_rad = np.random.uniform(1.0, 12.0)
+		tru_rad = np.random.uniform(1.0, 10.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness)
 			
@@ -88,43 +96,18 @@ class Ellipticity(megalut.sim.params.Params):
 			"tru_psf_sigma":tru_psf_sigma,
 			"tru_psf_g1":tru_psf_g1,
 			"tru_psf_g2":tru_psf_g2,
-		}
-		
-
-class Sersics_statshear(Ellipticity):
-	"""
-	To train weights for shear: constant shear per catalog
-	"""
-	
-	def __init__(self, **kwargs):
-		Ellipticity.__init__(self, **kwargs)
-		
-	def stat(self):
-		"""
-		Supercedes what draw returns, called once for each catalog
-		"""
-		
-		if self.shear > 0:
-			tru_s1 = np.random.uniform(-self.shear, self.shear)
-			tru_s2 = np.random.uniform(-self.shear, self.shear)	
-		else:
-			tru_s1 = 0.0
-			tru_s2 = 0.0
-		tru_mu = 1.0
 			
-		return {
-			"tru_s1" : tru_s1, # shear component 1, in "g" convention
-			"tru_s2" : tru_s2, # component 2
-			"tru_mu" : tru_mu, # magnification
-			"snc_type":self.snc_type
-}
+			"tru_gal_x_chip":pos_gal_x,
+			"tru_gal_y_chip":pos_gal_y,
+		}
 
 
-def contracted_rayleigh(sigma, max_val, p):
+
+def contracted_rayleigh(sigma, max_val, p, size=None):
 	"""
 	A distribution with finite support.
 	"""
-	tmp = np.random.rayleigh(sigma)
+	tmp = np.random.rayleigh(sigma, size=size)
 	return (tmp / np.power(1 + np.power(tmp / max_val, p), 1.0 / p))
 
 

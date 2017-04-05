@@ -35,8 +35,11 @@ class Ellipticity(megalut.sim.params.Params):
 		########## Shear #########	
 
 		if self.shear > 0:
-			tru_s1 = np.random.uniform(-self.shear, self.shear)
-			tru_s2 = np.random.uniform(-self.shear, self.shear)	
+			s = np.random.triangular(0., self.shear, self.shear) * 1.4142
+			theta = np.random.uniform(0., np.pi * 2.)
+
+			tru_s1 = np.cos(theta) * s
+			tru_s2 = np.sin(theta) * s
 		else:
 			tru_s1 = 0.0
 			tru_s2 = 0.0
@@ -55,7 +58,7 @@ class Ellipticity(megalut.sim.params.Params):
 		#surface_brigthness = np.random.normal(1., 0.02)
 		surface_brigthness = np.random.uniform(0.8, 1.2)
 		
-		tru_rad = np.random.uniform(1.0, 12.0)
+		tru_rad = np.random.uniform(1.5, 4.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness)
 			

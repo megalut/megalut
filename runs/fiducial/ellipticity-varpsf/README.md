@@ -3,7 +3,7 @@ Contents
 
 This run of MegaLUT is a not so trivial simulation meant to be a stepping stone between very simple tests and an application to Great3.
 
-This directory contains Sersic galaxies and varying parameters. The PSF is a stationary Gaussian profile.
+This directory contains Sersic galaxies and varying parameters. This is a PSF variable run, see details in `psf.py`.
 
 The scripts are meant to be executed in the following order:
 
