@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 traindir = os.path.join(includes.workdir, "train_simple")
 
 conflist = [
-	("config/ada3s2w.cfg", "config/sum33w.cfg"),
+	("config/ada2s2w.cfg", "config/sum3w_1.cfg"),
 ]
 
 spname = "Ellipticity"

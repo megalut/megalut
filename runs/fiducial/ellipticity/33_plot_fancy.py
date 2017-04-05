@@ -85,7 +85,7 @@ ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), \
 	featc=Feature("snr_mean"), marker='.', cmap="plasma", showcolorbar=False, vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"True shear $\gamma_{%s}$" % component)
+ax.set_xlabel(r"True shear $g_{%s}$" % component)
 ax.set_ylabel(r"Shear bias")
 
 
@@ -105,7 +105,7 @@ ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component2)), 
 	featc=Feature("snr_mean", nicename="S/N"), marker='.', cmap="plasma", vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"True shear $\gamma_{%s}$" % component2)
+ax.set_xlabel(r"True shear $g_{%s}$" % component2)
 metrics = megalut.tools.metrics.metrics(cat, main_feat,  Feature("pre_g{}_bias".format(component2)), pre_is_res=True)
 
 ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
