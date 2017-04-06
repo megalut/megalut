@@ -7,6 +7,7 @@ import measfcts
 import f2n
 import subprocess
 import megalut
+import numpy as np
 
 import logging
 
@@ -14,20 +15,30 @@ import logging
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.INFO)
 
 
+
+#### Parameters ###################
+
 genworkdir = "/vol/fohlen11/fohlen11_1/mtewes/casereafig/"
 
-name = "shear"
+name = "shearw"
+#name = "shear"
 #name = "ellip"
-
 
 ncas = 5
 nrea = 6
 stampsize = 50
 
+####################################
 
 
-sp = simparams.Simple1()
-sp.snc_type = nrea
+
+
+if name in ["shear", "ellip"]:
+	sp = simparams.Simple1()
+	sp.snc_type = nrea
+elif name in ["shearw"]:
+	sp = simparams.Simple2()
+	sp.snc_type = 2
 sp.sr = 0.0
 
 workdir = os.path.join(genworkdir, name)
@@ -37,21 +48,45 @@ fitsimgpath = os.path.join(workdir, "img.fits")
 catpath = os.path.join(workdir, "cat.pkl")
 writecatpath = os.path.join(workdir, "writecat.txt")
 
+nc = 1
+n = ncas
+if name is "shearw": # Then we use SNC=2
+	nc = int(float(nrea)/2.0)
+	n = nc * ncas
+
+cat = megalut.sim.stampgrid.drawcat(sp, n=n, nc=nc, stampsize=stampsize)
+
+#exit()
 
 
-cat = megalut.sim.stampgrid.drawcat(sp, n=ncas, nc=1, stampsize=stampsize)
-print cat
-
-if name == "ellip":
+if name == "ellip": # We give each rea the same ellipticity
 	for i in range(ncas):
+		g1 = cat[i*nrea]["tru_g1"]
+		g2 = cat[i*nrea]["tru_g2"]
+		print (g1, g2)
 		for j in range(nrea):
-			cat[i*ncas + j]["tru_g1"] = cat[i*ncas]["tru_g1"]
-			cat[i*ncas + j]["tru_g2"] = cat[i*ncas]["tru_g2"]
+			pass
+			cat[i*nrea + j]["tru_g1"] = g1
+			cat[i*nrea + j]["tru_g2"] = g2
 			
 
+if name == "shearw": # We give each case a different shear
+	# No, in fact this looks weird. Better give zero or almost zero shear.
+	for i in range(ncas):
+		tru_s = 0.1
+		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)
+		(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
+		for j in range(nrea):
+			cat[i*nrea + j]["tru_s1"] = tru_s1
+			cat[i*nrea + j]["tru_s2"] = tru_s2
+
+print cat["tru_g", "tru_g1", "tru_g2"]
+print megalut.tools.table.info(cat)
+#exit()
 
 megalut.sim.stampgrid.drawimg(cat, simgalimgfilepath=fitsimgpath, simtrugalimgfilepath=None, simpsfimgfilepath=None)
 #subprocess.Popen("ds9 {}".format(fitsimgpath), shell=True)
+
 
 cat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
 	fitsimgpath,
@@ -66,6 +101,7 @@ cat = megalut.meas.skystats.measfct(cat, stampsize=stampsize)
 cat = megalut.meas.snr.measfct(cat, gain=1.0)
 
 if name == "shear" or name == "ellip":
+	
 	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_flux"])
 	megalut.tools.table.addstats(cat, "snr")
 	megalut.tools.io.writepickle(cat, catpath)
@@ -73,6 +109,16 @@ if name == "shear" or name == "ellip":
 	writecat = cat["tru_flux", "snr_mean"]
 	print writecat
 	writecat.write(writecatpath, format="ascii")
+
+if name == "shearw":
+	
+	
+	megalut.tools.io.writepickle(cat, catpath)
+	print megalut.tools.table.info(cat)
+	writecat = cat["x", "y", "snr"]
+	print writecat
+	writecat.write(writecatpath, format="ascii")
+
 
 
 for icas in range(ncas):
