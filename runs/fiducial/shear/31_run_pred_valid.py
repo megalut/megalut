@@ -20,23 +20,17 @@ conflist = [
 ]
 
 
-# Training
-catpath = os.path.join(includes.simdir, "Ellipticity", "groupmeascat_cases.pkl")
 
-cat = megalut.tools.io.readpickle(catpath)
-megalut.learn.tenbilacrun.train(cat, conflist, traindir)
+# Predicting the validation set
 
-#megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)
+valcatpath = os.path.join(includes.simvaldir, "Sersics_statshear", "groupmeascat_cases.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
-
-# Self-predicting
-
-precatpath = os.path.join(traindir, "selfprecat.pkl")
-
-cat = megalut.tools.io.readpickle(catpath)
+cat = megalut.tools.io.readpickle(valcatpath)
 #cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
-megalut.tools.io.writepickle(cat, precatpath)
+print megalut.tools.table.info(cat)
+megalut.tools.io.writepickle(cat, valprecatpath)
 
 
 
