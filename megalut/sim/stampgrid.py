@@ -216,13 +216,42 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	
 		# We draw the desired profile
 		profile_type = params.profile_types[row["tru_type"]]
-		if profile_type == "Sersic":
-			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams)
-		elif profile_type == "Gaussian":
-			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]), gsparams=gsparams)
 		
-		# We make this profile elliptical
-		gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+		if profile_type == "Sersic":
+			
+			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams)
+			# We make this profile elliptical
+			gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+
+		elif profile_type == "Gaussian":
+			
+			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]), gsparams=gsparams)
+			# We make this profile elliptical
+			gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+
+		elif profile_type == "EBulgeDisk":
+			
+			# A slightly more advancec Bulge + Disk model
+			# It needs GalSim version master, as of April 2017 (probably 1.5).
+			
+			# Get a Sersic=4 bulge:
+			bulge = galsim.Sersic(n=4.0, half_light_radius=row["tru_bulge_hlr"], flux=row["tru_bulge_flux"])
+			# Make it elliptical:
+			bulge = bulge.shear(g1=row["tru_bulge_g1"], g2=row["tru_bulge_g2"])
+			
+			# Get a disk
+			scale_radius = row["tru_disk_hlr"] / galsim.Exponential._hlr_factor
+			disk = galsim.InclinedExponential(inclination=row["tru_disk_tilt"] * galsim.degrees, scale_radius=scale_radius,
+				flux=row["tru_disk_flux"], scale_h_over_r=row["tru_disk_scale_h_over_r"])
+			# Rotate it in the same orientation as the bulge:
+			disk.rotate(row["tru_rot"] * galsim.degrees)
+			
+			# And we add those profiles, as done in GalSim demo3.py :
+			gal = bulge + disk
+			
+		else:
+			raise RuntimeError("Unknown galaxy profile!")	
+		
 		
 		# And now we add lensing, if s1, s2 and mu are different from no lensing...
 		if row["tru_s1"] != 0 or row["tru_s2"] != 0 or row["tru_mu"] != 1:
@@ -326,7 +355,7 @@ def checkcat(cat):
 	todo = [] # The output list.
 	
 	# We check some fields that should always be there:
-	for f in ["tru_type", "tru_flux", "tru_g1", "tru_g2", "tru_sky_level", "tru_gain", "tru_read_noise"]:
+	for f in ["tru_type", "tru_sky_level", "tru_gain", "tru_read_noise"]:
 		if f not in cat.colnames:
 			raise RuntimeError("The field '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
 
@@ -336,11 +365,15 @@ def checkcat(cat):
 
 	# We check the additional required fields for each of these profile types
 	if "Gaussian" in contained_profile_types:
-		for f in ["tru_sigma"]:
+		for f in ["tru_sigma", "tru_g1", "tru_g2"]:
 			if f not in cat.colnames:
 				raise RuntimeError("I should draw a Gaussian profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
 	if "Sersic" in contained_profile_types:
-		for f in ["tru_rad", "tru_sersicn"]:
+		for f in ["tru_rad", "tru_sersicn", "tru_g1", "tru_g2"]:
+			if f not in cat.colnames:
+				raise RuntimeError("I should draw a Sersic profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
+	if "EBulgeDisk" in contained_profile_types:
+		for f in []:
 			if f not in cat.colnames:
 				raise RuntimeError("I should draw a Sersic profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
 
