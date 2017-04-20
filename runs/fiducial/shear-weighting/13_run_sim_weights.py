@@ -18,9 +18,9 @@ sp = simparams.Sersics_statshear()
 sp.shear = 0.1
 sp.snc_type = 4
 sp.noise_level = 0.8
-n = 50000
+n = 2500
 nc = 1
-ncat = 1
+ncat = 500
 nrea = 10
 
 megalut.sim.run.multi(
