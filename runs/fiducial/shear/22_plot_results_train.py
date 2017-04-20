@@ -18,7 +18,7 @@ spname = "Ellipticity"
 
 
 traindir = os.path.join(includes.workdir, trainname)
-valprecatpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases_pre.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 component = "1"
 main_pred = "s{}".format(component)

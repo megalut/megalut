@@ -28,10 +28,10 @@ ncbins = 10
 
 param_feats = [
 		Feature("snr_mean", nicename=r"S/N", low=0, high=100),
-		#Feature("tru_flux", nicename=r"$F$ [counts]"),
-		#Feature("tru_rad", nicename=r"$R$ [px]$"),
-		#Feature("tru_sersicn", nicename=r"$n$"),
-		#Feature("tru_g", nicename=r"$e$"),
+		Feature("tru_flux", nicename=r"$F$ [counts]"),
+		Feature("tru_rad", nicename=r"$R$ [px]$"),
+		Feature("tru_sersicn", nicename=r"$n$"),
+		Feature("tru_g", nicename=r"$e$"),
 		]
 
 
