@@ -7,7 +7,7 @@ workdir = "./shear"
 
 stampsize = 48
 
-ncpu = 8
+ncpu = 4
 
 simdir = os.path.join(workdir, "sim")
 simwdir = os.path.join(workdir, "simweights")

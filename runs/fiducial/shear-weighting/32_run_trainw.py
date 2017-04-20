@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 traindir = os.path.join(includes.workdir, "train_simple")
 
 conflist = [
+	#("config/ada2s1w.cfg", "config/sum3w_1.cfg"),
 	("config/ada2s2w.cfg", "config/sum3w_1.cfg"),
 ]
 
-spname = "Ellipticity"
+spname = "Sersics_statshear"
 
 # Training
 catpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases_pre.pkl")
@@ -35,7 +36,7 @@ s = megalut.tools.table.Selector("ok", [
 	]
 	)
 
-cat = s.select(cat)
+#cat = s.select(cat)
 
 print megalut.tools.table.info(cat)
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)

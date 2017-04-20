@@ -24,7 +24,7 @@ conflist = [
 
 # Predicting the validation set
 spname = "Sersics_statshear"
-spname = "Ellipticity"
+#spname = "Ellipticity"
 valcatpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases.pkl")
 valprecatpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases_pre.pkl")
 

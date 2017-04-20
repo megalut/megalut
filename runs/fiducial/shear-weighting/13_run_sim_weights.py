@@ -10,17 +10,17 @@ import includes
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simwdir
+simdir = includes.simwdir + "large"
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
-sp = simparams.Ellipticity()
+sp = simparams.Sersics_statshear()
 sp.shear = 0.1
 sp.snc_type = 4
 sp.noise_level = 0.8
-n = 250
+n = 50000
 nc = 1
-ncat = 150
+ncat = 1
 nrea = 10
 
 megalut.sim.run.multi(
