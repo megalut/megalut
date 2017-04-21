@@ -6,6 +6,7 @@ __all__ = [""]
 
 import utils
 import galsim_adamom
+import adamom_calc
 import skystats
 import snr
 import mom

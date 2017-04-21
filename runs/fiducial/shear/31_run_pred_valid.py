@@ -4,7 +4,6 @@ matplotlib.use("AGG")
 import os
 
 import megalut.learn
-import megalut.tools as tls
 
 import includes
 
@@ -23,18 +22,14 @@ conflist = [
 
 
 # Predicting the validation set
-spname = "Sersics_statshear"
-#spname = "Ellipticity"
-valcatpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases.pkl")
-valprecatpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases_pre.pkl")
+
+valcatpath = os.path.join(includes.simvaldir, "Sersics_statshear", "groupmeascat_cases.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
-
-
 #cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
-
-print tls.table.info(cat)
+print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, valprecatpath)
 
 

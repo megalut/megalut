@@ -18,9 +18,9 @@ sp = simparams.Ellipticity()
 sp.shear = 0.1
 sp.snc_type = 100
 sp.noise_level = 0.
-n = 40
+n = 2500
 nc = 1
-ncat = 50
+ncat = 1
 nrea = 1
 
 megalut.sim.run.multi(
