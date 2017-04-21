@@ -16,6 +16,8 @@ workdir = "/vol/fohlen11/fohlen11_1/mtewes/Euclid/senstest"
 sampledir = os.path.join(workdir, "sample_data_2017-03-29") 
 sampleprods = os.path.join(sampledir, "prods")
 
+obsdir = os.path.join(workdir, "sample_data_2017-04-13") 
+obsproddir = os.path.join(obsdir, "proddir")
 
 truedistdir = os.path.join(workdir, "true_distribs_2017-04-18") 
 truedistpath = os.path.join(truedistdir, "table.pkl")

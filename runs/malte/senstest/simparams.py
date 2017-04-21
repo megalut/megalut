@@ -14,7 +14,7 @@ class SampledBDParams(megalut.sim.params.Params):
 	Bulge and Disk parameters read from a database of samples.
 	"""
 
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0"):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
@@ -27,11 +27,18 @@ class SampledBDParams(megalut.sim.params.Params):
 		self.snc_type = snc_type
 		self.shear = shear
 		self.noise_level = noise_level
+		self.ecode = ecode
+		
+		self.ccdgain = 3.3
 		
 		self.db = megalut.tools.io.readpickle(config.truedistpath) # Reading in the database of true values
-		sel = megalut.tools.table.Selector("right_p_of_e", [("is", "ecode", "ep2")])
+		sel = megalut.tools.table.Selector("right_p_of_e", [("is", "ecode", self.ecode)])
 		self.db = sel.select(self.db)
-	
+		
+		# Each ecode has a different:
+		# - bulge_axis_ratio (we don't care exactly, it just affects the bulge_ellipticity
+		# - disk_height_ratio
+		####### ep2 has the highest bulge_axis_ratio (0.8) (closest to 1), giving the lowest ellipticities, and the highest disk_height_ratio (0.3).
 
 	def draw_constants(self):
 		"""
@@ -44,7 +51,7 @@ class SampledBDParams(megalut.sim.params.Params):
 		tru_gain = -1.0 # in photons/ADU. Make this negative to have no Poisson noise
 		tru_read_noise = self.noise_level # in photons if gain > 0.0, otherwise in ADU. Set this to zero to have no flat Gaussian noise
 		tru_pixel = -1.0 # If positive, adds an extra convolution by that many pixels to the simulation process
-		ccdgain = 3.3
+		ccdgain = self.ccdgain
 		
 		return {"snc_type":snc_type, "tru_type":tru_type, "tru_sky_level":tru_sky_level,
 			"tru_gain":tru_gain, "tru_read_noise":tru_read_noise, "tru_pixel":tru_pixel,
@@ -84,50 +91,56 @@ class SampledBDParams(megalut.sim.params.Params):
 		Called for each galaxy	
 		"""
 	
+		# We draw one galaxy at random from our database.
 		dbrow = self.db[np.random.randint(0, len(self.db))]
 	
-	
-		# Ellipticity of bulge, theta is also used to rotate the disk
-		tru_bulge_g = dbrow["bulge_ellipticity"]
-		tru_rot = dbrow["rotation"]
-		(tru_bulge_g1, tru_bulge_g2) = (tru_bulge_g * np.cos(2.0 * tru_rot), tru_bulge_g * np.sin(2.0 * tru_rot))
-	
-		#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
-		#(tru_bulge_g1, tru_bulge_g2) = (tru_bulge_g * np.cos(2.0 * tru_theta), tru_bulge_g * np.sin(2.0 * tru_theta))
-	
-		# Properites of disk
-		tru_disk_tilt = dbrow["tilt"]
-		tru_disk_scale_h_over_r = dbrow["disk_height_ratio"]
+		# Position angle of galaxy
+		tru_theta = dbrow["rotation"]
 		
-		
-		# Computing the sizes
-		tru_bulge_hlr = dbrow["hlr_bulge_arcsec"] * 10.0 # We work in pixels
-		tru_disk_hlr = dbrow["hlr_bulge_arcsec"] * 10.0
-	
-		# Computing the fluxes
+		# Computing the total flux
 		m = dbrow["magnitude"]
 		exp_time = 565.0 # seconds
 		mag_vis_zeropoint = 25.6527 # From Lance's code
-		tru_flux = exp_time * 10.0 ** (0.4 * (mag_vis_zeropoint - m))
+		tru_flux = (1.0/self.ccdgain) * exp_time * 10.0 ** (0.4 * (mag_vis_zeropoint - m))
 		assert dbrow["bulge_fraction"] >= 0.0 and dbrow["bulge_fraction"] <= 1.0
+	
+
+		# Properties of bulge
+		tru_bulge_g = dbrow["bulge_ellipticity"]
+		tru_bulge_hlr = dbrow["hlr_bulge_arcsec"] * 10.0 # We convert arcsec to pixels
 		tru_bulge_flux = dbrow["bulge_fraction"] * tru_flux
+		tru_bulge_sersicn = float(dbrow["sersic_index"])
+		assert tru_bulge_sersicn == 4.0
+		
+		# Properites of disk
+		tru_disk_tilt = dbrow["tilt"]
+		tru_disk_scale_h_over_r = dbrow["disk_height_ratio"]
+		tru_disk_hlr = dbrow["hlr_disk_arcsec"] * 10.0 # We convert arcsec to pixels
 		tru_disk_flux = (1.0 - dbrow["bulge_fraction"]) * tru_flux
 	
-	
+		
 	
 		out = {
-			"tru_bulge_g1":tru_bulge_g1,
-			"tru_bulge_g2":tru_bulge_g2,
-			"tru_rot":tru_rot,
-		
+			"tru_theta":tru_theta,
+			"tru_flux":tru_flux, # Maybe useful for plots to have the total flux as well.
+			
+			"tru_bulge_g":tru_bulge_g,
+			"tru_bulge_sersicn":tru_bulge_sersicn,
+			"tru_bulge_hlr":tru_bulge_hlr,
+			"tru_bulge_flux":tru_bulge_flux,
+			
 			"tru_disk_tilt":tru_disk_tilt,
 			"tru_disk_scale_h_over_r":tru_disk_scale_h_over_r,
-		
-			"tru_bulge_hlr":tru_bulge_hlr,
 			"tru_disk_hlr":tru_disk_hlr,
+			"tru_disk_flux":tru_disk_flux,
 			
-			"tru_bulge_flux":tru_bulge_flux,
-			"tru_disk_flux":tru_disk_flux
+			# Apart from the megalut params, we also keep some originals, for simobs cross-checks
+			"magnitude":dbrow["magnitude"],
+			"bulge_ellipticity":dbrow["bulge_ellipticity"],
+			"tilt":dbrow["tilt"],
+			"hlr_bulge_arcsec":dbrow["hlr_bulge_arcsec"],
+			"hlr_disk_arcsec":dbrow["hlr_disk_arcsec"],
+			
 			}
 		
 		out.update(self.draw_s())

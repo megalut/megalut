@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 
-imgnames = ["sensitivity_testing_sample_noisy_0.fits"]
-catnames = ["sensitivity_testing_sample_noisy_0_details.fits"]
+imgnames = ["sensitivity_testing_1_0.fits"]
+catnames = ["sensitivity_testing_1_0_details.fits"]
 
 incatfilepaths = []
 outcatfilepaths = []
@@ -26,10 +26,10 @@ for (imgname, catname) in zip(imgnames, catnames):
 	
 	
 	
-	imgpath = os.path.join(config.sampledir, imgname)
-	catpath = os.path.join(config.sampledir, catname)
+	imgpath = os.path.join(config.obsdir, imgname)
+	catpath = os.path.join(config.obsdir, catname)
 	imgwdname = os.path.splitext(imgname)[0]
-	workdir=os.path.join(config.sampleprods, imgwdname)
+	workdir=os.path.join(config.obsproddir, imgwdname)
 	if not os.path.isdir(workdir):
 		os.makedirs(workdir)
 	

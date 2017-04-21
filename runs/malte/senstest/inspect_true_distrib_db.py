@@ -18,9 +18,14 @@ fig = plt.figure(figsize=(16, 10))
 
 ax = fig.add_subplot(2, 3, 1)
 megalut.plot.scatter.scatter(ax, cat, Feature("hlr_bulge_arcsec"), Feature("hlr_disk_arcsec"), sidehists=True)
+#megalut.plot.scatter.scatter(ax, cat, Feature("rotation"), Feature("hlr_disk_arcsec"), sidehists=True)
+
 
 ax = fig.add_subplot(2, 3, 2)
 megalut.plot.scatter.scatter(ax, cat, Feature("bulge_axis_ratio"), Feature("bulge_ellipticity"), sidehists=True)
+#megalut.plot.scatter.scatter(ax, cat, Feature("bulge_fraction"), Feature("disk_height_ratio"), sidehists=True)
+
+
 
 ax = fig.add_subplot(2, 3, 3)
 megalut.plot.scatter.scatter(ax, cat, Feature("magnitude"), Feature("bulge_fraction"), sidehists=True)
