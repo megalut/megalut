@@ -240,11 +240,11 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 
 		elif profile_type == "EBulgeDisk":
 			
-			# A slightly more advancec Bulge + Disk model
+			# A more advanced Bulge + Disk model
 			# It needs GalSim version master, as of April 2017 (probably 1.5).
 			
-			# Get a Sersic=4 bulge:
-			bulge = galsim.Sersic(n=4.0, half_light_radius=row["tru_bulge_hlr"], flux=row["tru_bulge_flux"])
+			# Get a Sersic bulge:
+			bulge = galsim.Sersic(n=row["tru_bulge_sersicn"], half_light_radius=row["tru_bulge_hlr"], flux=row["tru_bulge_flux"])
 			# Make it elliptical:
 			bulge_ell = galsim.Shear(g=row["tru_bulge_g"], beta=row["tru_theta"] * galsim.degrees)
 			bulge = bulge.shear(bulge_ell)
@@ -383,7 +383,7 @@ def checkcat(cat):
 			if f not in cat.colnames:
 				raise RuntimeError("I should draw a Sersic profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
 	if "EBulgeDisk" in contained_profile_types:
-		for f in []:
+		for f in ["tru_theta", "tru_bulge_g", "tru_bulge_sersicn", "tru_bulge_hlr", "tru_bulge_flux", "tru_disk_tilt", "tru_disk_scale_h_over_r", "tru_disk_hlr", "tru_disk_flux"]:
 			if f not in cat.colnames:
 				raise RuntimeError("I should draw a Sersic profile, but '%s' is not in the catalog (i.e., the simulation parameters)!" % (f))
 
