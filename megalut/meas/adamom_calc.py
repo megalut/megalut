@@ -29,7 +29,6 @@ def measfct(catalog, prefix="", **kwargs):
 	output["adamom_g"] = np.ma.hypot(output["adamom_g1"], output["adamom_g2"])
 	output["adamom_theta"] = 0.5 * np.arctan2(output["adamom_g2"], output["adamom_g1"])
 	
-	print output
 	return output
 	
 	
