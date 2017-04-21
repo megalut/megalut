@@ -42,8 +42,6 @@ def plot(simcat, obscat, filepath=None):
 
 	# Some computations
 
-	simcat["adamom_log_flux"] = np.log10(simcat["adamom_flux"])
-	obscat["adamom_log_flux"] = np.log10(obscat["adamom_flux"])
 
 	
 	rea = None
@@ -53,7 +51,7 @@ def plot(simcat, obscat, filepath=None):
 	adamom_rho4 = Feature("adamom_rho4", 1.3, 3.0, rea=rea)
 	adamom_g1 = Feature("adamom_g1", -0.7, 0.7, rea=rea)
 	adamom_g2 = Feature("adamom_g2", -0.7, 0.7, rea=rea)
-	adamom_log_flux = Feature("adamom_log_flux", rea=rea)
+	adamom_logflux = Feature("adamom_logflux", rea=rea)
 
 	snr = Feature("snr", rea=rea)
 
@@ -88,8 +86,8 @@ def plot(simcat, obscat, filepath=None):
 
 	
 	ax = fig.add_subplot(3, 5, 5)
-	#megalut.plot.scatter.simobs(ax, simcat, obscat, Feature("adamom_flux", 0, 10000, rea=rea), Feature("adamom_sigma", 0, 6, rea=rea))
-	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_log_flux, adamom_sigma)
+	#megalut.plot.scatter.simobs(ax, simcat, obscat, Feature("adamomflux", 0, 10000, rea=rea), Feature("adamom_sigma", 0, 6, rea=rea))
+	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_logflux, adamom_sigma)
 
 	# Comparing input values
 	ax = fig.add_subplot(3, 5, 6)
@@ -117,7 +115,7 @@ def plot(simcat, obscat, filepath=None):
 	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_rho4, adamom_sigma)
 
 	ax = fig.add_subplot(3, 5, 14)
-	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_log_flux, adamom_rho4)
+	megalut.plot.scatter.simobs(ax, simcat, obscat, adamom_logflux, adamom_rho4)
 	#ax.set_xscale("log", nonposx='clip')
 
 	

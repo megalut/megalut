@@ -8,12 +8,14 @@ def default(catalog, stampsize):
 	
 	# HSM adamom
 	catalog = megalut.meas.galsim_adamom.measfct(catalog, stampsize=stampsize, variant="wider")
+	catalog = megalut.meas.adamom_calc.measfct(catalog)
 	
 	# And skystats
 	catalog = megalut.meas.skystats.measfct(catalog, stampsize=stampsize)
 	
 	# And snr
 	catalog = megalut.meas.snr.measfct(catalog, gaincol="ccdgain")
+	
 	
 	return catalog
 	
@@ -29,6 +31,9 @@ default_groupcols = [
 'adamom_g2',
 'adamom_sigma',
 'adamom_rho4',
+'adamom_logflux',
+'adamom_g',
+'adamom_theta',
 'skystd',
 'skymad',
 'skymean',

@@ -18,8 +18,6 @@ logger = logging.getLogger(__name__)
 
 cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/Euclid/senstest/sample_data_2017-03-29/prods/sensitivity_testing_sample_noisy_0/meascat_sensitivity_testing_sample_noisy_0.pkl")
 
-cat["adamom_log_flux"] = np.log10(cat["adamom_flux"])
-cat["adamom_theta"] = .5 * np.arctan2(cat["adamom_g2"], cat["adamom_g1"]) # Note the inverted order of components
 
 print megalut.tools.table.info(cat)
 
@@ -34,7 +32,7 @@ ax = fig.add_subplot(2, 3, 2)
 megalut.plot.scatter.scatter(ax, cat, Feature("snr", 0, 50), Feature("adamom_sigma", 0, 6), sidehists=True)
 
 ax = fig.add_subplot(2, 3, 3)
-megalut.plot.scatter.scatter(ax, cat, Feature("magnitude"), Feature("adamom_log_flux", 2, 4), Feature("snr", 0, 50))
+megalut.plot.scatter.scatter(ax, cat, Feature("magnitude"), Feature("adamom_logflux", 2, 4), Feature("snr", 0, 50))
 
 ax = fig.add_subplot(2, 3, 4)
 megalut.plot.scatter.scatter(ax, cat, Feature("sersic_index"), Feature("bulge_fraction"), sidehists=True)
