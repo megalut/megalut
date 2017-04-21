@@ -20,11 +20,11 @@ from .. import tools
 from . import params
 
 
-def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
+def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
-	:param params: a sim.Params instance that defines the distributions of parameters
+	:param simparams: a sim.Params instance that defines the distributions of parameters
 	:param n: number of galaxies (must be a multiple of nc)
 		
 	:type n: int
@@ -49,9 +49,9 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 	if n % nc != 0 or n < nc:
 		raise RuntimeError("n must be a multiple of nc!")
 
-	logger.info("Drawing a catalog of %i truly different galaxies using params '%s'..." % (n, params))
-	statparams = params.stat() # We call this only *once*
-	logger.info("The params '{params.name}' have stat '{0}'".format(statparams, params=params))
+	logger.info("Drawing a catalog of %i truly different galaxies using params '%s'..." % (n, simparams))
+	statparams = simparams.stat() # We call this only *once*
+	logger.info("The params '{simparams.name}' have stat '{0}'".format(statparams, simparams=simparams))
 	
 	ny = int(int(n)/int(nc)) # number of lines does not change with SNC.
 	if statparams["snc_type"] == 0:	
@@ -61,7 +61,7 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 	else:
 		raise RuntimeError("Did not understand snc_type")
 	nx = nsnc * nc
-	sncrot = 180.0/float(nsnc) # Rotation for SNC, in degrees. For example, 22.5 for snc_type == 1
+	sncrot = 180.0/float(nsnc) # Rotation for SNC, in degrees. For example, 90.0 for snc_type == 2
 	
 	logger.info("The grid will be %i x %i, and the number of SNC rotations is %i." % (nx, ny, nsnc))
 	
@@ -73,7 +73,7 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 		assert pix < nc and piy < ny
 	
 		# And draw one:
-		gal = params.draw(pix, piy, nc, ny)
+		gal = simparams.draw(pix, piy, nc, ny)
 		
 		# Now things get different depending on SNC
 		if statparams["snc_type"] == 0:	# No SNC, so we simply add this galaxy to the list.
@@ -89,7 +89,15 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 		
 			for roti in range(nsnc):
 				rotgal = copy.deepcopy(gal)
-				(rotgal["tru_g1"], rotgal["tru_g2"]) = tools.calc.rotg(gal["tru_g1"], gal["tru_g2"], roti*sncrot)
+				
+				# We perform the rotation in different ways, depending on the parametrisation
+				profile_type = params.profile_types[rotgal["tru_type"]]
+				if profile_type in ["Sersic", "Gaussian"]:
+					(rotgal["tru_g1"], rotgal["tru_g2"]) = tools.calc.rotg(gal["tru_g1"], gal["tru_g2"], roti*sncrot)
+				elif profile_type is "EBulgeDisk":
+					rotgal["tru_theta"] = gal["tru_theta"] + roti*sncrot
+				else:
+					raise RuntimeError("Unknown profile type")
 				
 				# And now each of the SNC versions gets a consecutive ix but the same iy:
 				rotgal["ix"] = pix * nsnc + roti
@@ -97,6 +105,7 @@ def drawcat(params, n=10, nc=2, stampsize=64, idprefix=""):
 				
 				rotgal.update(statparams)
 				rows.append(rotgal)
+				#print rotgal
 		
 		
 	# A second loop simply adds the pixel positions and ids, for all galaxies (not just truely different ones):
@@ -237,14 +246,15 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			# Get a Sersic=4 bulge:
 			bulge = galsim.Sersic(n=4.0, half_light_radius=row["tru_bulge_hlr"], flux=row["tru_bulge_flux"])
 			# Make it elliptical:
-			bulge = bulge.shear(g1=row["tru_bulge_g1"], g2=row["tru_bulge_g2"])
+			bulge_ell = galsim.Shear(g=row["tru_bulge_g"], beta=row["tru_theta"] * galsim.degrees)
+			bulge = bulge.shear(bulge_ell)
 			
 			# Get a disk
 			scale_radius = row["tru_disk_hlr"] / galsim.Exponential._hlr_factor
 			disk = galsim.InclinedExponential(inclination=row["tru_disk_tilt"] * galsim.degrees, scale_radius=scale_radius,
 				flux=row["tru_disk_flux"], scale_h_over_r=row["tru_disk_scale_h_over_r"])
 			# Rotate it in the same orientation as the bulge:
-			disk.rotate(row["tru_rot"] * galsim.degrees)
+			disk = disk.rotate(row["tru_theta"] * galsim.degrees)
 			
 			# And we add those profiles, as done in GalSim demo3.py :
 			gal = bulge + disk
