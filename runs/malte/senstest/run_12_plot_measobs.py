@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 
-
-cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/Euclid/senstest/sample_data_2017-03-29/prods/sensitivity_testing_sample_noisy_0/meascat_sensitivity_testing_sample_noisy_0.pkl")
-
+i=2
+j=8
+cat = megalut.tools.io.readpickle(os.path.join(config.obsproddir, "sensitivity_testing_{}_{}/meascat_sensitivity_testing_{}_{}.pkl".format(i,j,i,j)))
 
 print megalut.tools.table.info(cat)
 

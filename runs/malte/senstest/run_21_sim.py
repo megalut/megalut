@@ -18,13 +18,13 @@ logger = logging.getLogger(__name__)
 ####################
 
 
-
+"""
 # Comparing to the observations:
 sp = simparams.SampledBDParams(
 	name = "simobscompa",
 	snc_type = 0,
 	shear = 0,
-	noise_level = 10.0, #5.4
+	noise_level = 1.0, # Note: this is relative, in sigma !
 	ecode = "ep0", # others are em2
 )
 drawconf = {
@@ -36,34 +36,35 @@ drawconf = {
 	"groupmode":None,
 	"skipdone":False	
 }
-
 """
-# Validation: 100 different shear cases 
+"""
+# Validation: 200 different shear cases, with 1000 x 4 SNC reas
 sp = simparams.SampledBDParams_statshear(
 	name = "val-1",
-	snc_type = 2,
+	snc_type = 4,
 	shear = 0.06,
-	noise_level = 10.0, #5.4
+	noise_level = 1.0, # Note: this is relative, in sigma !
 	ecode = "ep0", # others are em2
 )
 drawconf = {
-	"n":200,
-	"nc":10,
+	"n":1000,
+	"nc":100,
 	"nrea":1,
-	"ncat":100,
-	"ncpu":20,
+	"ncat":200,
+	"ncpu":25,
 	"groupmode":"shear",
 	"skipdone":False	
 }
-"""
 
 """
+
 # Shear training:
+"""
 sp = simparams.SampledBDParams_statshear(
 	name = "ts-ln-1",
 	snc_type = 100,
 	shear = 0.1,
-	noise_level = 1.0, # WARNING, REDUCED NOISE
+	noise_level = 0.1, # WARNING REDUCED # Note: this is relative, in sigma !
 	ecode = "ep0", # others are em2
 )
 drawconf = {
@@ -77,25 +78,101 @@ drawconf = {
 }
 """
 """
-# Weight training:
 sp = simparams.SampledBDParams_statshear(
-	name = "ws-2",
-	snc_type = 2,
+	name = "ts-ln-1-large",
+	snc_type = 400,
 	shear = 0.1,
-	noise_level = 10.0,
+	noise_level = 0.1, # WARNING REDUCED # Note: this is relative, in sigma !
 	ecode = "ep0", # others are em2
 )
 drawconf = {
-	"n":500,
-	"nc":10,
+	"n":1,
+	"nc":1,
 	"nrea":1,
-	"ncat":100,
+	"ncat":1000,
+	"ncpu":20,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+
+"""
+
+"""
+sp = simparams.SampledBDParams_statshear(
+	name = "ts-fn-1",
+	snc_type = 1000,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+)
+drawconf = {
+	"n":1,
+	"nc":1,
+	"nrea":1,
+	"ncat":1000,
 	"ncpu":20,
 	"groupmode":"shear",
 	"skipdone":False	
 }
 """
 
+"""
+# Shear validation:
+sp = simparams.SampledBDParams_statshear(
+	name = "vs-1",
+	snc_type = 1000,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+)
+drawconf = {
+	"n":1,
+	"nc":1,
+	"nrea":1,
+	"ncat":500,
+	"ncpu":25,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+"""
+
+"""
+# Weight training:
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-1",
+	snc_type = 2,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+)
+drawconf = {
+	"n":1000,
+	"nc":50,
+	"nrea":1,
+	"ncat":500,
+	"ncpu":20,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+"""
+
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-1-minmag22",
+	snc_type = 2,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+	minmag = 22.0,
+)
+drawconf = {
+	"n":1000,
+	"nc":50,
+	"nrea":1,
+	"ncat":500,
+	"ncpu":10,
+	"groupmode":"shear",
+	"skipdone":False	
+}
 
 
 ####################
@@ -106,7 +183,7 @@ psfcat = megalut.tools.io.readpickle(config.psfcatpath)
 simdir = config.simdir
 measdir = config.simmeasdir
 
-"""
+
 # Simulating images
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -117,7 +194,7 @@ megalut.sim.run.multi(
 	ncat=drawconf["ncat"], nrea=drawconf["nrea"], ncpu=drawconf["ncpu"],
 	savepsfimg=False, savetrugalimg=False
 )
-"""
+
 
 # Measuring the newly drawn images
 megalut.meas.run.onsims(

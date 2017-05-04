@@ -14,11 +14,11 @@ class SampledBDParams(megalut.sim.params.Params):
 	Bulge and Disk parameters read from a database of samples.
 	"""
 
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0"):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0", minmag=None):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
-		- noise_level > 0 means that the subfields noise level will be used, 0 means no noise
+		- noise_level 1.0 means that the fiducial noise level will be used, 0 means no noise
 	
 		"""
 		megalut.sim.params.Params.__init__(self)
@@ -26,15 +26,20 @@ class SampledBDParams(megalut.sim.params.Params):
 			self.name = name
 		self.snc_type = snc_type
 		self.shear = shear
-		self.noise_level = noise_level
+		self.noise_level = noise_level # relative
 		self.ecode = ecode
+		self.minmag = minmag
 		
 		self.ccdgain = 3.3
 		
 		self.db = megalut.tools.io.readpickle(config.truedistpath) # Reading in the database of true values
-		sel = megalut.tools.table.Selector("right_p_of_e", [("is", "ecode", self.ecode)])
+		sel = megalut.tools.table.Selector("right_p_of_e", [("is", "ecode", self.ecode)])	
 		self.db = sel.select(self.db)
-		
+		if self.minmag is not None:
+			sel = megalut.tools.table.Selector("minmag", [("min", "magnitude", self.minmag)])	
+			self.db = sel.select(self.db)
+
+
 		# Each ecode has a different:
 		# - bulge_axis_ratio (we don't care exactly, it just affects the bulge_ellipticity
 		# - disk_height_ratio
@@ -49,7 +54,9 @@ class SampledBDParams(megalut.sim.params.Params):
 		snc_type = self.snc_type # The type of shape noise cancellation. 0 means none, n means n-fold
 		tru_sky_level = 0.0 # GREAT3 has no Poisson noise, just flat Gaussian. # in ADU, just for generating noise, will not remain in the image
 		tru_gain = -1.0 # in photons/ADU. Make this negative to have no Poisson noise
-		tru_read_noise = self.noise_level # in photons if gain > 0.0, otherwise in ADU. Set this to zero to have no flat Gaussian noise
+		
+		tru_read_noise = self.noise_level * np.sqrt((32570.0 / 100.0) / self.ccdgain) # in photons if gain > 0.0, otherwise in ADU. Set this to zero to have no flat Gaussian noise
+		
 		tru_pixel = -1.0 # If positive, adds an extra convolution by that many pixels to the simulation process
 		ccdgain = self.ccdgain
 		

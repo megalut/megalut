@@ -36,16 +36,23 @@ logger.info("We have {} realizations".format(nrea))
 cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
 
 
-select = True	
+"""
+select = False	
 if select:
 	s = megalut.tools.table.Selector("fortrain", [
-		("max", "adamom_failfrac", 0.1),
+		("max", "adamom_failfrac", 0.05),
 	])
 	cat = s.select(cat)
 	
+#megalut.tools.io.writepickle(cat, os.path.join(config.simmeasdir, "ts-fn-1-failfrac05", "groupmeascat.pkl"))
+exit()
+#megalut.tools.table.addstats(cat, "snr")
+#cat.sort("adamom_failfrac")
+#cat.sort("magnitude")
+#print cat["magnitude", "adamom_failfrac", "snr_mean"][:]
 #exit()	
 #print megalut.tools.table.info(cat)
-	
+"""
 	
 # Running the training
 dirnames = megalut.learn.tenbilacrun.train(cat, config.shearconflist, traindir)

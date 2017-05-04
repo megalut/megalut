@@ -24,8 +24,9 @@ def main():
 	simcat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, "simobscompa", "groupmeascat.pkl"))
 	print megalut.tools.table.info(simcat)
 
-
-	obscat = megalut.tools.io.readpickle(os.path.join(config.obsproddir, "sensitivity_testing_1_0/meascat_sensitivity_testing_1_0.pkl"))
+	i=2
+	j=8
+	obscat = megalut.tools.io.readpickle(os.path.join(config.obsproddir, "sensitivity_testing_{}_{}/meascat_sensitivity_testing_{}_{}.pkl".format(i,j,i,j)))
 	print megalut.tools.table.info(obscat)
 	#obscat = obscat[:1000]
 	

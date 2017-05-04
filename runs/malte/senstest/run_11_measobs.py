@@ -15,20 +15,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+datasets = []
+for i in range(1, 11):
+	for j in range(0, 10):
+		imgname = "sensitivity_testing_{}_{}".format(i, j)
+		catname = "sensitivity_testing_{}_{}_details".format(i, j)
+		datasets.append({"i":i, "j":j, "imgname":imgname, "catname":catname})
 
-imgnames = ["sensitivity_testing_1_0.fits"]
-catnames = ["sensitivity_testing_1_0_details.fits"]
 
 incatfilepaths = []
 outcatfilepaths = []
 
-for (imgname, catname) in zip(imgnames, catnames):
+for dataset in datasets:
 	
 	
 	
-	imgpath = os.path.join(config.obsdir, imgname)
-	catpath = os.path.join(config.obsdir, catname)
-	imgwdname = os.path.splitext(imgname)[0]
+	imgpath = os.path.join(config.obsdir, dataset["imgname"] + ".fits")
+	catpath = os.path.join(config.obsdir, dataset["catname"] + ".fits")
+	imgwdname = dataset["imgname"]
 	workdir=os.path.join(config.obsproddir, imgwdname)
 	if not os.path.isdir(workdir):
 		os.makedirs(workdir)
@@ -61,5 +65,5 @@ for (imgname, catname) in zip(imgnames, catnames):
 	megalut.tools.io.writepickle(cat, incatfilepath)
 
 
-megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfcts.default, measfctkwargs={"stampsize":config.stampsize}, ncpu=1, skipdone=False)
+megalut.meas.run.general(incatfilepaths, outcatfilepaths, measfcts.default, measfctkwargs={"stampsize":config.stampsize}, ncpu=20, skipdone=False)
 

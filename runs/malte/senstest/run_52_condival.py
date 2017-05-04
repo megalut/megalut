@@ -15,26 +15,38 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+redo = True
 
 def main():
+	
 	
 	sheartraindir = os.path.join(config.traindir, config.datasets["train-shear"])
 	weighttraindir = os.path.join(config.traindir, config.datasets["train-weight"])
 
-	valname = "pred_{}".format(config.datasets["valid-overall"]) # Too messy to add everything here.
+	valname = "pred_{}".format(config.datasets["valid-shear"])
 	predcatpath = os.path.join(config.valdir, valname + ".pkl")
 
-	catpath = os.path.join(config.simmeasdir, config.datasets["valid-overall"], "groupmeascat.pkl")
-	cat = megalut.tools.io.readpickle(catpath)
-	#print megalut.tools.table.info(cat)
-	
-	cat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
-	if len(config.weightconflist) > 0:
-		cat = megalut.learn.tenbilacrun.predict(cat, config.weightconflist , weighttraindir)
+	catpath = os.path.join(config.simmeasdir, config.datasets["valid-shear"], "groupmeascat.pkl")
 	
 	
-	megalut.tools.io.writepickle(cat, predcatpath)
+	if (redo is True) or (not os.path.exists(predcatpath)):
+		cat = megalut.tools.io.readpickle(catpath)
+		#print megalut.tools.table.info(cat)
+	
+		cat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
+		if len(config.weightconflist) > 0:
+			cat = megalut.learn.tenbilacrun.predict(cat, config.weightconflist , weighttraindir)
+	
+	
+		megalut.tools.io.writepickle(cat, predcatpath)
+	
+	else:
+		logger.info("Reusing existing preds")
+		cat = megalut.tools.io.readpickle(predcatpath)
+		print megalut.tools.table.info(cat)
+	
 
+	cat = cat[cat["magnitude"] < 24.0]
 	plot(cat, component=1)
 
 
@@ -48,6 +60,7 @@ def plot(cat, component, filepath=None, title=None):
 	rea = -20
 	ebarmode = "scatter"
 	srad = 0.07
+	sbrad = 0.02
 	
 	# Adding weights if absent:
 	if not "pre_s{}w".format(component) in cat.colnames:
@@ -86,11 +99,12 @@ def plot(cat, component, filepath=None, title=None):
 	pre_sc_bias = Feature("pre_s{}_bias".format(component))
 	pre_sc_wbias = Feature("pre_s{}_wbias".format(component))
 	
-	pre_sc_mean = Feature("pre_s{}_mean".format(component), -srad, srad)
+	pre_sc_mean = Feature("pre_s{}_mean".format(component), -sbrad, sbrad)
 	pre_sc_wmean = Feature("pre_s{}_wmean".format(component), -srad, srad)
 	
 	tru_sc = Feature("tru_s{}".format(component), -srad, srad)
 		
+	cat["tru_bulge_fraction"] = cat["tru_bulge_flux"] / (cat["tru_bulge_flux"] + cat["tru_disk_flux"])
 
 
 	fig = plt.figure(figsize=(20, 12))
@@ -100,41 +114,27 @@ def plot(cat, component, filepath=None, title=None):
 	ax = fig.add_subplot(3, 4, 1)
 	megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc, pre_scw)
 	
-	"""
+
 	ax = fig.add_subplot(3, 4, 5)
-	if component ==1:
-		theother=Feature("tru_g2", rea=rea)
-	else:
-		theother=Feature("tru_g1", rea=rea)
-	megalut.plot.scatter.scatter(ax, cat, Feature("snr", rea=rea), pre_scw, theother)
-	
-	"""
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("magnitude"), pre_sc_bias)
 	ax = fig.add_subplot(3, 4, 6)
-	megalut.plot.hist.hist(ax, cat, pre_scw)
-
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("tru_bulge_g"), pre_sc_bias)
 	ax = fig.add_subplot(3, 4, 7)
-	megalut.plot.scatter.scatter(ax, cat, Feature("adamom_sigma", rea=rea), Feature("adamom_logflux", rea=rea), featc=pre_scw)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("tru_bulge_fraction"), pre_sc_bias)
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, cat, tru_sc, Feature("hlr_disk_arcsec"), pre_sc_bias)
 	
-	
-	nbins=5
-	
+
 	ax = fig.add_subplot(3, 4, 9)
-	megalut.plot.bin.bin(ax, cat, tru_sc, pre_sc_bias, showidline=True,  metrics=True, yisres=True, nbins=nbins)
-	ax.set_title("Without weights")
-
+	megalut.plot.bin.res(ax, cat, tru_sc, pre_sc_mean, Feature("magnitude"), ncbins=3, equalcount=True, ebarmode=ebarmode)
 	ax = fig.add_subplot(3, 4, 10)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc_bias, showidline=True, metrics=True, yisres=True)
-	ax.set_title("Without weights")
-	
+	megalut.plot.bin.res(ax, cat, tru_sc, pre_sc_mean, Feature("tru_bulge_g"), ncbins=3, equalcount=True, ebarmode=ebarmode)
 	ax = fig.add_subplot(3, 4, 11)
-	megalut.plot.bin.bin(ax, cat, tru_sc, pre_sc_wbias, showidline=True, metrics=True, yisres=True, nbins=nbins)
-	ax.set_title("With weights")
-
+	megalut.plot.bin.res(ax, cat, tru_sc, pre_sc_mean, Feature("tru_bulge_fraction"), ncbins=3, equalcount=True, ebarmode=ebarmode)
 	ax = fig.add_subplot(3, 4, 12)
-	megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc_wbias, showidline=True, metrics=True, yisres=True)
-	ax.set_title("With weights")
+	megalut.plot.bin.res(ax, cat, tru_sc, pre_sc_mean, Feature("hlr_disk_arcsec"), ncbins=3, equalcount=True, ebarmode=ebarmode)
 
-	
+
 	
 	plt.tight_layout()
 
