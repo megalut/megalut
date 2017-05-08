@@ -594,7 +594,10 @@ def addstats(cat, col, wcol=None, outcolprefix=None):
 	cat[outcolprefix + "_std"] = np.ma.std(cat[col], axis=1)
 	cat[outcolprefix + "_n"] = np.ma.count(cat[col], axis=1)
 	if wcol is not None:
+		# We add the weighted mean
 		cat[outcolprefix + "_wmean"] = np.ma.mean(cat[col] * cat[wcol], axis=1) / np.ma.mean(cat[wcol], axis=1)
+		# And the weight that can be attributed to this weighted mean (i.e., sum of weights)
+		cat[outcolprefix + "_wmeanw"] = np.ma.sum(cat[wcol], axis=1)
 	
 
 def addrmsd(cat, colm, colt, outcolprefix=None):
