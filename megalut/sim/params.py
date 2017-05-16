@@ -2,7 +2,8 @@ import numpy as np
 import math
 
 
-profile_types = ["Gaussian", "Sersic"] # Order defines the numerical codes of the galaxy profile types
+profile_types = ["Gaussian", "Sersic", "EBulgeDisk"] # Order defines the numerical codes of the galaxy profile types
+# EBulgeDisk is a simple Bulge + Disk model that we use for some EC tests.
 
 
 class Params:

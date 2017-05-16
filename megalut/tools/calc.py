@@ -82,9 +82,9 @@ def linreg(x, y, prob=0.68):
 	
 	# A little test (for recent numpy, one would use np.isclose() for this !)
 	slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(x, y)
-	if not abs(slope - b1) <= 1e-8 * abs(slope):
+	if not abs(slope - b1) <= 1e-6 * abs(slope):
 		raise RuntimeError("Slope error, %f, %f" % (slope, b1))
-	if not abs(intercept - b0) <= 1e-8 * abs(intercept):
+	if not abs(intercept - b0) <= 1e-6 * abs(intercept):
 		raise RuntimeError("Intercept error, %f, %f" % (intercept, b0))
 	
 	return ret

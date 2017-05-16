@@ -7,6 +7,11 @@ import calc
 import table
 import feature
 
+try:
+	import statsmodels.api as sm
+except:
+	pass
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -56,4 +61,55 @@ def metrics(catalog, labelfeature, predlabelfeature, pre_is_res=False):
 	ret.update(calc.linreg(lab, pre))
 	
 	return ret
+	
+
+def wmetrics(cat, trufeat, predfeat, wfeat=None):
+	"""
+	An attempt to get metrics with errors when one has weights, *without* first "bining" things.
+	Warning, this is experimental, not yet fully tested.
+	"""
+	logger.info("Computing metrics for {} -> {}".format(predfeat.colname, trufeat.colname))
+	
+	if wfeat is None:
+		logger.info("WARNING: not using any weights!")
+		metcat = feature.get1Ddata(cat, [trufeat, predfeat], keepmasked=False)
+		x = metcat[trufeat.colname]
+		y = metcat[predfeat.colname]
+		w = np.ones(len(x))
+		
+	else:
+		logger.info("Using {} as weights.".format(wfeat.colname))
+		metcat = feature.get1Ddata(cat, [trufeat, predfeat, wfeat], keepmasked=False)
+		x = metcat[trufeat.colname]
+		y = metcat[predfeat.colname]
+		w = metcat[wfeat.colname]
+	print x
+	print y
+	print w
+	
+	X = sm.add_constant(x)
+	#model = sm.OLS(y, X)
+	model = sm.WLS(y, X, w=1.0/w)
+	
+	results = model.fit()
+	print(results.summary())
+	
+	print('Parameters: ', results.params)
+	print('Standard errors: ', results.bse)
+	
+	c = results.params[0]
+	m = results.params[1] - 1.0
+	cerr = results.bse[0]
+	merr = results.bse[1]
+	ret = {"m":m, "c":c, "merr":merr, "cerr":cerr}
+	
+	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % (m*1000.0, merr*1000.0, c*1000.0, cerr*1000.0)
+	logger.info("Regression: {}".format(txt))	
+	
+	return ret
+	
+	
+	
+	
+	
 	

@@ -503,6 +503,57 @@ def groupreshape(cat, groupcolnames):
 		
 
 
+
+def fastgroupreshape(cat, groupcolnames):
+	"""
+	Same as groupreshape, but way faster.
+	Oh boy, should have implemented that earlier...
+	I guess that it's not even less safe.
+	
+	"""
+	# Start
+	logger.info("Determining groups for {}...".format(groupcolnames))
+	
+	# Check that groupcolnames are 1D columns
+	for colname in groupcolnames:
+		if cat[colname].ndim != 1:
+			raise RuntimeError("Only 1D columns are allowed as groupcolnames! '{}' is not.".format(colname))
+	
+	# Use the table group functionality
+	groupcat = cat.group_by(groupcolnames)
+	
+	
+	ngroups = len(groupcat.groups.indices) -1
+	logger.info("Found {} groups".format(ngroups))
+	
+	groupsize = len(groupcat.groups[0])
+	logger.info("Groups seem to have a length of {}".format(groupsize))
+	
+	if groupsize * ngroups != len(groupcat):
+		raise RuntimeError("Sorry, weird structure!")
+
+	logger.info("Aggregating the groups...")
+	# OK using the groupcat.groups.aggregate function works, but is still slow.
+	# aggcat = groupcat.groups.aggregate(lambda x: x.reshape(1,-1))
+	# Instead,  we do the reshaping column by column.
+	# groupcat is sorted according to the groups, we exploit this.
+	# The keepunique at the end is a good check for errors.
+	newcat = astropy.table.Table()
+	for colname in groupcat.colnames:
+		#print "reshaping {} ...".format(colname)
+		newcat[colname] = groupcat[colname].reshape((ngroups, groupsize))
+
+	logger.info("Keepuniquing the groupcolnames...")
+	# At least for the groupcolnames, we only want to keep single values:
+	keepunique(newcat, groupcolnames)
+
+	return newcat
+	
+	
+
+
+
+
 #####
 # OK these addstats and addrmsd should be moved out of here, maybe in calc.
 #####
@@ -543,7 +594,10 @@ def addstats(cat, col, wcol=None, outcolprefix=None):
 	cat[outcolprefix + "_std"] = np.ma.std(cat[col], axis=1)
 	cat[outcolprefix + "_n"] = np.ma.count(cat[col], axis=1)
 	if wcol is not None:
+		# We add the weighted mean
 		cat[outcolprefix + "_wmean"] = np.ma.mean(cat[col] * cat[wcol], axis=1) / np.ma.mean(cat[wcol], axis=1)
+		# And the weight that can be attributed to this weighted mean (i.e., sum of weights)
+		cat[outcolprefix + "_wmeanw"] = np.ma.sum(cat[wcol], axis=1)
 	
 
 def addrmsd(cat, colm, colt, outcolprefix=None):
