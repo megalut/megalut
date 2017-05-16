@@ -38,7 +38,7 @@ if name in ["shear", "ellip"]:
 	sp.snc_type = nrea
 elif name in ["shearw"]:
 	sp = simparams.Simple2()
-	sp.snc_type = 2
+	sp.snc_type = 0
 sp.sr = 0.0
 
 workdir = os.path.join(genworkdir, name)
@@ -50,9 +50,13 @@ writecatpath = os.path.join(workdir, "writecat.txt")
 
 nc = 1
 n = ncas
-if name is "shearw": # Then we use SNC=2
-	nc = int(float(nrea)/2.0)
-	n = nc * ncas
+
+if name is "shearw":
+ 	# We no longer use SNC for training weights!
+	# nc = int(float(nrea)/2.0)
+	# n = nc * ncas
+	nc = nrea
+	n = nrea * ncas
 
 cat = megalut.sim.stampgrid.drawcat(sp, n=n, nc=nc, stampsize=stampsize)
 

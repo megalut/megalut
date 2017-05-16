@@ -137,7 +137,7 @@ drawconf = {
 """
 
 """
-# Weight training:
+# Weight training: BAD: HAS SNC !
 sp = simparams.SampledBDParams_statshear(
 	name = "tw-1",
 	snc_type = 2,
@@ -156,6 +156,7 @@ drawconf = {
 }
 """
 
+"""
 sp = simparams.SampledBDParams_statshear(
 	name = "tw-1-minmag22",
 	snc_type = 2,
@@ -173,6 +174,105 @@ drawconf = {
 	"groupmode":"shear",
 	"skipdone":False	
 }
+
+"""
+"""
+# Weight training: NOW DONE WITHOUT SNC
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-2-nsnc",
+	snc_type = 0,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+)
+drawconf = {
+	"n":2000,
+	"nc":50,
+	"nrea":1,
+	"ncat":500,
+	"ncpu":20,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+"""
+"""
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-2-nsnc-small",
+	snc_type = 0,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+)
+drawconf = {
+	"n":200,
+	"nc":50,
+	"nrea":1,
+	"ncat":500,
+	"ncpu":10,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+"""
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-2-nsnc-bigrea",
+	snc_type = 0,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+)
+drawconf = {
+	"n":100000,
+	"nc":100,
+	"nrea":1,
+	"ncat":20,
+	"ncpu":20,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+
+
+
+"""
+sp = simparams.SampledBDParams(
+	name = "tw-1-sheargroup4", # So here we use the sheargroup option, to get 4 galaxies per group
+	snc_type = 2,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (10'000, 8)
+	nshearvals = 11000, # Make this larger than the number of cases above.
+)
+drawconf = {
+	"n":2000,
+	"nc":20,
+	"nrea":1,
+	"ncat":20,
+	"ncpu":20,
+	"groupmode":"shear",
+	"skipdone":True	
+}
+"""
+"""
+sp = simparams.SampledBDParams(
+	name = "tw-1-sheargroup4-large", # So here we use the sheargroup option, to get 4 galaxies per group
+	snc_type = 2,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (100'000, 8)
+	nshearvals = 110000, # Make this larger than the number of cases above.
+)
+drawconf = {
+	"n":2000,
+	"nc":20,
+	"nrea":1,
+	"ncat":200,
+	"ncpu":20,
+	"groupmode":"shear",
+	"skipdone":True	
+}
+"""
+
 
 
 ####################
@@ -223,7 +323,8 @@ megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.p
 if drawconf["groupmode"] == "shear":
 
 	cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+	#cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 
 	megalut.tools.table.keepunique(cat)
 	

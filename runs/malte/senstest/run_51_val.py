@@ -15,6 +15,7 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+redo=True
 
 def main():
 	
@@ -25,16 +26,24 @@ def main():
 	predcatpath = os.path.join(config.valdir, valname + ".pkl")
 
 	catpath = os.path.join(config.simmeasdir, config.datasets["valid-overall"], "groupmeascat.pkl")
-	cat = megalut.tools.io.readpickle(catpath)
-	#print megalut.tools.table.info(cat)
 	
-	cat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
-	if len(config.weightconflist) > 0:
-		cat = megalut.learn.tenbilacrun.predict(cat, config.weightconflist , weighttraindir)
+	if redo:
+		cat = megalut.tools.io.readpickle(catpath)
+		#print megalut.tools.table.info(cat)
+	
+		cat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist , sheartraindir)
+		if len(config.weightconflist) > 0:
+			cat = megalut.learn.tenbilacrun.predict(cat, config.weightconflist , weighttraindir)
 	
 	
-	megalut.tools.io.writepickle(cat, predcatpath)
-
+		megalut.tools.io.writepickle(cat, predcatpath)
+	
+	else:
+		cat = megalut.tools.io.readpickle(predcatpath)
+		print megalut.tools.table.info(cat)
+	
+		
+	#cat["pre_s1w"] = np.clip(cat["pre_s1w"], 0.0, 0.6)
 	plot(cat, component=1)
 
 
@@ -78,6 +87,9 @@ def plot(cat, component, filepath=None, title=None):
 	megalut.tools.table.addstats(cat, "pre_s{}".format(component), "pre_s{}w".format(component))
 	cat["pre_s{}_wbias".format(component)] = cat["pre_s{}_wmean".format(component)] - cat["tru_s{}".format(component)]
 	
+	logger.info("Comonent {}:".format(component))
+	megalut.tools.metrics.wmetrics(cat, Feature("tru_s{}".format(component)), Feature("pre_s{}_wmean".format(component)), wfeat=Feature("pre_s{}_wmeanw".format(component)))
+
 	pre_scw = Feature("pre_s{}w".format(component), rea=rea)
 	pre_scw_norm = Feature("pre_s{}w_norm".format(component), rea=rea)
 	
@@ -115,7 +127,14 @@ def plot(cat, component, filepath=None, title=None):
 	ax = fig.add_subplot(3, 4, 7)
 	megalut.plot.scatter.scatter(ax, cat, Feature("adamom_sigma", rea=rea), Feature("adamom_logflux", rea=rea), featc=pre_scw)
 	
+	ax = fig.add_subplot(3, 4, 8)
+	megalut.plot.scatter.scatter(ax, cat, Feature("tru_bulge_flux", rea=rea), Feature("tru_disk_flux", rea=rea), featc=pre_scw)
 	
+	ax = fig.add_subplot(3, 4, 2)
+	megalut.plot.scatter.scatter(ax, cat, Feature("tru_flux", rea=rea), Feature("tru_bulge_hlr", rea=rea), featc=pre_scw)
+	
+	ax = fig.add_subplot(3, 4, 3)
+	megalut.plot.scatter.scatter(ax, cat, Feature("magnitude", rea=rea), Feature("snr", rea=rea), featc=pre_scw)
 	nbins=5
 	
 	ax = fig.add_subplot(3, 4, 9)

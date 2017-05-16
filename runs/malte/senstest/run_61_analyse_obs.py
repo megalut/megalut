@@ -59,8 +59,11 @@ def main():
 	megalut.tools.io.writepickle(cat, predcatpath)
 	"""
 	
+	
 	cat = megalut.tools.io.readpickle(predcatpath)
 
+	
+	# Testing Bryan's code: YES, it gives the same as wmetrics
 	"""
 	# This is for not-yet-group-shaped data:
 	
@@ -84,15 +87,16 @@ def main():
 	
 		txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % (m*1000.0, merr*1000.0, c*1000.0, cerr*1000.0)
 		logger.info("Regression: {}".format(txt))	
+	
+	
+	exit()
 	"""
 	
-	#exit()
-	#cat = cat[:8*500]
 	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+	#cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/Euclid/senstest/megalut/val/pred_tw-1-sheargroup4-large.pkl")
 	
-	#print megalut.tools.table.info(cat)
+	print megalut.tools.table.info(cat)
 
-	#exit()
 	
 	for component in [1,2]:
 		
@@ -101,6 +105,13 @@ def main():
 		srad = 0.07
 		pre_sc_mean = Feature("pre_s{}_mean".format(component), -srad, srad)
 		pre_sc_wmean = Feature("pre_s{}_wmean".format(component), -srad, srad)
+		pre_sc_wmeanw = Feature("pre_s{}_wmeanw".format(component))
+		
+		
+		megalut.tools.metrics.wmetrics(cat, Feature("tru_s{}".format(component)), Feature("pre_s{}_wmean".format(component)), wfeat=Feature("pre_s{}_wmeanw".format(component)))
+	
+		
+		"""
 		tru_sc = Feature("tru_s{}".format(component), -srad, srad)
 
 		fig = plt.figure(figsize=(20, 12))
@@ -111,12 +122,16 @@ def main():
 		ax = fig.add_subplot(3, 4, 2)
 		megalut.plot.scatter.scatter(ax, cat, tru_sc, pre_sc_wmean, metrics=True)
 
+		ax = fig.add_subplot(3, 4, 3)
+		megalut.plot.hist.hist(ax, cat, pre_sc_wmeanw)
+
 		plt.tight_layout()
 	
 		plt.show()
 		plt.close(fig) # Helps releasing memory when calling in large loops.
 
-	
+		exit()
+		"""
 	
 	
 	

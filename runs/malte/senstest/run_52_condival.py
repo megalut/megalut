@@ -15,7 +15,7 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-redo = True
+redo = False
 
 def main():
 	

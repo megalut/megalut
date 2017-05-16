@@ -46,16 +46,24 @@ imgnos = [0]
 datasets = {
 	
 #	"train-shear":"ts-ln-1",
-#	"train-shear":"ts-ln-1-large",
+	"train-shear":"ts-ln-1-large",
 #	"train-shear":"ts-fn-1",
-	"train-shear":"ts-fn-1-failfrac05",
+#	"train-shear":"ts-fn-1-failfrac05",
 	
 	"valid-shear":"vs-1",
 
-	"train-weight":"tw-1",
+#	"train-weight":"tw-1",
 #	"train-weight":"tw-1-minmag22",
+#	"train-weight":"tw-1-sheargroup4",
+#	"train-weight":"tw-1-sheargroup4-large",
+#
+#	"train-weight":"tw-2-nsnc-small",
+#	"train-weight":"tw-2-nsnc",
+	"train-weight":"tw-2-nsnc-bigrea",
+
+#	"valid-overall":"val-1",
+ 	"valid-overall":"tw-1-sheargroup4-large",
 	
-	"valid-overall":"val-1",
 	
 	"simobscompa":"simobscompa",
 }
@@ -68,6 +76,16 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
-	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w.cfg"),
+	#("mlconfig/ada2s1w.cfg", "mlconfig/sum55w_test3.cfg"),
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_test4.cfg"),
+	
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_test3.cfg"),
+	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_test.cfg"),
+	
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1.cfg"),
+	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_huge1.cfg"),
+	
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1iden.cfg"),
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1idennomb.cfg"),
+	
 ]

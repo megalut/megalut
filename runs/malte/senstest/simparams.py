@@ -14,11 +14,12 @@ class SampledBDParams(megalut.sim.params.Params):
 	Bulge and Disk parameters read from a database of samples.
 	"""
 
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0", minmag=None):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0", minmag=None, sheargroup=-1, nshearvals=10000):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
 		- noise_level 1.0 means that the fiducial noise level will be used, 0 means no noise
+		- sheargroup: put it above 0 to get groups of same shear
 	
 		"""
 		megalut.sim.params.Params.__init__(self)
@@ -29,6 +30,7 @@ class SampledBDParams(megalut.sim.params.Params):
 		self.noise_level = noise_level # relative
 		self.ecode = ecode
 		self.minmag = minmag
+		self.sheargroup = sheargroup
 		
 		self.ccdgain = 3.3
 		
@@ -39,6 +41,11 @@ class SampledBDParams(megalut.sim.params.Params):
 			sel = megalut.tools.table.Selector("minmag", [("min", "magnitude", self.minmag)])	
 			self.db = sel.select(self.db)
 
+		if self.sheargroup > 0:
+			# We exploit the fact that the catalogs are all drawn one after the other on a single cpu, with the same simparams object
+			self.s1s = np.random.uniform(-self.shear, self.shear, size=nshearvals)
+			self.s2s = np.random.uniform(-self.shear, self.shear, size=nshearvals)
+			self.scount = 0 # Number of times a shear is drawn
 
 		# Each ecode has a different:
 		# - bulge_axis_ratio (we don't care exactly, it just affects the bulge_ellipticity
@@ -68,17 +75,25 @@ class SampledBDParams(megalut.sim.params.Params):
 		"""
 		Shear and magnification
 		"""
-		if self.shear > 0:
-			tru_s1 = np.random.uniform(-self.shear, self.shear)
-			tru_s2 = np.random.uniform(-self.shear, self.shear)	
-			
-			#tru_s = 0.1
-			#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
-			#(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
-			
+		if self.sheargroup <= 0: # We just draw it randomly
+		
+			if self.shear > 0:
+				tru_s1 = np.random.uniform(-self.shear, self.shear)
+				tru_s2 = np.random.uniform(-self.shear, self.shear)	
+				
+				#tru_s = 0.1
+				#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
+				#(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
+				
+			else:
+				tru_s1 = 0.0
+				tru_s2 = 0.0
 		else:
-			tru_s1 = 0.0
-			tru_s2 = 0.0
+			# We draw it from the list, but not always a new one...
+			sindex = self.scount // int(self.sheargroup) # Gives the same index for 0, 1, 2, ..., sheargroup - 1, so for sheargroup values.
+			tru_s1 = self.s1s[sindex]
+			tru_s2 = self.s2s[sindex]
+			self.scount += 1
 		
 		tru_mu = 1.0
 		return {"tru_s1":tru_s1, "tru_s2":tru_s2, "tru_mu":tru_mu}

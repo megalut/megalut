@@ -110,6 +110,7 @@ class Simple2(megalut.sim.params.Params):
 	"""
 	Sersics with shear.
 	Single PSF.
+	# This one is more random in flux, we don't draw sorted or gridded values.
 	"""
 	
 	
