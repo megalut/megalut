@@ -10,7 +10,10 @@ import skystats
 import snr
 import mom
 
-# import sewfunc # Better leave this to the user for now, sewpy is optional
+try:
+	import sewfunc # Better leave this to the user for now, sewpy is optional
+except:
+	print "Sewpy is not available"
 
 #import fourier
 
