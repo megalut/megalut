@@ -366,7 +366,9 @@ def bin(ax, cat, featx, featy, nbins=10, selector=None, showselector=True, title
 		ylowps.append(np.fabs(np.percentile(theseyvals, 15.8) - np.mean(theseyvals)))
 		yhighps.append(np.fabs(np.percentile(theseyvals, 84.1) - np.mean(theseyvals)))
 		
-		
+	assert len(ymeans) == len(bincenters)
+	assert len(ylowps) == len(bincenters)
+	assert len(yhighps) == len(bincenters)
 				
 	#errorbarkwargs = {"capthick":0, "zorder":-100}
 	errorbarkwargs = {"color":"black", "ls":"None", "marker":".", "lw":1.0, "mew":1.0}

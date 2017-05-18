@@ -259,6 +259,16 @@ def trunc_gaussian(m, s, minval, maxval):
 	return distr.rvs()
 
 
+def trun_rayleigh(sigma, max_val):
+	"""
+	A truncated Rayleigh distribution
+	"""
+	assert max_val > sigma
+	tmp = max_val + 1.0
+	while tmp > max_val:
+		tmp = np.random.rayleigh(sigma)
+	return tmp
+
 
 def contracted_rayleigh(sigma, max_val, p):
 	"""
