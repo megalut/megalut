@@ -5,6 +5,7 @@ import megalut.tools as tl
 import logging
 logger = logging.getLogger(__name__)
 
+
 def complex2geometrical(e1, e2, size=1., fact=1.):
 	"""
 	Convert e1, e2 to a, b, theta
@@ -28,7 +29,7 @@ def geometrical2complex(a, b, theta):
 
 class PSF_Field():
 	
-	def __init__(self, kind, cx=0.5, cy=0.5, e_max=0.015, fwhm_max=0.14, fieldfname=None):
+	def __init__(self, kind, cx=0.5, cy=0.5, e_max=0.15/1.42, fwhm_max=0.16, fieldfname=None):
 		"""
 		:param kind: a string either "radial", "tangential", "e1", "e2", "fwhm", "e1e2", "euclid-like". They represent how the ellipticity varies.
 		:param e_max: the maximum value of the ellipiticty
@@ -44,10 +45,11 @@ class PSF_Field():
 		self.cy = cy
 		self.fieldfname = fieldfname
 		
-		
-		self.e = np.random.uniform(low=self.e_max*0.8, high=self.e_max)
-		self.fwhm = np.random.uniform(low=self.fwhm_max*0.9, high=self.fwhm_max)
-		self.dR = np.hypot(self.cx, self.cy)
+		if not self.kind == "euclid-like":
+			self.e = np.random.uniform(low=self.e_max*0.8, high=self.e_max)
+			self.fwhm = np.random.uniform(low=self.fwhm_max*0.9, high=self.fwhm_max)
+			self.dR = np.hypot(self.cx, self.cy)
+			logger.info('Created PSF field class, kind is {:s}, ellipt. is {:0.3f} and fwhm is {:0.3f}"'.format(kind, self.e, self.fwhm))
 		if self.kind == "fwhm":
 			self.position_angle = np.random.uniform(0, np.pi)
 		elif self.kind == "euclid-like":
@@ -57,7 +59,7 @@ class PSF_Field():
 			self.b = np.random.uniform(-.01, .01)
 			self.c = np.random.uniform(-.01, .01)
 			
-		logger.info('Created PSF field class, kind is {:s}, ellipt. is {:0.3f} and fwhm is {:0.3f}"'.format(kind, self.e, self.fwhm))
+		
 
 	def _load_psf_field(self):
 		"""
@@ -170,7 +172,12 @@ class PSF_Field():
 		# Plotting the e1, e2 space as a quiver plot
 		fig = plt.figure(figsize=(22,6))
 		ax = plt.subplot(131)
-		plt.quiver(XY[:,0], XY[:,1], e1, e2)
+		Q = plt.quiver(XY[:,0], XY[:,1], e1, e2)
+		print np.amax(np.abs(e1))
+		print np.amax(np.abs(e2))
+		print np.amax(np.hypot(e1, e2))
+		qk = plt.quiverkey(Q, 0.85, 1.03, 0.15, r'$e = 0.15$', labelpos='E',
+                   coordinates='axes')
 		plt.xlabel("X image")
 		plt.ylabel("Y image")
 		plt.title("e1 - e2 space")
@@ -178,12 +185,12 @@ class PSF_Field():
 		plt.ylim(-0.05,1.05)
 		
 		# Now changing to the geometrical description of the PSF (and doing some rescaling)
-		a, b, theta = complex2geometrical(e1, e2, r * 0.5, fact=20)
+		a, b, theta = complex2geometrical(e1, e2, r * 0.5, fact=1)
 	
 		# We can plot what the PSF will look like in the pixel space
 		ax = plt.subplot(132, aspect='equal')
 		
-		for (x, y), a_, b_, t_ in zip(XY, a * 0.5, b * 0.5, theta):
+		for x, y, a_, b_, t_ in zip(XY[:,0], XY[:,1], a * 0.5, b * 0.5, theta):
 			e = Ellipse((x, y), a_ , b_ , np.rad2deg(t_))
 			e.set_clip_box(ax.bbox)
 			e.set_alpha(0.4)
@@ -193,10 +200,10 @@ class PSF_Field():
 		plt.xlabel("X image")
 		plt.ylabel("Y image")
 		plt.title("image space (exaggerated)")
-		
+	
 		# Plotting the FWHM
 		ax = plt.subplot(133, aspect='equal')
-		plt.scatter(XY[:,0], XY[:,1], s=r*200., c=r, edgecolors="None")
+		plt.scatter(XY[:,0], XY[:,1], s=r*r*r * 1e4, c=r, edgecolors="None", cmap=plt.get_cmap("nipy_spectral"))
 		cb = plt.colorbar()
 		plt.xlabel("X image")
 		plt.ylabel("Y image")
@@ -212,6 +219,101 @@ class PSF_Field():
 				os.makedirs(outdir)
 			fig.savefig(pltfn)
 			logger.info("Saved PSF plots to {}".format(pltfn))
+			
+	def fancyplot(self, outdir=None):
+		import matplotlib.pyplot as plt
+		from matplotlib.patches import Ellipse
+		import megalut.plot.figures as figures
+		import matplotlib.ticker as ticker
+		
+		def fmt(x, pos):
+			return r'${%1.2f}$' % (x)
+		
+		figures.set_fancy()
+	
+		# We'll generate a grid on which to visualise our PSF parameters.
+		x = np.linspace(0, 1, 21)
+		y = np.linspace(0, 1, 21)
+		X, Y = np.meshgrid(x, y)
+		XY = np.hstack((X.ravel()[:, np.newaxis], Y.ravel()[:, np.newaxis]))
+		
+		_, _, R = self.eval(X, Y)
+		
+		# Getting the PSF params at the requested positions...
+		e1, e2, r = self.eval(XY[:,0], XY[:,1])
+		# Plotting the e1, e2 space as a quiver plot
+		fig = plt.figure(figsize=(14,6))
+		plt.subplots_adjust(wspace=0.1)
+		
+		ax = plt.subplot(121)
+		ax.set_aspect('equal')#, 'datalim')
+		Q = plt.quiver(XY[:,0], XY[:,1], e1, e2, width=0.005, headaxislength=0, headlength=0, angles="xy")
+		print np.amax(np.abs(e1))
+		print np.amax(np.abs(e2))
+		print np.amax(np.hypot(e1, e2))
+		qk = plt.quiverkey(Q, 0.8, 1.025, 0.15, r'$e = 0.15$', labelpos='E',
+                   coordinates='axes')
+		plt.xlabel(r"$x$ field")
+		plt.ylabel(r"$y$ field")
+		plt.title(r"$e_1 - e_2\ \mathrm{space}$")
+		plt.xlim(-0.0,1.0)
+		plt.ylim(-0.0,1.0)
+		
+		# Now changing to the geometrical description of the PSF (and doing some rescaling)
+		a, b, theta = complex2geometrical(e1, e2, r * 0.5, fact=1)
+		
+		"""
+		# We can plot what the PSF will look like in the pixel space
+		ax = plt.subplot(132, aspect='equal')
+		
+		for x, y, a_, b_, t_ in zip(XY[:,0], XY[:,1], a * 0.5, b * 0.5, theta):
+			e = Ellipse((x, y), a_ , b_ , np.rad2deg(t_))
+			e.set_clip_box(ax.bbox)
+			e.set_alpha(0.4)
+			ax.add_artist(e)
+		plt.xlim(-0.05,1.05)
+		plt.ylim(-0.05,1.05)
+		plt.xlabel("X image")
+		plt.ylabel("Y image")
+		plt.title("image space (exaggerated)")
+		"""
+		
+		# Plotting the FWHM
+		ax = plt.subplot(122)#, aspect='equal')
+		#plt.scatter(XY[:,0], XY[:,1], s=r*r*r * 1e4, c=r, edgecolors="None", cmap=plt.get_cmap("copper"))
+
+		im = plt.contourf(X, Y, R, 100, aspect='equal', edgecolors="None", cmap=plt.get_cmap("Greys_r"), vmax=0.165)
+		for c in im.collections:
+			c.set_edgecolor("face")
+
+		cb = plt.colorbar(pad=0.01, ticks=[0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17], format=ticker.FuncFormatter(fmt))
+		
+		plt.xlabel(r"$x$ field")
+		#plt.ylabel("Y image")
+		cb.set_label('FWHM ["]')
+		ax.set_xlim([-0.0, 1.])
+		ax.set_ylim([-0.0, 1.])
+		
+		#forceAspect(ax,aspect=1)
+		
+		ax.set_yticklabels([])
+		
+		#tick_locator = ticker.MaxNLocator(nbins=6)
+		#cb.locator = tick_locator
+		#cb.update_ticks()
+		
+		
+		
+		if outdir is None:
+			plt.show()
+		else:
+			pltfn = os.path.join(outdir, "psf_field.png")
+			if not os.path.exists(outdir):
+				os.makedirs(outdir)
+			fig.savefig(pltfn)
+			logger.info("Saved PSF plots to {}".format(pltfn))
+			
+			
 if __name__ == "__main__":
 	# This is a demo of how the class PSF field works
 	
@@ -219,14 +321,14 @@ if __name__ == "__main__":
 	from matplotlib.patches import Ellipse
 	
 	# Selecting a Euclid-like field
-	fieldnum = 0
+	fieldnum = 0# 111
 	
 	# Iterating over all field types
-	for kind in ["e1e2", "e1", "e2", "fwhm", "radial", "tangential", "euclid-like"]:
+	for kind in ["euclid-like"]:#"e1e2", "e1", "e2", "fwhm", "radial", "tangential", "euclid-like"]:
 		
 		# The Euclid-like field requires a filepath...
 		if kind is "euclid-like":
-			kwargs = {"fieldfname": "./psf_fields_euclid/field-{:03d}.pkl".format(fieldnum)}
+			kwargs = {"fieldfname": "/home/kuntzer/workspace/Blending_PSF_Euclid/ellip_euclid_PSF/psf_fields_euclid2/field-{:03d}.pkl".format(fieldnum)}
 		else:
 			kwargs = {}
 		
@@ -237,9 +339,11 @@ if __name__ == "__main__":
 		# field.e = 0.01
 
 		print "**", kind, "**"
-		print "e:", field.e
-		print "r:", field.fwhm
+		if not kind == "euclid-like":
+			print "e:", field.e
+			print "r:", field.fwhm
 
-		# We call some plots		
-		field.plot()
+		# We call some plots	
+		field.fancyplot()
+
 

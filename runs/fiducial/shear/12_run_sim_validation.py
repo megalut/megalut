@@ -18,11 +18,11 @@ sp = simparams.Sersics_statshear()
 sp.shear = 0.1
 simdir = includes.simvaldir
 sp.snc_type = 4
-sp.noise_level = 0.8
-n = 1000
+sp.noise_level = 0.08
+n = 1#00
 nc = 1
-ncat = 2500
-nrea = 1
+ncat = 5#0#2500
+nrea = 10
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -60,7 +60,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))
