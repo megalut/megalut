@@ -229,7 +229,7 @@ class PSF_Field():
 		def fmt(x, pos):
 			return r'${%1.2f}$' % (x)
 		
-		figures.set_fancy()
+		figures.set_fancy(24)
 	
 		# We'll generate a grid on which to visualise our PSF parameters.
 		x = np.linspace(0, 1, 21)
@@ -242,12 +242,18 @@ class PSF_Field():
 		# Getting the PSF params at the requested positions...
 		e1, e2, r = self.eval(XY[:,0], XY[:,1])
 		# Plotting the e1, e2 space as a quiver plot
-		fig = plt.figure(figsize=(14,6))
+		if self.kind not in ["e1", "e2"]:
+			fig = plt.figure(figsize=(30,7))
+		else:
+			fig = plt.figure(figsize=(16,7))
 		plt.subplots_adjust(wspace=0.1)
 		
-		ax = plt.subplot(121)
+		if self.kind not in ["e1", "e2"]:
+			ax = plt.subplot(131)
+		else:
+			ax = plt.subplot(121)
 		ax.set_aspect('equal')#, 'datalim')
-		Q = plt.quiver(XY[:,0], XY[:,1], e1, e2, width=0.005, headaxislength=0, headlength=0, angles="xy")
+		Q = plt.quiver(XY[:,0], XY[:,1], e1, e2, width=0.003)#, headaxislength=0, headlength=0)
 		print np.amax(np.abs(e1))
 		print np.amax(np.abs(e2))
 		print np.amax(np.hypot(e1, e2))
@@ -255,7 +261,7 @@ class PSF_Field():
                    coordinates='axes')
 		plt.xlabel(r"$x$ field")
 		plt.ylabel(r"$y$ field")
-		plt.title(r"$e_1 - e_2\ \mathrm{space}$")
+		plt.title(r"$(e_1 - e_2)\ \mathrm{space}$")
 		plt.xlim(-0.0,1.0)
 		plt.ylim(-0.0,1.0)
 		
@@ -277,40 +283,79 @@ class PSF_Field():
 		plt.ylabel("Y image")
 		plt.title("image space (exaggerated)")
 		"""
+		if self.kind not in ["e1", "e2"]:
+			# Plotting the FWHM
+			ax = plt.subplot(132, aspect='equal')#, aspect='equal')
+			#plt.scatter(XY[:,0], XY[:,1], s=r*r*r * 1e4, c=r, edgecolors="None", cmap=plt.get_cmap("copper"))
+	
+			im = plt.contourf(X, Y, R, 100, edgecolors="None", cmap=plt.get_cmap("Greys_r"))#, vmax=0.165)
+			for c in im.collections:
+				c.set_edgecolor("face")
+	
+			#cb = plt.colorbar(pad=0.01) #, ticks=np.linspace(0.01,0.18,18), format=ticker.FuncFormatter(fmt)
+			
+			plt.xlabel(r"$x$ field")
+			#plt.ylabel("Y image")
+			ax.set_xlim([-0.0, 1.])
+			ax.set_ylim([-0.0, 1.])
+			plt.title(r"$\mathrm{FWHM\ space}$")
+			
+			#forceAspect(ax,aspect=1)
+			
+			ax.set_yticklabels([])
 		
-		# Plotting the FWHM
-		ax = plt.subplot(122)#, aspect='equal')
-		#plt.scatter(XY[:,0], XY[:,1], s=r*r*r * 1e4, c=r, edgecolors="None", cmap=plt.get_cmap("copper"))
 
-		im = plt.contourf(X, Y, R, 100, aspect='equal', edgecolors="None", cmap=plt.get_cmap("Greys_r"), vmax=0.165)
-		for c in im.collections:
-			c.set_edgecolor("face")
-
-		cb = plt.colorbar(pad=0.01, ticks=[0.1,0.11,0.12,0.13,0.14,0.15,0.16,0.17], format=ticker.FuncFormatter(fmt))
+		if self.kind not in ["e1", "e2"]:
+			ax = plt.subplot(133, aspect='equal')
+		else:
+			ax = plt.subplot(122, aspect='equal')
 		
+		x = np.linspace(0, 1, 11)
+		y = np.linspace(0, 1, 11)
+		X, Y = np.meshgrid(x, y)
+		XY = np.hstack((X.ravel()[:, np.newaxis], Y.ravel()[:, np.newaxis]))
+		
+		e1, e2, r = self.eval(XY[:,0], XY[:,1])
+		a, b, theta = complex2geometrical(e1, e2, r * 0.5, fact=5)
+		scaled_r = (r-np.amin(r))/(np.amax(r)-np.amin(r))
+		if np.isnan(np.sum(scaled_r)):
+			scaled_r = np.ones_like(scaled_r)
+			novarr = True
+		else:
+			novarr = False
+		for x, y, a_, b_, t_, c_ in zip(XY[:,0], XY[:,1], a * (scaled_r+0.3) * 0.8, b * (scaled_r+0.3) * 0.8, theta, plt.cm.Greys_r(scaled_r)):
+			if novarr:
+				c_ = 'lightgrey'
+			e = Ellipse((x, y), a_ , b_ , np.rad2deg(t_), color=c_)
+			e.set_clip_box(ax.bbox)
+			#e.set_alpha(0.4)
+			e.set_edgecolor("k")
+			ax.add_artist(e)
+		plt.xlim(-0.05,1.05)
+		plt.ylim(-0.05,1.05)
 		plt.xlabel(r"$x$ field")
-		#plt.ylabel("Y image")
-		cb.set_label('FWHM ["]')
-		ax.set_xlim([-0.0, 1.])
-		ax.set_ylim([-0.0, 1.])
-		
-		#forceAspect(ax,aspect=1)
-		
 		ax.set_yticklabels([])
+		#plt.ylabel(r"$y$ field")
+		plt.title(r"$(x - y)\ \mathrm{space}\ \mathrm{(exaggerated)}$")
 		
-		#tick_locator = ticker.MaxNLocator(nbins=6)
-		#cb.locator = tick_locator
-		#cb.update_ticks()
-		
-		
+		if np.mean(scaled_r) != 1:
+			fig.subplots_adjust(right=0.8)
+			cbar_ax = fig.add_axes([0.82, 0.10, 0.02, 0.8])
+			cb = fig.colorbar(im, cax=cbar_ax)
+			
+			tick_locator = ticker.MaxNLocator(nbins=6)
+			cb.locator = tick_locator
+			cb.update_ticks()
+			cb.set_label('FWHM ["]')
 		
 		if outdir is None:
 			plt.show()
 		else:
-			pltfn = os.path.join(outdir, "psf_field.png")
+			pltfn = os.path.join(outdir, "psf_field_{}".format(self.kind))
 			if not os.path.exists(outdir):
 				os.makedirs(outdir)
-			fig.savefig(pltfn)
+			#fig.savefig(pltfn)
+			figures.savefig(pltfn, fig, fancy=True)
 			logger.info("Saved PSF plots to {}".format(pltfn))
 			
 			
@@ -324,7 +369,7 @@ if __name__ == "__main__":
 	fieldnum = 0# 111
 	
 	# Iterating over all field types
-	for kind in ["euclid-like"]:#"e1e2", "e1", "e2", "fwhm", "radial", "tangential", "euclid-like"]:
+	for kind in ["e1", "e2", "e1e2", "fwhm", "radial", "tangential", "euclid-like"]:
 		
 		# The Euclid-like field requires a filepath...
 		if kind is "euclid-like":
@@ -344,6 +389,6 @@ if __name__ == "__main__":
 			print "r:", field.fwhm
 
 		# We call some plots	
-		field.fancyplot()
+		field.fancyplot("fancyplot")
 
 
