@@ -1,5 +1,5 @@
 - exposure time = 565 s (Euclid Redbook)
-- gain
+- gain = 3.0
 - Read out noise (ron) = 5 e- [2]
 - Pixel scale = 0.1" [2]
 - Diameter M1 = 1.19 m [2]
@@ -29,7 +29,11 @@
 # Refs
 
 [1] Euclid Redbook
+
 [2] arxiv:1001.0061, Euclid Science book, Table 19.1, p. 176
+
 [3] arxiv:1001.0061, Euclid Science book, Sect 19.4, p. 176
+
 [4] arxiv:1001.0061, Euclid Science book, Sect 21.3, p. 176
+
 [5] Euclid Consortium meeting 2017, "Survey" (Scaramella) http://euclid2017.london/slides/Monday/Session3/SurveyStatus-Scaramella.pdf
