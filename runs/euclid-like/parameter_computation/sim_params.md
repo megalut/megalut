@@ -8,20 +8,31 @@
 - Sky Background in 550-920 nm range: 
 
 	Version 1 [3]
+
 		low case: 22.96 AB mag/arcsec²
+
 		ave case: 22.35 AB mag/arcsec²
+
 		hig case: 21.75 AB mag/arcsec²
+
 	based on the model by Leinert+98 and Aldering+04
 
 	Version 2 [5]
+
 		see skybackground.py
+
 		ave model: 22.8 mag/arcsec²
 
 - Early Euclid-Exposure Time Calculator [4]
+
 	S/N = F / sqrt( {F + B * A}/g + n * A * {ron/g}**2 + Dark )
+
 		F: flux source in ADUs
+
 		B: background
+
 		A: area of collecting mirror
+
 		n: number of individual exposures
 
 ------------------------------------------
