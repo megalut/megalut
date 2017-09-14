@@ -16,6 +16,11 @@ import galsim
 import utils
 from .. import tools
 
+try:
+	import scipy.ndimage
+except:
+	logger.warning("Could not import scipy.ndimage, adamom_size not available")
+
 
 def measfct(catalog, runon="img", stampsize=None, **kwargs):
 	"""
@@ -46,7 +51,7 @@ def measfct(catalog, runon="img", stampsize=None, **kwargs):
 	return measure(img, catalog, xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname, stampsize=stampsize, **kwargs)
 
 
-def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_", variant="default"):
+def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_", variant="default", size=True):
 	"""
 	Use the pixel positions provided via the 'catalog' input table to extract
 	postage stamps from the image and measure their shape parameters.
@@ -97,7 +102,8 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 		astropy.table.MaskedColumn(name=prefix+"g1", dtype=float, length=len(output)),
 		astropy.table.MaskedColumn(name=prefix+"g2", dtype=float, length=len(output)),
 		astropy.table.MaskedColumn(name=prefix+"sigma", dtype=float, length=len(output)),
-		astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output))
+		astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output)),
+		astropy.table.MaskedColumn(name=prefix+"size", dtype=float, length=len(output))
 	])
 	# We want to mask all these entries. They will get unmasked when values will be attributed.
 	for col in ["flux", "x", "y", "g1", "g2", "sigma", "rho4"]:
@@ -114,7 +120,6 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 		
 		(x, y) = (gal[xname], gal[yname])
 		(gps, flag) = tools.image.getstamp(x, y, img, stampsize)
-		
 		
 		if flag != 0:
 			logger.debug("Galaxy not fully within image:\n %s" % (str(gal)))
@@ -159,6 +164,51 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 		gal[prefix+"g2"] = res.observed_shape.g2
 		gal[prefix+"sigma"] = res.moments_sigma
 		gal[prefix+"rho4"] = res.moments_rho4
+
+		if size:
+			imgstamp = gps.array
+			
+			facta = 4.
+			try:
+				imgstamp = scipy.ndimage.zoom(imgstamp, facta, order=0) / facta / facta
+			except:
+				facta = 1.
+	
+			dx = np.linspace(0, 48, 48*facta)
+			dy = np.linspace(0, 48, 48*facta)[:,None]
+			X = dx - (res.moments_centroid.x - x + 25.)
+			Y = dy - (res.moments_centroid.y - y + 25.)
+			a, b, theta = tools.calc.complex2geometrical(res.observed_shape.g1, res.observed_shape.g2)
+			e = a / b 
+			err = 1.
+			
+			# The factor is empirical only
+			a = res.moments_sigma/np.sqrt(e) * 2.8
+			b = a / e
+			
+			fact = 0
+			ccc = 0
+			while err > 0.05 and ccc < 100:
+				a += fact
+				b = a / e
+				ellipse = (X * np.cos(theta) + Y * np.sin(theta)) ** 2. / (a*a) + (Y * np.cos(theta) - X * np.sin(theta)) ** 2. / (b*b) <= 1
+				F = imgstamp * ellipse
+			
+				#print F.sum()
+				#print F.sum() / res.moments_amp
+				
+				fact = gal["adamom_flux"] - F.sum()
+				
+				err = np.abs(F.sum() - res.moments_amp) / res.moments_amp
+				ccc += 1
+				
+			gal[prefix+"size"] = a * b * np.pi
+			#plt.figure()
+			#plt.imshow(ellipse * imgstamp, extent=(dx[0], dx[-1], dy[0], dy[-1]), origin="lower", interpolation="None")
+			#plt.show()
+
+		else:
+			gal[prefix+"size"] = 0.
 
 		# If we made it to this point, we check that the centroid is roughly ok:
 		if np.hypot(x - gal[prefix+"x"], y - gal[prefix+"y"]) > 10.0:

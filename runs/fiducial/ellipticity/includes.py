@@ -3,7 +3,7 @@ import logging
 
 logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.INFO)
 
-workdir = "./ellpt"
+workdir = "./ellpt-psf-test"
 
 stampsize = 48
 

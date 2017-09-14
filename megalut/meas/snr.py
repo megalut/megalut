@@ -11,7 +11,7 @@ import copy
 import logging
 logger = logging.getLogger(__name__)
 
-def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", stdcol="skymad", gain=None, gaincol=None):
+def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", stdcol="skymad", sizecol=None, gain=None, gaincol=None):
 	"""
 	We assume here that the images are in ADU, and that 
 	gain is given in electron / ADU.
@@ -44,9 +44,13 @@ def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", 
 		raise RuntimeError("Please provide a gain or gaincol!")
 		
 	
-	areas = np.pi * output[sigmacol] ** 2 # Should we multiply this by 0.674490 to go from sigma to half-light-rad ?
+	if sizecol is None:
+		areas = np.pi * output[sigmacol] ** 2 # Should we multiply this by 0.674490 to go from sigma to half-light-rad ?
+	else: 
+		areas = output[sizecol]
 	
-	noises = np.sqrt(sourcefluxes + areas * skynoisefluxes)
+	sourcefluxesN = sourcefluxes#0.
+	noises = np.sqrt(sourcefluxesN + areas * skynoisefluxes)
 	
 	snrcol = prefix + "snr"
 	

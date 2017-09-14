@@ -85,11 +85,11 @@ def measure(img, catalog, xname="x", yname="y",
 
 	if params == None:
 		params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
-			"FLUX_WIN", "FLUXERR_WIN", "NITER_WIN", "FLAGS_WIN", "FLUX_AUTO", "FLUXERR_AUTO",
+			"FLUX_WIN", "FLUXERR_WIN", "NITER_WIN", "FLAGS_WIN", "FLUX_AUTO", "FLUXERR_AUTO", "FLUX_APER",
 			"FWHM_IMAGE", "BACKGROUND", "FLAGS"]
 	
 	if config == None:
-		config = {"DETECT_MINAREA":5, "ASSOC_RADIUS":5, "ASSOC_TYPE":"NEAREST"}
+		config = {"DETECT_MINAREA":5, "ASSOC_RADIUS":5, "PHOT_APERTURES":13, "ASSOC_TYPE":"NEAREST"}
 		
 	sew = sewpy.SEW(sexpath=sexpath, params=params, config=config, workdir=workdir, nice=19)
 	out = sew(img, assoc_cat=catalog, assoc_xname=xname, assoc_yname=yname, prefix=prefix)

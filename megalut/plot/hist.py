@@ -72,7 +72,7 @@ def hist(ax, cat, feat, text=None, title=None, **kwargs):
 		ax.set_title(title)
 
 
-
+	return n, bins, patches
 
 
 def errhist(ax, cat, prefeat, trufeat, normrad=3.0, **kwargs):
