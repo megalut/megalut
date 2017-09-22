@@ -1,5 +1,7 @@
+# Image
+
 - exposure time = 565 s [1, 6]
-- gain = 3.1 [8]
+- gain = 3.1 e-/DN [8]
 - Read out noise (ron) = 4.2 e- [7]
 - Pixel scale = 0.1" [5]
 - Pixel size = 12 um x 12um [6]
@@ -46,6 +48,18 @@
 - System PSF ellipticity [7]
 		≤15% using a quadrupole definitio
 
+# Galaxy parameters
+
+Single Sersic profiles.
+
+Catalogues with
+
+		position, flux, half-light radius, Sersic n, ellipticity
+
+only consider gal mag fainter than 20
+
+for 20 < m < 25
+
 ------------------------------------------
 
 # Refs
@@ -65,4 +79,6 @@
 [7] arxiv:1608.08603, VIS: the visible imager for Euclid Cropper+
 
 [8] https://doi.org/10.1007/s10686-015-9440-7, Niemi+2015, Measuring a charge-coupled device point spread function, Experimental Astronomy
+
+[9] arxiv:1609.03281, A study of the sensitivity of shape measurements to the input parameters of weak lensing image simulations, Hoekstra+
 

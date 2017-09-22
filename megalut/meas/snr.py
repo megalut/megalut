@@ -24,7 +24,6 @@ def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", 
 	
 	"""
 	
-	
 	if gain != None and gaincol != None:
 		raise RuntimeError("Please provide either gain or gaincol, not both!")
 		

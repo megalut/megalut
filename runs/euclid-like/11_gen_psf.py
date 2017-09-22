@@ -5,13 +5,13 @@ import os
 import astropy.io.fits as fits
 import datetime
 import os
+import includes
 
 ###################################################################################################
 # Defining variables
 # Pixel scale in arcsec / pixel
-pixel_scale = 0.1
-
-image_size = 48
+pixelscale = includes.pixelscale
+image_size = includes.stampsize
 
 # GalSim paramters
 psf_obsc = 0.29	   # (0.35m / 1.2m) = 0.29 [D(M2) / D(M1)]
@@ -59,8 +59,8 @@ if jitter:
 	# We apply some jitter to the position of this psf
 	xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real stars are not that well centered in their stamps ?
 	yjitter = ud() - 0.5
-	xjitter *= pixel_scale
-	yjitter *= pixel_scale
+	xjitter *= pixelscale
+	yjitter *= pixelscale
 
 for ii, ilam in enumerate(ids):
 
@@ -83,20 +83,18 @@ for ii, ilam in enumerate(ids):
 		trefoil2=psf_trefoil2)
 	
 	image = galsim.ImageF(image_size, image_size)
-	psf.drawImage(image=image, scale=pixel_scale)
+	psf.drawImage(image=image, scale=pixelscale)
 	
 	if jitter:
 		psf = psf.shift(xjitter,yjitter)	
-	
-
-	
+		
 	slicei = image.array * flux 
 	if psf_imgi is None:
 		psf_imgi = slicei
 	else:
 		psf_imgi += slicei
 		
-	print psf_imgi.min(), psf_imgi.max() 
+	print lam
 	
 psf_imgi /= np.sum(spectrum[ids,1])
 	

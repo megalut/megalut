@@ -20,7 +20,7 @@ from .. import tools
 from . import params
 
 
-def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
+def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
@@ -33,6 +33,8 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
 	:type nc: int
 	:param stampsize: width = height of desired stamps, in pixels
 	:type stampsize: int
+	:param pixelscale: scale in arcsec of the image, default: 1''
+	:type pixelscale: float
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
 	
 	The ix index moves faster than the iy index when iterating over the output catalog.
@@ -123,6 +125,7 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
 	
 	# The following is aimed at drawimg:
 	catalog.meta["stampsize"] = stampsize
+	catalog.meta["pixelscale"] = pixelscale
 	
 	# Checking the catalog length
 	assert len(catalog) == nsnc * n
@@ -201,10 +204,10 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	gal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 	trugal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 	psf_image = galsim.ImageF(stampsize * nx , stampsize * ny)
-
-	gal_image.scale = 1.0 # These pixel scales make things easier. If you change them, be careful to also adapt the jitter scale!
-	trugal_image.scale = 1.0
-	psf_image.scale = 1.0
+	
+	gal_image.scale = catalog.meta["pixelscale"]
+	trugal_image.scale = catalog.meta["pixelscale"]
+	psf_image.scale = catalog.meta["pixelscale"]
 
 	# And loop through the catalog:
 	for row in catalog:
@@ -274,6 +277,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
 		yjitter = ud() - 0.5
+		xjitter *= catalog.meta["pixelscale"]
+		yjitter *= catalog.meta["pixelscale"]
 		gal = gal.shift(xjitter,yjitter)
 		
 		# We draw the pure unconvolved galaxy
@@ -293,6 +298,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
 			psf_xjitter = ud() - 0.5
 			psf_yjitter = ud() - 0.5
+			psf_xjitter *= catalog.meta["pixelscale"]
+			psf_yjitter *= catalog.meta["pixelscale"]
 			psf = psf.shift(psf_xjitter,psf_yjitter)
 			if simpsfimgfilepath != None:
 				psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.

@@ -93,7 +93,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 	output = astropy.table.Table(copy.deepcopy(catalog), masked=True) # Convert the table to a masked table
 	# A bit strange: reading the doc I feel that this conversion is not needed.
 	# But without it, it just doesn't result in a masked table once the masked columns are appended.
-	
+
 	output.add_columns([
 		astropy.table.Column(name=prefix+"flag", data=np.zeros(len(output), dtype=int)), # We will always have a flag
 		astropy.table.MaskedColumn(name=prefix+"flux", dtype=float, length=len(output)),
@@ -105,6 +105,7 @@ def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_"
 		astropy.table.MaskedColumn(name=prefix+"rho4", dtype=float, length=len(output)),
 		astropy.table.MaskedColumn(name=prefix+"size", dtype=float, length=len(output))
 	])
+	
 	# We want to mask all these entries. They will get unmasked when values will be attributed.
 	for col in ["flux", "x", "y", "g1", "g2", "sigma", "rho4"]:
 		output[prefix+col].mask = [True] * len(output) # "True" means masked !
