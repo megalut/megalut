@@ -30,14 +30,16 @@ def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", 
 	output = astropy.table.Table(copy.deepcopy(catalog), masked=True)
 	
 	if gain != None:
+		gain = np.abs(gain)
 		logger.info("Now computing SNR assuming a gain of {0:.2} electrons per ADU.".format(gain))	
 		sourcefluxes = output[fluxcol] * gain
 		skynoisefluxes = (output[stdcol] * gain) ** 2 # per pixel
 	
 	elif gaincol != None:
 		logger.info("Now computing SNR using the gain from column '{}'".format(gaincol))	
-		sourcefluxes = output[fluxcol] * output[gaincol]
-		skynoisefluxes = (output[stdcol] * output[gaincol]) ** 2 # per pixel
+		gain = np.abs(output[gaincol])
+		sourcefluxes = output[fluxcol] * gain
+		skynoisefluxes = (output[stdcol] * gain) ** 2 # per pixel
 	
 	else:
 		raise RuntimeError("Please provide a gain or gaincol!")

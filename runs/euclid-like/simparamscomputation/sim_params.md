@@ -9,6 +9,7 @@
 - Diameter D2 = 0.35 m [5]
 - Dark current = 0.00056 e-/pixel/s (less than 2 e-/px/hr) [6]
 - Passband = 550-900 nm [5]
+- Zero point = 25.5 AB [10]
 - Sky Background in 550-920 nm range: 
 
 	Version 1 [2]
@@ -46,7 +47,7 @@
 		<0.18 arcsec full width half maximum at 800 nm
 
 - System PSF ellipticity [7]
-		≤15% using a quadrupole definitio
+		≤15% using a quadrupole definition
 
 # Galaxy parameters
 
@@ -58,7 +59,7 @@ Catalogues with
 
 only consider gal mag fainter than 20
 
-for 20 < m < 25
+for 20 < m < 25, galaxy counts power law of slope 0.36
 
 ------------------------------------------
 
@@ -81,4 +82,6 @@ for 20 < m < 25
 [8] https://doi.org/10.1007/s10686-015-9440-7, Niemi+2015, Measuring a charge-coupled device point spread function, Experimental Astronomy
 
 [9] arxiv:1609.03281, A study of the sensitivity of shape measurements to the input parameters of weak lensing image simulations, Hoekstra+
+
+[10] http://iopscience.iop.org/article/10.1088/0004-637X/811/1/20/meta (Supplementary material) Collett, 2015
 

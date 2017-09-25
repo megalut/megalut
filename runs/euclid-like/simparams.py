@@ -4,6 +4,7 @@ import numpy as np
 import random # np.random.choice is only available for newer numpys...
 import os
 import includes
+from simparamscomputation import skypropreties as sky
 
 class EuclidLike_Ell(megalut.sim.params.Params):
 	
@@ -39,21 +40,24 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 	
 		########## Galaxy ##########
 		
-		tru_g = contracted_rayleigh(0.2, 0.6, 4) # there is no shear, so let's make it a bit broader
+		# Ellipticities
+		tru_g = sky.draw_ellipticities(size=1)
 		
 		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 		
+		# Profile
 		tru_type = 1 # Seric	
-		tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]))
-		# TODO: Calibrate this surface brigthness
-		#surface_brigthness = np.random.normal(1., 0.02)
-		surface_brigthness = np.random.uniform(0.8, 1.2)
+		tru_sersicn = sky.draw_sersicn(size=1)[0]
 		
-		tru_rad = np.random.uniform(1.0, 12.0) * includes.pixelscale
-		
-		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness) * 1e5
+		# mag
+		tru_mag = sky.draw_magnitudes(size=1, mmin=20, mmax=25)	
+		zeropoint = 25.5
+		exposuretime = 565.
+		tru_flux = 10**(-0.4 * (tru_mag - zeropoint)) * exposuretime / np.abs(includes.gain)
 
+		# Size
+		tru_rad = sky.draw_sizes(tru_mag)
 			
 		########## Noise ##########
 
@@ -71,7 +75,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 			"tru_sersicn":tru_sersicn,
 			"tru_g":tru_g,
 			"tru_theta":tru_theta,
-			"tru_sb": surface_brigthness,
+			"tru_mag": tru_mag,
 			
 			"tru_sky_level":tru_sky_level, # in ADU, just for generating noise, will not remain in the image
 			"tru_gain":tru_gain, # in photons/ADU. Make this negative to have no Poisson noise
