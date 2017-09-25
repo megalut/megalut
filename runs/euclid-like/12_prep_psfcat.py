@@ -41,3 +41,4 @@ for colname in starcat.colnames:
 
 megalut.tools.io.writepickle(starcat, os.path.join(includes.psfdir, "psf_meascat.pkl"))
     
+print starcat 

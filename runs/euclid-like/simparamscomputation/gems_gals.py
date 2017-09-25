@@ -21,7 +21,7 @@ sersicn = gems["ST_N_GALFIT"]
 surface = 796. # http://www.mpia.de/homes/GEMS/gems.pdf, Rix+2004
 
 bins = np.arange(19.75, 28., 0.5)
-"""
+
 #######################################################################################################
 # Magnitudes
 
@@ -134,7 +134,7 @@ ax.set_title("GEMS")
 plt.figure()
 plt.hist(sky.draw_ellipticities(10000), bins=200)
 plt.xlabel("Ellipticies")
-"""
+
 #######################################################################################################
 # Sersic
 step_bin=0.5

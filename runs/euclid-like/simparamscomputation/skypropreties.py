@@ -22,7 +22,7 @@ def draw_magnitudes(size, mmin, mmax, slope=None, intercept=None):
         m = x[p > u]
        
         mags = np.concatenate([mags, m])
-        print '...', np.size(mags)
+        #print '...', np.size(mags)
     
     return mags[:size]
 

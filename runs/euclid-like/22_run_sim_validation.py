@@ -10,37 +10,35 @@ import includes
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simdir
-
-# Let's train for ellipticity
-# We do not need Shape Noise Cancellation and no shear needeed
+# Let's simulate a validation dataset for ellipticity only
 sp = simparams.EuclidLike_Ell()
-sp.shear = 0
-sp.snc_type = 1
-sp.noise_factor = 0.
-n = 10000
-nc = 2500
-ncat = 1
-nrea = 20
-
-psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
+sp.shear = 0.1
+simdir = includes.simvaldir
+sp.snc_type = 10000
+sp.noise_level = 0.8
+n = 1
+nc = 1
+ncat = 2500
+nrea = 1
 
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
-	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize, "pixelscale":includes.pixelscale},
+	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize},
 	drawimgkwargs={}, 
-	psfcat=psfcat, psfselect="random",
+	psfcat=None, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
+
+
 
 megalut.meas.run.onsims(
 	simdir=simdir,
 	simparams=sp,
 	measdir=simdir,
 	measfct=measfcts.default,
-	measfctkwargs={"stampsize":includes.stampsize, "gain":includes.gain},
+	measfctkwargs={"stampsize":includes.stampsize},
 	ncpu=includes.ncpu,
 	skipdone=True
 	)
@@ -59,7 +57,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))

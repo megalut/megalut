@@ -51,7 +51,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 		tru_sersicn = sky.draw_sersicn(size=1)[0]
 		
 		# mag
-		tru_mag = sky.draw_magnitudes(size=1, mmin=20, mmax=25)	
+		tru_mag = sky.draw_magnitudes(size=1, mmin=20, mmax=24)	
 		zeropoint = 25.5
 		exposuretime = 565.
 		tru_flux = 10**(-0.4 * (tru_mag - zeropoint)) * exposuretime / np.abs(includes.gain)

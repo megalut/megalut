@@ -171,7 +171,7 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	"""
 	starttime = datetime.now()	
 	
-	gsparams = galsim.GSParams(maximum_fft_size=8192)
+	gsparams = galsim.GSParams(maximum_fft_size=10240)
 	
 	if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
 		raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")

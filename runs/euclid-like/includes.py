@@ -13,7 +13,7 @@ gain = -3.1 # Note: gain must be negative. This relates to
 
 psfdir = "psf_stamp"
 
-ncpu = 1
+ncpu = 7
 
 simdir = os.path.join(workdir, "sim")
 simvaldir = os.path.join(workdir, "simval")
