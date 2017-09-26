@@ -45,7 +45,7 @@ def get_size_params(magnitues, slope_mean=None, intercept_mean=None, slope_width
     
     return mean, width
 
-def draw_halflightradius(magnitues, a=-0.58, slope_mean=None, intercept_mean=None, slope_width=None, intercept_width=None, max_cutoff=2.):
+def draw_halflightradius(magnitues, a=-0.58, slope_mean=None, intercept_mean=None, slope_width=None, intercept_width=None, max_cutoff=4.5):
     
     locs, scales = get_size_params(magnitues, slope_mean, intercept_mean, slope_width, intercept_width)
     
@@ -58,7 +58,7 @@ def draw_halflightradius(magnitues, a=-0.58, slope_mean=None, intercept_mean=Non
 
     return np.clip(10**(np.array(rs)), 0., max_cutoff)
 
-def draw_ellipticities(size, e0=0.25, cutoff=0.75):
+def draw_ellipticities(size, e0=0.25, cutoff=0.9):
    
     e = stats.rayleigh.rvs(loc=0, scale=e0, size=size)
     
