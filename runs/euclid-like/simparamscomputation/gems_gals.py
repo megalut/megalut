@@ -103,7 +103,7 @@ plt.xlabel("AB magnitude")
 plt.ylabel(r"$\sigma_{\log_{10}(r_h)}$")
 plt.ylim(0.05, 0.3)
 
-rsim = sky.draw_sizes(magsim)
+rsim = sky.draw_halflightradius(magsim)
 
 plt.figure()
 plt.scatter(magsim, rsim, edgecolor="None", alpha=0.5)

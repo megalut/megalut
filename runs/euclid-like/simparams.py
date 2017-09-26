@@ -57,8 +57,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 		tru_flux = 10**(-0.4 * (tru_mag - zeropoint)) * exposuretime / np.abs(includes.gain)
 
 		# Size
-		tru_rad = sky.draw_sizes(tru_mag)
-		tru_rad = np.clip(tru_rad, 0, 3.)
+		tru_rad = sky.draw_halflightradius(tru_mag)
 			
 		########## Noise ##########
 

@@ -34,9 +34,9 @@ spectra_id = 27 # 27 = G5V
 
 spectra_dir = "thrid_party_data"
 
-# 'STEP_04750x09700', # Step bandpass for euclid-like; in Angstrom
+# 'STEP_04750x09000', # Step bandpass for euclid-like; in Angstrom
 filterband_min = 4750. 
-filterband_max = 9700.
+filterband_max = 9000.
 
 outdir = "psf_stamp"
 

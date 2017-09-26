@@ -14,19 +14,21 @@ logger = logging.getLogger(__name__)
 sp = simparams.EuclidLike_Ell()
 sp.shear = 0.1
 simdir = includes.simvaldir
-sp.snc_type = 10000
+sp.snc_type = 1000
 sp.noise_level = 0.8
 n = 1
 nc = 1
-ncat = 2500
+ncat = 500
 nrea = 1
+
+psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
 
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
 	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize},
 	drawimgkwargs={}, 
-	psfcat=None, psfselect="random",
+	psfcat=psfcat, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
