@@ -31,8 +31,6 @@ megalut.sim.run.multi(
 	savepsfimg=False, savetrugalimg=False
 	)
 
-
-
 megalut.meas.run.onsims(
 	simdir=simdir,
 	simparams=sp,

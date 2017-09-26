@@ -51,15 +51,19 @@
 
 # Galaxy parameters
 
-Single Sersic profiles.
-
 Catalogues with
 
-		position, flux, half-light radius, Sersic n, ellipticity
+		position, flux, half-light radius, Sersic index, ellipticity
 
 only consider gal mag fainter than 20
 
-for 20 < m < 25, galaxy counts power law of slope 0.36
+for 20 < m < 25, galaxy counts power law of slope ~0.36 > 
+
+radius drawn from skewed normal distribution, with <log10 rh/arcsec> and sigma(log10 rh) depending on magnitude
+
+Single Sersic profiles (index drawn from a lognormal, between 0.3 and 4.5), does not depend on any other param
+
+ellipticities drawn from Rayleigh distribution, does not depend on any other param
 
 ------------------------------------------
 

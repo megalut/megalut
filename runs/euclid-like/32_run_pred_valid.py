@@ -4,6 +4,7 @@ matplotlib.use("AGG")
 import os
 
 import megalut.learn
+import megalut.tools
 
 import includes
 
@@ -20,21 +21,17 @@ conflist = [
 ]
 
 
-# Training
-catpath = os.path.join(includes.simdir, "EuclidLike_Ell", "groupmeascat.pkl")
 
-cat = megalut.tools.io.readpickle(catpath)
+# Predicting the validation set
 
-megalut.learn.tenbilacrun.train(cat, conflist, traindir)
+valcatpath = os.path.join(includes.simvaldir, "EuclidLike_Ell", "groupmeascat_cases.pkl")
+valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
-# Self-predicting
-
-precatpath = os.path.join(traindir, "selfprecat.pkl")
-
-cat = megalut.tools.io.readpickle(catpath)
+cat = megalut.tools.io.readpickle(valcatpath)
+print megalut.tools.table.info(cat)
 #cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
-megalut.tools.io.writepickle(cat, precatpath)
+megalut.tools.io.writepickle(cat, valprecatpath)
 
 
 

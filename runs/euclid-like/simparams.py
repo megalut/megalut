@@ -58,6 +58,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 
 		# Size
 		tru_rad = sky.draw_sizes(tru_mag)
+		tru_rad = np.clip(tru_rad, 0, 3.)
 			
 		########## Noise ##########
 
