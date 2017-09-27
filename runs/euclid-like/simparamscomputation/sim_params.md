@@ -1,8 +1,8 @@
 # Image
 
-- exposure time = 565 s [1, 6]
-- gain = 3.1 e-/DN [8]
-- Read out noise (ron) = 4.2 e- [7]
+- exposure time = 565 s [1, 6] [OK SC3 MDB]
+- gain = 3.1 e-/DN [8] [OK SC3 MDB]
+- Read out noise (ron) = 4.2 e- [7] [4.5 SC3 MDB]
 - Pixel scale = 0.1" [5]
 - Pixel size = 12 um x 12um [6]
 - Diameter M1 = 1.20 m [5]
@@ -11,6 +11,9 @@
 - Passband = 550-900 nm [5]
 - Zero point = 25.5 AB [10]
 - Sky Background in 550-920 nm range: 
+
+	About 1.5e-18 erg/cm2/s/Angstrom/arcsec2 [SC3 MDB]
+	23.3 V mag / arcsec2 when pointing 90 deg from the sun [11]
 
 	Version 1 [2]
 
@@ -89,3 +92,4 @@ ellipticities drawn from Rayleigh distribution, does not depend on any other par
 
 [10] http://iopscience.iop.org/article/10.1088/0004-637X/811/1/20/meta (Supplementary material) Collett, 2015
 
+[11] HST WFC3 handbook http://www.stsci.edu/hst/wfc3/documents/handbooks/currentIHB/c09_exposuretime08.html
