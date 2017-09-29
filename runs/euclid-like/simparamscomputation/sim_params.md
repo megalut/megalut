@@ -1,10 +1,10 @@
 # Chosen values
 
 - Exposure time = 565 s [1]
-- Gain = 3.1 e-/DN [8]
-- Read out noise (ron) = 4.2 [7]
-- Zero-point: To be ajdusted to have 10sigma for extended sources at 24.5 (around 25.65 AB, Lance)
-- Sky background = 22.35 mag [2]
+- Gain = 3.1 e-/ADU [8]
+- Read out noise (ron) = 4.2 e- [7]
+- Zero-point: To be ajdusted to have SNR of 10 for extended sources at 24.5 (around 25.65 AB, Lance)
+- Sky background = 22.35 VIS mag AB / arcsec2 [2], which corresponds to 2.5e-18 erg s-1 cm-2 Angstrom-1 argsec-2 (assuming a tophead VIS filter)
 
 # Image
 
