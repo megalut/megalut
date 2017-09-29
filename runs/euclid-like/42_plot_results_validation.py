@@ -33,7 +33,6 @@ valprecatpath = os.path.join(traindir, "valprecat.pkl")
 cat = megalut.tools.io.readpickle(valprecatpath)
 print megalut.tools.table.info(cat)
 
-
 cat["pre_g1"] = cat["pre_g1_adamom"]
 #cat["pre_g1"] = cat["pre_g1_fourier"]
 
@@ -45,9 +44,9 @@ megalut.tools.table.addstats(cat, "snr")
 cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
 
 s = megalut.tools.table.Selector("ok", [
-	("in", "snr_mean", 5, 150),
+	("min", "snr_mean", 20),
 	#("in", "tru_rad", 0, 11),
-	("max", "adamom_frac", 0.01)
+	#("max", "adamom_frac", 0.01)
 	]
 	)
 
@@ -80,7 +79,7 @@ ax = fig.add_subplot(3, 5, 6)
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("snr_mean"))
 
 ax = fig.add_subplot(3, 5, 7)
-megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_sb"))
+megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_mag"))
 
 ax = fig.add_subplot(3, 5, 8)
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_rad"))

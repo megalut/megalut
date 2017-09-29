@@ -22,7 +22,6 @@ ncat = 500
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
-
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
@@ -38,7 +37,7 @@ megalut.meas.run.onsims(
 	simparams=sp,
 	measdir=simdir,
 	measfct=measfcts.default,
-	measfctkwargs={"stampsize":includes.stampsize},
+	measfctkwargs={"stampsize":includes.stampsize, "gain":includes.gain},
 	ncpu=includes.ncpu,
 	skipdone=True
 	)
