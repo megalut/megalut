@@ -1,3 +1,11 @@
+# Chosen values
+
+- Exposure time = 565 s [1]
+- Gain = 3.1 e-/DN [8]
+- Read out noise (ron) = 4.2 [7]
+- Zero-point: To be ajdusted to have 10sigma for extended sources at 24.5 (around 25.65 AB, Lance)
+- Sky background = 22.35 mag [2]
+
 # Image
 
 - exposure time = 565 s [1, 6] [OK SC3 MDB]
