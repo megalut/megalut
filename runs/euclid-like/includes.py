@@ -5,6 +5,7 @@ logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(n
 
 workdir = "./ellipticity"
 
+zeropoint = 25.5
 stampsize = 48
 pixelscale = 0.1
 gain = -3.1 # Note: gain must be negative. This relates to 
@@ -13,8 +14,9 @@ gain = -3.1 # Note: gain must be negative. This relates to
 
 psfdir = "psf_stamp"
 
-ncpu = 7
+ncpu = 7 
 
+zpsimdir = os.path.join(workdir, "zpsim")
 simdir = os.path.join(workdir, "simnoisy")
 simvaldir = os.path.join(workdir, "simval")
 psfimgpath = os.path.join(workdir, "psf.fits")

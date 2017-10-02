@@ -10,22 +10,25 @@ import includes
 import logging
 logger = logging.getLogger(__name__)
 
+simdir = includes.simvaldir
+
+
 # Let's simulate a validation dataset for ellipticity only
 sp = simparams.EuclidLike_Ell()
 sp.shear = 0.1
-simdir = includes.simvaldir
-sp.snc_type = 1000
+sp.snc_type = 10000
 sp.noise_level = 0.8
 n = 1
 nc = 1
-ncat = 500
+ncat = 2000
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
+
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
-	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize},
+	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize, "pixelscale":includes.pixelscale},
 	drawimgkwargs={}, 
 	psfcat=psfcat, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,

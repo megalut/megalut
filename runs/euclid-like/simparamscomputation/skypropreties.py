@@ -95,4 +95,15 @@ def draw_sersicn(size, shape=None, loc=None, scale=None, bins=None, cutoff_min=0
 
     return n, bins
     
+def get_sky(zodical_mag, exposure, zeropoint, gain, pixel_scale=0.1):
+    """
+    :param zodical_mag: in mag/arcsec2
+    """
+    
+    sky = 10**(-0.4 * (zodical_mag - zeropoint)) * exposure / np.abs(gain)
+    
+    sky *= pixel_scale * pixel_scale
+    return sky
+
+
     

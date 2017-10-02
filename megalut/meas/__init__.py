@@ -9,6 +9,7 @@ import galsim_adamom
 import adamom_calc
 import skystats
 import snr
+import snr_2hlr
 import mom
 
 try:
