@@ -19,9 +19,9 @@ simdir = includes.zpsimdir
 
 n = 1000
 nc = 1000
-ncat = 3
+ncat = 1
 nrea = 1
-zeropoint = 25.4
+zeropoint = 25.3
 
 match_snr = False
 
@@ -87,7 +87,7 @@ while not match_snr:
 	else:
 		zeropoint += 0.1
 
-	if zeropoint > 25.9:
+	if zeropoint > 25.8:
 		match_snr = True
 		
 res = np.array(res)

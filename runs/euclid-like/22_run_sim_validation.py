@@ -16,11 +16,10 @@ simdir = includes.simvaldir
 # Let's simulate a validation dataset for ellipticity only
 sp = simparams.EuclidLike_Ell()
 sp.shear = 0.1
-sp.snc_type = 10000
-sp.noise_level = 0.8
+sp.snc_type = 1000#0
 n = 1
 nc = 1
-ncat = 2000
+ncat = 250
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))

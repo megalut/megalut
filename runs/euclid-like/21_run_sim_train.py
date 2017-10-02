@@ -18,10 +18,10 @@ sp = simparams.EuclidLike_Ell()
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_factor = 1.
-n = 10000
+n = 1000#10000
 nc = 250#0
-ncat = 10
-nrea = 20#20
+ncat = 3#10
+nrea = 3#20#20
 
 psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
 

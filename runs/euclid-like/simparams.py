@@ -52,7 +52,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 		
 		# mag
 		tru_mag = sky.draw_magnitudes(size=1, mmin=20, mmax=24)	
-		zeropoint = incldues.zeropoint
+		zeropoint = includes.zeropoint
 		exposuretime = 565.
 		tru_flux = 10**(-0.4 * (tru_mag - zeropoint)) * exposuretime / np.abs(includes.gain)
 
@@ -61,7 +61,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 			
 		########## Noise ##########
 
-		tru_sky_level = 0.0
+		tru_sky_level = sky.get_sky(zodical_mag=22.4, exposure=exposuretime, zeropoint=zeropoint, gain=np.abs(includes.gain), pixel_scale=0.1)
 		tru_gain = includes.gain
 		tru_read_noise = 4.2 * self.noise_factor
 		
@@ -137,7 +137,7 @@ class Calc_Zerop(EuclidLike_Ell):
 		tru_rad = np.array([0.43/2.])
 		
 		# Sky
-		tru_sky_level = sky.get_sky(zodical_mag=self.zeropoint, exposure=exposuretime, zeropoint=0, gain=np.abs(includes.gain), pixel_scale=0.1)
+		tru_sky_level = sky.get_sky(zodical_mag=22.4, exposure=exposuretime, zeropoint=self.zeropoint, gain=np.abs(includes.gain), pixel_scale=0.1)
 		
 		########## Noise ##########
 
