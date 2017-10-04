@@ -5,13 +5,13 @@ import os
 import astropy.io.fits as fits
 import datetime
 import os
-import includes
+import config
 
 ###################################################################################################
 # Defining variables
 # Pixel scale in arcsec / pixel
-pixelscale = includes.pixelscale
-image_size = includes.stampsize
+pixelscale = config.pixelscale
+image_size = config.stampsize
 
 # GalSim paramters
 psf_obsc = 0.29	   # (0.35m / 1.2m) = 0.29 [D(M2) / D(M1)]

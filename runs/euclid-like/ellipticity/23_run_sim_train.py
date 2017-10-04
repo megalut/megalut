@@ -2,36 +2,38 @@ import os
 
 import megalut.sim
 import megalut.meas
+from astropy.table import Table
 import measfcts
 import simparams
 
-import includes
+import config
 
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simdir
+simdir = config.simdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
-sp = simparams.EuclidLike_Ell()
+dbgal = Table.read(os.path.join(config.dbdir, "euclid_train.fits"))
+sp = simparams.EuclidLike_Ell(dbgal)
 sp.shear = 0
 sp.snc_type = 1
-sp.noise_factor = 1.
-n = 1000#10000
-nc = 250#0
-ncat = 3#10
-nrea = 3#20#20
+sp.noise_factor = 0.
+n = 2500#0
+nc = 2500
+ncat = 10
+nrea = 20
 
-psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
+psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
 
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
-	drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize, "pixelscale":includes.pixelscale},
+	drawcatkwargs={"n":n, "nc":nc, "stampsize":config.stampsize, "pixelscale":config.pixelscale},
 	drawimgkwargs={}, 
 	psfcat=psfcat, psfselect="random",
-	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
+	ncat=ncat, nrea=nrea, ncpu=config.ncpu,
 	savepsfimg=False, savetrugalimg=False
 	)
 
@@ -40,8 +42,8 @@ megalut.meas.run.onsims(
 	simparams=sp,
 	measdir=simdir,
 	measfct=measfcts.default,
-	measfctkwargs={"stampsize":includes.stampsize, "gain":includes.gain},
-	ncpu=includes.ncpu,
+	measfctkwargs={"stampsize":config.stampsize, "gain":config.gain},
+	ncpu=config.ncpu,
 	skipdone=True
 	)
 

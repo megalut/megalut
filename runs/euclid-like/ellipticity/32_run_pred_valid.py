@@ -6,25 +6,25 @@ import os
 import megalut.learn
 import megalut.tools
 
-import includes
+import config
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_simple")
 
 conflist = [
-	("config/ada3g1.cfg", "config/Net.cfg"),
-	("config/ada3g2.cfg", "config/Net.cfg"),
+	("config/ada3g1.cfg", "config/Net_99.cfg"),
+	("config/ada3g2.cfg", "config/Net_99.cfg"),
 ]
 
 
 
 # Predicting the validation set
 
-valcatpath = os.path.join(includes.simvaldir, "EuclidLike_Ell", "groupmeascat_cases.pkl")
+valcatpath = os.path.join(config.simvaldir, "EuclidLike_Ell", "groupmeascat_cases.pkl")
 valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)

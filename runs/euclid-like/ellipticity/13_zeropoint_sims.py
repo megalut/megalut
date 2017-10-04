@@ -6,26 +6,26 @@ import megalut.meas
 import measfcts
 import simparams
 
-import includes
+import config
 import numpy as np
 import pylab as plt 
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.zpsimdir
+simdir = config.zpsimdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 
-n = 1000
-nc = 1000
+n = 100#0
+nc = 100#0
 ncat = 1
 nrea = 1
 zeropoint = 25.3
 
 match_snr = False
 
-psfcat = megalut.tools.io.readpickle(os.path.join(includes.psfdir, "psf_meascat.pkl"))
+psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
 
 res = []
 
@@ -41,10 +41,10 @@ while not match_snr:
 	megalut.sim.run.multi(
 		simdir=simdir,
 		simparams=sp,
-		drawcatkwargs={"n":n, "nc":nc, "stampsize":includes.stampsize, "pixelscale":includes.pixelscale},
+		drawcatkwargs={"n":n, "nc":nc, "stampsize":config.stampsize, "pixelscale":config.pixelscale},
 		drawimgkwargs={}, 
 		psfcat=psfcat, psfselect="random",
-		ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
+		ncat=ncat, nrea=nrea, ncpu=config.ncpu,
 		savepsfimg=False, savetrugalimg=False
 		)
 	
@@ -53,8 +53,8 @@ while not match_snr:
 		simparams=sp,
 		measdir=simdir,
 		measfct=measfcts.default,
-		measfctkwargs={"stampsize":includes.stampsize, "gain":includes.gain},
-		ncpu=includes.ncpu,
+		measfctkwargs={"stampsize":config.stampsize, "gain":config.gain},
+		ncpu=config.ncpu,
 		skipdone=True
 		)
 	
@@ -91,7 +91,7 @@ while not match_snr:
 		match_snr = True
 		
 res = np.array(res)
-megalut.tools.io.writepickle(res, os.path.join(includes.workdir, "zeropoint_meas.pkl"))
+megalut.tools.io.writepickle(res, os.path.join(config.workdir, "zeropoint_meas.pkl"))
 
 plt.figure()
 plt.errorbar(res[:,0], res[:,1], yerr=res[:,2])

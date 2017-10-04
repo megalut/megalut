@@ -5,26 +5,25 @@ import os
 
 import megalut.learn
 
-import includes
+import config
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_simple")
 
 conflist = [
-	("config/ada3g1.cfg", "config/Net.cfg"),
-	("config/ada3g2.cfg", "config/Net.cfg"),
+	("config/ada3s1.cfg", "config/Net.cfg"),
+	("config/ada3s2.cfg", "config/Net.cfg"),
 ]
 
 
 # Training
-catpath = os.path.join(includes.simdir, "EuclidLike_Ell", "groupmeascat.pkl")
+catpath = os.path.join(config.simdir, "EuclidLike_Ell", "groupmeascat.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
-
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
 # Self-predicting
