@@ -15,15 +15,15 @@ simdir = config.simdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
-dbgal = Table.read(os.path.join(config.dbdir, "euclid_train.fits"))
-sp = simparams.EuclidLike_Ell(dbgal)
+dbgal = Table.read(os.path.join(config.dbdir, "uniform_train.fits"))
+sp = simparams.Uniform(dbgal)
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_factor = 0.
-n = 2500#0
+n = 20000#0
 nc = 2500
-ncat = 10
-nrea = 20
+ncat = 5
+nrea = 3
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
 

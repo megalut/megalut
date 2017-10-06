@@ -11,11 +11,18 @@ logger = logging.getLogger(__name__)
 
 from megalut.tools.feature import Feature
 
-name_distrib = "default_train"
+name_distrib = "euclid_train"
 magfeat = "surface_brigthness"
 
 cat = astropy.table.Table.read(os.path.join(config.dbdir, "{}.fits".format(name_distrib)))
 print megalut.tools.table.info(cat)
+
+s = megalut.tools.table.Selector("ok", [
+    ("min", "surface_brigthness", 0.255),
+    ]
+    )
+
+#cat = s.select(cat)
 
 
 
@@ -34,10 +41,10 @@ ax = fig.add_subplot(2, 3, 4)
 megalut.plot.scatter.scatter(ax, cat, Feature(magfeat), Feature("rad"), sidehists=True)
 
 ax = fig.add_subplot(2, 3, 5)
-megalut.plot.scatter.scatter(ax, cat, Feature("g"), Feature("theta"), sidehists=True)
+megalut.plot.scatter.scatter(ax, cat, Feature("snr_calc"), Feature("rad"), sidehists=True)
 
-#ax = fig.add_subplot(2, 3, 6)
-#megalut.plot.scatter.scatter(ax, cat, Feature("bulge_ellipticity"), Feature("tilt"), Feature("bulge_axis_ratio"))
+ax = fig.add_subplot(2, 3, 6)
+megalut.plot.scatter.scatter(ax, cat, Feature("snr_calc"), Feature("mag"), Feature("surface_brigthness"), sidehists=False)
 
 plt.tight_layout()
 

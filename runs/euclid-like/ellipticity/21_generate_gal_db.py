@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 simdir = config.simdir
 
+
+import pylab as plt
 ###################################################################################################
 
 def contracted_rayleigh(sigma, max_val, p, size=1):
@@ -24,10 +26,10 @@ def contracted_rayleigh(sigma, max_val, p, size=1):
 
 
 whichset = 'train'
-distrib = "default"
+distrib = "uniform"
 
 # How many galaxies?
-n_gal = 5e5
+n_gal = 1e6
 
 # What distribution
 name_distrib = "{}_{}".format(distrib, whichset)
@@ -61,16 +63,9 @@ if distrib == "euclid":
 
     # Size
     rad = sky.draw_halflightradius(mags)
-
-    # Populate the table    
-    galdb['g'] = Column(gs)
-    galdb['theta'] = Column(theta, unit=u.radian)
-    galdb['g1'] = Column(g1s)
-    galdb['g2'] = Column(g2s)
-    galdb['sersicn'] = Column(sersicn)
-    galdb['mag'] = Column(mags, u.ABmag)
-    galdb['flux'] = Column(flux, u.adu)
-    galdb['rad'] = Column(rad, u.arcsecond)
+    
+    # Computing surface brightness
+    sb = mags / ((rad * 2.)**2. * np.pi)
 
 elif distrib == "default":
     
@@ -86,24 +81,54 @@ elif distrib == "default":
     flux = np.pi * rad * rad * 10**(-surface_brigthness) * 1e4
 
     mags = -1. * np.ones_like(rad)
+
+elif distrib == "uniform":
     
-    # Populate the table    
-    galdb['g'] = Column(gs)
-    galdb['theta'] = Column(theta, unit=u.radian)
-    galdb['g1'] = Column(g1s)
-    galdb['g2'] = Column(g2s)
-    galdb['sersicn'] = Column(sersicn)
-    galdb['mag'] = Column(mags, u.ABmag)
-    galdb['flux'] = Column(flux, u.adu)
-    galdb['surface_brigthness'] = Column(surface_brigthness)
-    galdb['rad'] = Column(rad, u.arcsecond)
+    # Ellipticities
+    gs = sky.draw_ellipticities(size=n_gal)
+    theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0, size=n_gal)
+    (g1s, g2s) = (gs * np.cos(2.0 * theta), gs * np.sin(2.0 * theta))
+    
+    g1s = np.clip(g1s, -0.9, 0.9)
+    g2s = np.clip(g2s, -0.9, 0.9)
+    
+    # Profile
+    sersicn = np.random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]), size=n_gal)
+    
+    # mag
+    mags = np.random.uniform(20.0, 24., size=n_gal)
+    flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
+
+    # Size
+    rad = np.random.uniform(0.1, 1.9, size=n_gal)
+    
+    # Computing surface brightness
+    sb = mags / ((rad * 2.)**2. * np.pi)
 
 else:
     
     raise NotImplemented()
 
+# Populate the table    
+galdb['g'] = Column(gs)
+galdb['theta'] = Column(theta, unit=u.radian)
+galdb['g1'] = Column(g1s)
+galdb['g2'] = Column(g2s)
+galdb['sersicn'] = Column(sersicn)
+galdb['mag'] = Column(mags, u.ABmag)
+galdb['flux'] = Column(flux, u.adu)
+galdb['rad'] = Column(rad, u.arcsecond)
+galdb['surface_brigthness'] = Column(sb)
+
+sourcefluxes = flux * np.abs(config.gain)
+skynoisefluxes = config.gain *sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=config.zeropoint, gain=np.abs(config.gain), pixel_scale=config.pixelscale)
+skynoisefluxes *= skynoisefluxes
+areas = np.pi * (rad * 2.) ** 2
+
+noises = np.sqrt(sourcefluxes + areas * skynoisefluxes)
+galdb['snr_calc'] = Column(sourcefluxes / noises)
+
 galdb.write(outfname)
 
 
-    
-    
+
