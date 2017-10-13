@@ -16,12 +16,14 @@ simdir = config.simvaldir
 
 # Let's simulate a validation dataset for ellipticity only
 dbgal = Table.read(os.path.join(config.dbdir, "euclid_test.fits"))
-sp = simparams.EuclidLike_Ell(dbgal)
+sp = simparams.EuclidLike_statshear(galdb=dbgal)
 sp.shear = 0.1
-sp.snc_type = 1000#0
-n = 1
+simdir = config.simvaldir
+sp.snc_type = 4
+sp.noise_level = 0.8
+n = 1000#2500
 nc = 1
-ncat = 250
+ncat = 500#1000
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))

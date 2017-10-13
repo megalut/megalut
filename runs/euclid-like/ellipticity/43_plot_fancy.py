@@ -1,4 +1,4 @@
-import includes
+import config
 import measfcts
 import os
 import numpy as np
@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_simple")
 outdir = os.path.join(traindir, "plots")
 
 megalut.plot.figures.set_fancy(14)

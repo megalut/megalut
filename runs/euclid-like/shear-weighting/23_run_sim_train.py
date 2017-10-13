@@ -16,11 +16,12 @@ simdir = config.simdir
 # Let's train for shear
 # We do not need Shape Noise Cancellation and no shear needeed
 dbgal = Table.read(os.path.join(config.dbdir, "euclid_train.fits"))
+# noisy
 sp = simparams.EuclidLike_Ell(dbgal)
 sp.shear = 0.1
 sp.snc_type = 100
 sp.noise_fractor = 0.
-n = 2500
+n = 500#0
 nc = 1
 ncat = 1
 nrea = 1

@@ -93,7 +93,7 @@ elif distrib == "uniform":
     g2s = np.clip(g2s, -0.9, 0.9)
     
     # Profile
-    sersicn = np.random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]), size=n_gal)
+    sersicn = np.random.choice(np.concatenate([np.linspace(0.3, 4.5, 10), np.linspace(0.3, 2, 10)]), size=n_gal)
     
     # mag
     mags = np.random.uniform(20.0, 24., size=n_gal)

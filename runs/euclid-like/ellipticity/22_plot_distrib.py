@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 from megalut.tools.feature import Feature
 
-name_distrib = "euclid_train"
+name_distrib = "uniform_train"
 magfeat = "surface_brigthness"
 
 cat = astropy.table.Table.read(os.path.join(config.dbdir, "{}.fits".format(name_distrib)))
@@ -26,25 +26,31 @@ s = megalut.tools.table.Selector("ok", [
 
 
 
-fig = plt.figure(figsize=(16, 10))
+fig = plt.figure(figsize=(21.4, 10))
 
-ax = fig.add_subplot(2, 3, 1)
+ax = fig.add_subplot(2, 4, 1)
 megalut.plot.scatter.scatter(ax, cat, Feature(magfeat), Feature("flux"), sidehists=True)
 
-ax = fig.add_subplot(2, 3, 2)
+ax = fig.add_subplot(2, 4, 2)
 megalut.plot.scatter.scatter(ax, cat, Feature("g1"), Feature("g2"), sidehists=True)
 
-ax = fig.add_subplot(2, 3, 3)
+ax = fig.add_subplot(2, 4, 3)
 megalut.plot.scatter.scatter(ax, cat, Feature(magfeat), Feature("sersicn"), sidehists=True)
 
-ax = fig.add_subplot(2, 3, 4)
+ax = fig.add_subplot(2, 4, 4)
 megalut.plot.scatter.scatter(ax, cat, Feature(magfeat), Feature("rad"), sidehists=True)
 
-ax = fig.add_subplot(2, 3, 5)
+ax = fig.add_subplot(2, 4, 5)
 megalut.plot.scatter.scatter(ax, cat, Feature("snr_calc"), Feature("rad"), sidehists=True)
 
-ax = fig.add_subplot(2, 3, 6)
+ax = fig.add_subplot(2, 4, 6)
 megalut.plot.scatter.scatter(ax, cat, Feature("snr_calc"), Feature("mag"), Feature("surface_brigthness"), sidehists=False)
+
+ax = fig.add_subplot(2, 4, 7)
+#ax.hexbin(cat["mag"], cat["rad"], gridsize=50, bins='log', cmap='inferno')
+
+megalut.plot.contour._contour(ax, cat["mag"], cat["rad"], nlines=2)
+#ax.contour(cat["mag"], cat["rad"], 10)
 
 plt.tight_layout()
 

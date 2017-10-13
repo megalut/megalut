@@ -26,7 +26,7 @@ def draw_magnitudes(size, mmin, mmax, slope=None, intercept=None):
     
     return mags[:size]
 
-def get_size_params(magnitues, slope_mean=None, intercept_mean=None, slope_width=None, intercept_width=None):
+def get_size_params(magnitudes, slope_mean=None, intercept_mean=None, slope_width=None, intercept_width=None):
 
     if slope_mean is None:
         slope_mean = -0.108308701293
@@ -40,14 +40,14 @@ def get_size_params(magnitues, slope_mean=None, intercept_mean=None, slope_width
     if intercept_width is None:
         intercept_width = 0.690127543846
         
-    mean = slope_mean * magnitues + intercept_mean
-    width = slope_width * magnitues + intercept_width
+    mean = slope_mean * magnitudes + intercept_mean
+    width = slope_width * magnitudes + intercept_width
     
     return mean, width
 
-def draw_halflightradius(magnitues, a=-0.58, slope_mean=None, intercept_mean=None, slope_width=None, intercept_width=None, max_cutoff=4.5):
+def draw_halflightradius(magnitudes, a=-0.58, slope_mean=None, intercept_mean=None, slope_width=None, intercept_width=None, max_cutoff=4.5):
     
-    locs, scales = get_size_params(magnitues, slope_mean, intercept_mean, slope_width, intercept_width)
+    locs, scales = get_size_params(magnitudes, slope_mean, intercept_mean, slope_width, intercept_width)
     
     rs = []
     
