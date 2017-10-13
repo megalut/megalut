@@ -21,9 +21,12 @@ conflist = [
 
 
 # Training
-catpath = os.path.join(config.simdir, "EuclidLike_Ell", "groupmeascat.pkl")
+catpath = os.path.join(config.simdir, "EuclidLike_Ell", "groupmeascat_cases.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
+
+print megalut.tools.table.info(cat)
+
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
 # Self-predicting

@@ -5,24 +5,24 @@ import os
 
 import megalut.learn
 
-import includes
+import config
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_simple")
 
 conflist = [
-	#("config/ada2s1w.cfg", "config/sum3w_1.cfg"),
+	("config/ada2s1w.cfg", "config/sum3w_1.cfg"),
 	("config/ada2s2w.cfg", "config/sum3w_1.cfg"),
 ]
 
-spname = "Sersics_statshear"
+spname = "EuclidLike_statshear"
 
 # Training
-catpath = os.path.join(includes.simwdir, spname, "groupmeascat_cases_pre.pkl")
+catpath = os.path.join(config.simwdir, spname, "groupmeascat_cases_pre.pkl")
 #catpath = os.path.join(includes.simdir+"val", "Sersics_statshear", "groupmeascat_cases.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
@@ -52,6 +52,5 @@ cat = megalut.tools.io.readpickle(catpath)
 #cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
 megalut.tools.io.writepickle(cat, precatpath)
-
 
 

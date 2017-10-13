@@ -27,7 +27,7 @@ ncat = 1
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
-
+"""
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
@@ -47,7 +47,7 @@ megalut.meas.run.onsims(
 	ncpu=config.ncpu,
 	skipdone=True
 	)
-
+"""
 cat = megalut.meas.avg.onsims(
 	measdir=simdir, 
 	simparams=sp,
@@ -63,6 +63,7 @@ print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
 if sp.shear > 0:
+	print 'coucou'
 	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 else:
 	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])

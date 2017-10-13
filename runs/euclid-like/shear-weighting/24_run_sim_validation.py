@@ -23,7 +23,7 @@ sp.snc_type = 4
 sp.noise_level = 0.8
 n = 1000#2500
 nc = 1
-ncat = 500#1000
+ncat = 200#1000
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
