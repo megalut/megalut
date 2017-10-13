@@ -5,14 +5,14 @@ import os
 
 import megalut.learn
 import megalut.tools 
-import includes
+import config
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(includes.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_simple")
 
 conflist = [
 		
@@ -26,11 +26,13 @@ conflist = [
 
 # Predicting the validation set
 
-valcatpath = os.path.join(includes.simvaldir, "Sersics_statshear", "groupmeascat_cases.pkl")
-#valcatpath = os.path.join(includes.simwdir, "Ellipticity", "groupmeascat_cases.pkl")
+valcatpath = os.path.join(config.simvaldir, "EuclidLike_statshear", "groupmeascat_cases.pkl")
 valprecatpath = os.path.join(traindir, "valprewcat.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
+import numpy as np
+ids = np.random.choice(np.arange(1500), 200)
+cat = cat[ids]
 #cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
 

@@ -8,7 +8,7 @@ from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
 import numpy as np
 
-import includes
+import config
 
 import os
 
@@ -19,14 +19,13 @@ logger = logging.getLogger(__name__)
 
 predname = "test1"
 
-component = 2 # which component
+component = 1 # which component
 
 
 def main():
 
 
-	catpath = os.path.join(includes.workdir, "train_simple", "valprewcat.pkl")
-	#catpath = config.great3.path("val","%03i" % subfield, "predcat_{}.pkl".format(predname))
+	catpath = os.path.join(config.workdir, "train_simple", "valprewcat.pkl")
 	cat = megalut.tools.io.readpickle(catpath)
 	#print megalut.tools.table.info(cat)
 		
