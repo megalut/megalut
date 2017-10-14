@@ -12,18 +12,15 @@ logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(config.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_default")
 
 conflist = [
 	("config/ada2s1w.cfg", "config/sum3w_1.cfg"),
 	("config/ada2s2w.cfg", "config/sum3w_1.cfg"),
 ]
 
-spname = "EuclidLike_statshear"
-
 # Training
-catpath = os.path.join(config.simwdir, spname, "groupmeascat_cases_pre.pkl")
-#catpath = os.path.join(includes.simdir+"val", "Sersics_statshear", "groupmeascat_cases.pkl")
+catpath = os.path.join(traindir, "groupmeascat_cases_prew.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
 

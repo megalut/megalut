@@ -5,6 +5,8 @@ import pylab as plt
 from astropy.table import Table
 from scipy import stats
 import skypropreties as sky
+import megalut.plot
+import os
 
 gems = Table.read('../thrid_party_data/gems_20090807.fits')
 
@@ -22,9 +24,13 @@ surface = 796. # http://www.mpia.de/homes/GEMS/gems.pdf, Rix+2004
 
 bins = np.arange(19.75, 28., 0.5)
 
+outdir = '.'
+megalut.plot.figures.set_fancy(16)
+
 #######################################################################################################
 # Magnitudes
-
+"""
+# This is the complete plot
 N2025 = np.size(gems[np.logical_and(mags > 19.75, mags < 25.25)])
 print N2025 
 
@@ -57,6 +63,21 @@ plt.xlim([20, 29.5])
 plt.ylim([0.1, 310])
 plt.xlabel("AB magnitude")
 plt.ylabel(r"$N_\mathrm{gal}$ [per arcmin$^2$ per 0.5 mag]")
+
+# Paper plot
+
+fig = plt.figure(figsize=(7, 4))
+fig.subplots_adjust(bottom=0.14, top=0.985)
+plt.plot(midbins, density, c="#8080FE", lw=2, label="GEMS")
+plt.plot(midbins, yy, c='k', ls='--', label='Model', lw=2)
+plt.yscale('log', nonposy='clip')
+plt.xlim([20, 28.5])
+plt.ylim([0.1, 150])
+plt.legend(loc=0)
+plt.grid()
+plt.xlabel("AB magnitude")
+plt.ylabel(r"$N_\mathrm{gal}$ [per sq arcmin per 0.5 mag]")
+megalut.plot.figures.savefig(os.path.join(outdir, "gems_mag_count"), fig, fancy=True, pdf_transparence=True)
 
 #######################################################################################################
 # Size
@@ -105,7 +126,7 @@ plt.ylim(0.05, 0.3)
 
 rsim = sky.draw_halflightradius(magsim)
 
-plt.figure()
+
 plt.scatter(magsim, rsim, edgecolor="None", alpha=0.5)
 plt.scatter(mags, gems["halflight_radius"], edgecolor="None", alpha=0.5, c='k')
 plt.xlim([20, 25])
@@ -115,37 +136,66 @@ xmax = 25
 ymin = 0 
 ymax = 2.
 
-fig, axs = plt.subplots(ncols=2, sharey=True, figsize=(7, 4))
-fig.subplots_adjust(hspace=0.5, left=0.07, right=0.93)
+fig_hlr, axs = plt.subplots(ncols=2, sharey=True, figsize=(7, 4))
+fig_hlr.subplots_adjust(hspace=0.08, left=0.1, right=0.97, bottom=0.14)
+
+#plt.subplots_adjust(wspace=0.2)
+#plt.subplots_adjust(bottom=0.2)
+#plt.subplots_adjust(right=0.92)
+#plt.subplots_adjust(left=0.11)
+
 ax = axs[0]
-hb = ax.hexbin(magsim, rsim, gridsize=50, bins='log', cmap='inferno')
+hb = ax.hexbin(magsim, rsim, gridsize=100, bins='log', cmap='inferno')
 ax.axis([xmin, xmax, ymin, ymax])
-ax.set_title("Sims")
-ax.set_ylabel("Half light radius in arcsec")
+#ax.set_title("Model")
+ax.set_ylabel("Half light radius [arcsec]")
+ax.set_xlabel("AB magnitude")
 
 ax = axs[1]
-hb = ax.hexbin(mags, gems["halflight_radius"], gridsize=50, bins='log', cmap='inferno')
+hb = ax.hexbin(mags, gems["halflight_radius"], gridsize=100, bins='log', cmap='inferno')
 ax.axis([xmin, xmax, ymin, ymax])
-ax.set_title("GEMS")
+#ax.set_title("GEMS")
+ax.set_xlabel("AB magnitude")
+ax.set_ylim([0.1, 2])
+
+megalut.plot.figures.savefig(os.path.join(outdir, "gems_hlr_mag"), fig_hlr, fancy=True, pdf_transparence=True)
 
 #######################################################################################################
 # Ellipticies
 
 plt.figure()
-plt.hist(sky.draw_ellipticities(10000), bins=200)
+
+
+plt.hist(sky.draw_ellipticities(10000), bins=50)
 plt.xlabel("Ellipticies")
 
+
+plt.figure()
+ells = sky.draw_ellipticities(100000)
+weights = np.ones_like(ells)/float(len(ells))
+plt.hist(ells, bins=50, weights=weights, ec="#8080FE", alpha=0.5)
+
+weights = np.ones_like(gems["ST_ELLIPTICITY"])/float(len(gems["ST_ELLIPTICITY"]))
+plt.hist(gems["ST_ELLIPTICITY"], weights=weights, bins=50, ec="None", alpha=0.5)
+plt.xlabel("Ellipticies")
 #######################################################################################################
+"""
 # Sersic
 step_bin=0.5
-plt.figure()
+fig = plt.figure(figsize=(7, 4))
+fig.subplots_adjust(bottom=0.14, top=0.96)
 """
 for binmin in np.arange(20.25, 25.25+step_bin, step_bin):
     cgal = gems[np.logical_and(gems["ST_MAG_GALFIT"] > binmin, gems["ST_MAG_GALFIT"] < binmin + step_bin)]
     plt.hist(cgal["ST_N_GALFIT"], bins=50, alpha=0.8, normed=True, histtype='step')
 """
-plt.hist(gems["ST_N_GALFIT"], bins=50, alpha=0.8, normed=True, histtype='step')
-plt.xlabel("Sersic n")
+sersicn, sbins = sky.draw_sersicn(500000) 
+
+seln = gems["ST_N_GALFIT"]
+seln = seln[np.logical_and(seln >= 0.5, seln<=4.5)]
+weights = np.ones_like(seln)/float(len(seln))
+plt.hist(seln, bins=sbins, histtype='stepfilled', weights=weights, ec="#8080FE", alpha=0.5)
+plt.xlabel(r"S\'ersic n")
 
 shape, loc, scale = stats.lognorm.fit(gems["ST_N_GALFIT"], floc=0)
 
@@ -154,8 +204,13 @@ print "shape:", shape
 print "loc:", loc
 print "scale", scale
 
-sersicn, sbins = sky.draw_sersicn(100000) 
-plt.hist(sersicn, bins=sbins, alpha=0.8, normed=True, histtype='stepfilled')
+
+weights = np.ones_like(sersicn)/float(len(sersicn))
+plt.hist(sersicn, bins=sbins, alpha=1, histtype='step', weights=weights, lw=2, ec='k', ls='--')
+plt.xlim([0,5])
+megalut.plot.figures.savefig(os.path.join(outdir, "gems_sersicn"), fig, fancy=True, pdf_transparence=True)
+
+
 plt.figure()
 plt.hist(sersicn, bins=np.size(sbins))
 
