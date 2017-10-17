@@ -124,7 +124,7 @@ class Calc_Zerop(EuclidLike_Ell):
 		
 		# mag
 		tru_mag = np.array([24.5])
-		tru_flux = 10**(-0.4 * (tru_mag - self.zeropoint)) * config.exposuretime / np.abs(config.gain)
+		tru_flux = sky.utils.mag2flux(tru_mag, exposuretime=config.exposuretime, gain=config.gain, zeropoint=config.zeropoint)
 
 		# Size
 		tru_rad = np.array([0.43/2.])

@@ -95,11 +95,12 @@ elif distrib == "uniform":
     g2s = np.clip(g2s, -0.9, 0.9)
     
     # Profile
-    sersicn = np.random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]), size=n_gal)
+    sersicn = np.random.choice(np.concatenate([np.linspace(0.3, 4.5, 10), np.linspace(0.3, 2, 10)]), size=n_gal)
     
     # mag
     mags = np.random.uniform(20.0, 24., size=n_gal)
-    flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
+    #flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
+    flux = sky.utils.mag2flux(mags, exposuretime=config.exposuretime, gain=config.gain, zeropoint=config.zeropoint)
 
     # Size
     rad = np.random.uniform(0.1, 1.9, size=n_gal)

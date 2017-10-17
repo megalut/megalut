@@ -72,7 +72,7 @@ ax.annotate(r"$10^3c=%.1f \pm %.1f$" % \
 
 ax.set_title("Without weights")
 ax.title.set_position([.5, 1.1])
-ax.set_xlabel("")
+#ax.set_xlabel("")
 ax.set_xticklabels([])
 
 ax = fig.add_subplot(2, 2, 2)
@@ -89,7 +89,7 @@ ax.annotate(r"$10^3c=%.1f \pm %.1f$" % \
 	(metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -35), textcoords='offset points', ha='left', va='top')
 
 
-ax.set_xlabel("")
+#ax.set_xlabel("")
 ax.set_xticklabels([])
 ax.set_ylabel("")
 ax.set_yticklabels([])
@@ -149,62 +149,3 @@ plt.tight_layout()
 megalut.plot.figures.savefig(os.path.join(outdir, "weights"), fig, fancy=True, pdf_transparence=True)
 plt.show()
 
-exit()
-
-#--------------------------------------------------------------------------------------------------
-fig = plt.figure(figsize=(8.5, 3))
-plt.subplots_adjust(wspace=0.0)
-plt.subplots_adjust(bottom=0.2)
-plt.subplots_adjust(right=0.92)
-plt.subplots_adjust(left=0.11)
-
-#------------------------------------------------------------
-maxy = cat["pre_s{}_bias".format(component)].max() * 1.06
-miny = cat["pre_s{}_bias".format(component)].min() * 1.02
-
-maxsnr = cat["snr_mean".format(component)].max()
-minsnr = cat["snr_mean".format(component)].min()
-
-minshear = -0.12
-maxshear = 0.12
-#------------------------------------------------------------
-
-ax = fig.add_subplot(1, 2, 1)
-ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
-ax.axhline(0, ls='--', color='k')
-megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_s{}_bias".format(component)), \
-	featc=Feature("snr_mean"), marker='.', cmap="plasma", hidecbar=False, vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"True shear $g_{%s}$" % component)
-ax.set_ylabel(r"Shear bias")
-
-
-metrics = megalut.tools.metrics.metrics(cat, main_feat,  Feature("pre_s{}_bias".format(component)), pre_is_res=True)
-
-ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
-ax.annotate(r"$10^3m=%.1f \pm %.1f;\,10^3c=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, \
-	metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
-#ax.annotate(r"$10^3c=%.1f \pm %.1f$" % (metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -35), textcoords='offset points', ha='left', va='top')
-ax.set_ylim([miny, maxy])
-ax.set_xlim([minshear, maxshear])
-
-#------------------------------------------------------------
-
-ax = fig.add_subplot(1, 2, 2)
-ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
-ax.axhline(0, ls='--', color='k')
-megalut.plot.scatter.scatter(ax, cat, main_feat2,  Feature("pre_s{}_bias".format(component2)), 
-	featc=Feature("snr_mean", nicename="S/N"), marker='.', cmap="plasma", vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"True shear $g_{%s}$" % component2)
-metrics = megalut.tools.metrics.metrics(cat, main_feat2,  Feature("pre_s{}_bias".format(component2)), pre_is_res=True)
-
-ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
-ax.annotate(r"$10^3m=%.1f \pm %.1f;\,10^3c=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, \
-	metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
-ax.set_ylim([miny, maxy])
-ax.set_xlim([minshear, maxshear])
-ax.set_yticklabels([])
-ax.set_ylabel("")
-
-#megalut.plot.figures.savefig(os.path.join(outdir, "overall_bias"), fig, fancy=True, pdf_transparence=True)
-
-plt.show()

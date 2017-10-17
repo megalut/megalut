@@ -25,11 +25,11 @@ def contracted_rayleigh(sigma, max_val, p, size=1):
 ###################################################################################################
 
 
-whichset = 'train'
-distrib = "uniform"
+whichset = 'traintest'
+distrib = "euclid"
 
 # How many galaxies?
-n_gal = 1e6
+n_gal = 5e5
 
 # What distribution
 name_distrib = "{}_{}".format(distrib, whichset)
@@ -37,6 +37,8 @@ name_distrib = "{}_{}".format(distrib, whichset)
 n_gal = int(n_gal)
 
 if not os.path.exists(config.dbdir):
+    if not os.path.exists(config.workdir):
+        os.mkdir(config.workdir)
     os.mkdir(config.dbdir)
 
 outfname = os.path.join(config.dbdir, "{}.fits".format(name_distrib))
@@ -59,7 +61,7 @@ if distrib == "euclid":
     
     # mag
     mags = sky.draw_magnitudes(size=n_gal, mmin=20, mmax=24)    
-    flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
+    flux = sky.utils.mag2flux(mags, exposuretime=config.exposuretime, gain=config.gain, zeropoint=config.zeropoint)
 
     # Size
     rad = sky.draw_halflightradius(mags)
@@ -97,7 +99,8 @@ elif distrib == "uniform":
     
     # mag
     mags = np.random.uniform(20.0, 24., size=n_gal)
-    flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
+    #flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
+    flux = sky.utils.mag2flux(mags, exposuretime=config.exposuretime, gain=config.gain, zeropoint=config.zeropoint)
 
     # Size
     rad = np.random.uniform(0.1, 1.9, size=n_gal)

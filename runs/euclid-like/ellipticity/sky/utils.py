@@ -16,3 +16,11 @@ def ABmag(nu, flux, transmittance=None):
 	down = down.sum()
 	
 	return -5./2 * np.log10((top/down).value) 
+
+def mag2flux(mag, exposuretime, gain, zeropoint):
+	
+	return 10**(-0.4 * (mag - zeropoint)) * exposuretime / np.abs(gain)
+
+def flux2mag(flux, exposuretime, gain, zeropoint):
+	
+	return -2.5 * np.log10(flux * np.abs(gain) / exposuretime) + zeropoint

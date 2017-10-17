@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.stats as stats
+import utils
 
 def draw_magnitudes(size, mmin, mmax, slope=None, intercept=None):
     
@@ -100,7 +101,7 @@ def get_sky(zodical_mag, exposure, zeropoint, gain, pixel_scale=0.1):
     :param zodical_mag: in mag/arcsec2
     """
     
-    sky = 10**(-0.4 * (zodical_mag - zeropoint)) * exposure / np.abs(gain)
+    sky = utils.mag2flux(zodical_mag, exposuretime=exposure, gain=gain, zeropoint=zeropoint)
     
     sky *= pixel_scale * pixel_scale
     return sky

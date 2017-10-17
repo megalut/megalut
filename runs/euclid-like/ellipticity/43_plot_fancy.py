@@ -8,6 +8,8 @@ import megalut.plot
 from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
 
+from sky.utils import flux2mag
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -28,16 +30,18 @@ main_pred2 = "s{}".format(component2)
 maincol2 = "tru_{}".format(main_pred2)
 main_feat2 = Feature(maincol2)
 
-nbins = 5
-ncbins = 5
+nbins = 10
+ncbins = 10
 
 param_feats = [
 		Feature("snr_mean", nicename=r"S/N", low=0),
-		Feature("tru_flux", nicename=r"$F$ [counts]"),
-		Feature("tru_rad", nicename=r"$R$ [px]"),
+		Feature("tru_mag", nicename=r"\emph{VIS}-like AB mag", low=19.5, high=24.5),
+		Feature("tru_rad", nicename=r"$R_{hl}$ [arcsec]"),
 		Feature("tru_sersicn", nicename=r"$n$"),
 		Feature("tru_g", nicename=r"$e$"),
 		]
+
+formatters = ['%d', '%d', '%0.1f', '%0.1f', '%0.1f', '%d']
 
 
 outdirplots = os.path.join(traindir, "plots")
@@ -87,6 +91,8 @@ minsnr = cat["snr_mean".format(component)].min()
 
 minshear = -0.12
 maxshear = 0.12
+
+cat['tru_mag'] = flux2mag(cat["tru_flux"],  config.exposuretime, config.gain, config.zeropoint)
 #------------------------------------------------------------
 
 ax = fig.add_subplot(1, 2, 1)
@@ -132,7 +138,7 @@ isubfig = 1
 ncol = 3
 nlines = int(np.ceil(len(param_feats) / (ncol*1.)))
 fig = plt.figure(figsize=(12, 3 * nlines))
-plt.subplots_adjust(wspace=0.07)
+plt.subplots_adjust(wspace=0.16)
 plt.subplots_adjust(hspace=0.27)
 plt.subplots_adjust(right=0.98)
 plt.subplots_adjust(top=0.98)
@@ -244,7 +250,7 @@ for iplot, featc in enumerate(param_feats):
 		#ax.locator_params(axis='x', nticks=2)
 		tick_spacing = (featc.high - featc.low) / 5.
 		ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
-		ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.3f'))
+	ax.xaxis.set_major_formatter(ticker.FormatStrFormatter(formatters[iplot]))
 		
 	if coln > 0:
 		ax.set_ylabel("")
@@ -252,5 +258,19 @@ for iplot, featc in enumerate(param_feats):
 
 	coln += 1
 	if coln == ncol: coln = 0
+	
+ax = fig.add_subplot(nlines, ncol, isubfig + iplot + 1)
+weights = np.ones_like(cat['snr_mean'])/float(len(cat))
+weights = weights[np.invert(cat["snr_mean"].mask)]
+megalut.plot.hist.hist(ax, 
+	cat, 
+	Feature("snr_mean", nicename=r"\emph{Euclid}-like S/N"),
+	bins=20, weights=weights
+)
+ax.set_yscale('log')
+ax.set_ylim([5e-4, 7e-1])
+ax.grid()
+ax.xaxis.set_major_formatter(ticker.FormatStrFormatter(formatters[iplot+1]))
+	
 megalut.plot.figures.savefig(os.path.join(outdir, "conditional_bias"), fig, fancy=True, pdf_transparence=True)
 plt.show()
