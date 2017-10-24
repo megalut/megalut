@@ -20,11 +20,11 @@ great3 = mg3.great3.GREAT3Run(
 	#subfields = [0,1,2],
 	#subfields = [99],	# CGC best PSF subfields: [99, 156, 42],  worst : [2, 191, 166]
 
-	subfields = range(0, 200),
+	#subfields = range(0, 200),
 	
 	#subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
 
-	#subfields = range(0, 50),
+	subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
 	#subfields = range(150, 200),
@@ -86,7 +86,7 @@ weightconflist = [
 	#("mlconfig/ada4s1w.cfg", "mlconfig/sum33wmass.cfg"), # predcode 1
 	#("mlconfig/ada4s2w.cfg", "mlconfig/sum33wmass.cfg"),
 
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55wmass50.cfg"), # running for predcode 2
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55wmass50.cfg"), # not much converged, predcode 2
 	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55wmass50.cfg"),
 
 
@@ -102,4 +102,4 @@ weightconflist = [
 
 trainmode = "g" # When training for ellipticity, switch this to "g". It's for the plots.
 
-predcode = "1" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
+predcode = "2" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
