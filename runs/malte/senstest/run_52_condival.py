@@ -15,7 +15,7 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
-redo = False
+redo = True
 
 def main():
 	
@@ -46,8 +46,9 @@ def main():
 		print megalut.tools.table.info(cat)
 	
 
-	cat = cat[cat["magnitude"] < 24.0]
+	cat = cat[cat["magnitude"] < 24.2]
 	plot(cat, component=1)
+	#plot(cat, component=2)
 
 
 

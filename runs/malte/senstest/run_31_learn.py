@@ -36,16 +36,19 @@ logger.info("We have {} realizations".format(nrea))
 cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
 
 
-"""
-select = False	
+
+select = True
 if select:
 	s = megalut.tools.table.Selector("fortrain", [
-		("max", "adamom_failfrac", 0.05),
+		("max", "adamom_failfrac", 0.01), # No wonder, given the reduced noise!
 	])
 	cat = s.select(cat)
-	
+
+
 #megalut.tools.io.writepickle(cat, os.path.join(config.simmeasdir, "ts-fn-1-failfrac05", "groupmeascat.pkl"))
-exit()
+#exit()
+
+"""
 #megalut.tools.table.addstats(cat, "snr")
 #cat.sort("adamom_failfrac")
 #cat.sort("magnitude")

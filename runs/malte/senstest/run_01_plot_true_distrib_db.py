@@ -12,7 +12,13 @@ from megalut.tools.feature import Feature
 
 
 cat = megalut.tools.io.readpickle(os.path.join(config.truedistdir, "table.pkl"))
+#print megalut.tools.table.info(cat)
+
+sel = megalut.tools.table.Selector("right_p_of_e", [("is", "ecode", "ep0")])	
+cat = sel.select(cat)
 print megalut.tools.table.info(cat)
+exit()
+
 
 fig = plt.figure(figsize=(16, 10))
 
