@@ -2,6 +2,7 @@ import matplotlib
 matplotlib.use("AGG")
 
 import os
+import numpy as npe
 
 import megalut.learn
 import megalut.tools 
@@ -30,7 +31,7 @@ valcatpath = os.path.join(config.simvaldir, "EuclidLike_statshear", "groupmeasca
 valprecatpath = os.path.join(traindir, "valprewcat.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
-import numpy as np
+
 ids = np.random.choice(np.arange(1500), 200)
 cat = cat[ids]
 #cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)

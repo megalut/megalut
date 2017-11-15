@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 predname = "test1"
 
-component = 2 # which component
+component = 1 # which component
 
 
 def main():

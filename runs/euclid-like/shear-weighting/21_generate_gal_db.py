@@ -25,11 +25,11 @@ def contracted_rayleigh(sigma, max_val, p, size=1):
 ###################################################################################################
 
 
-whichset = 'train'
+whichset = 'train_large'
 distrib = "euclid"
 
 # How many galaxies?
-n_gal = 5e5
+n_gal = 1e6
 
 # What distribution
 name_distrib = "{}_{}".format(distrib, whichset)
@@ -49,7 +49,7 @@ galdb = Table()
 if distrib == "euclid":
     
     # Ellipticities
-    gs = sky.draw_ellipticities(size=n_gal)
+    gs = sky.draw_ellipticities(size=n_gal, cutoff=0.8)
     theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0, size=n_gal)
     (g1s, g2s) = (gs * np.cos(2.0 * theta), gs * np.sin(2.0 * theta))
     

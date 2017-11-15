@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(config.workdir, "train_default")
+traindir = os.path.join(config.workdir, "train_simple")
 
 conflist = [
 	("config/ada3s1.cfg", "config/Net.cfg"),
@@ -24,7 +24,6 @@ conflist = [
 
 # Predicting the validation set
 spname = "EuclidLike_statshear"
-#spname = "Ellipticity"
 valcatpath = os.path.join(config.simwdir, spname, "groupmeascat_cases.pkl")
 valprecatpath = os.path.join(traindir, "groupmeascat_cases_prew.pkl")
 

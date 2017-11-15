@@ -15,19 +15,55 @@ simdir = config.simdir
 
 # Let's train for shear
 # We do not need Shape Noise Cancellation and no shear needeed
-dbgal = Table.read(os.path.join(config.dbdir, "euclid_train.fits"))
-# noisy
+dbgal = Table.read(os.path.join(config.dbdir, "euclid_train_large.fits"))
+
+# nonoise
+"""
 sp = simparams.EuclidLike_Ell(dbgal)
 sp.shear = 0.1
 sp.snc_type = 100
-sp.noise_fractor = 0.
-n = 500#0
+sp.noise_factor = 0.
+n = 5000
+nc = 1
+ncat = 4
+nrea = 1
+
+"""
+# noisy
+sp = simparams.EuclidLike_Ell(dbgal)
+sp.shear = 0.1
+sp.snc_type = 500
+sp.noise_factor = 1.
+n = 5000
+nc = 1
+ncat = 2
+nrea = 3
+
+"""
+# Default
+sp = simparams.Default(dbgal)
+sp.shear = 0.1
+sp.snc_type = 100
+sp.noise_factor = 0.
+n = 2500
 nc = 1
 ncat = 1
 nrea = 1
+"""
+"""
+# Uniform
+sp = simparams.Uniform(dbgal)
+sp.shear = 0.1
+sp.snc_type = 100
+sp.noise_factor = 0.
+n = 5000
+nc = 1
+ncat = 1
+nrea = 1
+"""
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
-"""
+
 megalut.sim.run.multi(
 	simdir=simdir,
 	simparams=sp,
@@ -47,7 +83,7 @@ megalut.meas.run.onsims(
 	ncpu=config.ncpu,
 	skipdone=True
 	)
-"""
+
 cat = megalut.meas.avg.onsims(
 	measdir=simdir, 
 	simparams=sp,
@@ -63,11 +99,9 @@ print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
 if sp.shear > 0:
-	print 'coucou'
 	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 else:
 	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))
-

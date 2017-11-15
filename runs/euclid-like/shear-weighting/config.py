@@ -18,11 +18,11 @@ read_noise = 4.2
 
 psfdir = "psf_stamp"
 
-ncpu = 7
+ncpu = 6
 
 zpsimdir = os.path.join(workdir, "zpsim")
 dbdir = os.path.join(workdir, "db")
-simdir = os.path.join(workdir, "sim")
+simdir = os.path.join(workdir, "simnoisy")
 simwdir = os.path.join(workdir, "simweights")
 simvaldir = os.path.join(workdir, "simval")
 psfimgpath = os.path.join(workdir, "psf.fits")
