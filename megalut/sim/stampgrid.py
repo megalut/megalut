@@ -20,7 +20,7 @@ from .. import tools
 from . import params
 
 
-def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
+def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix=""):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
@@ -33,6 +33,8 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
 	:type nc: int
 	:param stampsize: width = height of desired stamps, in pixels
 	:type stampsize: int
+	:param pixelscale: scale in arcsec of the image, IGNORED: we always draw images with a scale of 1.0
+	:type pixelscale: float
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
 	
 	The ix index moves faster than the iy index when iterating over the output catalog.
@@ -123,6 +125,7 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, idprefix=""):
 	
 	# The following is aimed at drawimg:
 	catalog.meta["stampsize"] = stampsize
+	catalog.meta["pixelscale"] = pixelscale
 	
 	# Checking the catalog length
 	assert len(catalog) == nsnc * n
@@ -168,7 +171,7 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	"""
 	starttime = datetime.now()	
 	
-	gsparams = galsim.GSParams(maximum_fft_size=8192)
+	gsparams = galsim.GSParams(maximum_fft_size=10240)
 	
 	if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
 		raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
@@ -201,8 +204,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	gal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 	trugal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 	psf_image = galsim.ImageF(stampsize * nx , stampsize * ny)
-
-	gal_image.scale = 1.0 # These pixel scales make things easier. If you change them, be careful to also adapt the jitter scale!
+	
+	gal_image.scale = 1.0 # we use pixels as units. Note that if you change something here, you also have to change the jitter.
 	trugal_image.scale = 1.0
 	psf_image.scale = 1.0
 

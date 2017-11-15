@@ -20,7 +20,7 @@ sp.snc_type = 100
 sp.noise_level = 0.
 n = 100
 nc = 1
-ncat = 100
+ncat = 10
 nrea = 1
 
 megalut.sim.run.multi(
@@ -60,9 +60,9 @@ print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
 if sp.shear > 0:
-	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 else:
-	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))

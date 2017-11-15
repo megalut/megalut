@@ -71,11 +71,12 @@ import megalut.meas.sewfunc
 measdir = os.path.join(basedir, "measdir_sextractor")
 measfct = megalut.meas.sewfunc.measfct
 measfctkwargs = {
-	"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+	#"sexpath":"/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex",
+	"sexpath":"/usr/bin/sex",
 	"prefix":""
 	}
 
-megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=5)
+megalut.meas.run.onsims(simdir, simparams, measdir, measfct, measfctkwargs, ncpu=1)
 
 print "Step 3, summarizing measurements accross simulations"
 

@@ -67,7 +67,6 @@ def onsims(measdir, simparams, task="groupstats", **kwargs):
 	# And finally, we stack all these catalogs "vertically", to get a single one.
 	# This is only to be done if we have several catalogs. In fact, vstack crashes if only 
 	# one catalog is present.
-	
 	if len(outputcats) > 1:
 	
 		# Before vstacking, we check some meta for compatibility

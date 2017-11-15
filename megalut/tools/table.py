@@ -178,6 +178,10 @@ def group(incats, groupcols=None, removecols=None, checkcommon=True):
 			# We test that the columns of these fixedcolnames are the same for all the different incats
 			for incat in incats:
 				if not np.all(incat[fixedcolnames] == fixedcat):
+					print incat.colnames
+					print fixedcat.colnames
+					print incat[fixedcolnames].colnames 
+					print fixedcat
 					raise RuntimeError("Something fishy is going on: some columns are not identical among %s. Add them to groupcols or removecols." % fixedcolnames)
 			logger.debug("Done with testing the identity of all the common columns")
 		else:

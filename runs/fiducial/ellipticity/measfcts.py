@@ -13,7 +13,7 @@ def default(catalog, stampsize):
 	catalog = megalut.meas.skystats.measfct(catalog, stampsize=stampsize)
 	
 	# And snr
-	catalog = megalut.meas.snr.measfct(catalog, gain=50.0)
+	catalog = megalut.meas.snr.measfct(catalog, gain=1.0)
 	
 	
 	return catalog
@@ -30,6 +30,7 @@ default_groupcols = [
 'adamom_g2',
 'adamom_sigma',
 'adamom_rho4',
+'adamom_size',
 'skystd',
 'skymad',
 'skymean',

@@ -166,13 +166,13 @@ def predict(catalog, conflist, workbasedir=None):
 		for (i, predlabel) in enumerate(predlabels):	
 			logger.info("Adding predictions '{}' to catalog...".format(predlabel))
 			data = preddata[:,i,:].transpose()
- 			assert data.ndim == 2 # Indeed this is now always 2D.
- 			if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
- 				data = data.reshape((data.size))
- 				assert data.ndim == 1
+			assert data.ndim == 2 # Indeed this is now always 2D.
+			if data.shape[1] == 1: # If we have only one realization, just make it a 1D numpy array.
+				data = data.reshape((data.size))
+				assert data.ndim == 1
 						
- 			newcol = astropy.table.MaskedColumn(data=data, name=predlabel)
- 			outcat.add_column(newcol)
+			newcol = astropy.table.MaskedColumn(data=data, name=predlabel)
+			outcat.add_column(newcol)
 			
 	endtime = datetime.datetime.now()
 	logger.info("Done, the total time for the predictions was {}".format(str(endtime - starttime)))

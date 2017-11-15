@@ -266,7 +266,7 @@ def multi(simdir, simparams, drawcatkwargs, drawimgkwargs=None,
 		catalog.meta["imgreas"] = [
 			tools.imageinfo.ImageInfo(
 				os.path.join(catimgdirpath, "%s_%i_galimg.fits" % (catalog.meta["catname"], reaindex)),
-				xname="x", yname="y", stampsize = catalog.meta["stampsize"])
+				xname="x", yname="y", stampsize = catalog.meta["stampsize"], pixelscale=catalog.meta['pixelscale'])
 			for reaindex in range(nrea)]
 		
 		# And we can write this catalog to disk

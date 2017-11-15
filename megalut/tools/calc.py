@@ -88,3 +88,17 @@ def linreg(x, y, prob=0.68):
 		raise RuntimeError("Intercept error, %f, %f" % (intercept, b0))
 	
 	return ret
+
+def complex2geometrical(e1, e2, fact=1):
+	"""
+	Converts e1, e2 to a, b, theta
+	"""
+	e = np.sqrt(e1**2 + e2**2)
+	if fact != 1:
+		e = np.clip(e * fact, -0.9, 0.9)
+	a = np.sqrt(1. + e)
+	b = np.sqrt(1. - e )
+	theta = np.arctan2(e2, e1) / 2.
+	return a, b, theta
+
+
