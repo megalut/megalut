@@ -11,7 +11,7 @@ import copy
 import logging
 logger = logging.getLogger(__name__)
 
-def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", stdcol="skymad", sizecol=None, gain=None, gaincol=None):
+def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", stdcol="skymad", sizecol=None, gain=None, gaincol=None, aper=3.0):
 	"""
 	We assume here that the images are in ADU, and that 
 	gain is given in electron / ADU.
@@ -21,6 +21,10 @@ def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", 
 	:param stdcol:
 	:param gain:
 	:param gaincol:
+	
+	:param aper: the radius of the effective area is hlr * aper. So aper = 3, the default value, means an aperture with a diameter of 3 times the half-light-diameter.
+		This gives values close to FLUX_AUTO / FLUXERR_AUTO
+	
 	
 	"""
 	
@@ -46,12 +50,11 @@ def measfct(catalog, prefix="", fluxcol="adamom_flux", sigmacol="adamom_sigma", 
 		
 	
 	if sizecol is None:
-		areas = np.pi * output[sigmacol] ** 2 # Should we multiply this by 0.674490 to go from sigma to half-light-rad ?
+		areas = np.pi * (output[sigmacol] * aper * 1.1774) ** 2 # 1.1774 x sigma = r half light
 	else: 
 		areas = output[sizecol]
 	
-	sourcefluxesN = sourcefluxes#0.
-	noises = np.sqrt(sourcefluxesN + areas * skynoisefluxes)
+	noises = np.sqrt(sourcefluxes + areas * skynoisefluxes)
 	
 	snrcol = prefix + "snr"
 	
