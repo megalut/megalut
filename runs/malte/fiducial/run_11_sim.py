@@ -15,17 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 
-
-
-
+"""
 sp = simparams.Fiducial(
-	name = "simobscompa",
+	name = "si-1",
 	snc_type = 0,
 	shear = 0,
 	noise_level = 1.0
 )
 drawconf = {
-	"n":100,
+	"n":1000,
 	"nc":10,
 	"nrea":1,
 	"ncat":1,
@@ -33,6 +31,44 @@ drawconf = {
 	"groupmode":None,
 	"skipdone":False	
 }
+"""
+
+
+sp = simparams.Fiducial_statshear(
+	name = "ts-1",
+	snc_type = 500,
+	shear = 0.1,
+	noise_level = 1.0
+)
+drawconf = {
+	"n":1,
+	"nc":1,
+	"nrea":1,
+	"ncat":500,
+	"ncpu":10,
+	"groupmode":"shear",
+	"skipdone":False	
+}
+
+
+
+"""
+sp = simparams.Fiducial_statshear(
+	name = "vo-1",
+	snc_type = 4,
+	shear = 0.05,
+	noise_level = 1.0
+)
+drawconf = {
+	"n":250,
+	"nc":10,
+	"nrea":1,
+	"ncat":4,
+	"ncpu":4,
+	"groupmode":None,
+	"skipdone":False	
+}
+"""
 
 
 #################### What we really need

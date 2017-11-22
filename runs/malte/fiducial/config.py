@@ -38,7 +38,7 @@ datasets = {
 
 	"valid-overall":"vo-1",
 	
-	"simobscompa":"simobscompa",
+	"siminspect":"si-1",
 }
 
 
