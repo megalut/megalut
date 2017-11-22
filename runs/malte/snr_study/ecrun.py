@@ -24,7 +24,7 @@ sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex
 
 name =  "ec_v1"
 n = 20
-nrea = 500
+nrea = 50
 gain = 3.1
 stampsize = 64
 
@@ -77,17 +77,20 @@ cat = megalut.meas.sewfunc.measfct(cat, params=params, config=config, sexpath=se
 cat["sex_snr_iso"] = cat["sewpy_FLUX_ISO"] / cat["sewpy_FLUXERR_ISO"]
 cat["sex_snr_auto"] = cat["sewpy_FLUX_AUTO"] / cat["sewpy_FLUXERR_AUTO"]
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_mag", "zeropoint"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_mag", "zeropoint", "tru_flux", "tru_sigma"])
 megalut.tools.table.addstats(cat, "snr")
 megalut.tools.table.addstats(cat, "sex_snr_iso")
 megalut.tools.table.addstats(cat, "sex_snr_auto")
 megalut.tools.table.addstats(cat, "adamom_flux")
+megalut.tools.table.addstats(cat, "adamom_sigma")
+megalut.tools.table.addstats(cat, "skystd")
+megalut.tools.table.addstats(cat, "skymad")
 
 megalut.tools.io.writepickle(cat, catpath)
 
-#print megalut.tools.table.info(cat)
+print megalut.tools.table.info(cat)
 
-print cat["tru_mag", "zeropoint", "snr_mean", "sex_snr_auto_mean", "tru_flux", "adamom_flux_mean"]
+print cat["tru_mag", "zeropoint", "snr_mean", "sex_snr_auto_mean", "tru_flux", "adamom_flux_mean", "tru_sigma", "adamom_sigma_mean", "skystd_mean", "skymad_mean"]
 
 #writecat = cat["tru_flux", "tru_cropper_snr", "gain1_snr_mean", "gain1e9_snr_mean", "gain1_aper3hlr_snr_mean", "sex_snr_iso_mean", "sex_snr_auto_mean"]
 #print writecat
