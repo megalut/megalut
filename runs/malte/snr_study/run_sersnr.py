@@ -17,16 +17,16 @@ logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(n
 #### Parameters ###################
 
 genworkdir = "/vol/fohlen11/fohlen11_1/mtewes/snr_study/"
-
-name = "sersnr_v1"
-
-n = 10
-nrea = 20
-
-stampsize = 64
-
 sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex"
 
+
+
+
+name =  "sersnr_v1"
+n = 20
+nrea = 200
+gain = 3.1
+stampsize = 64
 ####################################
 
 
@@ -59,11 +59,11 @@ cat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
 
 cat = megalut.meas.galsim_adamom.measfct(cat, stampsize=stampsize, variant="wider")
 cat = megalut.meas.skystats.measfct(cat, stampsize=stampsize)
-#cat = megalut.meas.snr.measfct(cat, gain=1.0)
-cat = megalut.meas.snr.measfct(cat, gain=1.0, prefix="gain1_", aper=2.0)
-cat = megalut.meas.snr.measfct(cat, gain=1.0e9, prefix="gain1e9_", aper=2.0)
-cat = megalut.meas.snr.measfct(cat, gain=1.0, prefix="gain1_aper3hlr_", aper=3.0)
 
+cat = megalut.meas.snr.measfct(cat, gain=gain)
+
+#cat = megalut.meas.snr.measfct(cat, gain=1.0e9, prefix="gain1e9_", aper=2.0)
+#cat = megalut.meas.snr.measfct(cat, gain=1.0, prefix="gain1_aper3hlr_", aper=3.0)
 
 # Now we run sextractor
 params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMAGE", "THETAWIN_IMAGE",
@@ -71,25 +71,28 @@ params = ["VECTOR_ASSOC(3)", "XWIN_IMAGE", "YWIN_IMAGE", "AWIN_IMAGE", "BWIN_IMA
 	"FWHM_IMAGE", "BACKGROUND", "FLAGS",
 	"FLUX_ISO", "FLUXERR_ISO"]
 	
-config = {"DETECT_MINAREA":5, "ASSOC_RADIUS":5, "GAIN":1.0, "ASSOC_TYPE":"NEAREST"}
+config = {"DETECT_MINAREA":5, "ASSOC_RADIUS":5, "GAIN":gain, "ASSOC_TYPE":"NEAREST"}
 		
 cat = megalut.meas.sewfunc.measfct(cat, params=params, config=config, sexpath=sexpath)
 
 cat["sex_snr_iso"] = cat["sewpy_FLUX_ISO"] / cat["sewpy_FLUXERR_ISO"]
 cat["sex_snr_auto"] = cat["sewpy_FLUX_AUTO"] / cat["sewpy_FLUXERR_AUTO"]
 
-cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_flux", "tru_cropper_snr"])
-megalut.tools.table.addstats(cat, "gain1_snr")
-megalut.tools.table.addstats(cat, "gain1e9_snr")
-megalut.tools.table.addstats(cat, "gain1_aper3hlr_snr")
+
+cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_mag", "zeropoint", "tru_sersicn"])
+megalut.tools.table.addstats(cat, "snr")
 megalut.tools.table.addstats(cat, "sex_snr_iso")
 megalut.tools.table.addstats(cat, "sex_snr_auto")
-
+megalut.tools.table.addstats(cat, "adamom_flux")
+megalut.tools.table.addstats(cat, "adamom_sigma")
+megalut.tools.table.addstats(cat, "skystd")
+megalut.tools.table.addstats(cat, "skymad")
 megalut.tools.io.writepickle(cat, catpath)
 
-print megalut.tools.table.info(cat)
-writecat = cat["tru_flux", "tru_cropper_snr", "gain1_snr_mean", "gain1e9_snr_mean", "gain1_aper3hlr_snr_mean", "sex_snr_iso_mean", "sex_snr_auto_mean"]
+#print megalut.tools.table.info(cat)
+writecat = cat["zeropoint", "tru_mag", "tru_sersicn", "snr_mean", "sex_snr_auto_mean", "adamom_sigma_mean"]
 print writecat
-writecat.write(writecatpath, format="ascii")
+
+#writecat.write(writecatpath, format="ascii")
 
 
