@@ -33,7 +33,7 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix=""):
 	:type nc: int
 	:param stampsize: width = height of desired stamps, in pixels
 	:type stampsize: int
-	:param pixelscale: scale in arcsec of the image, default: 1''
+	:param pixelscale: scale in arcsec of the image, IGNORED: we always draw images with a scale of 1.0
 	:type pixelscale: float
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
 	
@@ -205,9 +205,9 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	trugal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 	psf_image = galsim.ImageF(stampsize * nx , stampsize * ny)
 	
-	gal_image.scale = catalog.meta["pixelscale"]
-	trugal_image.scale = catalog.meta["pixelscale"]
-	psf_image.scale = catalog.meta["pixelscale"]
+	gal_image.scale = 1.0 # we use pixels as units. Note that if you change something here, you also have to change the jitter.
+	trugal_image.scale = 1.0
+	psf_image.scale = 1.0
 
 	# And loop through the catalog:
 	for row in catalog:
@@ -277,8 +277,6 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		# We apply some jitter to the position of this galaxy
 		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
 		yjitter = ud() - 0.5
-		xjitter *= catalog.meta["pixelscale"]
-		yjitter *= catalog.meta["pixelscale"]
 		gal = gal.shift(xjitter,yjitter)
 		
 		# We draw the pure unconvolved galaxy
@@ -298,8 +296,6 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
 			psf_xjitter = ud() - 0.5
 			psf_yjitter = ud() - 0.5
-			psf_xjitter *= catalog.meta["pixelscale"]
-			psf_yjitter *= catalog.meta["pixelscale"]
 			psf = psf.shift(psf_xjitter,psf_yjitter)
 			if simpsfimgfilepath != None:
 				psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
