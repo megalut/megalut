@@ -51,7 +51,7 @@ def measfct(catalog, runon="img", stampsize=None, **kwargs):
 	return measure(img, catalog, xname=catalog.meta[runon].xname, yname=catalog.meta[runon].yname, stampsize=stampsize, **kwargs)
 
 
-def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_", variant="default", size=True):
+def measure(img, catalog, xname="x", yname="y", stampsize=None, prefix="adamom_", variant="default", size=False):
 	"""
 	Use the pixel positions provided via the 'catalog' input table to extract
 	postage stamps from the image and measure their shape parameters.

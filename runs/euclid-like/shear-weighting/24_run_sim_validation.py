@@ -11,19 +11,15 @@ import config
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = config.simvaldir
-
-
 # Let's simulate a validation dataset for ellipticity only
 dbgal = Table.read(os.path.join(config.dbdir, "euclid_test.fits"))
 sp = simparams.EuclidLike_statshear(galdb=dbgal)
 sp.shear = 0.1
-simdir = config.simvaldir
+simdir = os.path.join(config.workdir, "simval")
 sp.snc_type = 4
-sp.noise_level = 0.8
-n = 1000#2500
+n = 25#00
 nc = 1
-ncat = 200#1000
+ncat = 100#0
 nrea = 1
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))

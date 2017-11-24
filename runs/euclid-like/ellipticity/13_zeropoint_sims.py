@@ -18,10 +18,10 @@ simdir = config.zpsimdir
 # We do not need Shape Noise Cancellation and no shear needeed
 
 n = 1000#0
-nc = 100#0
+nc = 1000#0
 ncat = 1
 nrea = 1
-zeropoint = 25.4
+zeropoint = 25.65
 
 match_snr = False
 
@@ -71,7 +71,7 @@ while not match_snr:
 	megalut.tools.table.keepunique(cat)
 	megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 	
-	cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 	megalut.tools.table.keepunique(cat)
 	megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))
 	
@@ -79,6 +79,10 @@ while not match_snr:
 	len_data = np.size(cat["snr"])
 	
 	print np.ma.mean(cat["snr"]), np.median(cat["snr"])
+	print np.ma.mean(cat["tru_flux"]), np.median(cat["tru_flux"])
+	print np.ma.mean(cat["adamom_flux"]), np.median(cat["adamom_flux"])
+	print np.ma.mean(cat["adamom_sigma"]) * 1.177 * 2.
+	print 
 	
 	res.append([zeropoint, np.ma.mean(cat["snr"]), np.ma.std(cat["snr"])/np.sqrt(1.0*len_valid_data)])
 	
@@ -87,8 +91,10 @@ while not match_snr:
 	else:
 		zeropoint += 0.1
 
-	if zeropoint > 25.8:
+	if zeropoint > 27.:
 		match_snr = True
+		
+	exit()
 		
 res = np.array(res)
 megalut.tools.io.writepickle(res, os.path.join(config.workdir, "zeropoint_meas.pkl"))

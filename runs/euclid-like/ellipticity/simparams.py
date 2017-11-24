@@ -65,7 +65,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 			
 		########## Noise ##########
 
-		tru_sky_level = sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=config.zeropoint, gain=np.abs(config.gain), pixel_scale=config.pixelscale)
+		tru_sky_level = sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=config.zeropoint, pixel_scale=config.pixelscale) * self.noise_factor
 		tru_gain = config.gain
 		tru_read_noise = config.read_noise * self.noise_factor
 		
@@ -88,6 +88,7 @@ class EuclidLike_Ell(megalut.sim.params.Params):
 			"tru_s1":tru_s1,
 			"tru_s2":tru_s2,
 			"tru_mu":tru_mu,
+
 		}
 
 class Calc_Zerop(EuclidLike_Ell):
@@ -124,13 +125,14 @@ class Calc_Zerop(EuclidLike_Ell):
 		
 		# mag
 		tru_mag = np.array([24.5])
-		tru_flux = sky.utils.mag2flux(tru_mag, exposuretime=config.exposuretime*3., gain=config.gain, zeropoint=config.zeropoint)
+
+		tru_flux = sky.utils.mag2flux(tru_mag, exposuretime=config.exposuretime, gain=config.gain, zeropoint=self.zeropoint)
 
 		# Size
-		tru_rad = np.array([0.43/2.])
+		tru_rad = np.array([0.1925])#0.43/2])#np.array([0.19])
 		
 		# Sky
-		tru_sky_level = sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=self.zeropoint, gain=np.abs(config.gain), pixel_scale=config.pixelscale)
+		tru_sky_level = sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=self.zeropoint, pixel_scale=config.pixelscale)
 		
 		########## Noise ##########
 
@@ -156,6 +158,8 @@ class Calc_Zerop(EuclidLike_Ell):
 			"tru_s1":0.,
 			"tru_s2":0.,
 			"tru_mu":1.,
+			
+			
 		}
 		
 

@@ -9,7 +9,7 @@ stampsize = 48
 
 ncpu = 8
 
-simdir = os.path.join(workdir, "sim")
+simdir = os.path.join(workdir, "simnoisy")
 simvaldir = os.path.join(workdir, "simval")
 psfimgpath = os.path.join(workdir, "psf.fits")
 psfcatpath = os.path.join(workdir, "psfcat.pkl")

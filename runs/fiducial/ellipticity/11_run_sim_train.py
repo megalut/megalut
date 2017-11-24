@@ -17,11 +17,11 @@ simdir = includes.simdir
 sp = simparams.Ellipticity()
 sp.shear = 0
 sp.snc_type = 1
-sp.noise_level = 0.
+sp.noise_level = 0.8
 n = 100#00
 nc = 25#00
 ncat = 1
-nrea = 20
+nrea = 500
 
 megalut.sim.run.multi(
 	simdir=simdir,

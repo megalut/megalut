@@ -12,8 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-
-traindir = os.path.join(config.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_nonoise")
 
 conflist = [
 	("config/ada3s1.cfg", "config/Net.cfg"),
@@ -24,7 +23,7 @@ conflist = [
 
 # Predicting the validation set
 spname = "EuclidLike_statshear"
-valcatpath = os.path.join(config.simwdir, spname, "groupmeascat_cases.pkl")
+valcatpath = os.path.join(os.path.join(config.workdir, "simweights"), spname, "groupmeascat_cases.pkl")
 valprecatpath = os.path.join(traindir, "groupmeascat_cases_prew.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)

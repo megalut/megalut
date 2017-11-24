@@ -18,7 +18,7 @@ logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(n
 
 #### Parameters ###################
 
-genworkdir = "/vol/fohlen11/fohlen11_1/mtewes/casereafig/"
+genworkdir = "."
 
 name = "shearw"
 #name = "shear"
@@ -102,7 +102,7 @@ cat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
 
 cat = megalut.meas.galsim_adamom.measfct(cat, stampsize=stampsize, variant="wider")
 cat = megalut.meas.skystats.measfct(cat, stampsize=stampsize)
-cat = megalut.meas.snr.measfct(cat, gain=1.0)
+cat = megalut.meas.snr_3hlr.measfct(cat, gain=1.0e9)
 
 if name == "shear" or name == "ellip":
 	
@@ -140,7 +140,7 @@ for icas in range(ncas):
 	pngimgpath = os.path.join(workdir, "case_{}.png".format(icas))
 	myimage.tonet(pngimgpath)
 
-	subprocess.Popen("display {}".format(pngimgpath), shell=True)
+	#subprocess.Popen("display {}".format(pngimgpath), shell=True)
 
 
 
