@@ -5,7 +5,7 @@ Paper-related:
 - **snr_study** : checks half-light radius of profile (Nov 2017)
 - **casereafig** : generates galaxies for the case and realisation figures (Nov 2017)
 - **fiducial** : my take on the fiducial sims (Nov 2017)
-
+- **profile_hlr_study** : numerical sigma-hlr relation
 
 - **meastest**: standalone tiny sim to test feature measurements (in particular aperphot) (spring 2016).
 - **sbe**: code which led to the SBE "submissions", intended for personal use (not clean enough for sharing).

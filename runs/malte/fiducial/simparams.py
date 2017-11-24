@@ -113,7 +113,7 @@ class Fiducial(megalut.sim.params.Params):
 		
 		tru_sersicn = random.choice(np.linspace(1, 4, 10))
 		
-		tru_sb = np.random.uniform(1.0, 10.0)
+		tru_sb = np.random.uniform(10.0, 30.0)
 		tru_rad = np.random.uniform(0.5, 5.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * tru_sb
@@ -135,7 +135,7 @@ class Fiducial(megalut.sim.params.Params):
 			"tru_psf_g2":tru_psf_g2,
 		}
 		
-		out.update(self.draw_s())
+		out.update(self.draw_s()) # Here the shear gets drawn for each "galaxy"
 		out.update(self.draw_constants())
 		
 		return out
@@ -155,7 +155,7 @@ class Fiducial_statshear(Fiducial):
 		Supercedes what draw returns, called once for each catalog
 		"""
 		out = {}
-		out.update(self.draw_s())
+		out.update(self.draw_s()) # Here, it's called for each catalog, and supercedes the galaxy values.
 		out.update(self.draw_constants())
 		return out
 				
