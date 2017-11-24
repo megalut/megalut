@@ -20,11 +20,11 @@ psf_strut_thick = 0.015
 psf_strut_angle = 105 * galsim.degrees
 
 psf_defocus = .0
-psf_astig1 = -0.07
-psf_astig2 = -0.06
+psf_astig1 = -0.04
+psf_astig2 = -0.025
 psf_coma1 = 0.
 psf_coma2 = 0.
-psf_trefoil1 = -0.02
+psf_trefoil1 = -0.015
 psf_trefoil2 = +0.008
 
 show = True

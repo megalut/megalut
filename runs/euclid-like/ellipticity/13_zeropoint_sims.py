@@ -17,8 +17,8 @@ simdir = config.zpsimdir
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 
-n = 1000#0
-nc = 1000#0
+n = 100#0
+nc = 100#0
 ncat = 1
 nrea = 1
 zeropoint = 25.65

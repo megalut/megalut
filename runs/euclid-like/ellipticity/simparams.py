@@ -9,7 +9,6 @@ from sky import skypropreties as sky
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = config.simdir
 
 class EuclidLike_Ell(megalut.sim.params.Params):
 	
