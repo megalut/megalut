@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 outdirplots = os.path.join('.', "plots")
 
-megalut.plot.figures.set_fancy(14)
+megalut.plot.figures.set_fancy(16)
 
 metrics_12 = {
 	'fGC':{'m1':-1.50, 'm1err':2.78, 'm2':3.18, 'm2err':2.04, 'c1':0.02, 'c1err':0.08, 'c2':0.01, 'c2err':0.06},
@@ -52,11 +52,12 @@ lintreshx = 2e-4
 
 for imet, metric in enumerate(metrics):
 	
-	fig = plt.figure(figsize=(15,4.5))
-	plt.subplots_adjust(wspace=0.16)
+	fig = plt.figure(figsize=(14,4.5))
+	plt.subplots_adjust(wspace=0.2)
 	plt.subplots_adjust(hspace=0.4)
 	plt.subplots_adjust(right=0.98)
-	plt.subplots_adjust(top=0.97)
+	plt.subplots_adjust(top=0.96)
+	plt.subplots_adjust(bottom=0.12)
 	
 	for comp in [1,2]:
 	
@@ -82,14 +83,14 @@ for imet, metric in enumerate(metrics):
 		ax.set_yscale('symlog', linthreshy=lintreshy)
 		ax.set_xscale('symlog', linthreshx=lintreshx)
 	
-		ax.set_ylim([-1e-0, 1e-0])
+		ax.set_ylim([-5e-1, 5e-1])
 		ticks = np.concatenate([np.arange(-lintreshy, lintreshy, 1e-3)])#, np.arange(lintresh, 1e-2, 9)])
 		s = ax.yaxis._scale
 		ax.yaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
 		ticks = np.concatenate([ticks, ax.yaxis.get_minor_locator().tick_values(-.1, .1)])
 		ax.yaxis.set_minor_locator(ticker.FixedLocator(ticks))
 		
-		ax.set_xlim([-1e-0, 1e-0])
+		ax.set_xlim([-5e-1, 5e-1])
 		ticks = np.concatenate([np.arange(-lintreshx, lintreshx, 1e-4)])#, np.arange(lintresh, 1e-2, 9)])
 		s = ax.xaxis._scale
 		ax.xaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
