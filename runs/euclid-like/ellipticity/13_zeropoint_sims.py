@@ -17,11 +17,11 @@ simdir = config.zpsimdir
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 
-n = 1000#0
-nc = 100#0
+n = 10#0
+nc = 10#0
 ncat = 1
 nrea = 1
-zeropoint = 25.4
+zeropoint = 25.6
 
 match_snr = False
 
@@ -84,8 +84,8 @@ while not match_snr:
 	
 	if len_valid_data == 0:
 		print 'No valid data, increasing zeropoint'
-	else:
-		zeropoint += 0.1
+	
+	zeropoint += 0.1
 
 	if zeropoint > 25.8:
 		match_snr = True
