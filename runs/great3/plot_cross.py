@@ -1,9 +1,9 @@
 import os
 import numpy as np
 import matplotlib.ticker as ticker
+import matplotlib.transforms as mtransforms
 
 import megalut.plot
-from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
 
 import logging
@@ -32,36 +32,51 @@ metrics_pluscross = {
 	'RSC':{'m1':-3.77, 'm1err':3.08, 'm2':-7.70, 'm2err':3.25, 'c1':-0.01, 'c1err':0.08, 'c2':-0.08, 'c2err':0.08},
 	}
 
-									
+
+metrics_mean = {}
+for key in metrics_12.keys():
+	metrics_mean[key] = {}
+	metrics_mean[key]['m1'] = (metrics_12[key]['m1'] + metrics_12[key]['m2'])/2
+	metrics_mean[key]['m1err'] = (metrics_12[key]['m1err'] + metrics_12[key]['m2err'])/2
+	metrics_mean[key]['c1'] = metrics_pluscross[key]['c1']
+	metrics_mean[key]['c1err'] = metrics_pluscross[key]['c1err']
+						
+print metrics_mean
 if not os.path.exists(outdirplots):
 	os.mkdir(outdirplots)
+	
 
 order = ['fGC', 'CGC', 'RGC', 'fSC', 'CSC', 'RSC']
-metrics = [metrics_12, metrics_pluscross]
-outname = ["12", "pc"]
-labels = [{1:'1', 2:'2'}, {1:'+', 2:'\\times'}]
-colours = [{1:'k', 2:'r'}, {1:'#8080FE', 2:'darkorange'}]
+metrics = [metrics_12, metrics_pluscross, metrics_mean]
+outname = ["12", "pc", "mmean"]
+xlabels = [{1:'c_1', 2:'c_2'}, {1:'c_+', 2:'c_\\times'}, {1:"c_+"}]
+ylabels = [{1:'\\mu_1', 2:'\\mu_2'}, {1:'\\mu_+', 2:'\\mu_\\times'}, {1:"\\langle\\mu\\rangle"}]
 colours = ['k', 'orange', 'limegreen', 'turquoise', "royalblue", 'r', "#a65628", "#f781bf", "#4daf4a"]
-markers = ['o','*',"D",'s','8','p']
-
-import matplotlib.transforms as mtransforms
+colours = ['maroon', 'navy', 'darkgreen', 'indianred', "turquoise", 'lime', "#a65628", "#f781bf", "#4daf4a"]
+markers = ['o','^',"D"] * 2#,'o','*','D']
 
 lintreshy = 2e-3
 lintreshx = 2e-4
 
+assert len(order) <= len(markers)
+assert len(order) <= len(colours)
+assert len(metrics) <= len(outname)
+assert len(metrics) <= len(xlabels)
+assert len(metrics) <= len(ylabels)
 
 for imet, metric in enumerate(metrics):
 	
-	fig = plt.figure(figsize=(14,4.5))
+	fig = plt.figure(figsize=(7*len(xlabels[imet]), 4.5))
 	plt.subplots_adjust(wspace=0.2)
 	plt.subplots_adjust(hspace=0.4)
 	plt.subplots_adjust(right=0.98)
 	plt.subplots_adjust(top=0.96)
 	plt.subplots_adjust(bottom=0.12)
+	plt.subplots_adjust(left=0.15)
 	
-	for comp in [1,2]:
+	for comp in range(1, 1+len(xlabels[imet])):
 	
-		ax = fig.add_subplot(1, 2, comp)
+		ax = fig.add_subplot(1, len(xlabels[imet]), comp)
 		
 		trans = mtransforms.blended_transform_factory(ax.transAxes, ax.transData)
 		ax.fill_between([0, 1], -lintreshy, lintreshy, alpha=0.2, facecolor='darkgrey', transform=trans)
@@ -69,15 +84,15 @@ for imet, metric in enumerate(metrics):
 		ax.axhline(0, ls='--', color='k')
 		ax.axvline(0, ls='--', color='k')
 		
-		ax.set_ylabel(r"Multiplicative bias $\mu_{%s}$" % labels[imet][comp])
-		ax.set_xlabel(r"Additive bias $c_{%s}$" % labels[imet][comp])
+		ax.set_ylabel(r"Multiplicative bias ${%s}$" % ylabels[imet][comp])
+		ax.set_xlabel(r"Additive bias ${%s}$" % xlabels[imet][comp])
 	
 		for ibranch, branch in enumerate(order):
 		
 		
 			ax.errorbar(metric[branch]['c{}'.format(comp)] * 1e-3, metric[branch]['m{}'.format(comp)] * 1e-3, \
-					xerr=metric[branch]['c{}err'.format(comp)], yerr=metric[branch]['c{}err'.format(comp)], \
-					fmt=markers[ibranch], color=colours[ibranch], label=branch)
+					xerr=metric[branch]['c{}err'.format(comp)] * 1e-3, yerr=metric[branch]['m{}err'.format(comp)] * 1e-3, \
+					fmt=markers[ibranch], color=colours[ibranch], label=branch, capsize=3, elinewidth=1.5)
 	
 	
 		ax.set_yscale('symlog', linthreshy=lintreshy)
