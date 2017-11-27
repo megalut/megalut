@@ -52,8 +52,9 @@ outname = ["12", "pc", "mmean"]
 xlabels = [{1:'c_1', 2:'c_2'}, {1:'c_+', 2:'c_\\times'}, {1:"c_+"}]
 ylabels = [{1:'\\mu_1', 2:'\\mu_2'}, {1:'\\mu_+', 2:'\\mu_\\times'}, {1:"\\langle\\mu\\rangle"}]
 colours = ['k', 'orange', 'limegreen', 'turquoise', "royalblue", 'r', "#a65628", "#f781bf", "#4daf4a"]
-colours = ['maroon', 'navy', 'darkgreen', 'indianred', "turquoise", 'lime', "#a65628", "#f781bf", "#4daf4a"]
+colours = ['maroon', 'navy', 'darkgreen', 'tomato', "steelblue", 'lime', "#a65628", "#f781bf", "#4daf4a"]
 markers = ['o','^',"D"] * 2#,'o','*','D']
+ls = ['-','-',"-", '--', '--', '--']#,'o','*','D']
 
 lintreshy = 2e-3
 lintreshx = 2e-4
@@ -90,10 +91,15 @@ for imet, metric in enumerate(metrics):
 		for ibranch, branch in enumerate(order):
 		
 		
-			ax.errorbar(metric[branch]['c{}'.format(comp)] * 1e-3, metric[branch]['m{}'.format(comp)] * 1e-3, \
+			_,capsstuff,barlinecols = ax.errorbar(metric[branch]['c{}'.format(comp)] * 1e-3, metric[branch]['m{}'.format(comp)] * 1e-3, \
 					xerr=metric[branch]['c{}err'.format(comp)] * 1e-3, yerr=metric[branch]['m{}err'.format(comp)] * 1e-3, \
-					fmt=markers[ibranch], color=colours[ibranch], label=branch, capsize=3, elinewidth=1.5)
-	
+					fmt=markers[ibranch], color=colours[ibranch], label=branch, elinewidth=1.5)
+			
+			barlinecols[0].set_linestyle(ls[ibranch])
+			barlinecols[1].set_linestyle(ls[ibranch])
+			for cap in capsstuff:
+				cap.set_markeredgewidth(2)
+			
 	
 		ax.set_yscale('symlog', linthreshy=lintreshy)
 		ax.set_xscale('symlog', linthreshx=lintreshx)
