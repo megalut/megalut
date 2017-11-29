@@ -34,15 +34,14 @@ class Simple1(megalut.sim.params.Params):
 		gain = 3.1 # electrons/ADU
 		ron = 4.2 # electrons
 		skyback = 22.35 # mag per arcsec2, dominated by zodiacal light
-		#zeropoint = 25.9 # mag. Should give SNR 10 when observing with 3 x 565 second exposures.
 		
-		zeropoint = 25.9
+		zeropoint = 24.6
 		
 		exptime = 3.0*565.0	# seconds
 		
 		#########  No Lensing
 
-		tru_sky_level = 0.01 * exptime * 10**((skyback - zeropoint)/(-2.5))  # In ADU per pixel. 0.01 because of the pixel size of 0.1 arcsec. No gain, as in ADU!
+		tru_sky_level = 0.01 * (exptime/gain) * 10**((skyback - zeropoint)/(-2.5))  # In ADU per pixel. 0.01 because of the pixel size of 0.1 arcsec. No gain, as in ADU!
 		tru_gain = gain
 		tru_read_noise = ron
 		
@@ -58,19 +57,21 @@ class Simple1(megalut.sim.params.Params):
 		########## Galaxy ##########
 		
 		tru_type = 1 # 0 Gaussian, 1 sersic
-		tru_sersicn = 2.0
+		tru_sersicn = 1.5
 		
 		
-		#tru_mag = 24.5
+		tru_mag = 24.5
 		tru_mag = 23.0 + float(iy)/float(ny) * 2.5
-
+		
+	
 		tru_flux = (exptime / gain) * 10**((tru_mag - zeropoint)/(-2.5))
 
 		
 		#factor = 3.2 # for serscin 4
-		factor = 1.4 # for serscin 2
+		#factor = 1.4 # for serscin 2
 		#factor = 1.0 # for sersic 1
-		tru_rad = factor * 4.3/2.0
+		#tru_rad = factor * 4.3/2.0
+		tru_rad = 4.0
 		
 		tru_g = 0.0
 		tru_theta = 0.0	

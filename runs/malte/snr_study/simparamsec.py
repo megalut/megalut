@@ -44,14 +44,14 @@ class Simple1(megalut.sim.params.Params):
 		skyback = 22.35 # mag per arcsec2, dominated by zodiacal light
 		
 		# Don't look at sextractor outptu if you do this!
-		zeropoint = 24.7 + float(ny - iy)/float(ny) * 1.0 # mag. Should give SNR 10 when observing with 3 x 565 second exposures.
-		zeropoint = 24.9
+		zeropoint = 24.0 + float(ny - iy)/float(ny) * 1.0 # mag. Should give SNR 10 when observing with 3 x 565 second exposures.
+		#zeropoint = 24.9
 		
 		exptime = 3.0*565.0	# seconds
 	
 		########## Noise ##########
 
-		tru_sky_level = 0.01 * exptime * 10**((skyback - zeropoint)/(-2.5))  # In ADU per pixel. 0.01 because of the pixel size of 0.1 arcsec. No gain, as in ADU!
+		tru_sky_level = 0.01 * (exptime/gain) * 10**(-0.4*(skyback - zeropoint))  # In ADU per pixel. 0.01 because of the pixel size of 0.1 arcsec.
 		tru_gain = gain
 		tru_read_noise = ron
 		
@@ -77,8 +77,7 @@ class Simple1(megalut.sim.params.Params):
 		
 		size_factor = 1.0 # scales the galaxy with respect to Croppers reference
 		
-		tru_sigma = size_factor * (4.3/2.0) / 1.1774 # We take Croppers "extension of the source" as the half-light-diameter
-		#tru_sersicn = 4.0
+		tru_sigma = size_factor * tru_rad / 1.1774 # We take Croppers "extension of the source" as the half-light-diameter
 		
 		tru_cropper_snr = (tru_flux) / np.sqrt( np.pi * (size_factor * 13.0/2.0)**2 * tru_sky_level) # For a sky-limited obs, we don't use the gain here
 		

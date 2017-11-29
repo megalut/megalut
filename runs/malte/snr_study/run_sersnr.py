@@ -24,7 +24,7 @@ sexpath="/vol/software/software/astro/sextractor/sextractor-2.19.5/64bit/bin/sex
 
 name =  "sersnr_v1"
 n = 20
-nrea = 200
+nrea = 100
 gain = 3.1
 stampsize = 64
 ####################################
@@ -79,7 +79,7 @@ cat["sex_snr_iso"] = cat["sewpy_FLUX_ISO"] / cat["sewpy_FLUXERR_ISO"]
 cat["sex_snr_auto"] = cat["sewpy_FLUX_AUTO"] / cat["sewpy_FLUXERR_AUTO"]
 
 
-cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_mag", "zeropoint", "tru_sersicn"])
+cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_mag", "zeropoint", "tru_sersicn", "tru_flux"])
 megalut.tools.table.addstats(cat, "snr")
 megalut.tools.table.addstats(cat, "sex_snr_iso")
 megalut.tools.table.addstats(cat, "sex_snr_auto")
@@ -87,10 +87,15 @@ megalut.tools.table.addstats(cat, "adamom_flux")
 megalut.tools.table.addstats(cat, "adamom_sigma")
 megalut.tools.table.addstats(cat, "skystd")
 megalut.tools.table.addstats(cat, "skymad")
+megalut.tools.table.addstats(cat, "sewpy_FLUX_AUTO")
+megalut.tools.table.addstats(cat, "skystampsum")
+
+
+
 megalut.tools.io.writepickle(cat, catpath)
 
-#print megalut.tools.table.info(cat)
-writecat = cat["zeropoint", "tru_mag", "tru_sersicn", "snr_mean", "sex_snr_auto_mean", "adamom_sigma_mean"]
+print megalut.tools.table.info(cat)
+writecat = cat["zeropoint", "tru_mag", "tru_sersicn", "snr_mean", "sex_snr_auto_mean", "adamom_sigma_mean", "adamom_flux_mean", "tru_flux", "sewpy_FLUX_AUTO_mean", "skystampsum_mean"]
 print writecat
 
 #writecat.write(writecatpath, format="ascii")

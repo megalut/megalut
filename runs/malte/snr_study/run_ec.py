@@ -2,7 +2,7 @@ import matplotlib
 matplotlib.use("AGG")
 
 import os
-import ecsimparams
+import simparamsec
 import megalut
 import megalut.meas
 import numpy as np
@@ -32,7 +32,7 @@ stampsize = 64
 
 
 
-sp = ecsimparams.Simple1()
+sp = simparamsec.Simple1()
 
 
 workdir = os.path.join(genworkdir, name)
