@@ -1,6 +1,6 @@
-#import matplotlib
+import matplotlib
 #matplotlib.use("AGG")
-#matplotlib.use("pdf")
+matplotlib.use("pdf")
 
 import megalut
 import megalut.tools
@@ -19,13 +19,13 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as plticker
 from matplotlib.ticker import AutoMinorLocator, LogLocator, MultipleLocator, FixedLocator
 
-"""
+
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 ## for Palatino and other serif fonts use:
 #rc('font',**{'family':'serif','serif':['Palatino']})
 rc('text', usetex=True)
-"""
+
 
 
 import logging
@@ -149,7 +149,7 @@ cmap="plasma_r"
 
 #fig = plt.figure(figsize=(8, 7))
 #fig = plt.figure(figsize=(9, 4.5))
-fig = plt.figure(figsize=(8.6, 7))
+fig = plt.figure(figsize=(7.5, 6.4))
 
 fig.text(.005, .94, config.great3.get_branchacronym().upper(), fontdict={"fontsize":22})
 
@@ -182,9 +182,9 @@ ax.title.set_position([.5, 1.1])
 ax.xaxis.set_major_locator(majorLocator)
 #ax.yaxis.set_minor_locator(minorlocator)
 # Hiding "0" as it collides with the 10-3:
-ax.axes.yaxis.set_ticklabels([" ", "-0.1", "-0.01", "-0.001"," ", "0.001", "0.01", "0.1"])
-
-
+#ax.axes.yaxis.set_ticklabels([" ", "-0.1", "-0.01", "-0.001"," ", "0.001", "0.01", "0.1"])
+ticks = ax.yaxis.get_major_ticks()
+ticks[4].label1.set_visible(False)
 
 ax = fig.add_subplot(2, 2, 2)
 megalut.plot.scatter.scatter(ax, cat, Feature("tru_psf_e1", -0.2, 0.15, nicename=r"True $e_{1, \mathrm{PSF}}$"), Feature("pre_s1w_res", -resr, resr, nicename=r"Predicted $g_1$ $-$ True $g_1$"), showidline=True, yisres=True,
@@ -203,7 +203,9 @@ ax.xaxis.set_major_locator(majorLocator)
 ax.set_yscale('symlog', linthreshy=symthres)
 ax.yaxis.set_minor_locator(minorlocator)
 # Hiding "0" as it collides with the 10-3:
-ax.axes.yaxis.set_ticklabels([" ", "-0.1", "-0.01", "-0.001"," ", "0.001", "0.01", "0.1"])
+#ax.axes.yaxis.set_ticklabels([" ", "-0.1", "-0.01", "-0.001"," ", "0.001", "0.01", "0.1"])
+ticks = ax.yaxis.get_major_ticks()
+ticks[4].label1.set_visible(False)
 
 ax = fig.add_subplot(2, 2, 4)
 megalut.plot.scatter.scatter(ax, cat, Feature("tru_psf_e2", nicename=r"True $e_{2, \mathrm{PSF}}$"), Feature("pre_s2w_res", -0.2, 0.2, nicename=r"Predicted $g_2$ $-$ True $g_2$"), featc,
@@ -213,7 +215,9 @@ ax.yaxis.set_minor_locator(minorlocator)
 ax.fill_between([-1, 1], -symthres, symthres, alpha=0.2, facecolor='darkgrey')
 ax.xaxis.set_major_locator(majorLocator)
 # Hiding "0" as it collides with the 10-3:
-ax.axes.yaxis.set_ticklabels([" ", "-0.1", "-0.01", "-0.001"," ", "0.001", "0.01", "0.1"])
+#ax.axes.yaxis.set_ticklabels([" ", "-0.1", "-0.01", "-0.001"," ", "0.001", "0.01", "0.1"])
+ticks = ax.yaxis.get_major_ticks()
+ticks[4].label1.set_visible(False)
 
 
 
@@ -223,6 +227,6 @@ plt.tight_layout()
 
 
 plotpath = config.great3.path("fig_3_{}.pdf".format(config.great3.get_branchacronym()))
-#plt.savefig(plotpath)
-plt.show()
+plt.savefig(plotpath)
+#plt.show()
 print plotpath
