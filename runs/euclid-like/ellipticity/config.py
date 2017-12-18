@@ -6,13 +6,11 @@ logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(n
 workdir = "./ellipticity"
 
 # Euclid-like data
-zeropoint = 25.5 # AB mag
+zeropoint = 24.6 # AB mag
 pixelscale = 0.1
-gain = -3.1 # Note: gain must be negative. This relates to 
-#http://galsim-developers.github.io/GalSim/classgalsim_1_1_c_c_d_noise.html
-#RMS of Gaussian noise, in electrons (if gain>0.) or ADU (gain<=0.) 
+gain = 3.1 
 exposuretime = 565.
-skylevel = 22.4 # AB mag/arcsec/arcsec
+skylevel = 22.35 # AB mag/arcsec/arcsec
 stampsize = 48
 read_noise = 4.2
 
