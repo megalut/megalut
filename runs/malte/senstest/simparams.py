@@ -14,7 +14,7 @@ class SampledBDParams(megalut.sim.params.Params):
 	Bulge and Disk parameters read from a database of samples.
 	"""
 
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0", minmag=None, sheargroup=-1, nshearvals=10000):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1, ecode="ep0", scode="sp0", minmag=None, sheargroup=-1, nshearvals=10000):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
@@ -29,6 +29,7 @@ class SampledBDParams(megalut.sim.params.Params):
 		self.shear = shear
 		self.noise_level = noise_level # relative
 		self.ecode = ecode
+		self.scode = scode
 		self.minmag = minmag
 		self.sheargroup = sheargroup
 		
@@ -43,10 +44,27 @@ class SampledBDParams(megalut.sim.params.Params):
 
 		if self.sheargroup > 0:
 			# We exploit the fact that the catalogs are all drawn one after the other on a single cpu, with the same simparams object
-			self.s1s = np.random.uniform(-self.shear, self.shear, size=nshearvals)
-			self.s2s = np.random.uniform(-self.shear, self.shear, size=nshearvals)
+			if self.shear < 10.0:
+				self.s1s = np.random.uniform(-self.shear, self.shear, size=nshearvals)
+				self.s2s = np.random.uniform(-self.shear, self.shear, size=nshearvals)
+			elif self.shear > 10.0:
+				self.s1s = []
+				self.s2s = []
+				for i in range(nshearvals):
+					tru_s = self.db[np.random.randint(0, len(self.db))]["shear_magnitude"]
+					tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
+					(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
+					self.s1s.append(tru_s1)
+					self.s2s.append(tru_s2)
+				self.s1s = np.array(self.s1s)
+				self.s2s = np.array(self.s2s)
+				print self.s1s
+				print self.s2s
+			
 			self.scount = 0 # Number of times a shear is drawn
+			
 
+	
 		# Each ecode has a different:
 		# - bulge_axis_ratio (we don't care exactly, it just affects the bulge_ellipticity
 		# - disk_height_ratio
@@ -62,7 +80,10 @@ class SampledBDParams(megalut.sim.params.Params):
 		tru_sky_level = 0.0 # GREAT3 has no Poisson noise, just flat Gaussian. # in ADU, just for generating noise, will not remain in the image
 		tru_gain = -1.0 # in photons/ADU. Make this negative to have no Poisson noise
 		
-		tru_read_noise = self.noise_level * np.sqrt((32570.0 / 100.0) / self.ccdgain) # in photons if gain > 0.0, otherwise in ADU. Set this to zero to have no flat Gaussian noise
+		
+		sky_levels_squarc = {"sm2": 20526.0, "sm1":26213.0, "sp0":32570.0, "sp1":39595.0, "sp2":47289.0} # The fractional difference of 20 10% etc is in noise stddev, not in sky level
+		
+		tru_read_noise = self.noise_level * np.sqrt((sky_levels_squarc[self.scode] / 100.0) / self.ccdgain) # in photons if gain > 0.0, otherwise in ADU. Set this to zero to have no flat Gaussian noise
 		
 		tru_pixel = -1.0 # If positive, adds an extra convolution by that many pixels to the simulation process
 		ccdgain = self.ccdgain
@@ -77,13 +98,16 @@ class SampledBDParams(megalut.sim.params.Params):
 		"""
 		if self.sheargroup <= 0: # We just draw it randomly
 		
-			if self.shear > 0:
+			if self.shear > 10.0:
+				# We draw it from the db
+				tru_s = self.db[np.random.randint(0, len(self.db))]["shear_magnitude"]
+				tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
+				(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
+				
+			if self.shear > 0.0 and self.shear < 10.0:
 				tru_s1 = np.random.uniform(-self.shear, self.shear)
 				tru_s2 = np.random.uniform(-self.shear, self.shear)	
 				
-				#tru_s = 0.1
-				#tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)	
-				#(tru_s1, tru_s2) = (tru_s * np.cos(2.0 * tru_theta), tru_s * np.sin(2.0 * tru_theta))
 				
 			else:
 				tru_s1 = 0.0

@@ -21,7 +21,7 @@ n = 100#0
 nc = 100#0
 ncat = 1
 nrea = 1
-zeropoint = 25.65
+zeropoint = 24.6
 
 match_snr = False
 
@@ -88,8 +88,8 @@ while not match_snr:
 	
 	if len_valid_data == 0:
 		print 'No valid data, increasing zeropoint'
-	else:
-		zeropoint += 0.1
+	
+	zeropoint += 0.1
 
 	if zeropoint > 27.:
 		match_snr = True

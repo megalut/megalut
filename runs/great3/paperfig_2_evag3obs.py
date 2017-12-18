@@ -192,7 +192,7 @@ featc = Feature("psf_adamom_sigma", nicename=r"PSF $\mathtt{adamom\_sigma}$ [pix
 
 
 ax = plt.axes([.09, paneltoplevel, panelxw, panelyw])
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1", -sr, sr, nicename=r"True $\gamma_1$"), Feature("pre_s1_res", -srp, srp, nicename=r"Predicted $\gamma_1$ $-$ True $\gamma_1$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1", -sr, sr, nicename=r"True $g_1$"), Feature("pre_s1_res", -srp, srp, nicename=r"Predicted $g_1$ $-$ True $g_1$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
 labeloutliers(ax, cat, "pre_s1", "tru_s1", whichones=whichones)
 ax.set_title("Without weights")
 ax.title.set_position([.5, 1.1])
@@ -209,7 +209,7 @@ addmetrics(ax, Feature("tru_s1"), Feature("pre_s1_res"))
 
 
 ax = plt.axes([.33, paneltoplevel, panelxw, panelyw])
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1", -sr, sr, nicename=r"True $\gamma_1$"), Feature("pre_s1w_res", -srp, srp, nicename=r"Predicted $\gamma_1$ $-$ True $\gamma_1$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s1", -sr, sr, nicename=r"True $g_1$"), Feature("pre_s1w_res", -srp, srp, nicename=r"Predicted $g_1$ $-$ True $g_1$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
 labeloutliers(ax, cat, "pre_s1w", "tru_s1", thr=0.004, whichones=whichones)
 ax.set_title("With weights")
 ax.title.set_position([.5, 1.1])
@@ -225,7 +225,7 @@ addmetrics(ax, Feature("tru_s1"), Feature("pre_s1w_res"))
 
 
 ax = plt.axes([.68, paneltoplevel, panelxw+0.02, panelyw])
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_s+", -sr, sr, nicename=r"True $\gamma_+$"), Feature("pre_s+w_res", -srp, srp, nicename=r"Predicted $\gamma_+$ $-$ True $\gamma_+$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, idlinekwargs={"color":"black"})
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s+", -sr, sr, nicename=r"True $g_+$"), Feature("pre_s+w_res", -srp, srp, nicename=r"Predicted $g_+$ $-$ True $g_+$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, idlinekwargs={"color":"black"})
 labeloutliers(ax, cat, "pre_s+w", "tru_s+", thr=0.004, whichones=whichones)
 ax.set_title("With weights")
 ax.title.set_position([.5, 1.1])
@@ -245,7 +245,7 @@ addmetrics(ax, Feature("tru_s+"), Feature("pre_s+w_res"))
 
 ax = plt.axes([.09, panelbottomlevel, panelxw, panelyw])
 
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_s2", -sr, sr, nicename=r"True $\gamma_2$"), Feature("pre_s2_res", -srp, srp, nicename=r"Predicted $\gamma_2$ $-$ True $\gamma_2$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s2", -sr, sr, nicename=r"True $g_2$"), Feature("pre_s2_res", -srp, srp, nicename=r"Predicted $g_2$ $-$ True $g_2$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
 labeloutliers(ax, cat, "pre_s2", "tru_s2", whichones=whichones)
 
 ax.set_yscale('symlog', linthreshy=symthres)
@@ -262,7 +262,7 @@ addmetrics(ax, Feature("tru_s2"), Feature("pre_s2_res"))
 
 ax = plt.axes([.33, panelbottomlevel, panelxw, panelyw])
 
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_s2", -sr, sr, nicename=r"True $\gamma_2$"), Feature("pre_s2w_res", -srp, srp, nicename=r"Predicted $\gamma_2$ $-$ True $\gamma_2$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_s2", -sr, sr, nicename=r"True $g_2$"), Feature("pre_s2w_res", -srp, srp, nicename=r"Predicted $g_2$ $-$ True $g_2$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
 labeloutliers(ax, cat, "pre_s2w", "tru_s2", thr=0.004, whichones=whichones)
 
 ax.set_yscale('symlog', linthreshy=symthres)
@@ -278,7 +278,7 @@ addmetrics(ax, Feature("tru_s2"), Feature("pre_s2w_res"))
 
 ax = plt.axes([.68, panelbottomlevel, panelxw, panelyw])
 
-megalut.plot.scatter.scatter(ax, cat, Feature("tru_sx", -sr, sr, nicename=r"True $\gamma_{\times}$"), Feature("pre_sxw_res", -srp, srp, nicename=r"Predicted $\gamma_{\times}$ $-$ True $\gamma_{\times}$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
+megalut.plot.scatter.scatter(ax, cat, Feature("tru_sx", -sr, sr, nicename=r"True $g_{\times}$"), Feature("pre_sxw_res", -srp, srp, nicename=r"Predicted $g_{\times}$ $-$ True $g_{\times}$"), featc, yisres=True, cmap=cmap, metrics=defaultmetrics, showidline=True, hidecbar=True, idlinekwargs={"color":"black"})
 labeloutliers(ax, cat, "pre_sxw", "tru_sx", thr=0.004, whichones=whichones)
 #labeloutliers(ax, cat, "pre_sx", "tru_sx")
 

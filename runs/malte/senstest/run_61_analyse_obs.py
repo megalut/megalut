@@ -37,10 +37,10 @@ def main():
 	print megalut.tools.table.info(cat)
 
 	megalut.tools.io.writepickle(cat, meascatpath)
-	
+	"""
 
 	# Computing the true shear
-	
+	"""
 	cat = megalut.tools.io.readpickle(meascatpath)
 
 	cat["tru_s1"] = cat["shear_magnitude"] * np.cos(2.0 * cat["shear_angle"] * np.pi/180.0)
@@ -56,11 +56,18 @@ def main():
 		cat = megalut.learn.tenbilacrun.predict(cat, config.weightconflist , weighttraindir)
 	
 	
+	
 	megalut.tools.io.writepickle(cat, predcatpath)
+	
+	exit()
 	"""
 	
-	
 	cat = megalut.tools.io.readpickle(predcatpath)
+
+	cat["pre_s1w"] *= 40.18
+	#cat["pre_s1"] += -4.6e-3	
+	cat["pre_s2w"] *= 30.84
+	#cat["pre_s2"] += -1.4e-3
 
 	
 	# Testing Bryan's code: YES, it gives the same as wmetrics
@@ -96,6 +103,10 @@ def main():
 	#cat = megalut.tools.io.readpickle("/vol/fohlen11/fohlen11_1/mtewes/Euclid/senstest/megalut/val/pred_tw-1-sheargroup4-large.pkl")
 	
 	print megalut.tools.table.info(cat)
+
+	#plt.hist(cat["tru_s1"])
+	#plt.show()
+	#exit()
 
 	
 	for component in [1,2]:

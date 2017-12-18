@@ -12,6 +12,7 @@ gems = Table.read('../thrid_party_data/gems_20090807.fits')
 
 print gems.colnames
 
+
 gems = gems[gems["GEMS_FLAG"] == 4]
 #gems = gems[gems["ST_REERR_GALFIT"] / gems["ST_RE_GALFIT"] < 0.5]
 gems = gems[gems["ST_FLUX_RADIUS"] >= 0.11/0.05*np.sqrt(2.)]

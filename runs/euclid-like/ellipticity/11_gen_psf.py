@@ -10,8 +10,9 @@ import config
 ###################################################################################################
 # Defining variables
 # Pixel scale in arcsec / pixel
-pixelscale = config.pixelscale
+pixelscale = config.pixelscale 
 image_size = config.stampsize
+
 
 # GalSim paramters
 psf_obsc = 0.29	   # (0.35m / 1.2m) = 0.29 [D(M2) / D(M1)]

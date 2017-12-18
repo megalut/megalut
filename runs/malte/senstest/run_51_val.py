@@ -45,6 +45,7 @@ def main():
 		
 	#cat["pre_s1w"] = np.clip(cat["pre_s1w"], 0.0, 0.6)
 	plot(cat, component=1)
+	plot(cat, component=2)
 
 
 

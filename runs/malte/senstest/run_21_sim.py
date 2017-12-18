@@ -15,9 +15,198 @@ logger = logging.getLogger(__name__)
 
 
 
-####################
+#################### What we really need
+
+"""
+# 900 cases, 400 realizations
+sp = simparams.SampledBDParams_statshear(
+	name = "ts-ln-1-large",
+	snc_type = 400,
+	shear = 0.1,
+	noise_level = 0.1, # WARNING REDUCED # Note: this is relative, in sigma !
+	ecode = config.ecode,
+	scode = config.scode,
+)
+drawconf = {
+	"n":1,
+	"nc":1,
+	"nrea":1,
+	"ncat":900,
+	"ncpu":30,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
 
 
+"""
+# 30 cases, 50000 reas without SNC
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-2-nsnc-bigrea",
+	snc_type = 0,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = config.ecode,
+	scode = config.scode,
+
+)
+drawconf = {
+	"n":50000,
+	"nc":100,
+	"nrea":1,
+	"ncat":30,
+	"ncpu":30,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
+"""
+# 900 cases, 1000 reas without SNC
+sp = simparams.SampledBDParams_statshear(
+	name = "tw-3-nsnc",
+	snc_type = 0,
+	shear = 0.07,
+	noise_level = 1.0,
+	ecode = config.ecode,
+	scode = config.scode,
+
+)
+drawconf = {
+	"n":1000,
+	"nc":10,
+	"nrea":1,
+	"ncat":900,
+	"ncpu":30,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
+
+"""
+sp = simparams.SampledBDParams(
+	name = "vo-mimicdata", # 12800 cases of shear with 4 x 2 reas per case
+	snc_type = 2,
+	shear = 0.07,
+	noise_level = 1.0,
+	ecode = config.ecode,
+	scode = config.scode,
+	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (12800, 8)
+	nshearvals = 110000, # Make this larger than the number of cases above.
+)
+drawconf = {
+	"n":5120,
+	"nc":10,
+	"nrea":1,
+	"ncat":10,
+	"ncpu":10,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
+sp = simparams.SampledBDParams(
+	name = "vo-mimicdata-dbshear", # 12800 cases of shear with 4 x 2 reas per case
+	snc_type = 2,
+	shear = 20.0, # >10, so we will take it from the db
+	noise_level = 1.0,
+	ecode = config.ecode,
+	scode = config.scode,
+	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (12800, 8)
+	nshearvals = 110000, # Make this larger than the number of cases above.
+)
+drawconf = {
+	"n":5120,
+	"nc":10,
+	"nrea":1,
+	"ncat":10,
+	"ncpu":10,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+
+
+
+
+
+"""
+sp = simparams.SampledBDParams(
+	name = "vo-mimicdata-6", # 6*12800 cases of shear with 4 x 2 reas per case
+	snc_type = 2,
+	shear = 0.05,
+	noise_level = 1.0,
+	ecode = config.ecode,
+	scode = config.scode,
+	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (6*12800, 8)
+	nshearvals = 110000, # Make this larger than the number of cases above.
+)
+drawconf = {
+	"n":5120,
+	"nc":10,
+	"nrea":1,
+	"ncat":60,
+	"ncpu":30,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
+
+
+
+
+######## Special exploration
+"""
+# 900 cases, 1000 realizations, half noise !
+sp = simparams.SampledBDParams_statshear(
+	name = "ts-hn-1-large",
+	snc_type = 1000,
+	shear = 0.1,
+	noise_level = 0.5, # WARNING REDUCED # Note: this is relative, in sigma !
+	ecode = config.ecode,
+	scode = config.scode,
+)
+drawconf = {
+	"n":1,
+	"nc":1,
+	"nrea":1,
+	"ncat":900,
+	"ncpu":30,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
+
+"""
+# 900 cases, 1000 realizations, full noise !
+sp = simparams.SampledBDParams_statshear(
+	name = "vs-1-large",
+	snc_type = 1000,
+	shear = 0.1,
+	noise_level = 1.0,
+	ecode = config.ecode,
+	scode = config.scode,
+)
+drawconf = {
+	"n":1,
+	"nc":1,
+	"nrea":1,
+	"ncat":900,
+	"ncpu":30,
+	"groupmode":"shear",
+	"skipdone":False,
+	"psfcatpath":config.psfcatpath,
+}
+"""
+
+
+
+
+#################### Experiments on fiducial set
 """
 # Comparing to the observations:
 sp = simparams.SampledBDParams(
@@ -213,6 +402,7 @@ drawconf = {
 	"skipdone":False	
 }
 """
+"""
 sp = simparams.SampledBDParams_statshear(
 	name = "tw-2-nsnc-bigrea",
 	snc_type = 0,
@@ -229,7 +419,7 @@ drawconf = {
 	"groupmode":"shear",
 	"skipdone":False	
 }
-
+"""
 
 
 """
@@ -272,6 +462,26 @@ drawconf = {
 	"skipdone":True	
 }
 """
+"""
+sp = simparams.SampledBDParams(
+	name = "vo-mimicdata", # 12800 cases of shear with 4 x 2 reas per case
+	snc_type = 2,
+	shear = 0.05,
+	noise_level = 1.0,
+	ecode = "ep0", # others are em2
+	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (12800, 8)
+	nshearvals = 110000, # Make this larger than the number of cases above.
+)
+drawconf = {
+	"n":5120,
+	"nc":10,
+	"nrea":1,
+	"ncat":10,
+	"ncpu":10,
+	"groupmode":"shear",
+	"skipdone":True	
+}
+"""
 
 
 
@@ -279,7 +489,7 @@ drawconf = {
 
 
 
-psfcat = megalut.tools.io.readpickle(config.psfcatpath)
+psfcat = megalut.tools.io.readpickle(drawconf["psfcatpath"])
 simdir = config.simdir
 measdir = config.simmeasdir
 

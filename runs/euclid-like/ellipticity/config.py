@@ -6,9 +6,9 @@ logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(n
 workdir = "./ellipticity"
 
 # Euclid-like data
-zeropoint = 25.6# AB mag
+zeropoint = 24.6 # AB mag
 pixelscale = 0.1
-gain = 3.1
+gain = 3.1 
 exposuretime = 3.*565.
 skylevel = 22.35 # AB mag/arcsec/arcsec
 stampsize = 48
