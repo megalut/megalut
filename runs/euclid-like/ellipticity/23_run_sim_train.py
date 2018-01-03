@@ -11,8 +11,6 @@ import config
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = config.simdir
-
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 """
@@ -26,6 +24,7 @@ n = 20000#0
 nc = 2500
 ncat = 5
 nrea = 3
+simdir = os.path.join(config.workdir, "sim")
 """
 
 # Noisy
@@ -33,10 +32,11 @@ dbgal = Table.read(os.path.join(config.dbdir, "euclid_train.fits"))
 sp = simparams.Uniform(dbgal)
 sp.shear = 0
 sp.snc_type = 1
-n = 10000#0
-nc = 500
+n = 100#00#0
+nc = 50#0
 ncat = 1
-nrea = 500
+nrea = 5#00
+simdir = os.path.join(config.workdir, "simnoisy")
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
 

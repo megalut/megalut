@@ -9,9 +9,6 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = config.simdir
-
-
 import pylab as plt
 ###################################################################################################
 
@@ -25,11 +22,11 @@ def contracted_rayleigh(sigma, max_val, p, size=1):
 ###################################################################################################
 
 
-whichset = 'traintest'
+whichset = 'train'
 distrib = "euclid"
 
 # How many galaxies?
-n_gal = 5e6
+n_gal = 5e5
 
 # What distribution
 name_distrib = "{}_{}".format(distrib, whichset)

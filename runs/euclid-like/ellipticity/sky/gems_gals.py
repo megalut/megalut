@@ -180,16 +180,16 @@ weights = np.ones_like(gems["ST_ELLIPTICITY"])/float(len(gems["ST_ELLIPTICITY"])
 plt.hist(gems["ST_ELLIPTICITY"], weights=weights, bins=50, ec="None", alpha=0.5)
 plt.xlabel("Ellipticies")
 #######################################################################################################
-"""
+
 # Sersic
 step_bin=0.5
 fig = plt.figure(figsize=(7, 4))
 fig.subplots_adjust(bottom=0.14, top=0.96)
-"""
+'''
 for binmin in np.arange(20.25, 25.25+step_bin, step_bin):
     cgal = gems[np.logical_and(gems["ST_MAG_GALFIT"] > binmin, gems["ST_MAG_GALFIT"] < binmin + step_bin)]
     plt.hist(cgal["ST_N_GALFIT"], bins=50, alpha=0.8, normed=True, histtype='step')
-"""
+'''
 sersicn, sbins = sky.draw_sersicn(500000) 
 
 seln = gems["ST_N_GALFIT"]
@@ -214,8 +214,16 @@ megalut.plot.figures.savefig(os.path.join(outdir, "gems_sersicn"), fig, fancy=Tr
 
 plt.figure()
 plt.hist(sersicn, bins=np.size(sbins))
-
+"""
 #######################################################################################################
+# Surface brightness
+
+Reff = gems["ST_RE_GALFIT"] * 0.05
+mu = gems["ST_MAG_GALFIT"] + 2.5 * np.log10(Reff)
+
+plt.figure()
+plt.hist(mu, bins=50)
+plt.xlabel(r"Surface brightness $\mu$")
 
 plt.show()
 
