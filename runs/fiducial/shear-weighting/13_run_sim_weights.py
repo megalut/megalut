@@ -10,18 +10,18 @@ import includes
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = includes.simwdir + "large"
+simdir = includes.simwdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
 sp = simparams.Sersics_statshear()
 sp.shear = 0.1
-sp.snc_type = 4
+sp.snc_type = 1
 sp.noise_level = 0.8
-n = 2500
+n = 100000
 nc = 1
-ncat = 500
-nrea = 10
+ncat = 100
+nrea = 1
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -59,10 +59,8 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-if sp.shear > 0:
-	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
-else:
-	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))

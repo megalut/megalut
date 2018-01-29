@@ -57,7 +57,7 @@ cat = s.select(cat)
 ebarmode = "scatter"
 #--------------------------------------------------------------------------------------------------
 fig = plt.figure(figsize=(23, 13))
-
+ncbins = 10
 
 
 #------------------- 1st line
@@ -92,15 +92,15 @@ ax = fig.add_subplot(3, 5, 10)
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), featc=Feature("tru_g"))
 #------------------- 3rd line
 ax = fig.add_subplot(3, 5, 11)
-megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("snr_mean"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("snr_mean"), ncbins=ncbins, equalcount=True, ebarmode=ebarmode)
 ax = fig.add_subplot(3, 5, 12)
-megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_flux"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_flux"), ncbins=ncbins, equalcount=True, ebarmode=ebarmode)
 ax = fig.add_subplot(3, 5, 13)
-megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_rad"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_rad"), ncbins=ncbins, equalcount=True, ebarmode=ebarmode)
 ax = fig.add_subplot(3, 5, 14)
-megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_sersicn"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_sersicn"), ncbins=ncbins, equalcount=True, ebarmode=ebarmode)
 ax = fig.add_subplot(3, 5, 15)
-megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_g"), ncbins=3, equalcount=True, ebarmode=ebarmode)
+megalut.plot.bin.res(ax, cat, main_feat, Feature("pre_g{}_mean".format(component)), Feature("tru_g"), ncbins=ncbins, equalcount=True, ebarmode=ebarmode)
 
 plt.tight_layout()
 fig.savefig(os.path.join(outdirplots, "validation_{}.png".format(main_pred)))

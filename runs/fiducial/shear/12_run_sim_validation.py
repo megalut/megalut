@@ -17,12 +17,12 @@ logger = logging.getLogger(__name__)
 sp = simparams.Sersics_statshear()
 sp.shear = 0.1
 simdir = includes.simvaldir
-sp.snc_type = 4
-sp.noise_level = 0.08
-n = 1#00
+sp.snc_type = 1000
+sp.noise_level = 0.8
+n = 1#000
 nc = 1
-ncat = 5#0#2500
-nrea = 10
+ncat = 5000
+nrea = 1
 
 megalut.sim.run.multi(
 	simdir=simdir,

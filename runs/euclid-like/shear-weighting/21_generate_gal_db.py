@@ -9,9 +9,6 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = config.simdir
-
-
 import pylab as plt
 ###################################################################################################
 
@@ -25,11 +22,11 @@ def contracted_rayleigh(sigma, max_val, p, size=1):
 ###################################################################################################
 
 
-whichset = 'train_large'
+whichset = 'weights'
 distrib = "euclid"
 
 # How many galaxies?
-n_gal = 1e6
+n_gal = 1e5
 
 # What distribution
 name_distrib = "{}_{}".format(distrib, whichset)
@@ -49,7 +46,7 @@ galdb = Table()
 if distrib == "euclid":
     
     # Ellipticities
-    gs = sky.draw_ellipticities(size=n_gal, cutoff=0.8)
+    gs = sky.draw_ellipticities(size=n_gal, cutoff=0.9)
     theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0, size=n_gal)
     (g1s, g2s) = (gs * np.cos(2.0 * theta), gs * np.sin(2.0 * theta))
     
@@ -60,7 +57,7 @@ if distrib == "euclid":
     sersicn, _ = sky.draw_sersicn(size=n_gal)
     
     # mag
-    mags = sky.draw_magnitudes(size=n_gal, mmin=20, mmax=24)    
+    mags = sky.draw_magnitudes(size=n_gal, mmin=20, mmax=24.5)    
     flux = 10**(-0.4 * (mags - config.zeropoint)) * config.exposuretime / np.abs(config.gain)
 
     # Size
@@ -124,7 +121,7 @@ galdb['rad'] = Column(rad, u.arcsecond)
 galdb['surface_brigthness'] = Column(sb)
 
 sourcefluxes = flux * np.abs(config.gain)
-skynoisefluxes = config.gain *sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=config.zeropoint, gain=np.abs(config.gain), pixel_scale=config.pixelscale)
+skynoisefluxes = config.gain *sky.get_sky(zodical_mag=config.skylevel, exposure=config.exposuretime, zeropoint=config.zeropoint, pixel_scale=config.pixelscale)
 skynoisefluxes *= skynoisefluxes
 areas = np.pi * (rad * 2.) ** 2
 

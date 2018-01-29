@@ -28,9 +28,8 @@ valcatpath = os.path.join(includes.simvaldir, "Ellipticity", "groupmeascat_cases
 valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
-print megalut.tools.table.info(cat)
-#cat = megalut.learn.run.predict(cat, traindir, mlparams.trainparamslist)
 cat = megalut.learn.tenbilacrun.predict(cat, conflist, traindir)
+print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, valprecatpath)
 
 

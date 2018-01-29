@@ -9,7 +9,7 @@ workdir = "./ellipticity"
 zeropoint = 24.6 # AB mag
 pixelscale = 0.1
 gain = 3.1 
-exposuretime = 565.
+exposuretime = 3.*565.
 skylevel = 22.35 # AB mag/arcsec/arcsec
 stampsize = 48
 read_noise = 4.2
@@ -20,7 +20,5 @@ ncpu = 7
 
 zpsimdir = os.path.join(workdir, "zpsim")
 dbdir = os.path.join(workdir, "db")
-simdir = os.path.join(workdir, "sim")
-simvaldir = os.path.join(workdir, "simval")
 psfimgpath = os.path.join(workdir, "psf.fits")
 psfcatpath = os.path.join(workdir, "psfcat.pkl")

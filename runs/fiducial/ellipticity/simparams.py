@@ -27,6 +27,7 @@ class Ellipticity(megalut.sim.params.Params):
 		"""
 	
 		########## PSF ##########
+		
 		tru_psf_sigma = 2.0
 		tru_psf_g1 = 0.0
 		tru_psf_g2 = 0.0
@@ -52,13 +53,13 @@ class Ellipticity(megalut.sim.params.Params):
 		tru_type = 1 # Seric	
 		tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 4, 10), np.linspace(0.3, 2, 10)]))
 		# TODO: Calibrate this surface brigthness
-		#surface_brigthness = np.random.normal(1., 0.02)
-		surface_brigthness = np.random.uniform(0.8, 1.2)
+
+		surface_brigthness = np.random.uniform(0.85, 1.15)
+
+		tru_rad = np.random.uniform(1.0, 15.0)
+		#tru_rad = np.random.uniform(10.0, 15.0)
 		
-		tru_rad = np.random.uniform(1.0, 12.0)
-		
-		
-		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness) 
+		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness)
 			
 		########## Noise ##########
 
@@ -90,35 +91,10 @@ class Ellipticity(megalut.sim.params.Params):
 			"tru_psf_g1":tru_psf_g1,
 			"tru_psf_g2":tru_psf_g2,
 		}
-		
 
-class Sersics_statshear(Ellipticity):
-	"""
-	To train weights for shear: constant shear per catalog
-	"""
-	
-	def __init__(self, **kwargs):
-		Ellipticity.__init__(self, **kwargs)
-		
-	def stat(self):
-		"""
-		Supercedes what draw returns, called once for each catalog
-		"""
-		
-		if self.shear > 0:
-			tru_s1 = np.random.uniform(-self.shear, self.shear)
-			tru_s2 = np.random.uniform(-self.shear, self.shear)	
-		else:
-			tru_s1 = 0.0
-			tru_s2 = 0.0
-		tru_mu = 1.0
-			
-		return {
-			"tru_s1" : tru_s1, # shear component 1, in "g" convention
-			"tru_s2" : tru_s2, # component 2
-			"tru_mu" : tru_mu, # magnification
-			"snc_type":self.snc_type
-}
+
+
+
 
 
 def contracted_rayleigh(sigma, max_val, p):

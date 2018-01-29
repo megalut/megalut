@@ -42,9 +42,10 @@ for colname in starcat.colnames:
 
 megalut.tools.io.writepickle(starcat, os.path.join(config.psfdir, "psf_meascat.pkl"))
     
+
 for col in starcat.colnames:
     print starcat[col] 
     
 print 
 print 
-print starcat["psfadamom_sigma"] * 2.35
+print starcat["psfadamom_sigma"] * 2.355

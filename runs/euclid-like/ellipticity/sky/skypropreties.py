@@ -96,12 +96,14 @@ def draw_sersicn(size, shape=None, loc=None, scale=None, bins=None, cutoff_min=0
 
     return n, bins
     
-def get_sky(zodical_mag, exposure, zeropoint, gain, pixel_scale=0.1):
+def get_sky(zodical_mag, exposure, zeropoint, pixel_scale=0.1):
     """
     :param zodical_mag: in mag/arcsec2
+    
+    return the sky in ADU/px
     """
     
-    sky = utils.mag2flux(zodical_mag, exposuretime=exposure, gain=gain, zeropoint=zeropoint)
+    sky = utils.mag2flux(zodical_mag, exposuretime=exposure, gain=1., zeropoint=zeropoint)
     
     sky *= pixel_scale * pixel_scale
     return sky
