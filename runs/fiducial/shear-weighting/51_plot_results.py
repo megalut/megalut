@@ -28,7 +28,7 @@ def main():
 	catpath = os.path.join(includes.workdir, "train_simple", "valprewcat.pkl")
 	#catpath = config.great3.path("val","%03i" % subfield, "predcat_{}.pkl".format(predname))
 	cat = megalut.tools.io.readpickle(catpath)
-	#print megalut.tools.table.info(cat)
+	print megalut.tools.table.info(cat)
 		
 	
 	#print "HACK HACK HACK"	

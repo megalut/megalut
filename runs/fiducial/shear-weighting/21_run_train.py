@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 traindir = os.path.join(includes.workdir, "train_simple")
 
 conflist = [
+	("config/ada3s1.cfg", "config/Net.cfg"),
 	("config/ada3s2.cfg", "config/Net.cfg"),
 ]
 
@@ -23,6 +24,9 @@ conflist = [
 catpath = os.path.join(includes.simdir, "Ellipticity", "groupmeascat_cases.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
+
+print megalut.tools.table.info(cat)
+
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
 #megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)
