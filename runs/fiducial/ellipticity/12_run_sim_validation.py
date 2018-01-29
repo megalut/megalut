@@ -20,7 +20,7 @@ sp.snc_type = 10000
 sp.noise_level = 0.8
 n = 1
 nc = 1
-ncat = 2500
+ncat = 5000
 nrea = 1
 
 megalut.sim.run.multi(

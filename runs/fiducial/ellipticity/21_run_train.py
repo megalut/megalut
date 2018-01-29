@@ -6,6 +6,7 @@ import os
 import megalut.learn
 
 import includes
+import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
@@ -24,9 +25,18 @@ conflist = [
 catpath = os.path.join(includes.simdir, "Ellipticity", "groupmeascat_cases.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
-megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
-#megalut.learn.run.train(cat, traindir, mlparams.trainparamslist)
+cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+
+# Only making sure there's no (too) bad examples in the training set
+s = megalut.tools.table.Selector("ok", [
+	("max", "adamom_frac", 0.005)
+	]
+	)
+
+cat = s.select(cat)
+
+megalut.learn.tenbilacrun.train(cat, conflist, traindir)
 
 
 # Self-predicting
