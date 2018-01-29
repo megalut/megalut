@@ -10,8 +10,9 @@ import config
 ###################################################################################################
 # Defining variables
 # Pixel scale in arcsec / pixel
-pixelscale = config.pixelscale
+pixelscale = config.pixelscale 
 image_size = config.stampsize
+
 
 # GalSim paramters
 psf_obsc = 0.29	   # (0.35m / 1.2m) = 0.29 [D(M2) / D(M1)]
@@ -20,11 +21,11 @@ psf_strut_thick = 0.015
 psf_strut_angle = 105 * galsim.degrees
 
 psf_defocus = .0
-psf_astig1 = -0.07
-psf_astig2 = -0.06
+psf_astig1 = -0.04
+psf_astig2 = -0.025
 psf_coma1 = 0.
 psf_coma2 = 0.
-psf_trefoil1 = -0.02
+psf_trefoil1 = -0.015
 psf_trefoil2 = +0.008
 
 show = True
@@ -34,9 +35,9 @@ spectra_id = 27 # 27 = G5V
 
 spectra_dir = "thrid_party_data"
 
-# 'STEP_05500x09200', # Step bandpass for euclid-like; in Angstrom
+# 'STEP_05500x09000', # Step bandpass for euclid-like; in Angstrom
 filterband_min = 5500. 
-filterband_max = 9200.
+filterband_max = 9000.
 
 outdir = "psf_stamp"
 

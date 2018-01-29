@@ -1,11 +1,7 @@
-import megalut
 import includes
 import measfcts
-import glob
 import os
 import numpy as np
-import astropy
-from matplotlib.ticker import AutoMinorLocator, LogLocator
 import matplotlib.ticker as ticker
 
 import megalut.plot
@@ -15,8 +11,18 @@ import matplotlib.pyplot as plt
 import logging
 logger = logging.getLogger(__name__)
 
+trainname = "train_g1_ada3"
 
-traindir = os.path.join(includes.workdir, "train_simple")
+if trainname == "train_ada3" or trainname == "train_g1_ada3":
+	prefix = "fid-ell-varPSF-no-"
+	maxy = -0.05
+	miny = 0.05
+elif trainname == "train_ada5" or trainname == "train_g1_ada5":
+	prefix = "fid-ell-varPSF-xy-"
+	maxy = -0.005
+	miny = 0.005
+
+traindir = os.path.join(includes.workdir, trainname)
 outdir = os.path.join(traindir, "plots")
 
 megalut.plot.figures.set_fancy(14)
@@ -37,19 +43,41 @@ valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 
 cat = megalut.tools.io.readpickle(valprecatpath)
+
+cat["tru_psf_fwhm"] = cat["tru_psf_sigma"] * 2.355
+#psf_field = megalut.tools.io.readpickle(os.path.join(includes.simdir, "EllipticityVarPSF", "psf", "psf_field.pkl"))
+#x, y = cat["tru_gal_x_chip"], cat["tru_gal_y_chip"]
+#tru_psf_g1, tru_psf_g2, tru_psf_fwhm = psf_field.eval(x, y)
+#cat["tru_psf_fwhm"] = tru_psf_fwhm / 0.1
+
+
+# Since I fixed, by mistake, the gain to 50 and we're playing with gain = 1, let's recompute snr:
+cat = megalut.meas.snr_2hlr.measfct(cat, gain=1e9, fluxcol='adamom_flux')
+
+
 print megalut.tools.table.info(cat)
 
+print np.amin(cat["tru_psf_g1"]), np.amax(cat["tru_psf_g1"])
+print np.amin(cat["tru_psf_g2"]), np.amax(cat["tru_psf_g2"])
+
+g = np.hypot(cat["tru_psf_g2"], cat["tru_psf_g2"])
+print np.amin(g), np.amax(g)
+print '-----------------'
+print np.amin(cat["tru_psf_fwhm"]), np.amax(cat["tru_psf_fwhm"])
 
 param_feats = [
-	#	Feature("snr_mean", nicename=r"${\tt snr\_mean}$"),#r"$\mathrm{Mean}\ S/N$"),
-	#	Feature("tru_flux", nicename=r"${\tt tru\_flux}$"),#r"$\mathrm{True\ flux}$"),
-	#	Feature("tru_rad", nicename=r"${\tt tru\_rad}$"),#r"$\mathrm{True\ FWHM}$"),
-	#	Feature("tru_sersicn", nicename=r"${\tt tru\_sersicn}$"),#r"$\mathrm{True\ Sersic}\ n$"),
-	#	Feature("tru_g", nicename=r"${\tt tru\_g}$"),#r"$\mathrm{True\ ellipticity}$"),
-		Feature("tru_psf_g1", nicename=r"${\tt tru\_psf\_g1}$", low=-0.02, high=0.02),#r"$\mathrm{True\ FWHM}$"),
-		Feature("tru_psf_g2", nicename=r"${\tt tru\_psf\_g2}$", low=-0.02, high=0.02),#r"$\mathrm{True\ Sersic}\ n$"),
-		Feature("tru_psf_sigma", nicename=r"${\tt tru\_psf\_sigma}$", low=cat["tru_psf_sigma"].min()*0.95, high=cat["tru_psf_sigma"].min()*1.05),#r"$\mathrm{True\ ellipticity}$"),
+		#Feature("snr_mean", nicename=r"$S/N$"),
+		#Feature("tru_flux", nicename=r"$F\,\mathrm{[counts]}$"),
+		#Feature("tru_rad", nicename=r"$R\,\mathrm{[px]}$"),
+		#Feature("tru_sersicn", nicename=r"$n$"),
+		#Feature("tru_g", nicename=r"$e$"),
+		Feature("tru_psf_g1", nicename=r"PSF $e_1$", low=-0.03, high=0.1),
+		Feature("tru_psf_g2", nicename=r"PSF $e_2$", low=-0.07, high=0.1),
+		Feature("tru_psf_fwhm", nicename=r"PSF FWHM [px]", low=cat["tru_psf_fwhm"].min()*0.95, high=cat["tru_psf_fwhm"].max()*1.05),
 		]
+
+
+
 
 for comp in [component,component2]:
 	cat["pre_g{}".format(comp)] = cat["pre_g{}_adamom".format(comp)]
@@ -61,7 +89,7 @@ megalut.tools.table.addstats(cat, "snr")
 cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
 
 s = megalut.tools.table.Selector("ok", [
-	("in", "snr_mean", 5, 150),
+	("in", "snr_mean", 0.85, 150),
 	#("in", "tru_rad", 0, 11),
 	("max", "adamom_frac", 0.01)
 	]
@@ -77,8 +105,6 @@ plt.subplots_adjust(right=0.92)
 plt.subplots_adjust(left=0.11)
 
 #------------------------------------------------------------
-maxy = cat["pre_g{}_bias".format(component)].max() * 1.06
-miny = cat["pre_g{}_bias".format(component)].min() * 1.02
 
 maxsnr = cat["snr_mean".format(component)].max()
 minsnr = cat["snr_mean".format(component)].min()
@@ -92,14 +118,13 @@ ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component)), \
 	featc=Feature("snr_mean"), marker='.', cmap="plasma", hidecbar=True, vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"$\mathrm{True\ shear\ \gamma_%s}$" % component)
-ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
-
+ax.set_ylabel(r"Shear\ bias")
+ax.set_xlabel(r"True shear $g_{%s}$" % component)
 
 metrics = megalut.tools.metrics.metrics(cat, main_feat,  Feature("pre_g{}_bias".format(component)), pre_is_res=True)
 
 ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
-ax.annotate(r"$10^3m=%.1f \pm %.1f;\,10^3c=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, \
+ax.annotate(r"$10^3\mu=%.1f \pm %.1f;\,10^3c=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, \
 	metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
 #ax.annotate(r"$10^3c=%.1f \pm %.1f$" % (metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -35), textcoords='offset points', ha='left', va='top')
 ax.set_ylim([miny, maxy])
@@ -111,29 +136,30 @@ ax = fig.add_subplot(1, 2, 2)
 ax.fill_between([-1, 1], -2e-3, 2e-3, alpha=0.2, facecolor='darkgrey')
 ax.axhline(0, ls='--', color='k')
 megalut.plot.scatter.scatter(ax, cat, main_feat,  Feature("pre_g{}_bias".format(component2)), 
-	featc=Feature("snr_mean", nicename=r"$\mathrm{Mean}\ S/N$"), marker='.', cmap="plasma", vmin=minsnr, vmax=maxsnr)
-ax.set_xlabel(r"$\mathrm{True\ shear\ \gamma_%s}$" % component2)
+	featc=Feature("snr_mean", nicename=r"S/N"), marker='.', cmap="plasma", vmin=minsnr, vmax=maxsnr)
+ax.set_xlabel(r"True shear $g_{%s}$" % component2)
 metrics = megalut.tools.metrics.metrics(cat, main_feat,  Feature("pre_g{}_bias".format(component2)), pre_is_res=True)
 
 ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
-ax.annotate(r"$10^3m=%.1f \pm %.1f;\,10^3c=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, \
+ax.annotate(r"$10^3\mu=%.1f \pm %.1f;\,10^3c=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, \
 	metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
 ax.set_ylim([miny, maxy])
 ax.set_xlim([minshear, maxshear])
 ax.set_yticklabels([])
 ax.set_ylabel("")
 
-megalut.plot.figures.savefig(os.path.join(outdir, "overall_bias"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(outdir, "%soverall_bias" % prefix), fig, fancy=True, pdf_transparence=True)
 #------------------------------------------------------------
 #------------------------------------------------------------
 isubfig = 1
 ncol = 3
 nlines = int(np.ceil(len(param_feats) / (ncol*1.)))
-fig = plt.figure(figsize=(12, 3 * nlines))
+fig = plt.figure(figsize=(12, 3 * nlines + 0.1))
 plt.subplots_adjust(wspace=0.07)
 plt.subplots_adjust(hspace=0.27)
 plt.subplots_adjust(right=0.98)
-plt.subplots_adjust(top=0.98)
+plt.subplots_adjust(top=0.95)
+plt.subplots_adjust(bottom=0.16)
 import matplotlib.transforms as mtransforms
 no_legend = True
 
@@ -148,7 +174,7 @@ for iplot, featc in enumerate(param_feats):
 	trans = mtransforms.blended_transform_factory(ax.transAxes, ax.transData)
 	ax.fill_between([0, 1], -lintresh, lintresh, alpha=0.2, facecolor='darkgrey', transform=trans)
 	ax.axhline(0, ls='--', color='k')
-	ax.set_ylabel(r"$\mathrm{Shear\ bias}$")
+	ax.set_ylabel(r"Shear bias")
 	
 	for icomp, comp in enumerate([component, component2]):
 		
@@ -228,26 +254,28 @@ for iplot, featc in enumerate(param_feats):
 	if featc.colname == "tru_g" or (iplot == len(param_feats) + 1 and no_legend):
 		plt.legend(loc="best", handletextpad=0.07,fontsize="small", framealpha=0.5, columnspacing=0.1, ncol=2)
 		no_legend = False
-	#from matplotlib.ticker import MultipleLocator
-	#minorLocator   = MultipleLocator(1)
-	#ax.yaxis.set_minor_locator(minorLocator)
 	
-	ax.xaxis.set_minor_locator(LogLocator(5))
-	ax.yaxis.set_minor_locator(LogLocator(10,subs=[2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
-	ax.set_ylim([-.1, .1])
+	ax.set_ylim([-1e-1, 1e-1])
+	
+	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-3)])#, np.arange(lintresh, 1e-2, 9)])
+	s = ax.yaxis._scale
+	ax.yaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
+	ticks = np.concatenate([ticks, ax.yaxis.get_minor_locator().tick_values(-.1, .1)])
+	ax.yaxis.set_minor_locator(ticker.FixedLocator(ticks))
 	
 	if featc.low is not None and featc.high is not None:
 		ax.set_xlim([featc.low, featc.high])
 		#ax.locator_params(axis='x', nticks=2)
 		tick_spacing = (featc.high - featc.low) / 5.
 		ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
-		ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%0.3f'))
+		ax.xaxis.set_major_formatter(ticker.FormatStrFormatter(r'$%0.3f$'))
 		
 	if coln > 0:
 		ax.set_ylabel("")
-		ax.set_yticks([])
+		ax.set_yticklabels([])
 
 	coln += 1
 	if coln == ncol: coln = 0
-megalut.plot.figures.savefig(os.path.join(outdir, "conditional_bias"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(outdir, "%sconditional_bias" % prefix), fig, fancy=True, pdf_transparence=True)
 plt.show()
+

@@ -5,10 +5,7 @@ import glob
 import os
 import numpy as np
 import astropy
-	
-from matplotlib.patches import Ellipse
-import psf 
-	
+
 import megalut.plot
 from megalut.tools.feature import Feature
 import matplotlib.pyplot as plt
@@ -17,15 +14,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-simdir = os.path.join(includes.simdir, "EllipticityVarPSF")
-simvaldir = os.path.join(includes.simvaldir, "EllipticityVarPSF")
+simdir = os.path.join(includes.simdir, "Ellipticity")
+simvaldir = os.path.join(includes.simvaldir, "Ellipticity")
 
 component = "1"
 main_pred = "s{}".format(component)
 main_feat = Feature("tru_{}".format(main_pred))
 
 	
-for idir in [simdir]:#, simvaldir]:
+for idir in [simdir, simvaldir]:
 	outdirplots = os.path.join(idir, "plots")
 	
 	if not os.path.exists(outdirplots):

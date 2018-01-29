@@ -13,15 +13,26 @@ logger = logging.getLogger(__name__)
 simdir = includes.simdir
 
 # Let's train for ellipticity
-# We do not need Shape Noise Cancellation and no shear needeed
+# Noisy run
 sp = simparams.Ellipticity()
 sp.shear = 0
 sp.snc_type = 1
-sp.noise_level = 0.
-n = 100#00
-nc = 25#00
+sp.noise_level = 0.8
+n = 10000
+nc = 2500
 ncat = 1
-nrea = 20
+nrea = 500
+
+# Let's train for ellipticity
+# Noise-less
+sp = simparams.Ellipticity()
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.8
+n = 20000
+nc = 2500
+ncat = 1
+nrea = 500
 
 megalut.sim.run.multi(
 	simdir=simdir,

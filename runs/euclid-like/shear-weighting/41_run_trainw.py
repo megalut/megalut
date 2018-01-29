@@ -12,11 +12,11 @@ logger = logging.getLogger(__name__)
 
 
 
-traindir = os.path.join(config.workdir, "train_simple")
+traindir = os.path.join(config.workdir, "train_nonoise")
 
 conflist = [
-	#("config/ada2s1w.cfg", "config/sum3w.cfg"),
-	("config/ada2s2w.cfg", "config/sum3w.cfg"),
+	("config/ada4s1w.cfg", "config/sum55w.cfg"),
+	#("config/ada4s2w.cfg", "config/sum55w.cfg"),
 ]
 
 # Training
@@ -26,6 +26,7 @@ cat = megalut.tools.io.readpickle(catpath)
 
 print megalut.tools.table.info(cat)
 
+"""
 megalut.tools.table.addstats(cat, "snr")
 s = megalut.tools.table.Selector("ok", [
 	("min", "snr_mean", 7),
@@ -35,6 +36,7 @@ s = megalut.tools.table.Selector("ok", [
 	)
 
 cat = s.select(cat)
+"""
 
 print megalut.tools.table.info(cat)
 megalut.learn.tenbilacrun.train(cat, conflist, traindir)

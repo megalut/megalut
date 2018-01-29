@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use("AGG")
+
 import os
 
 import megalut.sim
@@ -16,6 +19,87 @@ simdir = includes.simdir
 
 # Let's train for ellipticity
 # We do not need Shape Noise Cancellation and no shear needeed
+"""
+sp = simparams.EllipticityVarPSF()
+psf_field = psf.PSF_Field(kind="e1")
+psfdir = os.path.join(simdir, sp.name, "psf")
+psf_field.save(psfdir)
+psf_field.plot(psfdir)
+sp.set_psf_field(psf_field)
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.
+n = 20000
+nc = 5000
+ncat = 1
+nrea = 20
+"""
+"""
+sp = simparams.EllipticityVarPSF()
+psf_field = psf.PSF_Field(kind="e1e2")
+psfdir = os.path.join(simdir, sp.name, "psf")
+psf_field.save(psfdir)
+psf_field.plot(psfdir)
+sp.set_psf_field(psf_field)
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.
+n = 20000
+nc = 5000
+ncat = 1
+nrea = 20
+"""
+
+# Let's train for ellipticity
+"""
+# Noisy run
+# We do not need Shape Noise Cancellation and no shear needeed
+sp = simparams.EllipticityVarPSF()
+sp.name = "EllipticityVarPSF-noisy"
+psf_field = tls.io.readpickle(os.path.join("ellpt/sim", "EllipticityVarPSF", "psf", "psf_field.pkl"))
+sp.set_psf_field(psf_field)
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.8
+n = 10000
+n = 2500
+nc = 50
+ncat = 1
+nrea = 500
+"""
+"""
+# PSF field, PSF field 10
+sp = simparams.EllipticityVarPSF()
+psf_field = psf.PSF_Field(kind="euclid-like", fieldfname="psf_fields_euclid/field-010.pkl")
+psfdir = os.path.join(simdir, sp.name, "psf")
+psf_field.save(psfdir)
+psf_field.plot(psfdir)
+sp.set_psf_field(psf_field)
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.
+n = 20000
+nc = 5000
+ncat = 1
+nrea = 20
+"""
+# PSF field, PSF field 111
+sp = simparams.EllipticityVarPSF()
+psf_field = psf.PSF_Field(kind="euclid-like", fieldfname="psf_fields_euclid/field-131.pkl")
+psfdir = os.path.join(simdir, sp.name, "psf")
+psf_field.save(psfdir)
+psf_field.fancyplot(psfdir)
+psf_field.plot(psfdir)
+sp.set_psf_field(psf_field)
+sp.shear = 0
+sp.snc_type = 1
+sp.noise_level = 0.
+n = 20000
+nc = 5000
+ncat = 1
+nrea = 20
+"""
+# PSF field, radial
 sp = simparams.EllipticityVarPSF()
 psf_field = psf.PSF_Field(kind="radial")
 psfdir = os.path.join(simdir, sp.name, "psf")
@@ -25,10 +109,11 @@ sp.set_psf_field(psf_field)
 sp.shear = 0
 sp.snc_type = 1
 sp.noise_level = 0.
-n = 10000
-nc = 2500
+n = 20000
+nc = 5000
 ncat = 1
 nrea = 20
+"""
 
 megalut.sim.run.multi(
 	simdir=simdir,
@@ -37,7 +122,7 @@ megalut.sim.run.multi(
 	drawimgkwargs={}, 
 	psfcat=None, psfselect="random",
 	ncat=ncat, nrea=nrea, ncpu=includes.ncpu,
-	savepsfimg=True, savetrugalimg=False
+	savepsfimg=False, savetrugalimg=False
 	)
 
 
@@ -66,7 +151,7 @@ megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat.pkl"))
 
-cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
+cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_g1", "tru_g2", "tru_g", "tru_flux", "tru_rad"])
 megalut.tools.table.keepunique(cat)
 print megalut.tools.table.info(cat)
 megalut.tools.io.writepickle(cat, os.path.join(simdir, sp.name, "groupmeascat_cases.pkl"))

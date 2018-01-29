@@ -59,7 +59,6 @@ class Ellipticity(megalut.sim.params.Params):
 		surface_brigthness = np.random.uniform(0.8, 1.2)
 		
 		tru_rad = np.random.uniform(1.5, 4.0)
-		tru_rad = np.random.uniform(0.5, 10.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * 10**(-surface_brigthness)
 			

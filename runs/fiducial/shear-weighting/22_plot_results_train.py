@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 trainname = "train_simple"
-spname = "Ellipticity"
+spname = "Sersics_statshear"
 
 
 traindir = os.path.join(includes.workdir, trainname)

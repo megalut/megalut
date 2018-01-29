@@ -164,3 +164,4 @@ ax.hist(errs_flux, range=histrange, **mykwargs2)
 plt.xlabel("tru_flux")
 plt.show()
 
+

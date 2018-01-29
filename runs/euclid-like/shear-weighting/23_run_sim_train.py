@@ -11,56 +11,20 @@ import config
 import logging
 logger = logging.getLogger(__name__)
 
-simdir = config.simdir
-
 # Let's train for shear
 # We do not need Shape Noise Cancellation and no shear needeed
-dbgal = Table.read(os.path.join(config.dbdir, "euclid_train_large.fits"))
 
 # nonoise
-"""
+dbgal = Table.read(os.path.join(config.dbdir, "euclid_train.fits"))
 sp = simparams.EuclidLike_Ell(dbgal)
 sp.shear = 0.1
 sp.snc_type = 100
 sp.noise_factor = 0.
-n = 5000
+n = 50#00
 nc = 1
 ncat = 4
 nrea = 1
-
-"""
-# noisy
-sp = simparams.EuclidLike_Ell(dbgal)
-sp.shear = 0.1
-sp.snc_type = 500
-sp.noise_factor = 1.
-n = 5000
-nc = 1
-ncat = 2
-nrea = 3
-
-"""
-# Default
-sp = simparams.Default(dbgal)
-sp.shear = 0.1
-sp.snc_type = 100
-sp.noise_factor = 0.
-n = 2500
-nc = 1
-ncat = 1
-nrea = 1
-"""
-"""
-# Uniform
-sp = simparams.Uniform(dbgal)
-sp.shear = 0.1
-sp.snc_type = 100
-sp.noise_factor = 0.
-n = 5000
-nc = 1
-ncat = 1
-nrea = 1
-"""
+simdir = os.path.join(config.workdir, "sim")
 
 psfcat = megalut.tools.io.readpickle(os.path.join(config.psfdir, "psf_meascat.pkl"))
 
@@ -91,7 +55,6 @@ cat = megalut.meas.avg.onsims(
 	groupcols=measfcts.default_groupcols, 
 	removecols=measfcts.default_removecols
 	)
-
 
 
 megalut.tools.table.keepunique(cat)

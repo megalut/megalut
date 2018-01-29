@@ -13,6 +13,7 @@ import measfcts
 import config
 
 import os
+import measfcts
 
 import logging
 logger = logging.getLogger(__name__)
@@ -41,4 +42,10 @@ for colname in starcat.colnames:
 
 megalut.tools.io.writepickle(starcat, os.path.join(config.psfdir, "psf_meascat.pkl"))
     
-print starcat 
+
+for col in starcat.colnames:
+    print starcat[col] 
+    
+print 
+print 
+print starcat["psfadamom_sigma"] * 2.355
