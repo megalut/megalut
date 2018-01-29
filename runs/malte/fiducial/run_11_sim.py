@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 
-"""
+
 sp = simparams.Fiducial(
 	name = "si-1",
 	snc_type = 0,
@@ -31,8 +31,8 @@ drawconf = {
 	"groupmode":None,
 	"skipdone":False	
 }
-"""
 
+"""
 
 sp = simparams.Fiducial_statshear(
 	name = "ts-1",
@@ -49,7 +49,7 @@ drawconf = {
 	"groupmode":"shear",
 	"skipdone":False	
 }
-
+"""
 
 
 """

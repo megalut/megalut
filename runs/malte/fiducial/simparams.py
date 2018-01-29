@@ -15,7 +15,7 @@ def trunc_gaussian(m, s, minval, maxval):
 	return distr.rvs()
 
 
-def trun_rayleigh(sigma, max_val):
+def trunc_rayleigh(sigma, max_val):
 	"""
 	A truncated Rayleigh distribution
 	"""
@@ -100,21 +100,22 @@ class Fiducial(megalut.sim.params.Params):
 		"""
 	
 		########## PSF ##########
-		tru_psf_sigma = 0.75 # 0.75 pixels -> FHWM = 1.77 pixels, roughly Euclid
+		#tru_psf_sigma = 0.75 # 0.75 pixels -> FHWM = 1.77 pixels, roughly Euclid
+		tru_psf_sigma = 2.0 # -> FWHM = 4.7 pixels
 		tru_psf_g1 = 0.0
 		tru_psf_g2 = 0.0
 	
 	
 		########## Galaxy ##########
 		
-		tru_g = trun_rayleigh(0.2, 0.6)
+		tru_g = trunc_rayleigh(0.2, 0.6)
 		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
 		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 		
 		tru_sersicn = random.choice(np.linspace(1, 4, 10))
 		
-		tru_sb = np.random.uniform(10.0, 30.0)
-		tru_rad = np.random.uniform(0.5, 5.0)
+		tru_sb = np.random.uniform(5.0, 15.0)
+		tru_rad = np.random.uniform(2.0, 8.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * tru_sb
 			

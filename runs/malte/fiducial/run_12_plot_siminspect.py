@@ -1,14 +1,16 @@
-execfile("config.py")
+import megalut
+import os
+import config
+import numpy as np
 
 from megalut.tools.feature import Feature
 
 import matplotlib
 import matplotlib.pyplot as plt
 
-import numpy as np
 
 
-cat = megalut.tools.io.readpickle(os.path.join(simmeasdir, config.datasets["siminspect"], "groupmeascat.pkl"))
+cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.datasets["siminspect"], "groupmeascat.pkl"))
 
 print megalut.tools.table.info(cat)
 
