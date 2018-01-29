@@ -20,7 +20,10 @@ conflist = [
 
 
 # Training
-catpath = os.path.join(includes.simdir, "EllipticityVarPSF", "groupmeascat.pkl")
+# if PSF:
+catpath = os.path.join(includes.simdir, "EllipticityVarPSF", "groupmeascat_cases.pkl")
+# else:
+#catpath = os.path.join(includes.simdir, "EllipticityVarPSF", "groupmeascat.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
 
