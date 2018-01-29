@@ -34,6 +34,25 @@ valprecatpath = os.path.join(traindir, "valprecat.pkl")
 
 
 cat = megalut.tools.io.readpickle(valprecatpath)
+
+# let's recompute snr:
+#cat = megalut.meas.snr.measfct(cat, gain=1.0)
+cat = megalut.meas.snr_2hlr.measfct(cat, gain=1.e9, fluxcol='adamom_flux')
+#cat["tru_radwrtPSF"] = cat["tru_rad"] / (cat["tru_psf_sigma"] * 1.1774)
+
+cat["adamom_frac"] = np.sum(cat["adamom_g1"].mask, axis=1)/float(cat["adamom_g1"].shape[1])
+
+megalut.tools.table.addstats(cat, "snr")
+s = megalut.tools.table.Selector("ok", [
+	#("min", "snr_mean", 1.8),
+	("min", "snr_mean", 31.),
+	#("min", "tru_rad", 2.5),
+	("max", "adamom_frac", 0.01)
+	]
+	)
+
+cat = s.select(cat)
+
 print megalut.tools.table.info(cat)
 
 
@@ -48,7 +67,7 @@ for comp in [component,component2]:
 	#cat["pre_s{}_wbias".format(comp)] = cat["pre_s{}_wmean".format(comp)] - cat["tru_s{}".format(comp)]
 
 resr = 0.015
-symthres = 0.004
+symthres = 0.002
 
 #=======================================================================================
 fig = plt.figure(figsize=(8, 3.5))
@@ -60,7 +79,7 @@ ax.fill_between([-1, 1], -symthres, symthres, alpha=0.2, facecolor='darkgrey')
 metrics = megalut.tools.metrics.metrics(cat,  Feature("tru_s1"),  Feature("pre_s1_bias"), pre_is_res=True)
 
 ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
-ax.annotate(r"$10^3m=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
+ax.annotate(r"$10^3\mu=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
 ax.annotate(r"$10^3c=%.1f \pm %.1f$" % \
 	(metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -35), textcoords='offset points', ha='left', va='top')
 
@@ -72,7 +91,7 @@ ax.fill_between([-1, 1], -symthres, symthres, alpha=0.2, facecolor='darkgrey')
 metrics = megalut.tools.metrics.metrics(cat,  Feature("tru_s2"),  Feature("pre_s2_bias"), pre_is_res=True)
 
 ax.annotate(r"$\mathrm{RMSD=%.5f}$" % metrics["rmsd"], xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -4), textcoords='offset points', ha='left', va='top')
-ax.annotate(r"$10^3m=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
+ax.annotate(r"$10^3\mu=%.1f \pm %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -19), textcoords='offset points', ha='left', va='top')
 ax.annotate(r"$10^3c=%.1f \pm %.1f$" % \
 	(metrics["c"]*1000.0, metrics["cerr"]*1000.0), xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -35), textcoords='offset points', ha='left', va='top')
 
@@ -81,6 +100,6 @@ ax.set_yticklabels([])
 
 plt.tight_layout()
 
-megalut.plot.figures.savefig(os.path.join(outdir, "overall_bias"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(outdir, "fid-shear-simple-overall_bias"), fig, fancy=True, pdf_transparence=True)
 plt.show()
 
