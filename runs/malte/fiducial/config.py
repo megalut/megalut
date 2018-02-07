@@ -11,7 +11,8 @@ loggerformat='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;2
 #loggerformat='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s'
 logging.basicConfig(format=loggerformat,level=logging.INFO)
 
-workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/fiducial"
+#workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/fiducial"
+workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial"
 
 
 simdir = os.path.join(workdir, "sim")
@@ -29,21 +30,16 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	
-	"train-shear":"ts-1",
-
-	"valid-shear":"vs-1",
-
-	"train-weight":"tw-1",
-
-	"valid-overall":"vo-1",
-	
-	"siminspect":"si-1",
+	"ts":"ts-1",
+	"vs":"vs-2",
+	"tw":"tw-1",
+	"vo":"vo-2",
+	"si":"si-1",
 }
 
 
 shearconflist = [
-	("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
+	#("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
 	("mlconfig/ada4s2.cfg", "mlconfig/sum55.cfg")
 	
 ]

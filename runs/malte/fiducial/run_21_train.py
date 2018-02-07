@@ -15,8 +15,8 @@ select = True
 
 	
 # Getting the path to the correct directories
-measdir = os.path.join(config.simmeasdir, config.datasets["train-shear"])
-traindir = os.path.join(config.traindir, config.datasets["train-shear"])
+measdir = os.path.join(config.simmeasdir, config.datasets["ts"])
+traindir = os.path.join(config.traindir, config.datasets["ts"])
 	
 # And to the catalogue
 traincatpath = os.path.join(measdir, "groupmeascat.pkl")

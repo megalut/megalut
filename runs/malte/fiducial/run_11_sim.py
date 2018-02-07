@@ -4,6 +4,7 @@ matplotlib.use("AGG")
 import os
 import megalut
 import config
+import argparse
 
 import simparams
 import measfcts
@@ -14,23 +15,151 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+def define_parser():
+	"""Defines the command line arguments
+	"""
+	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+	parser.add_argument('name', type=str, help='what dataset should be simulated?')
+	
+	return parser
 
 
-sp = simparams.Fiducial(
-	name = "si-1",
-	snc_type = 0,
-	shear = 0,
-	noise_level = 1.0
-)
-drawconf = {
-	"n":1000,
-	"nc":10,
-	"nrea":1,
-	"ncat":1,
-	"ncpu":1,
-	"groupmode":None,
-	"skipdone":False	
-}
+def configure(args):
+	"""Configures settings for the different datasets
+	"""
+	
+	code = config.datasets[args.name]
+	
+	if code == "si-1": # Just to quickly draw 1000 galaxies probing the distributions.
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0,
+			shear = 0,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":1,
+			"ncat":1,
+			"ncpu":1,
+			"groupmode":None,
+			"skipdone":False	
+		}
+	
+	elif code == "vo-1": # As a first test, no SNC.
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vo-2": # With 2-fold SNC, and 10 times larger
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":1,
+			"ncat":1000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+	
+	elif code == "ts-1":
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 500,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":500,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+
+	elif code == "vs-1": # Same settings as ts-1, just another realization of the set.
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 500,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":500,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+	
+	
+	elif code == "vs-2": # Larger 40 times
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 10000,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":1000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+	
+	
+	
+	elif code == "tw-1": # Training weights, do not use SNC!
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":2000,
+			"nc":50,
+			"nrea":1,
+			"ncat":500,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+	
+	
+	
+	return (sp, drawconf)
+
+
+
+
 
 """
 
@@ -52,23 +181,6 @@ drawconf = {
 """
 
 
-"""
-sp = simparams.Fiducial_statshear(
-	name = "vo-1",
-	snc_type = 4,
-	shear = 0.05,
-	noise_level = 1.0
-)
-drawconf = {
-	"n":250,
-	"nc":10,
-	"nrea":1,
-	"ncat":4,
-	"ncpu":4,
-	"groupmode":None,
-	"skipdone":False	
-}
-"""
 
 
 #################### What we really need
@@ -542,63 +654,71 @@ drawconf = {
 
 
 
-####################
-
-simdir = config.simdir
-measdir = config.simmeasdir
-
-
-# Simulating images
-megalut.sim.run.multi(
-	simdir=simdir,
-	simparams=sp,
-	drawcatkwargs={"n":drawconf["n"], "nc":drawconf["nc"], "stampsize":config.drawstampsize},
-	drawimgkwargs={}, 
-	psfcat=None, psfselect="random",
-	ncat=drawconf["ncat"], nrea=drawconf["nrea"], ncpu=drawconf["ncpu"],
-	savepsfimg=False, savetrugalimg=False
-)
+def run(configuration):
+	"""Draws the simulations and measures them
+	"""
+	sp, drawconf = configuration
+	
+	simdir = config.simdir
+	measdir = config.simmeasdir
 
 
-# Measuring the newly drawn images
-megalut.meas.run.onsims(
-	simdir=simdir,
-	simparams=sp,
-	measdir=measdir,
-	measfct=measfcts.default,
-	measfctkwargs={"stampsize":config.stampsize},
-	ncpu=drawconf["ncpu"],
-	skipdone=drawconf["skipdone"]
-)
+	# Simulating images
+	megalut.sim.run.multi(
+		simdir=simdir,
+		simparams=sp,
+		drawcatkwargs={"n":drawconf["n"], "nc":drawconf["nc"], "stampsize":config.drawstampsize},
+		drawimgkwargs={}, 
+		psfcat=None, psfselect="random",
+		ncat=drawconf["ncat"], nrea=drawconf["nrea"], ncpu=drawconf["ncpu"],
+		savepsfimg=False, savetrugalimg=False
+	)
+
+
+	# Measuring the newly drawn images
+	megalut.meas.run.onsims(
+		simdir=simdir,
+		simparams=sp,
+		measdir=measdir,
+		measfct=measfcts.default,
+		measfctkwargs={"stampsize":config.stampsize},
+		ncpu=drawconf["ncpu"],
+		skipdone=drawconf["skipdone"]
+	)
 	
 
-cat = megalut.meas.avg.onsims(
-	measdir=measdir, 
-	simparams=sp,
-	task="group",
-	groupcols=measfcts.default_groupcols, 
-	removecols=measfcts.default_removecols
-)
-
-megalut.tools.table.keepunique(cat)
-megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-
-
-if drawconf["groupmode"] == "shear":
-
-	cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
-	#cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
-	cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+	cat = megalut.meas.avg.onsims(
+		measdir=measdir, 
+		simparams=sp,
+		task="group",
+		groupcols=measfcts.default_groupcols, 
+		removecols=measfcts.default_removecols
+	)
 
 	megalut.tools.table.keepunique(cat)
-	
-	# For each case, we add the fraction of failed measurements
-	nrea = cat["adamom_g1"].shape[1]
-	logger.info("We have {} realizations".format(nrea))
-	cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
-
-	#print megalut.tools.table.info(cat)
 	megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+	
+	
+	if drawconf["groupmode"] == "shear":
+	
+		cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+		#cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
+		cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])	
+	
+		megalut.tools.table.keepunique(cat)
+		
+		# For each case, we add the fraction of failed measurements
+		nrea = cat["adamom_g1"].shape[1]
+		logger.info("We have {} realizations".format(nrea))
+		cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)		
+	
+		#print megalut.tools.table.info(cat)
+		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 
 
+if __name__ == '__main__':
+	parser = define_parser()
+	args = parser.parse_args()
+	status = run(configure(args))
+	exit(status)
 
