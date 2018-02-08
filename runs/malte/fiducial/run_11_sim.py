@@ -99,6 +99,25 @@ def configure(args):
 		}
 
 
+	elif code == "ts-2": # 2000 cases, 2000-SNC rotations per case (4 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+
+
 	elif code == "vs-1": # Same settings as ts-1, just another realization of the set.
 		sp = simparams.Fiducial_statshear(
 			name = code,
@@ -168,8 +187,7 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
-	
-	
+		
 	
 	return (sp, drawconf)
 
