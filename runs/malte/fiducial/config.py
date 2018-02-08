@@ -39,7 +39,7 @@ datasets = {
 
 
 shearconflist = [
-	#("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
+	("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
 	("mlconfig/ada4s2.cfg", "mlconfig/sum55.cfg")
 	
 ]

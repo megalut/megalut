@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 
-cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.datasets["siminspect"], "groupmeascat.pkl"))
+cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.datasets["si"], "groupmeascat.pkl"))
 
 print megalut.tools.table.info(cat)
 

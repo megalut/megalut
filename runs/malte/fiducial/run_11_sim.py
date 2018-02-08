@@ -47,7 +47,7 @@ def configure(args):
 			"skipdone":False	
 		}
 	
-	elif code == "vo-1": # As a first test, no SNC.
+	elif code == "vo-1": # As a first test, no SNC: 100 cases with 10'000 gals (1 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 0,
@@ -64,7 +64,7 @@ def configure(args):
 			"skipdone":False	
 		}
 
-	elif code == "vo-2": # With 2-fold SNC, and 10 times larger
+	elif code == "vo-2": # With 2-fold SNC, 1000 cases, 10'000 gals (20 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 2,
@@ -81,7 +81,7 @@ def configure(args):
 			"skipdone":False	
 		}
 	
-	elif code == "ts-1":
+	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (tiny...)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 500,
@@ -117,7 +117,7 @@ def configure(args):
 		}
 	
 	
-	elif code == "vs-2": # Larger 40 times
+	elif code == "vs-2": # 1000 cases, 10'000 SNC rotations each (10 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 10000,
@@ -134,9 +134,25 @@ def configure(args):
 			"skipdone":False	
 		}
 	
+	elif code == "vs-3": # 5000 cases, 10'000 SNC rotations each (50 M) HUGE, same as Thibault's set.
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 10000,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":5000,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 	
 	
-	elif code == "tw-1": # Training weights, do not use SNC!
+	elif code == "tw-1": # Training weights, no SNC (!), 500 cases, 2000 gals (1 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 0,
