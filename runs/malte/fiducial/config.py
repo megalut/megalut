@@ -30,10 +30,10 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	"ts":"ts-2",
+	"ts":"ts-1",
 	"vs":"vs-2",
 	"tw":"tw-1",
-	"vo":"vo-2",
+	"vo":"vo-1",
 	"si":"si-1",
 }
 
@@ -41,28 +41,15 @@ datasets = {
 shearconflist = [
 	("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
 	("mlconfig/ada4s2.cfg", "mlconfig/sum55.cfg")
+
+	#("mlconfig/ada4s1.cfg", "mlconfig/sum5.cfg")
+	#("mlconfig/ada4s2.cfg", "mlconfig/sum5.cfg")
 	
 ]
 
 weightconflist = [
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
 	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w.cfg"),
 
-	#("mlconfig/ada2s1w.cfg", "mlconfig/sum55w_test3.cfg"),
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_test4.cfg"),
-	
-
-
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_test3.cfg"),
-	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_test.cfg"),
-	
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1.cfg"),#  <--- i guess we want those 
-	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_huge1.cfg"),
-
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_tw3.cfg"),
-	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_tw3.cfg"),
-	
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1iden.cfg"),
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1idennomb.cfg"),
 	
 ]

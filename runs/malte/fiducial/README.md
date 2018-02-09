@@ -21,15 +21,17 @@ Dataset categories:
 We have several configurations for each category:
 
 
-ts-1
-ts-2 : (tbd)
+ts-1 : 0.25 Mgal
+ts-2 : 4 Mgal, 126 GB
 
 vs-1
 vs-2
-vs-3 : 50 Mgal, 
+vs-3 : 50 Mgal, 1.1 TB, less than a night with 50 cpu
 
 
-vo-1
+tw-1 : 1 Mgal, 32 GB
+
+vo-1 : 1 Mgal, no SNC
 vo-2 : 20 Mgal, 383 GB
 
 
@@ -40,11 +42,34 @@ Trainings
 
 
 
-ts-1
+ts-2 sum55
+ts-2 sum5
 
 
 
 
-## Manual
+tw-1 : 100 its on 1Mgal take 30 min
+
+
+
+
+Plots
+-----
+
+plot_4_paper
+plot_5_paper
+
+plot_6_paper
+
+
+Todo
+----
+
+
+Euclid-like:
+  * fix bincenters in conditional bias plots to be the mean x value of the actual points in each bin
+  * use plasma_r
+
+
 
 

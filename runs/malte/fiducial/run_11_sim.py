@@ -19,7 +19,7 @@ def define_parser():
 	"""Defines the command line arguments
 	"""
 	parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-	parser.add_argument('name', type=str, help='what dataset should be simulated?')
+	parser.add_argument('code', type=str, help='what dataset should be simulated?')
 	
 	return parser
 
@@ -28,7 +28,7 @@ def configure(args):
 	"""Configures settings for the different datasets
 	"""
 	
-	code = config.datasets[args.name]
+	code = args.code
 	
 	if code == "si-1": # Just to quickly draw 1000 galaxies probing the distributions.
 		sp = simparams.Fiducial(
@@ -187,6 +187,11 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+	
+	else:
+		
+		logger.info("Unknown code")
+		return
 		
 	
 	return (sp, drawconf)

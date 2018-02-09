@@ -16,17 +16,41 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+import argparse
 
-valname = "{}_on_{}".format(config.datasets["ts"], config.datasets["vs"])
-valcat = os.path.join(config.valdir, valname + ".pkl")
-cat = megalut.tools.io.readpickle(valcat)
+
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('mode', type=str, help='Should I run on vo or vs')
+args = parser.parse_args()
+
+if args.mode == "vs":
+		
+	valname = "{}_on_{}".format(config.datasets["ts"], config.datasets["vs"])
+	valcatpath = os.path.join(config.valdir, valname + ".pkl")
+
+elif args.mode == "vo":
+	
+
+	sconfname = os.path.splitext(os.path.basename(config.shearconflist[0][1]))[0] # extracts e.g. "sum55"
+	wconfname = os.path.splitext(os.path.basename(config.weightconflist[0][1]))[0] # extracts e.g. "sum55w"
+	valname = "{}_and_{}_with_{}_{}_on_{}".format(config.datasets["ts"], config.datasets["tw"], sconfname, wconfname, config.datasets["vo"])
+	valcatpath = os.path.join(config.valdir, valname + ".pkl")
+
+
+else:
+	logger.info("Unknown mode")
+	exit()
+
+
+cat = megalut.tools.io.readpickle(valcatpath)
+
 
 megalut.plot.figures.set_fancy(14)
 
 print megalut.tools.table.info(cat)
 
-megalut.tools.table.addstats(cat, "snr")
-print megalut.tools.table.info(cat)
+#megalut.tools.table.addstats(cat, "snr")
+#print megalut.tools.table.info(cat)
 
 for comp in ["1","2"]:
 
@@ -35,7 +59,7 @@ for comp in ["1","2"]:
 		
 		# First putting all weights to 1.0:
 		cat["pre_s{}w".format(comp)] = np.ones(cat["adamom_g1"].shape)
-		
+		logger.info("Setting weights to one")
 		
 		# Keeping only the best half of SNR
 		#megalut.tools.table.addstats(cat, "snr")
@@ -46,6 +70,8 @@ for comp in ["1","2"]:
 		#megalut.tools.table.addstats(cat, "adamom_sigma")
 		#for row in cat:
 		#	row["pre_s{}w".format(comp)] = np.array(row["adamom_sigma"] > row["adamom_sigma_med"], dtype=np.float)
+	
+	logger.info("Weights exist")
 	
 	
 	cat["pre_s{}w_norm".format(comp)] = cat["pre_s{}w".format(comp)] / np.max(cat["pre_s{}w".format(comp)])
@@ -137,7 +163,7 @@ fig = plt.figure(figsize=(5, 7))
 ax1 = fig.add_subplot(2, 1, 1)
 cat["pre_wmean"] = (cat["pre_s1w_norm"] + cat["pre_s2w_norm"])/2.
 cat["pre_wdelta"] = np.abs((cat["pre_s1w_norm"] - cat["pre_s2w_norm"]))
-megalut.plot.scatter.scatter(ax1, cat, Feature("tru_rad", nicename=r"$R$ [px]", rea=rea), Feature("snr", nicename="S/N", rea=rea), featc=Feature("pre_s1w_norm", rea=rea, nicename=r"Weights $w_1$"), cmap="inferno", rasterized = True)
+megalut.plot.scatter.scatter(ax1, cat, Feature("tru_rad", nicename=r"$R$ [px]", rea=rea), Feature("snr", nicename="S/N", rea=rea), featc=Feature("pre_s1w_norm", 0, 1, rea=rea, nicename=r"Weights $w_1$"), cmap="plasma_r", rasterized = True)
 
 ax1.set_xlabel("")
 ax1.set_xticklabels([])
@@ -145,7 +171,7 @@ ax1.set_xticklabels([])
 xmin, xmax = ax1.get_xlim()
 
 ax2 = fig.add_subplot(2, 1, 2)
-megalut.plot.scatter.scatter(ax2, cat, Feature("tru_rad", nicename=r"$R$ [px]", rea=rea), Feature("snr", nicename="S/N", rea=rea), featc=Feature("pre_s2w_norm", rea=rea, nicename=r"Weights $w_2$"), cmap="inferno", rasterized = True)
+megalut.plot.scatter.scatter(ax2, cat, Feature("tru_rad", nicename=r"$R$ [px]", rea=rea), Feature("snr", nicename="S/N", rea=rea), featc=Feature("pre_s2w_norm", 0, 1, rea=rea, nicename=r"Weights $w_2$"), cmap="plasma_r", rasterized = True)
 ax2.set_xlim([xmin, xmax])
 
 print cat["pre_s1w_norm", "pre_s2w_norm"]
