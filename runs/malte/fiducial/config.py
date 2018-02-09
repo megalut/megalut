@@ -30,7 +30,7 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	"ts":"ts-1",
+	"ts":"ts-2",
 	"vs":"vs-2",
 	"tw":"tw-1",
 	"vo":"vo-2",
@@ -45,16 +45,21 @@ shearconflist = [
 ]
 
 weightconflist = [
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
+	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w.cfg"),
+
 	#("mlconfig/ada2s1w.cfg", "mlconfig/sum55w_test3.cfg"),
 	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_test4.cfg"),
 	
+
+
 	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_test3.cfg"),
 	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_test.cfg"),
 	
-	("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1.cfg"),#  <--- i guess we want those 
-	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_huge1.cfg"),
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1.cfg"),#  <--- i guess we want those 
+	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_huge1.cfg"),
 
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_tw3.cfg"),#  <--- i guess we want those 
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_tw3.cfg"),
 	#("mlconfig/ada5s2w.cfg", "mlconfig/sum55w_tw3.cfg"),
 	
 	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w_huge1iden.cfg"),
