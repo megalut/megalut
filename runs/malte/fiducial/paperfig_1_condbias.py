@@ -276,6 +276,6 @@ for iplot, featc in enumerate(param_feats):
 	if coln == ncol: coln = 0
 
 
-megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_plot_6b"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_condbias_b"), fig, fancy=True, pdf_transparence=True)
 plt.show()
 

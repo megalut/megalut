@@ -152,7 +152,7 @@ ax.set_yticklabels([])
 
 plt.tight_layout()
 
-megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_plot_5a"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_bias_a"), fig, fancy=True, pdf_transparence=True)
 
 #==================================================================================================
 
@@ -177,7 +177,7 @@ ax2.set_xlim([xmin, xmax])
 print cat["pre_s1w_norm", "pre_s2w_norm"]
 
 plt.tight_layout()
-megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_plot_5b"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_bias_b"), fig, fancy=True, pdf_transparence=True)
 plt.show()
 
 

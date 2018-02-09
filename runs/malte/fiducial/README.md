@@ -56,15 +56,22 @@ tw-1 : 100 its on 1Mgal take 30 min
 Plots
 -----
 
-plot_4_paper
-plot_5_paper
 
-plot_6_paper
+
+
+Can probably be deleted:
+plot_4_paper
 
 
 Todo
 ----
 
+
+Check training on ts-2
+Run training on ts-e-1
+
+
+Check that even for ts-e-1, the bright galaxise sometimes make the feature meas fail.
 
 Euclid-like:
   * fix bincenters in conditional bias plots to be the mean x value of the actual points in each bin

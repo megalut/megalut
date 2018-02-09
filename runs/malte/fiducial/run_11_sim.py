@@ -81,7 +81,7 @@ def configure(args):
 			"skipdone":False	
 		}
 	
-	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (tiny...)
+	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (0.25 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 500,
@@ -115,6 +115,25 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+
+
+	elif code == "ts-e-1": # Target value is ellipticity, full noise, 100 rea per gal, (1 M)
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0,
+			shear = -1, # We don't want shear in this
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":100,
+			"ncat":1,
+			"ncpu":20,
+			"groupmode":"ellipticity",
+			"skipdone":False	
+		}
+
 
 
 
@@ -738,14 +757,18 @@ def run(configuration):
 	megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 	
 	
+	# Now we perform some additional computations on this catalog.
+	cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+	
 	if drawconf["groupmode"] == "shear":
 	
-		cat = megalut.tools.io.readpickle(os.path.join(measdir, sp.name, "groupmeascat.pkl"))
 		#cat = megalut.tools.table.groupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])
 		cat = megalut.tools.table.fastgroupreshape(cat, groupcolnames=["tru_s1", "tru_s2"])	
 	
 		megalut.tools.table.keepunique(cat)
-		
+	
+	if drawconf["groupmode"] in ["shear", "ellipticity"]:
+	
 		# For each case, we add the fraction of failed measurements
 		nrea = cat["adamom_g1"].shape[1]
 		logger.info("We have {} realizations".format(nrea))
@@ -753,6 +776,7 @@ def run(configuration):
 	
 		#print megalut.tools.table.info(cat)
 		megalut.tools.io.writepickle(cat, os.path.join(measdir, sp.name, "groupmeascat.pkl"))
+
 
 
 if __name__ == '__main__':
