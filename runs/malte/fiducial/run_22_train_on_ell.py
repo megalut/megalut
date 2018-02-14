@@ -23,7 +23,16 @@ traindir = os.path.join(config.traindir, config.datasets["ts"])
 # And to the catalogue
 traincatpath = os.path.join(measdir, "groupmeascat.pkl")
 cat = megalut.tools.io.readpickle(traincatpath)
-#print megalut.tools.table.info(cat)
+
+# This is a special script for targetting ellipticity, we copy true ellipticity into shear so that 
+# we can keep pretidcign the same field.
+
+cat["tru_s1"] = cat["tru_g1"]
+cat["tru_s2"] = cat["tru_g2"]
+
+print megalut.tools.table.info(cat)
+
+#exit()
 
 #nrea = cat["adamom_g1"].shape[1]
 #logger.info("We have {} realizations".format(nrea))

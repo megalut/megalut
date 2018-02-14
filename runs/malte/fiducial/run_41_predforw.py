@@ -23,11 +23,14 @@ cat = megalut.tools.io.readpickle(catpath)
 #print megalut.tools.table.info(cat)
 #exit()
 
-predcatpath = os.path.join(config.simmeasdir, config.datasets["tw"], "groupmeascat_predforw.pkl")
+wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"])
+os.makedirs(wtraindir)
 
+predcatpath = os.path.join(wtraindir, "groupmeascat_predforw.pkl")
 
 
 traindir = os.path.join(config.traindir, config.datasets["ts"])
+
 	
 predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist, traindir)
 

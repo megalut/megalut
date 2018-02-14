@@ -71,7 +71,7 @@ for comp in ["1","2"]:
 		#for row in cat:
 		#	row["pre_s{}w".format(comp)] = np.array(row["adamom_sigma"] > row["adamom_sigma_med"], dtype=np.float)
 	
-	logger.info("Weights exist")
+	#logger.info("Weights exist")
 	
 	
 	cat["pre_s{}w_norm".format(comp)] = cat["pre_s{}w".format(comp)] / np.max(cat["pre_s{}w".format(comp)])

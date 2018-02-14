@@ -27,7 +27,7 @@ param_feats = [
 		#Feature("tru_flux", nicename=r"$F$ [counts]"),
 		#Feature("tru_rad", nicename=r"$R$ [px]"),
 		Feature("tru_radwrtPSF", 0.5, 3.5, nicename=r"$R/R_\mathrm{PSF}$"),
-		Feature("tru_sersicn", 0.5, 4.5, nicename=r"Sersic index $n$"),
+		Feature("tru_sersicn", 0.5, 4.5, nicename=r"S\'ersic index $n$"),
 		Feature("tru_g", 0.0, 0.6, nicename=r"Galaxy ellipticity $|\varepsilon|$"),
 		]
 
@@ -52,8 +52,8 @@ for comp in ["1","2"]:
 	cat["pre_s{}_wbias".format(comp)] = cat["pre_s{}_wmean".format(comp)] - cat["tru_s{}".format(comp)]
 
 
-for comp in ["1", "2"]:
-	pass
+#for comp in ["1", "2"]:
+#	pass
 	#cat["pre_g{}".format(comp)] = cat["pre_g{}_adamom".format(comp)]
 	#megalut.tools.table.addstats(cat, "pre_g{}".format(comp))
 	#megalut.tools.table.addrmsd(cat, "pre_g{}".format(comp), "tru_s{}".format(comp))
@@ -64,9 +64,9 @@ megalut.tools.table.addstats(cat, "snr")
 
 """
 s = megalut.tools.table.Selector("ok", [
-	#("min", "snr_mean", 10),
-	("in", "tru_rad", 0, 10.),
-	("max", "adamom_frac", 0.005)
+	("min", "snr_mean", 10),
+	#("in", "tru_rad", 0, 10.),
+	#("max", "adamom_frac", 0.005)
 	]
 )
 cat = s.select(cat)

@@ -27,12 +27,11 @@ parser.add_argument('-s', '--startfrom', type=int, help='Subfield from which to 
 args = parser.parse_args()
 
 
+wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"])
+catpath = os.path.join(wtraindir, "groupmeascat_predforw.pkl")
 
-
-catpath = os.path.join(config.simmeasdir, config.datasets["tw"], "groupmeascat_predforw.pkl")
 cat = megalut.tools.io.readpickle(catpath)
 
-traindir = os.path.join(config.traindir, config.datasets["tw"])
 		
 """
 # Now we might want to copy an existing training to start from there.
@@ -59,7 +58,7 @@ if args.startfrom is not None:
 
 	
 # Running the training	
-dirnames = megalut.learn.tenbilacrun.train(cat, config.weightconflist, traindir)
+dirnames = megalut.learn.tenbilacrun.train(cat, config.weightconflist, wtraindir)
 
 print dirnames
 
