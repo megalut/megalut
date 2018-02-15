@@ -30,8 +30,8 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	#"ts":"ts-2",
-	"ts":"ts-2-sel-large",
+	"ts":"ts-2",
+	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
 	"vs":"vs-2",
 	"tw":"tw-1",

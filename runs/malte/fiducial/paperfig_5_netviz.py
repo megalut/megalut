@@ -32,23 +32,17 @@ for (dataconfpath, toolconfpath) in config.shearconflist:
        
 	ten._readmembers()
 	
+	net = ten.committee[0].net
+	net.onames[0] = r"\hat{g}1"
 	
-	fig = plt.figure(figsize=(6, 6))
+	#fig = plt.figure(figsize=(6, 6))
+	#ax = fig.add_subplot(1, 1, 1)
 
-	ax = fig.add_subplot(1, 1, 1)
-
-	tenbilac.plot.summaryerrevo(ten.committee, ax=ax)       
+	filepath = os.path.join(config.valdir, config.datasets["ts"] + "_" + confname + "_netviz.pdf")
 	
-	ax.set_yscale('log')
-	ax.set_xscale('log')
-	ax.set_xlabel(r"Iteration")
-	ax.set_ylim(1e-6, 1e-3)
-	ax.set_xlim((5, 5e3))
-	ax.set_ylabel(r"MSB cost function value")
-	#ax.legend()
+	tenbilac.plot.netviz(ten.committee[0].net, filepath=filepath)       
+	
+	
 
-	plt.tight_layout()
-
-
-	megalut.plot.figures.savefig(os.path.join(config.valdir, config.datasets["ts"] + "_" + confname + "_msbevo"), fig, fancy=True, pdf_transparence=True)
-	plt.show()
+	#megalut.plot.figures.savefig(os.path.join(config.valdir, config.datasets["ts"] + "_" + confname + "_msbevo"), fig, fancy=True, pdf_transparence=True)
+	#plt.show()
