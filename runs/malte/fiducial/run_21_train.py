@@ -33,9 +33,12 @@ cat = megalut.tools.io.readpickle(traincatpath)
 if select:
 	s = megalut.tools.table.Selector("fortrain", [
 		("max", "adamom_failfrac", 0.01),
+		#("min", "tru_rad", 3.0),
 	])
 	cat = s.select(cat)
 
+
+#exit()
 
 # Running the training
 dirnames = megalut.learn.tenbilacrun.train(cat, config.shearconflist, traindir)

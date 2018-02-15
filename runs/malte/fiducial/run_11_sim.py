@@ -116,6 +116,24 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "ts-2-large": # Same as ts-2, but with tru_rad 3 to 8 instead of 2 to 8
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_rad = 3.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 
 	elif code == "ts-e-1": # Target value is ellipticity, full noise, 100 rea per gal, (1 M)
 		sp = simparams.Fiducial(
@@ -203,6 +221,23 @@ def configure(args):
 			"nrea":1,
 			"ncat":500,
 			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "tw-2": # Thibaults set size, 100 cases, 100'000 gals (no SNC) (10 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0
+		)
+		drawconf = {
+			"n":100000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":20,
 			"groupmode":"shear",
 			"skipdone":False	
 		}

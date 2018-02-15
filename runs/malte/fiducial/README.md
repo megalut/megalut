@@ -69,21 +69,36 @@ plot_4_paper
 Todo
 ----
 
+- decide if min_tru_rad 3 or 4, and then maybe run sims ts-2-large
+
+- paperfig:
+	- netviz of s train (and also w if interesting)
+	- cost func evo of s train, log-log
+	- bias of s train in S vs R plane
+
+
+We generate many realizations per case for the weight training, so that the cost function is dominated by errors made on small/faint galaxies, not by shape noise.
+However only few cases are needed, 100 is already large. Maybe 10 would work better (stochastic)
+
 
 Running
 -------
 
-- training ts-2 ada5 sum55, starting from ts-e-1
-	We might want to redo from scratch such a training to get nice plots ?
-	See if the result looks good (at least as good as the ada4 sum55 started directly on ts-2.
+- training ts-2-sel-large, kicking out galaxies with tru_rad < 3.
+	This is starting from scratch, to make a nice plot of cost function anyway.
+	Relauch to get more iterations!
+	
+- drawing tw-2
 
+	
 
-- train weights of the old ts-2 ada4 sum55
-	Does this work at all ? investigate!
 
 
 What I've learnt
 ----------------
+
+- training ts-2, starting from ts-e-1
+	Yes, looks at least as good as starting directly.
 
 Check training on ts-2
 -  comparing sum5 and sum55
