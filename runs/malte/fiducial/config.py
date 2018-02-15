@@ -30,8 +30,8 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	"ts":"ts-2",
-	#"ts":"ts-2-sel-large",
+	#"ts":"ts-2",
+	"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
 	"vs":"vs-2",
 	"tw":"tw-1",
@@ -44,7 +44,7 @@ shearconflist = [
 	
 	
 	("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"),
-	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
+	#("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
 	
 	#("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
 	#("mlconfig/ada4s2.cfg", "mlconfig/sum55.cfg")
