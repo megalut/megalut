@@ -30,12 +30,15 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	"ts":"ts-2",
+	#"ts":"ts-2", # <--- the previosu default, with minrad2
+	"ts":"ts-2-minrad3", #  <--- the one with the best minrad3 (replaces the previous sel-large)
 	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
 	"vs":"vs-2",
-	"tw":"tw-1",
-	"vo":"vo-2",
+	#"tw":"tw-3-faint",
+	"tw":"tw-4-faint",
+	#"vo":"vo-2",
+	"vo":"vo-3-faint",
 	"si":"si-1",
 }
 
@@ -43,8 +46,8 @@ datasets = {
 shearconflist = [
 	
 	
-	("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"),
-	#("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
+	#("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"),
+	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
 	
 	#("mlconfig/ada4s1.cfg", "mlconfig/sum55.cfg"), # Uncomment a line to run on only one component
 	#("mlconfig/ada4s2.cfg", "mlconfig/sum55.cfg")
@@ -59,8 +62,11 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
-	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w.cfg"),
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
+	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w.cfg")
+
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	#("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
 
 	
 ]

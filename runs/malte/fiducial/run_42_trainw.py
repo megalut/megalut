@@ -22,10 +22,6 @@ logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('-s', '--startfrom', type=int, help='Subfield from which to start the training')
-args = parser.parse_args()
-
 
 wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"])
 catpath = os.path.join(wtraindir, "groupmeascat_predforw.pkl")

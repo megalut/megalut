@@ -41,7 +41,7 @@ class Fiducial(megalut.sim.params.Params):
 	Fiducial parameters
 	"""
 	
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, min_tru_rad=2.0):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, min_tru_rad=2.0, min_tru_sb=5.0):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
@@ -55,6 +55,7 @@ class Fiducial(megalut.sim.params.Params):
 		self.shear = shear
 		self.noise_level = noise_level # So the default is Gaussian noise with std of 1.0
 		self.min_tru_rad = min_tru_rad
+		self.min_tru_sb = min_tru_sb
 
 	def draw_constants(self):
 		"""
@@ -115,7 +116,7 @@ class Fiducial(megalut.sim.params.Params):
 		
 		tru_sersicn = random.choice(np.linspace(1, 4, 10))
 		
-		tru_sb = np.random.uniform(5.0, 15.0)
+		tru_sb = np.random.uniform(self.min_tru_sb, 15.0)
 		tru_rad = np.random.uniform(self.min_tru_rad, 8.0)
 		
 		tru_flux = np.pi * tru_rad * tru_rad * tru_sb

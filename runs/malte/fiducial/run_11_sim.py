@@ -80,6 +80,24 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+
+	elif code == "vo-3-faint": # Intermediate size, with 2-fold SNC, 200 cases, 10'000 gals (4 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 	
 	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (0.25 M)
 		sp = simparams.Fiducial_statshear(
@@ -116,7 +134,7 @@ def configure(args):
 			"skipdone":False	
 		}
 
-	elif code == "ts-2-large": # Same as ts-2, but with tru_rad 3 to 8 instead of 2 to 8
+	elif code == "ts-2-minrad3": # Same as ts-2, but with tru_rad 3 to 8 instead of 2 to 8
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 2000,
@@ -225,6 +243,7 @@ def configure(args):
 			"skipdone":False	
 		}
 
+
 	elif code == "tw-2": # Thibaults set size, 100 cases, 100'000 gals (no SNC) (10 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
@@ -238,6 +257,59 @@ def configure(args):
 			"nrea":1,
 			"ncat":100,
 			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "tw-3-faint": # Intermediate size, 100 cases, 10'000 gals (no SNC) (1 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":10000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+	elif code == "tw-4-faint": # Intermediate size, 500 cases, 10'000 gals (no SNC) (5 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":10000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":500,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "tw-5-faint": # Huge size, 200 cases, 100'000 gals (no SNC) (20 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":100000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":10,
 			"groupmode":"shear",
 			"skipdone":False	
 		}

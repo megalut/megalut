@@ -156,7 +156,7 @@ megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_bias_a"), f
 
 #==================================================================================================
 
-rea=1
+rea=-100
 
 fig = plt.figure(figsize=(5, 7))
 

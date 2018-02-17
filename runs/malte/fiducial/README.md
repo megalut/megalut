@@ -30,6 +30,7 @@ vs-3 : 50 Mgal, 1.1 TB, == Thibault's size, less than a night with 50 cpu
 
 
 tw-1 : 1 Mgal, 32 GB
+tw-2 : 10 Mgal, == Thibaults size
 
 vo-1 : 1 Mgal, no SNC
 vo-2 : 20 Mgal, 383 GB
@@ -61,24 +62,30 @@ Plots
 
 
 
-
 Can probably be deleted:
 plot_4_paper
 
 
 Todo
 ----
+- fig of failfrac and snr versus R and S for the fiducial set
 
 - decide if min_tru_rad 3 or 4, and then maybe run sims ts-2-large
 
-- paperfig:
-	- netviz of s train (and also w if interesting)
-	- cost func evo of s train, log-log
-	- bias of s train in S vs R plane
 
 
 We generate many realizations per case for the weight training, so that the cost function is dominated by errors made on small/faint galaxies, not by shape noise.
 However only few cases are needed, 100 is already large. Maybe 10 would work better (stochastic)
+-> running tw-2 to see if it works at all now. No, it didnt, and it takes ages / stops early.
+
+New idea: add more crap galaxies to the training, by lowering the min_tru_sb.
+Makes it easier to see/learn the effect of weights
+
+-> see how the trainigs on tw-4-faint look
+
+
+
+If everything fails: add SNC to weight training set ?
 
 
 Running
@@ -87,9 +94,14 @@ Running
 - training ts-2-sel-large, kicking out galaxies with tru_rad < 3.
 	This is starting from scratch, to make a nice plot of cost function anyway.
 	Relauch to get more iterations!
+	CAREFUL : always make sure you adjust correctly the selection
 	
-- drawing tw-2
+- sim ts-2-minrad3, in case we need/want this
+	start training from ts-2-sel-large, should fit fine.
 
+
+- tw-5-faint
+	huge, just in case we need it
 	
 
 
