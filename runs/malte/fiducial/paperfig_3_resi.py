@@ -35,8 +35,8 @@ tru_rad = Feature("tru_rad", 1, 9, nicename=r"Half-light radius $R$ [pix]")
 
 snr_mean = Feature("snr_mean", nicename="$\\langle \mathrm{S}/\mathrm{N}\\rangle$")
 
-for comp in ["1","2"]:
-#for comp in ["1"]:
+#for comp in ["1","2"]:
+for comp in ["1"]:
 
 	
 	megalut.tools.table.addrmsd(cat, "pre_s{}".format(comp), "tru_s{}".format(comp))
@@ -46,7 +46,7 @@ for comp in ["1","2"]:
 	cat["log_abs_pre_s{}_bias".format(comp)] = np.log10(np.fabs(cat["pre_s{}_bias".format(comp)]))
 	
 	max_bias = np.max(cat["abs_pre_s{}_bias".format(comp)])
-	hard_coded_max_bias = 0.02
+	hard_coded_max_bias = max_bias # 0.02
 	
 	# latex and format are ugly to mix, doing it manually:
 	if comp == "1":
@@ -64,12 +64,15 @@ for comp in ["1","2"]:
 	
 	fig = plt.figure(figsize=(13, 3.5))
 
-	ax = fig.add_subplot(1, 3, 1)
-	megalut.plot.scatter.scatter(ax, cat, tru_sb, tru_rad, featc=snr_mean, cmap="plasma_r")
+
 	
-	ax = fig.add_subplot(1, 3, 2)
+	ax = fig.add_subplot(1, 3, 1)
 	megalut.plot.scatter.scatter(ax, cat, tru_s,  pre_s_bias, featc=snr_mean, cmap="plasma_r")
 	ax.axhline()
+	
+	ax = fig.add_subplot(1, 3, 2)
+	cnorm = matplotlib.colors.SymLogNorm(linthresh=0.005)
+	megalut.plot.scatter.scatter(ax, cat, tru_s, tru_rad, featc=pre_s_bias, cmap="coolwarm", norm=cnorm)
 	
 	"""
 	ax = fig.add_subplot(1, 3, 3)

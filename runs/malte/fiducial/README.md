@@ -68,7 +68,7 @@ plot_4_paper
 
 Todo
 ----
-- fig of failfrac and snr versus R and S for the fiducial set
+- fig of failfrac and snr versus R and S for the new faint fiducial set
 
 - decide if min_tru_rad 3 or 4, and then maybe run sims ts-2-large
 
@@ -91,18 +91,13 @@ If everything fails: add SNC to weight training set ?
 Running
 -------
 
-- training ts-2-sel-large, kicking out galaxies with tru_rad < 3.
-	This is starting from scratch, to make a nice plot of cost function anyway.
-	Relauch to get more iterations!
-	CAREFUL : always make sure you adjust correctly the selection
 	
-- sim ts-2-minrad3, in case we need/want this
-	start training from ts-2-sel-large, should fit fine.
-
-
-- tw-5-faint
-	huge, just in case we need it
+- sim ts-2-easy
+	Try to get a decently low contidional bias with this
+- sim ts-3-ln
+	Meant to be a fast way to generate pre-trained nets
 	
+Use flux instead of logflux with these, to reduce the impact of differences in low flux values
 
 
 

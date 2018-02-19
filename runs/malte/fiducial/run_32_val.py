@@ -31,6 +31,22 @@ predcatpath = os.path.join(config.valdir, valname + ".pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
 
+
+select = False
+
+if select:
+	#megalut.tools.table.addstats(cat, "snr")
+
+	s = megalut.tools.table.Selector("fortrain", [
+		#("max", "adamom_failfrac", 0.01),
+		#("min", "tru_rad", 3.0),
+		#("min", "snr_mean", 10.0),
+	])
+	cat = s.select(cat)
+
+
+
+
 predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist, traindir)
 
 megalut.tools.io.writepickle(predcat, predcatpath)

@@ -152,6 +152,44 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "ts-2-easy": # Same as ts-2, but with tru_rad 3 to 8 instead of 2 to 8
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_rad = 4.0,
+			min_tru_sb = 7.5,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+
+
+	elif code == "ts-3-ln": # 10 times smaller then ts-2, but with 10 times lower noise
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 200,
+			shear = 0.1,
+			noise_level = 0.1,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 
 	elif code == "ts-e-1": # Target value is ellipticity, full noise, 100 rea per gal, (1 M)
 		sp = simparams.Fiducial(
@@ -171,6 +209,23 @@ def configure(args):
 		}
 
 
+	elif code == "vs-1-faint": # Small, to test SNR and failfrac in the full parameter space
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":1000,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 
 
 	elif code == "vs-1": # Same settings as ts-1, just another realization of the set.
@@ -207,6 +262,31 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+
+	elif code == "vs-2-easy": # 1000 cases, 10'000 SNC rotations each (10 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 10000,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_rad = 4.0,
+			min_tru_sb = 7.5,
+
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":1000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+
+
+
+
 	
 	elif code == "vs-3": # 5000 cases, 10'000 SNC rotations each (50 M) HUGE, same as Thibault's set.
 		sp = simparams.Fiducial_statshear(
