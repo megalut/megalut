@@ -278,7 +278,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 		except:
 			logger.warning("Metrics compuation failed", exc_info = True)
 		
-
+	if featc is not None:
+		return cax
 
 
 def simobs(ax, simcat, obscat, featx, featy, sidehists=True, sidehistkwargs=None, title=None, legend=False, pale=False, **kwargs):
