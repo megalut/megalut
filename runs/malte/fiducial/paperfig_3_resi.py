@@ -28,6 +28,13 @@ megalut.plot.figures.set_fancy(14)
 megalut.tools.table.addstats(cat, "snr")
 
 
+select = True
+if select:
+	
+	s = megalut.tools.table.Selector("fortrain", [
+		("min", "snr_mean", 10.0),
+	])
+	cat = s.select(cat)
 
 
 tru_sb = Feature("tru_sb", 3, 17, nicename=r"Surface brightness $S$ [pix$^{-2}$]")
@@ -67,12 +74,12 @@ for comp in ["1"]:
 
 	
 	ax = fig.add_subplot(1, 3, 1)
-	megalut.plot.scatter.scatter(ax, cat, tru_s,  pre_s_bias, featc=snr_mean, cmap="plasma_r")
+	megalut.plot.scatter.scatter(ax, cat, tru_s,  pre_s_bias, featc=snr_mean, cmap="plasma_r", s=10)
 	ax.axhline()
 	
 	ax = fig.add_subplot(1, 3, 2)
 	cnorm = matplotlib.colors.SymLogNorm(linthresh=0.005)
-	megalut.plot.scatter.scatter(ax, cat, tru_s, tru_rad, featc=pre_s_bias, cmap="coolwarm", norm=cnorm)
+	megalut.plot.scatter.scatter(ax, cat, tru_s, tru_rad, featc=pre_s_bias, cmap="coolwarm", norm=cnorm, s=10)
 	
 	"""
 	ax = fig.add_subplot(1, 3, 3)
@@ -81,7 +88,7 @@ for comp in ["1"]:
 	"""
 	
 	ax = fig.add_subplot(1, 3, 3)
-	megalut.plot.scatter.scatter(ax, cat, tru_sb, tru_rad, featc=abs_pre_s_bias, cmap="plasma_r")
+	megalut.plot.scatter.scatter(ax, cat, tru_sb, tru_rad, featc=abs_pre_s_bias, cmap="plasma_r", s=10)
 
 	
 	plt.tight_layout()

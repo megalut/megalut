@@ -68,7 +68,11 @@ plot_4_paper
 
 Todo
 ----
-- fig of failfrac and snr versus R and S for the new faint fiducial set
+
+
+vs figure with vs-3 selected by SN > 10 to see if that looks acceptable.
+
+launch ts-3-faint-ln ? fast, can do later.
 
 - decide if min_tru_rad 3 or 4, and then maybe run sims ts-2-large
 

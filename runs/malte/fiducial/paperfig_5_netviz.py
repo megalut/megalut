@@ -32,15 +32,17 @@ for (dataconfpath, toolconfpath) in config.shearconflist:
        
 	ten._readmembers()
 	
-	net = ten.committee[0].net
-	net.onames[0] = r"\hat{g}1"
+	netid = 5
+	
+	net = ten.committee[netid].net
+	net.onames[0] = r"\hat{g}"+net.onames[0][-1]
 	
 	#fig = plt.figure(figsize=(6, 6))
 	#ax = fig.add_subplot(1, 1, 1)
 
 	filepath = os.path.join(config.valdir, config.datasets["ts"] + "_" + confname + "_netviz.pdf")
 	
-	tenbilac.plot.netviz(ten.committee[0].net, filepath=filepath)       
+	tenbilac.plot.netviz(ten.committee[netid].net, filepath=filepath)       
 	
 	
 

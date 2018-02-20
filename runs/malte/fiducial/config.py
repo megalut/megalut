@@ -34,6 +34,7 @@ datasets = {
 	#"ts":"ts-2-minrad3", #  <--- the one with the best minrad3 (replaces the previous sel-large)
 	#"ts":"ts-3-ln",
 	"ts":"ts-2-easy",
+	#"ts":"ts-2-faint",
 	#"ts":"ts-4",
 	#"ts":"ts-4-minrad3",
 	#"ts":"ts-2-sel-large",

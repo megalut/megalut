@@ -17,7 +17,15 @@ valcat = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
 
 megalut.plot.figures.set_fancy(14)
+megalut.tools.table.addstats(cat, "snr") # We need this even without select
 
+select = True
+if select:
+	
+	s = megalut.tools.table.Selector("fortrain", [
+		("min", "snr_mean", 10.0),
+	])
+	cat = s.select(cat)
 
 nbins = 10
 ncbins = 10
@@ -58,8 +66,6 @@ for comp in ["1","2"]:
 	#megalut.tools.table.addstats(cat, "pre_g{}".format(comp))
 	#megalut.tools.table.addrmsd(cat, "pre_g{}".format(comp), "tru_s{}".format(comp))
 
-megalut.tools.table.addstats(cat, "snr")
-#megalut.tools.table.addstats(cat, "a_snr")
 
 
 """

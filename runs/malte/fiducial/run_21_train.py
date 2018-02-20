@@ -13,8 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 
-select = True
-
 	
 # Getting the path to the correct directories
 measdir = os.path.join(config.simmeasdir, config.datasets["ts"])
@@ -30,10 +28,14 @@ cat = megalut.tools.io.readpickle(traincatpath)
 #cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
 
 
+exit()
+select = True
+
 if select:
+	megalut.tools.table.addstats(cat, "snr")
 	s = megalut.tools.table.Selector("fortrain", [
-		("max", "adamom_failfrac", 0.01),
-		#("min", "tru_rad", 3.0),
+		#("max", "adamom_failfrac", 0.01),
+		("min", "snr_mean", 10.0),
 	])
 	cat = s.select(cat)
 
