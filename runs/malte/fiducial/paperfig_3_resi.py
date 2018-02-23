@@ -23,7 +23,7 @@ cat = megalut.tools.io.readpickle(valcat)
 
 megalut.plot.figures.set_fancy(14)
 
-
+cat = megalut.tools.table.shuffle(cat) # otherwise scatter plots look weird as fuc of tru s1 s2
 
 megalut.tools.table.addstats(cat, "snr")
 
@@ -37,7 +37,7 @@ if select:
 	cat = s.select(cat)
 
 
-tru_sb = Feature("tru_sb", 3, 17, nicename=r"Surface brightness $S$ [pix$^{-2}$]")
+tru_sb = Feature("tru_sb", 0, 16, nicename=r"Surface brightness $S$ [pix$^{-2}$]")
 tru_rad = Feature("tru_rad", 1, 9, nicename=r"Half-light radius $R$ [pix]")
 
 snr_mean = Feature("snr_mean", nicename="$\\langle \mathrm{S}/\mathrm{N}\\rangle$")
@@ -59,14 +59,14 @@ for comp in ["1"]:
 	if comp == "1":
 		tru_s = Feature("tru_s{}".format(comp), -0.12, 0.12, nicename=r"$g_1^{\mathrm{true}}$")
 		pre_s_mean = Feature("pre_s{}_mean".format(comp), nicename=r"Estimated $\hat{g}_{1}$ (average over realizations)")
-		pre_s_bias = Feature("pre_s{}_bias".format(comp), -hard_coded_max_bias, hard_coded_max_bias, nicename=r"$\langle \hat{g}_{1} - g_{1}^{\mathrm{true}} \rangle$")
-		abs_pre_s_bias = Feature("abs_pre_s{}_bias".format(comp), 0, hard_coded_max_bias, nicename=r"$|\langle \hat{g}_{1} - g_{1}^{\mathrm{true}} \rangle|$ ")
+		pre_s_bias = Feature("pre_s{}_bias".format(comp), -hard_coded_max_bias, hard_coded_max_bias, nicename=r"$\langle \hat{g}_{1} \rangle - g_{1}^{\mathrm{true}} $")
+		abs_pre_s_bias = Feature("abs_pre_s{}_bias".format(comp), 0, hard_coded_max_bias, nicename=r"$|\langle \hat{g}_{1} \rangle - g_{1}^{\mathrm{true}}|$ ")
 		log_abs_pre_s_bias = Feature("log_abs_pre_s{}_bias".format(comp), nicename=r"$\log(|g_1|$ estimation error)")
 	if comp == "2":
 		tru_s = Feature("tru_s{}".format(comp), -0.12, 0.12, nicename=r"$g_2^{\mathrm{true}}$")
 		pre_s_mean = Feature("pre_s{}_mean".format(comp), nicename=r"Estimated $\hat{g}_{2}$ (average over realizations)")
-		pre_s_bias = Feature("pre_s{}_bias".format(comp), -hard_coded_max_bias, hard_coded_max_bias, nicename=r"$\langle \hat{g}_{2} - g_{2}^{\mathrm{true}} \rangle$")
-		abs_pre_s_bias = Feature("abs_pre_s{}_bias".format(comp), 0, hard_coded_max_bias, nicename=r"$|\langle \hat{g}_{2} - g_{2}^{\mathrm{true}} \rangle|$ ")
+		pre_s_bias = Feature("pre_s{}_bias".format(comp), -hard_coded_max_bias, hard_coded_max_bias, nicename=r"$\langle \hat{g}_{2} \rangle - g_{2}^{\mathrm{true}} $")
+		abs_pre_s_bias = Feature("abs_pre_s{}_bias".format(comp), 0, hard_coded_max_bias, nicename=r"$|\langle \hat{g}_{2} \rangle - g_{2}^{\mathrm{true}} |$ ")
 		log_abs_pre_s_bias = Feature("log_abs_pre_s{}_bias".format(comp), nicename=r"$\log(|g_2|$ estimation error)")
 	
 	fig = plt.figure(figsize=(13, 3.5))

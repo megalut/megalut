@@ -13,6 +13,7 @@ logging.basicConfig(format=loggerformat,level=logging.INFO)
 
 #workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/fiducial"
 workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial"
+#workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/new_fiducial"
 
 
 simdir = os.path.join(workdir, "sim")
@@ -33,20 +34,31 @@ datasets = {
 	#"ts":"ts-2", # <--- the previosu default, with minrad2
 	#"ts":"ts-2-minrad3", #  <--- the one with the best minrad3 (replaces the previous sel-large)
 	#"ts":"ts-3-ln",
-	"ts":"ts-2-easy",
-	#"ts":"ts-2-faint",
+	#"ts":"ts-2-easy",
+	"ts":"ts-2-faint",
+	#"ts":"ts-2-faint-p1",
+	#"ts":"ts-2-faint-d1",
+	#"ts":"ts-2-faint-d2",
+	#"ts":"ts-2-faint-ln",
+	#"ts":"ts-2-faint20",
 	#"ts":"ts-4",
 	#"ts":"ts-4-minrad3",
 	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
-	"vs":"vs-3",
+	"vs":"vs-3-faint",
 	#"vs":"vs-1-faint",
 	#"vs":"ts-2-easy",
 	#"vs":"vs-2-easy",	
 	#"tw":"tw-3-faint",
-	"tw":"tw-4-faint",
+	#"tw":"tw-4-faint", #<-- used tuesday
+	#"tw":"tw-4-faint-snc",
+	"tw":"tw-5-faint",
+	
 	#"vo":"vo-2",
-	"vo":"vo-3-faint",
+	#"vo":"vo-3-faint",
+	"vo":"vo-3-faint-nosnc",
+	
+	
 	"si":"si-1",
 }
 
@@ -72,11 +84,10 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1w.cfg", "mlconfig/sum55w.cfg"),
-	("mlconfig/ada5s2w.cfg", "mlconfig/sum55w.cfg")
+	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"),
+	#("mlconfig/ada5s2wf.cfg", "mlconfig/sum5w.cfg")
 
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
-	#("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
-
+	("mlconfig/ada5s1wf.cfg", "mlconfig/sum55w.cfg"),
+	("mlconfig/ada5s2wf.cfg", "mlconfig/sum55w.cfg")
 	
 ]

@@ -98,6 +98,24 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+
+	elif code == "vo-3-faint-nosnc": # No SNC, 200 cases, 50'000 gals (20 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":50000,
+			"nc":100,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 	
 	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (0.25 M)
 		sp = simparams.Fiducial_statshear(
@@ -185,6 +203,24 @@ def configure(args):
 			"nrea":1,
 			"ncat":4000,
 			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "ts-2-faint-ln": # 0.8 M, just with lower noise (again for later selection, which will take much smaller galaxies)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 200,
+			shear = 0.1,
+			noise_level = 0.1,
+			min_tru_sb = 1.0,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":4000,
+			"ncpu":20,
 			"groupmode":"shear",
 			"skipdone":False	
 		}
@@ -340,7 +376,7 @@ def configure(args):
 
 
 	
-	elif code == "vs-3": # 5000 cases, 10'000 SNC rotations each (50 M) HUGE, same as Thibault's set.
+	elif code == "vs-3": # 50 M down to S = 1.
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 10000,
@@ -427,6 +463,23 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+	elif code == "tw-4-faint-snc": # Intermediate size, 100 cases, 4'000 gals (with 4-fold SNC) (0.4 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 4,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":1000,
+			"nc":100,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 
 	elif code == "tw-5-faint": # Huge size, 200 cases, 100'000 gals (no SNC) (20 M)
 		sp = simparams.Fiducial_statshear(
@@ -458,496 +511,6 @@ def configure(args):
 
 
 
-"""
-
-sp = simparams.Fiducial_statshear(
-	name = "ts-1",
-	snc_type = 500,
-	shear = 0.1,
-	noise_level = 1.0
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":10,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-
-
-
-
-#################### What we really need
-
-"""
-# 900 cases, 400 realizations
-sp = simparams.SampledBDParams_statshear(
-	name = "ts-ln-1-large",
-	snc_type = 400,
-	shear = 0.1,
-	noise_level = 0.1, # WARNING REDUCED # Note: this is relative, in sigma !
-	ecode = config.ecode,
-	scode = config.scode,
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":900,
-	"ncpu":30,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-
-
-"""
-# 30 cases, 50000 reas without SNC
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-2-nsnc-bigrea",
-	snc_type = 0,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = config.ecode,
-	scode = config.scode,
-
-)
-drawconf = {
-	"n":50000,
-	"nc":100,
-	"nrea":1,
-	"ncat":30,
-	"ncpu":30,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-"""
-# 900 cases, 1000 reas without SNC
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-3-nsnc",
-	snc_type = 0,
-	shear = 0.07,
-	noise_level = 1.0,
-	ecode = config.ecode,
-	scode = config.scode,
-
-)
-drawconf = {
-	"n":1000,
-	"nc":10,
-	"nrea":1,
-	"ncat":900,
-	"ncpu":30,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-
-"""
-sp = simparams.SampledBDParams(
-	name = "vo-mimicdata", # 12800 cases of shear with 4 x 2 reas per case
-	snc_type = 2,
-	shear = 0.07,
-	noise_level = 1.0,
-	ecode = config.ecode,
-	scode = config.scode,
-	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (12800, 8)
-	nshearvals = 110000, # Make this larger than the number of cases above.
-)
-drawconf = {
-	"n":5120,
-	"nc":10,
-	"nrea":1,
-	"ncat":10,
-	"ncpu":10,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-"""
-sp = simparams.SampledBDParams(
-	name = "vo-mimicdata-dbshear", # 12800 cases of shear with 4 x 2 reas per case
-	snc_type = 2,
-	shear = 20.0, # >10, so we will take it from the db
-	noise_level = 1.0,
-	ecode = config.ecode,
-	scode = config.scode,
-	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (12800, 8)
-	nshearvals = 110000, # Make this larger than the number of cases above.
-)
-drawconf = {
-	"n":5120,
-	"nc":10,
-	"nrea":1,
-	"ncat":10,
-	"ncpu":10,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-
-
-
-
-"""
-sp = simparams.SampledBDParams(
-	name = "vo-mimicdata-6", # 6*12800 cases of shear with 4 x 2 reas per case
-	snc_type = 2,
-	shear = 0.05,
-	noise_level = 1.0,
-	ecode = config.ecode,
-	scode = config.scode,
-	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (6*12800, 8)
-	nshearvals = 110000, # Make this larger than the number of cases above.
-)
-drawconf = {
-	"n":5120,
-	"nc":10,
-	"nrea":1,
-	"ncat":60,
-	"ncpu":30,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-
-
-
-
-######## Special exploration
-"""
-# 900 cases, 1000 realizations, half noise !
-sp = simparams.SampledBDParams_statshear(
-	name = "ts-hn-1-large",
-	snc_type = 1000,
-	shear = 0.1,
-	noise_level = 0.5, # WARNING REDUCED # Note: this is relative, in sigma !
-	ecode = config.ecode,
-	scode = config.scode,
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":900,
-	"ncpu":30,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-
-"""
-# 900 cases, 1000 realizations, full noise !
-sp = simparams.SampledBDParams_statshear(
-	name = "vs-1-large",
-	snc_type = 1000,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = config.ecode,
-	scode = config.scode,
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":900,
-	"ncpu":30,
-	"groupmode":"shear",
-	"skipdone":False,
-	"psfcatpath":config.psfcatpath,
-}
-"""
-
-
-
-
-#################### Experiments on fiducial set
-"""
-# Comparing to the observations:
-sp = simparams.SampledBDParams(
-	name = "simobscompa",
-	snc_type = 0,
-	shear = 0,
-	noise_level = 1.0, # Note: this is relative, in sigma !
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":100,
-	"nc":10,
-	"nrea":1,
-	"ncat":10,
-	"ncpu":10,
-	"groupmode":None,
-	"skipdone":False	
-}
-"""
-"""
-# Validation: 200 different shear cases, with 1000 x 4 SNC reas
-sp = simparams.SampledBDParams_statshear(
-	name = "val-1",
-	snc_type = 4,
-	shear = 0.06,
-	noise_level = 1.0, # Note: this is relative, in sigma !
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":1000,
-	"nc":100,
-	"nrea":1,
-	"ncat":200,
-	"ncpu":25,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-
-"""
-
-# Shear training:
-"""
-sp = simparams.SampledBDParams_statshear(
-	name = "ts-ln-1",
-	snc_type = 100,
-	shear = 0.1,
-	noise_level = 0.1, # WARNING REDUCED # Note: this is relative, in sigma !
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-"""
-sp = simparams.SampledBDParams_statshear(
-	name = "ts-ln-1-large",
-	snc_type = 400,
-	shear = 0.1,
-	noise_level = 0.1, # WARNING REDUCED # Note: this is relative, in sigma !
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":1000,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-
-"""
-
-"""
-sp = simparams.SampledBDParams_statshear(
-	name = "ts-fn-1",
-	snc_type = 1000,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":1000,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-
-"""
-# Shear validation:
-sp = simparams.SampledBDParams_statshear(
-	name = "vs-1",
-	snc_type = 1000,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":1,
-	"nc":1,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":25,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-
-"""
-# Weight training: BAD: HAS SNC !
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-1",
-	snc_type = 2,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":1000,
-	"nc":50,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-
-"""
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-1-minmag22",
-	snc_type = 2,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-	minmag = 22.0,
-)
-drawconf = {
-	"n":1000,
-	"nc":50,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":10,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-
-"""
-"""
-# Weight training: NOW DONE WITHOUT SNC
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-2-nsnc",
-	snc_type = 0,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":2000,
-	"nc":50,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-"""
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-2-nsnc-small",
-	snc_type = 0,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":200,
-	"nc":50,
-	"nrea":1,
-	"ncat":500,
-	"ncpu":10,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-"""
-sp = simparams.SampledBDParams_statshear(
-	name = "tw-2-nsnc-bigrea",
-	snc_type = 0,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-)
-drawconf = {
-	"n":100000,
-	"nc":100,
-	"nrea":1,
-	"ncat":20,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":False	
-}
-"""
-
-
-"""
-sp = simparams.SampledBDParams(
-	name = "tw-1-sheargroup4", # So here we use the sheargroup option, to get 4 galaxies per group
-	snc_type = 2,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (10'000, 8)
-	nshearvals = 11000, # Make this larger than the number of cases above.
-)
-drawconf = {
-	"n":2000,
-	"nc":20,
-	"nrea":1,
-	"ncat":20,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":True	
-}
-"""
-"""
-sp = simparams.SampledBDParams(
-	name = "tw-1-sheargroup4-large", # So here we use the sheargroup option, to get 4 galaxies per group
-	snc_type = 2,
-	shear = 0.1,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (100'000, 8)
-	nshearvals = 110000, # Make this larger than the number of cases above.
-)
-drawconf = {
-	"n":2000,
-	"nc":20,
-	"nrea":1,
-	"ncat":200,
-	"ncpu":20,
-	"groupmode":"shear",
-	"skipdone":True	
-}
-"""
-"""
-sp = simparams.SampledBDParams(
-	name = "vo-mimicdata", # 12800 cases of shear with 4 x 2 reas per case
-	snc_type = 2,
-	shear = 0.05,
-	noise_level = 1.0,
-	ecode = "ep0", # others are em2
-	sheargroup = 4, # This gives ncat * n/sheargroup cases of different shear, with snc * sheargroup realizations per case. Here (12800, 8)
-	nshearvals = 110000, # Make this larger than the number of cases above.
-)
-drawconf = {
-	"n":5120,
-	"nc":10,
-	"nrea":1,
-	"ncat":10,
-	"ncpu":10,
-	"groupmode":"shear",
-	"skipdone":True	
-}
-"""
 
 
 

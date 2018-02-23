@@ -6,6 +6,15 @@ Sky-limited observations with Gaussian noise
 Mostly "uniform" distributions
 
 
+Manual
+------
+
+
+To experiment with other training parameters for the shear point estimates (but the same training data), make a simlink of the groupmeascat.pkl in another directory within simmeas.
+
+
+
+
 Simulations
 -----------
 

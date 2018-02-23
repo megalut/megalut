@@ -32,7 +32,7 @@ predcatpath = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcatpath)
 
 
-select = False
+select = False # prefer selecting only for the plot
 
 if select:
 	#megalut.tools.table.addstats(cat, "snr")

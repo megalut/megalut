@@ -28,10 +28,9 @@ cat = megalut.tools.io.readpickle(traincatpath)
 #cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
 
 
-exit()
-select = True
-
+select=True
 if select:
+	logger.warning("Selection of cases is activated!")
 	megalut.tools.table.addstats(cat, "snr")
 	s = megalut.tools.table.Selector("fortrain", [
 		#("max", "adamom_failfrac", 0.01),
@@ -40,7 +39,6 @@ if select:
 	cat = s.select(cat)
 
 
-#exit()
 
 # Running the training
 dirnames = megalut.learn.tenbilacrun.train(cat, config.shearconflist, traindir)
