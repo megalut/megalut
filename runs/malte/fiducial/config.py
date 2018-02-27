@@ -35,9 +35,9 @@ datasets = {
 	#"ts":"ts-2-minrad3", #  <--- the one with the best minrad3 (replaces the previous sel-large)
 	#"ts":"ts-3-ln",
 	#"ts":"ts-2-easy",
-	"ts":"ts-2-faint",
+	#"ts":"ts-2-faint",
 	#"ts":"ts-2-faint-p1",
-	#"ts":"ts-2-faint-d1",
+	"ts":"ts-2-faint-d1",
 	#"ts":"ts-2-faint-d2",
 	#"ts":"ts-2-faint-ln",
 	#"ts":"ts-2-faint20",
@@ -65,7 +65,7 @@ datasets = {
 
 shearconflist = [
 	
-	("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"),
+	#("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"),
 	("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
 	
 	#("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"),
@@ -87,7 +87,7 @@ weightconflist = [
 	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"),
 	#("mlconfig/ada5s2wf.cfg", "mlconfig/sum5w.cfg")
 
-	("mlconfig/ada5s1wf.cfg", "mlconfig/sum55w.cfg"),
+	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum55w.cfg"),
 	("mlconfig/ada5s2wf.cfg", "mlconfig/sum55w.cfg")
 	
 ]
