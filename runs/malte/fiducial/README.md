@@ -71,10 +71,6 @@ Plots
 
 
 
-Can probably be deleted:
-plot_4_paper
-
-
 Todo
 ----
 
