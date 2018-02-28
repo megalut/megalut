@@ -46,6 +46,26 @@ def configure(args):
 			"groupmode":None,
 			"skipdone":False	
 		}
+
+	if code == "si-vp-1": # Just to quickly draw 1000 galaxies probing the distributions.
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0,
+			shear = 0,
+			noise_level = 1.0,
+			varpsf_type = 1
+		)
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":1,
+			"ncat":1,
+			"ncpu":1,
+			"groupmode":None,
+			"skipdone":False	
+		}
+	
+	
 	
 	elif code == "vo-1": # As a first test, no SNC: 100 cases with 10'000 gals (1 M)
 		sp = simparams.Fiducial_statshear(
@@ -213,7 +233,7 @@ def configure(args):
 			snc_type = 200,
 			shear = 0.1,
 			noise_level = 0.1,
-			min_tru_sb = 1.0,
+			min_tru_sb = 1.0
 		)
 		drawconf = {
 			"n":1,
@@ -221,6 +241,25 @@ def configure(args):
 			"nrea":1,
 			"ncat":4000,
 			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "ts-vp-1-ln": # same as ts-2-faint-ln, but with variable psf
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 200,
+			shear = 0.1,
+			noise_level = 0.1,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":4000,
+			"ncpu":40,
 			"groupmode":"shear",
 			"skipdone":False	
 		}
@@ -243,7 +282,7 @@ def configure(args):
 			"skipdone":False	
 		}
 
-	elif code == "ts-3-faint-ln": # 10 times smaller then ts-2, but with 10 times lower noise
+	elif code == "ts-3-faint-ln": # not used so far
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 200,
@@ -374,9 +413,8 @@ def configure(args):
 			"skipdone":False	
 		}
 
-
 	
-	elif code == "vs-3": # 50 M down to S = 1.
+	elif code == "vs-3": # idem but not down to S=1 ? 
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 10000,
@@ -392,7 +430,7 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
-	
+			
 	
 	elif code == "tw-1": # Training weights, no SNC (!), 500 cases, 2000 gals (1 M)
 		sp = simparams.Fiducial_statshear(
