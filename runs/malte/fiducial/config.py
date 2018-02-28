@@ -37,7 +37,7 @@ datasets = {
 	#"ts":"ts-2-easy",
 	#"ts":"ts-2-faint",
 	#"ts":"ts-2-faint-p1",
-	"ts":"ts-2-faint-d1",
+	"ts":"ts-2-faint-d1", # <-- selected ?
 	#"ts":"ts-2-faint-d2",
 	#"ts":"ts-2-faint-ln",
 	#"ts":"ts-2-faint20",
@@ -45,21 +45,21 @@ datasets = {
 	#"ts":"ts-4-minrad3",
 	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
-	"vs":"vs-3-faint",
+	"vs":"vs-3-faint", # <-- the default vs
 	#"vs":"vs-1-faint",
 	#"vs":"ts-2-easy",
 	#"vs":"vs-2-easy",	
 	#"tw":"tw-3-faint",
-	#"tw":"tw-4-faint", #<-- used tuesday
+	#"tw":"tw-4-faint",
 	#"tw":"tw-4-faint-snc",
-	"tw":"tw-5-faint",
+	"tw":"tw-5-faint", # <-- the default tw
 	
 	#"vo":"vo-2",
 	#"vo":"vo-3-faint",
-	"vo":"vo-3-faint-nosnc",
+	"vo":"vo-3-faint-nosnc", # <-- the default tw
 	
 	
-	"si":"si-1",
+	"si":"si-vp-1",
 }
 
 
