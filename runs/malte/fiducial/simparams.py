@@ -148,15 +148,6 @@ class Fiducial(megalut.sim.params.Params):
 		"""
 		Called for each galaxy	
 		"""
-	
-		########## PSF ##########
-		#tru_psf_sigma = 0.75 # 0.75 pixels -> FHWM = 1.77 pixels, roughly Euclid
-		tru_psf_sigma = 2.0 # -> FWHM = 4.7 pixels
-		tru_psf_g1 = 0.0
-		tru_psf_g2 = 0.0
-	
-	
-		########## Galaxy ##########
 		
 		tru_g = trunc_rayleigh(0.2, 0.6)
 		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
@@ -169,8 +160,6 @@ class Fiducial(megalut.sim.params.Params):
 		
 		tru_flux = np.pi * tru_rad * tru_rad * tru_sb
 			
-		########## Noise ##########
-
 		out = { # It's ugly to not directly fill this dict, but this makes it clearer what is actually returned:
 			"tru_flux":tru_flux,
 			"tru_rad":tru_rad,
