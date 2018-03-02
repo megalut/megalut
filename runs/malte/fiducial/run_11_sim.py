@@ -137,6 +137,24 @@ def configure(args):
 			"skipdone":False	
 		}
 	
+	elif code == "vo-3-faint-nosnc-mini": # for tests
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0
+		)
+		drawconf = {
+			"n":100,
+			"nc":100,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+	
 	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (0.25 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
@@ -431,7 +449,44 @@ def configure(args):
 			"skipdone":False	
 		}
 			
-	
+	elif code == "vs-vp-1": # Same as vs-3-faint, 50 M, but with variable PSF
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 10000,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":5000,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vs-vp-1s": # Same as vs-vp-1, but much smaller (for fast tests)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 200,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":10,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 	elif code == "tw-1": # Training weights, no SNC (!), 500 cases, 2000 gals (1 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
