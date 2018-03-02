@@ -68,7 +68,7 @@ class Fiducial(megalut.sim.params.Params):
 	Fiducial parameters
 	"""
 	
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, min_tru_rad=2.0, min_tru_sb=5.0, varpsf_type=None):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, min_tru_rad=2.0, min_tru_sb=1.0, varpsf_type=None):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear

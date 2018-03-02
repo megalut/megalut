@@ -31,7 +31,7 @@ megalut.tools.table.addstats(cat, "snr")
 select = True
 if select:
 	
-	s = megalut.tools.table.Selector("fortrain", [
+	s = megalut.tools.table.Selector("snr_mean > 10", [
 		("min", "snr_mean", 10.0),
 	])
 	cat = s.select(cat)

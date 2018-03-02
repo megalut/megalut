@@ -47,10 +47,13 @@ datasets = {
 	#"ts":"ts-e-1",
 	"ts":"ts-vp-1-ln",
 	
-	"vs":"vs-3-faint", # <-- the default vs
+	#"vs":"vs-3-faint", # <-- the default vs
 	#"vs":"vs-1-faint",
 	#"vs":"ts-2-easy",
 	#"vs":"vs-2-easy",	
+	"vs":"vs-vp-1s",
+	
+	
 	#"tw":"tw-3-faint",
 	#"tw":"tw-4-faint",
 	#"tw":"tw-4-faint-snc",
@@ -66,10 +69,11 @@ datasets = {
 }
 
 
+
 shearconflist = [
 	
 	#("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"), # <--- We use those
-	#("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
+	("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
 	
 	
 	# vp:
@@ -105,3 +109,14 @@ weightconflist = [
 	#("mlconfig/ada5s2wf.cfg", "mlconfig/sum55w.cfg")
 	
 ]
+
+
+#######################################################################################################################################
+
+# Some automatically generated names, used for saving figures etc depending on your above settings
+
+sconfname = os.path.splitext(os.path.basename(shearconflist[0][1]))[0] # extracts e.g. "sum55"
+valname = "{}_with_{}_on_{}".format(datasets["ts"], sconfname, datasets["vs"])
+wconfname = os.path.splitext(os.path.basename(weightconflist[0][1]))[0] # extracts e.g. "sum55w"
+wvalname = "{}_and_{}_with_{}_{}_on_{}".format(datasets["ts"], datasets["tw"], sconfname, wconfname, datasets["vo"])
+

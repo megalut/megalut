@@ -282,6 +282,25 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "ts-vp-1": # similar to ts-2-faint, but with variable psf (10 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":5000,
+			"ncpu":25,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 
 	elif code == "ts-3-ln": # 10 times smaller then ts-2, but with 10 times lower noise
 		sp = simparams.Fiducial_statshear(
