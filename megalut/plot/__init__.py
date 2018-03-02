@@ -11,6 +11,7 @@ import hist
 import hexbin
 import contour
 import bin
+import mcbin
 import figures
 
 import exp
