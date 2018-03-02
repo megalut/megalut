@@ -82,11 +82,11 @@ def mcbin(ax, cat, feattru, featpre, featbin, nbins=10, binlims=None, showbins=T
 		mkwargs = {}
 		ckwargs = {}
 	elif comp is 1:
-		mkwargs = {"marker":'s', "color":"black", "label":r"$\mu_{}$".format(comp)}
-		ckwargs = {"marker":'*', "color":"black", "label":r"$c_{}$".format(comp), "ls":":"}
+		mkwargs = {"marker":'s', "color":"black", "label":r"$\mu_{}$ ".format(comp)}
+		ckwargs = {"marker":'*', "color":"black", "label":r"$c_{}$ ".format(comp), "ls":":"}
 	elif comp is 2:
-		mkwargs = {"marker":'d', "color":"red", "label":r"$\mu_{}$".format(comp)}
-		ckwargs = {"marker":'x', "color":"red", "label":r"$c_{}$".format(comp), "ls":":"}
+		mkwargs = {"marker":'d', "color":"red", "label":r"$\mu_{}$ ".format(comp)}
+		ckwargs = {"marker":'x', "color":"red", "label":r"$c_{}$ ".format(comp), "ls":":"}
 	else:
 		raise ValueError("Unknown comp")
 	
@@ -99,11 +99,12 @@ def mcbin(ax, cat, feattru, featpre, featbin, nbins=10, binlims=None, showbins=T
 			ax.axvline(x, color='gray', lw=0.5)
 	
 	if showlegend:
-		plt.legend(loc="best", handletextpad=0.07, fontsize="small", framealpha=1.0, columnspacing=0.1, ncol=2)
+		#plt.legend(loc="best", handletextpad=0.07, fontsize="small", framealpha=1.0, columnspacing=0.1, ncol=2)
+		plt.legend(loc="best",  handletextpad=0.2, framealpha=1.0, columnspacing=0.1, ncol=2)
 
 
 
-def make_symlog(ax):
+def make_symlog(ax, featbin):
 	"""
 	Converts the y axis to a symlog scale with custom ticks, usually for the mcbin-plot from above
 	"""
@@ -117,7 +118,8 @@ def make_symlog(ax):
 	ticks = np.concatenate([ticks, ax.yaxis.get_minor_locator().tick_values(-.1, .1)])
 	ax.yaxis.set_minor_locator(ticker.FixedLocator(ticks))
 	
-	xlim = ax.get_xlim()
+	
+	xlim = (featbin.low, featbin.high)
 	ax.fill_between(xlim, -lintresh, lintresh, alpha=0.2, facecolor='darkgrey')
 	ax.set_xlim(xlim)
 
