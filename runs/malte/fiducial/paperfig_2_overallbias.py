@@ -54,15 +54,17 @@ print megalut.tools.table.info(cat)
 
 for comp in ["1","2"]:
 
-	# We mask negative SNR etc
-	newmask = cat["snr"] < 0.0
 	
-	#print np.sum(newmask)
+	# This should not be needed, as they are masked already:
+	#mask = np.logical_or(cat["adamom_flux"] < 0.0, cat["adamom_sigma"] < 0.0)
+	#cat["pre_s1w"][mask] = 0.0
+	#cat["pre_s2w"][mask] = 0.0
 	
-	#exit()
-	oldmask = cat["pre_s{}".format(comp)].mask
-	combimask = np.logical_or(oldmask, newmask)
-	cat["pre_s{}".format(comp)].mask = combimask
+	# This is an interesting experiement. it reminds us how CRAZY large selection biases are...
+	#snrcutmask = cat["snr"] < 10.0
+	#cat["pre_s1w"][snrcutmask] = 0.0
+	#cat["pre_s2w"][snrcutmask] = 0.0
+	
 
 	# If no weights are in the catalog (or not yet), we add ones
 	if not "pre_s{}w".format(comp) in cat.colnames:
@@ -93,9 +95,19 @@ for comp in ["1","2"]:
 
 resr = 0.015
 symthres = 0.002
-wplotrea = -50
+wplotrea = -10
 snr = Feature("snr", nicename="S/N", rea=wplotrea)
-tru_rad = Feature("tru_rad", nicename=r"$R$ [pix]", rea=wplotrea)
+#tru_rad = Feature("tru_rad", nicename=r"$R$ [pix]", rea=wplotrea)
+
+tru_sb = Feature("tru_sb", 0, 16, nicename=r"Surface brightness $S$ [pix$^{-2}$]", rea=wplotrea)
+tru_rad = Feature("tru_rad", 1, 9, nicename=r"Half-light radius $R$ [pix]", rea=wplotrea)
+
+adamom_flux = Feature("adamom_flux", 0, 1000, nicename="adamom\_flux", rea=wplotrea)
+adamom_sigma = Feature("adamom_sigma", 0, 8, nicename="adamom\_sigma", rea=wplotrea)
+adamom_g2 = Feature("adamom_g2", nicename="adamom\_g2", rea=wplotrea)
+adamom_rho4 = Feature("adamom_rho4", nicename="adamom\_rho4", rea=wplotrea)
+
+
 tru_s1 = Feature("tru_s1", nicename=r"$g_1^{\mathrm{true}}$")
 tru_s2 = Feature("tru_s2", nicename=r"$g_2^{\mathrm{true}}$")
 
@@ -153,10 +165,9 @@ ax.set_yticklabels([])
 
 ax = fig.add_subplot(2, 3, 3)
 
-megalut.plot.scatter.scatter(ax, cat, tru_rad, snr, featc=Feature("pre_s1w_norm", 0, 1, rea=wplotrea, nicename=r"Weight $w_1$"), cmap="plasma_r", rasterized = True)
+megalut.plot.scatter.scatter(ax, cat, adamom_flux, adamom_sigma, featc=Feature("pre_s1w_norm", 0, 1, rea=wplotrea, nicename=r"Weight $w_1$"), cmap="plasma_r", rasterized = True)
+#megalut.plot.scatter.scatter(ax, cat, tru_sb, tru_rad, featc=Feature("pre_s1w_norm", 0, 1, rea=wplotrea, nicename=r"Weight $w_1$"), cmap="plasma_r", rasterized = True)
 
-#ax.set_xlabel("")
-#ax.set_xticklabels([])
 
 #==================================================================================================
 
@@ -178,7 +189,8 @@ ax.set_ylabel("")
 ax.set_yticklabels([])
 
 ax = fig.add_subplot(2, 3, 6)
-megalut.plot.scatter.scatter(ax, cat, tru_rad, snr, featc=Feature("pre_s2w_norm", 0, 1, rea=wplotrea, nicename=r"Weight $w_2$"), cmap="plasma_r", rasterized = True)
+#megalut.plot.scatter.scatter(ax, cat, adamom_flux, adamom_sigma, featc=Feature("pre_s2w_norm", 0, 1, rea=wplotrea, nicename=r"Weight $w_2$"), cmap="plasma_r", rasterized = True)
+megalut.plot.scatter.scatter(ax, cat, tru_sb, tru_rad, featc=Feature("pre_s2w_norm", 0, 1, rea=wplotrea, nicename=r"Weight $w_2$"), cmap="plasma_r", rasterized = True)
 
 plt.tight_layout()
 

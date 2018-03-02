@@ -55,13 +55,13 @@ ax1.set_ylim([0-extra_space, 1+extra_space])
 ax1.set_xlabel(r"$x$ position in field")
 ax1.set_ylabel(r"$y$ position in field")
 
-ax1.set_title(r"($g_1$, $g_2$)-space")
+ax1.set_title(r"($\varepsilon_1$, $\varepsilon_2$)-space")
 
 
 
 #ax2 = plt.subplot(1, 3, 2)
 
-cmap = matplotlib.cm.get_cmap("viridis")
+cmap = matplotlib.cm.get_cmap("plasma")
 
 fwhmpersigma = 2.3548
 minsigma = 1.75

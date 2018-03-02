@@ -31,12 +31,12 @@ nbins = 10
 ncbins = 10
 
 param_feats = [
-		Feature("snr_mean", nicename=r"S/N"),
+		Feature("snr_mean", 5, 75, nicename=r"$\langle$S/N$\rangle$"),
 		#Feature("tru_flux", nicename=r"$F$ [counts]"),
-		#Feature("tru_rad", nicename=r"$R$ [px]"),
-		Feature("tru_radwrtPSF", 0.5, 3.5, nicename=r"$R/R_\mathrm{PSF}$"),
+		Feature("tru_rad", 1.8, 8.5, nicename=r"Half-light radius $R$ [pix]"),
+		#Feature("tru_radwrtPSF", 0.5, 3.5, nicename=r"$R/R_\mathrm{PSF}$"),
 		Feature("tru_sersicn", 0.5, 4.5, nicename=r"S\'ersic index $n$"),
-		Feature("tru_g", 0.0, 0.6, nicename=r"Galaxy ellipticity $|\varepsilon|$"),
+		Feature("tru_g", -0.02, 0.62, nicename=r"Galaxy ellipticity $|\varepsilon|$"),
 		]
 
 
@@ -180,7 +180,11 @@ for iplot, featc in enumerate(param_feats):
 		
 		cbinrange = megalut.plot.utils.getrange(cat, featc)
 		
-		cbinlims = np.array([np.percentile(cat[featc.colname], q) for q in np.linspace(0.0, 100.0, ncbins+1)])
+		if featc.colname is "tru_sersicn":
+			cbinlims = np.linspace(1-0.1, 4+0.1, 11)	
+		else:
+			cbinlims = np.array([np.percentile(cat[featc.colname], q) for q in np.linspace(0.0, 100.0, ncbins+1)])
+	
 		#print cbinlims
 		
 		cbinlows = cbinlims[0:-1]
@@ -246,6 +250,11 @@ for iplot, featc in enumerate(param_feats):
 		ax.errorbar(cbinpointcenters, ms, yerr=merrs, color=color, marker=markm, label=labelm)
 		ax.errorbar(cbinpointcenters, cs, yerr=cerrs, color=color, marker=markc, ls=':', label=labelc)
 
+
+	# Outside of the "comp" loop, we add bins
+	for x in cbinlims:
+		ax.axvline(x, color='gray', lw=0.5)
+
 	#if (isubfig + iplot)/2+1 == nlines:
 	#	ax.set_xlabel(r"$\mathrm{True\ shear}$")
 	#else:
@@ -269,8 +278,8 @@ for iplot, featc in enumerate(param_feats):
 	if featc.low is not None and featc.high is not None:
 		ax.set_xlim([featc.low, featc.high])
 		#ax.locator_params(axis='x', nticks=2)
-		tick_spacing = (featc.high - featc.low) / 5.
-		ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
+		#tick_spacing = (featc.high - featc.low) / 5.
+		#ax.xaxis.set_major_locator(ticker.MultipleLocator(tick_spacing))
 		#ax.xaxis.set_major_formatter(ticker.FormatStrFormatter(r'$%0.3f$'))
 		#ax.xaxis.set_major_formatter(ticker.FormatStrFormatter(r'$%0.3f$'))
 		

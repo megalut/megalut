@@ -13,8 +13,6 @@ Manual
 To experiment with other training parameters for the shear point estimates (but the same training data), make a simlink of the groupmeascat.pkl in another directory within simmeas.
 
 
-
-
 Simulations
 -----------
 
@@ -29,6 +27,30 @@ Dataset categories:
 
 We have several configurations for each category:
 
+
+Key sets (constant PSF)
+
+
+ts-2-faint-ln
+ts-2-faint-p1 = sims "ts-2-faint-d1" + initial training on ts-2-faint-ln
+
+vs-3-faint
+
+tw-5-faint (with point estimates from ts-2-faint-p1)
+
+vo-3-faint-nosnc
+
+
+
+Key sets (variable PSF)
+
+ts-vp-1-ln :
+ts-vp-1 : to be done
+
+vs-vp-1 (50 M)
+
+
+Older sets
 
 ts-1 : 0.25 Mgal
 ts-2 : 4 Mgal, 126 GB
