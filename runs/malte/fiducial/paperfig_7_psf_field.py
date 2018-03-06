@@ -15,23 +15,28 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-megalut.plot.figures.set_fancy(14)
-fig = plt.figure(figsize=(12,6))
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+
+fig = plt.figure(figsize=(8,4.0))
 
 w = 0.3
 cbarw = 0.02
 h = 0.6
 
-ax1 = fig.add_axes([0.1, 0.1, w, h])
-ax2 = fig.add_axes([0.5, 0.1, w, h])
-ax3 = fig.add_axes([0.82, 0.1, cbarw, h])
+ax1 = fig.add_axes([0.1, 0.2, w, h])
+ax2 = fig.add_axes([0.5, 0.2, w, h])
+ax3 = fig.add_axes([0.82, 0.2, cbarw, h])
 
 
 extra_space = 0.1
 
 #ax1 = plt.subplot(1, 3, 1)
-X1D = np.linspace(0.0, 1.0, 11)
-Y1D = np.linspace(0.0, 1.0, 11)
+X1D = np.linspace(0.0, 1.0, 9)
+Y1D = np.linspace(0.0, 1.0, 9)
 
 for x in X1D:
 	for y in Y1D:
@@ -40,11 +45,11 @@ for x in X1D:
 		x = psf["tru_psf_x"]
 		y = psf["tru_psf_y"]
 		
-		gscale = 0.4
+		gscale = 0.55
 		g1 = gscale * psf["tru_psf_g1"]
 		g2 = gscale * psf["tru_psf_g2"]
 		
-		arrow = FancyArrowPatch(posA=(x-g1/2.0, y-g2/2.0), posB=(x+g1/2.0, y+g2/2.0), path=None, arrowstyle='-|>', mutation_scale=10, fc="black")
+		arrow = FancyArrowPatch(posA=(x-g1/2.0, y-g2/2.0), posB=(x+g1/2.0, y+g2/2.0), path=None, arrowstyle='-|>', mutation_scale=6, fc="black")
 		ax1.add_artist(arrow)
 		
 		
@@ -55,7 +60,7 @@ ax1.set_ylim([0-extra_space, 1+extra_space])
 ax1.set_xlabel(r"$x$ position in field")
 ax1.set_ylabel(r"$y$ position in field")
 
-ax1.set_title(r"($\varepsilon_1$, $\varepsilon_2$)-space")
+ax1.set_title(r"PSF field in ($\varepsilon_1$, $\varepsilon_2$)-space")
 
 
 
@@ -69,8 +74,8 @@ maxsigma = 2.25
 
 norm = matplotlib.colors.Normalize(vmin=minsigma * fwhmpersigma, vmax=maxsigma * fwhmpersigma)
 
-X1D = np.linspace(0.0, 1.0, 11)
-Y1D = np.linspace(0.0, 1.0, 11)
+X1D = np.linspace(0.0, 1.0, 9)
+Y1D = np.linspace(0.0, 1.0, 9)
 	
 for x in X1D:
 	for y in Y1D:
@@ -79,7 +84,7 @@ for x in X1D:
 		x = psf["tru_psf_x"]
 		y = psf["tru_psf_y"]
 		
-		escale = 0.02
+		escale = 0.03
 		a = escale * psf["tru_psf_a"]
 		b = escale * psf["tru_psf_b"]
 		ellipse = Ellipse((x, y), a, b, np.rad2deg(psf["tru_psf_theta"]))		
@@ -103,7 +108,7 @@ ax2.set_xlim([0-extra_space, 1+extra_space])
 ax2.set_ylim([0-extra_space, 1+extra_space])
 ax2.set_xlabel(r"$x$ position in field")
 ax2.set_ylabel(r"$y$ position in field")
-ax2.set_title(r"($x$, $y$)-space (exaggerated scale)")
+ax2.set_title(r"PSF field in real space")
 
 #plt.tight_layout()
 plt.savefig(os.path.join(config.valdir, "psf_field.pdf"))

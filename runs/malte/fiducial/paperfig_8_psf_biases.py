@@ -24,8 +24,10 @@ rc('text', usetex=True)
 valcat = os.path.join(config.valdir, config.valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
 
+showlegend=False
 if "sum55" in config.valname:
 	text = "Ignoring the variability of the PSF"
+	showlegend=True
 if "sum77" in config.valname:
 	text = "Using field coordinates as features"
 if "sum88" in config.valname:
@@ -36,10 +38,11 @@ if "sum88" in config.valname:
 select = True
 if select:
 	megalut.tools.table.addstats(cat, "snr")
-	s = megalut.tools.table.Selector("snr_mean > 10", [
-		("min", "snr_mean", 10.0),
+	s = megalut.tools.table.Selector("snr_mean > 100", [
+		("min", "snr_mean", 100.0),
 	])
 	cat = s.select(cat)
+exit()
 
 """
 for comp in ["1","2"]:
@@ -95,7 +98,7 @@ make_plot(ax, tru_psf_g2)
 ax.set_yticklabels([])
 
 ax = plt.subplot(1, 3, 3)
-make_plot(ax, tru_psf_fwhm, showlegend=True)
+make_plot(ax, tru_psf_fwhm, showlegend=showlegend)
 ax.set_yticklabels([])
 
 

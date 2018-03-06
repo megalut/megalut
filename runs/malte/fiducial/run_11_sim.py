@@ -506,6 +506,25 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "vs-vp-1-ln": # Same as ts-vp-1-ln, for validation of the ln stage
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 200,
+			shear = 0.1,
+			noise_level = 0.1,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":4000,
+			"ncpu":40,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 	elif code == "tw-1": # Training weights, no SNC (!), 500 cases, 2000 gals (1 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,

@@ -38,7 +38,7 @@ if select:
 	])
 	cat = s.select(cat)
 
-#exit()
+exit()
 
 
 # Running the training
