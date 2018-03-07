@@ -14,11 +14,13 @@ import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+"""
+# Replaced by config
 # Build a name to save the overall validation: 
-sconfname = os.path.splitext(os.path.basename(config.shearconflist[0][1]))[0] # extracts e.g. "sum55"
-wconfname = os.path.splitext(os.path.basename(config.weightconflist[0][1]))[0] # extracts e.g. "sum55w"
-valname = "{}_and_{}_with_{}_{}_on_{}".format(config.datasets["ts"], config.datasets["tw"], sconfname, wconfname, config.datasets["vo"])
-
+#sconfname = os.path.splitext(os.path.basename(config.shearconflist[0][1]))[0] # extracts e.g. "sum55"
+#wconfname = os.path.splitext(os.path.basename(config.weightconflist[0][1]))[0] # extracts e.g. "sum55w"
+#valname = "{}_and_{}_with_{}_{}_on_{}".format(config.datasets["ts"], config.datasets["tw"], sconfname, wconfname, config.datasets["vo"])
+"""
 
 
 # Load validation catalog
@@ -39,7 +41,7 @@ predcat = megalut.learn.tenbilacrun.predict(predcat, config.weightconflist, wtra
 
 # Save the prediction:
 
-predcatpath = os.path.join(config.valdir, valname+".pkl")
+predcatpath = os.path.join(config.valdir, config.wvalname+".pkl")
 megalut.tools.io.writepickle(predcat, predcatpath)
 
 

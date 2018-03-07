@@ -12,39 +12,122 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-valname = "{}_on_{}".format(config.datasets["ts"], config.datasets["vs"])
+#megalut.plot.figures.set_fancy(14)
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+
+
+useweights = True
+select = False
+
+
+if useweights is False:
+	valname = config.valname
+else:
+	valname = config.wvalname
+
 valcat = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
+megalut.tools.table.addstats(cat, "snr") # We need this even without select, to show the snr_mean axis
 
-megalut.plot.figures.set_fancy(14)
-megalut.tools.table.addstats(cat, "snr") # We need this even without select
-
-select = True
 if select:
 	
-	s = megalut.tools.table.Selector("fortrain", [
+	s = megalut.tools.table.Selector("snr_mean > 10", [
 		("min", "snr_mean", 10.0),
 	])
 	cat = s.select(cat)
 
-nbins = 10
-ncbins = 10
 
-param_feats = [
-		Feature("snr_mean", 5, 75, nicename=r"$\langle$S/N$\rangle$"),
-		#Feature("tru_flux", nicename=r"$F$ [counts]"),
-		Feature("tru_rad", 1.8, 8.5, nicename=r"Half-light radius $R$ [pix]"),
-		#Feature("tru_radwrtPSF", 0.5, 3.5, nicename=r"$R/R_\mathrm{PSF}$"),
-		Feature("tru_sersicn", 0.5, 4.5, nicename=r"S\'ersic index $n$"),
-		Feature("tru_g", -0.02, 0.62, nicename=r"Galaxy ellipticity $|\varepsilon|$"),
-		]
-
-
+if select:
+	snr_mean = Feature("snr_mean", 5, 75, nicename=r"$\langle$S/N$\rangle$")
+else:
+	snr_mean = Feature("snr_mean", 0, 75, nicename=r"$\langle$S/N$\rangle$")
+tru_flux = Feature("tru_flux", nicename=r"$F$ [counts]")
+tru_rad = Feature("tru_rad", 1.8, 8.5, nicename=r"Half-light radius $R$ [pix]")
+tru_radwrtPSF = Feature("tru_radwrtPSF", 0.5, 3.5, nicename=r"$R/R_\mathrm{PSF}$")
+tru_sersicn = Feature("tru_sersicn", 0.5, 4.5, nicename=r"S\'ersic index $n$")
+tru_g = Feature("tru_g", -0.02, 0.62, nicename=r"Galaxy ellipticity $|\varepsilon|$")
 
 
 cat["tru_radwrtPSF"] = cat["tru_rad"] / (cat["tru_psf_sigma"] * 1.1774)
 
+tru_s1 = Feature("tru_s1")
+tru_s2 = Feature("tru_s2")
+pre_s1 = Feature("pre_s1", rea="all")
+pre_s2 = Feature("pre_s2", rea="all")
 
+
+if useweights:
+	pre_s1w = Feature("pre_s1w", rea="all")
+	pre_s2w = Feature("pre_s2w", rea="all")
+else:
+	pre_s1w = None
+	pre_s2w = None
+	
+	
+
+def make_plot(ax, featbin, showlegend=False, sersic=False):
+	ax.axhline(0.0, color='gray', lw=0.5)	
+	if sersic: # We don't let the code make bins, but provide binlims to separate the discrete cases:
+		binlims = np.linspace(0.9, 4.1, 11)
+		showbins = False
+	else:
+		showbins = True
+		binlims = None
+	# The first component
+	megalut.plot.mcbin.mcbin(ax, cat, tru_s1, pre_s1, featbin, featprew=pre_s1w, comp=1, binlims=binlims, showbins=showbins)
+	# For the second component, we do not overplot bins again, but we might show the legend
+	megalut.plot.mcbin.mcbin(ax, cat, tru_s2, pre_s2, featbin, featprew=pre_s2w, comp=2, binlims=binlims, showbins=False, showlegend=showlegend)
+	megalut.plot.mcbin.make_symlog(ax, featbin)
+	ax.set_xlabel(featbin.nicename)
+
+
+fig = plt.figure(figsize=(8, 6))
+plt.subplots_adjust(
+	left  = 0.12,  # the left side of the subplots of the figure
+	right = 0.99,    # the right side of the subplots of the figure
+	bottom = 0.1,   # the bottom of the subplots of the figure
+	top = 0.95,      # the top of the subplots of the figure
+	wspace = 0.08,   # the amount of width reserved for blank space between subplots,
+	                # expressed as a fraction of the average axis width
+	hspace = 0.25,   # the amount of height reserved for white space between subplots,
+					# expressed as a fraction of the average axis heightbottom=0.1, right=0.8, top=0.9)
+	)
+
+ax = plt.subplot(2, 2, 1)
+make_plot(ax, snr_mean, showlegend=True)
+ax.set_ylabel("Metric value")
+
+ax = plt.subplot(2, 2, 2)
+make_plot(ax, tru_rad)
+ax.set_yticklabels([])
+
+ax = plt.subplot(2, 2, 3)
+make_plot(ax, tru_sersicn, sersic=True)
+ax.set_ylabel("Metric value")
+
+ax = plt.subplot(2, 2, 4)
+make_plot(ax, tru_g)
+ax.set_yticklabels([])
+
+
+megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_cond_biases"), fig, fancy=True)
+#plt.show()
+
+
+
+
+
+
+
+
+
+
+
+"""
 for comp in ["1","2"]:
 
 	# If no weights are in the catalog (or not yet), we add ones
@@ -58,14 +141,15 @@ for comp in ["1","2"]:
 	megalut.tools.table.addrmsd(cat, "pre_s{}".format(comp), "tru_s{}".format(comp))
 	megalut.tools.table.addstats(cat, "pre_s{}".format(comp), "pre_s{}w".format(comp))
 	cat["pre_s{}_wbias".format(comp)] = cat["pre_s{}_wmean".format(comp)] - cat["tru_s{}".format(comp)]
+"""
 
-
+"""
 #for comp in ["1", "2"]:
 #	pass
 	#cat["pre_g{}".format(comp)] = cat["pre_g{}_adamom".format(comp)]
 	#megalut.tools.table.addstats(cat, "pre_g{}".format(comp))
 	#megalut.tools.table.addrmsd(cat, "pre_g{}".format(comp), "tru_s{}".format(comp))
-
+"""
 
 
 """
@@ -137,7 +221,7 @@ megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_plot_6a"), 
 #------------------------------------------------------------
 """
 
-
+"""
 
 
 
@@ -293,4 +377,4 @@ for iplot, featc in enumerate(param_feats):
 
 megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_condbias_b"), fig, fancy=True, pdf_transparence=True)
 plt.show()
-
+"""

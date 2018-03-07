@@ -14,7 +14,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-megalut.plot.figures.set_fancy(14)
+#megalut.plot.figures.set_fancy(14)
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
+
 
 workbasedir = os.path.join(config.traindir, config.datasets["ts"])
 
@@ -33,7 +39,7 @@ for (dataconfpath, toolconfpath) in config.shearconflist:
 	ten._readmembers()
 	
 	
-	fig = plt.figure(figsize=(6, 6))
+	fig = plt.figure(figsize=(6, 3.5))
 
 	ax = fig.add_subplot(1, 1, 1)
 

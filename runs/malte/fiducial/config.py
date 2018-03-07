@@ -12,8 +12,8 @@ loggerformat='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;2
 logging.basicConfig(format=loggerformat,level=logging.INFO)
 
 #workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/fiducial"
-#workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial"
-workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/new_fiducial"
+workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial"
+#workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/new_fiducial"
 #workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/fiducial"
 
 simdir = os.path.join(workdir, "sim")
@@ -36,8 +36,8 @@ datasets = {
 	#"ts":"ts-3-ln",
 	#"ts":"ts-2-easy",
 	#"ts":"ts-2-faint",
-	#"ts":"ts-2-faint-p1", # <-- selected
-	#"ts":"ts-2-faint-d1", 
+	"ts":"ts-2-faint-p1", # <-- selected
+	#"ts":"ts-2-faint-d1", # <--- the one for the nice training evolution plot
 	#"ts":"ts-2-faint-d2",
 	#"ts":"ts-2-faint-ln",
 	#"ts":"ts-2-faint20",
@@ -45,14 +45,15 @@ datasets = {
 	#"ts":"ts-4-minrad3",
 	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
-	"ts":"ts-vp-1-ln",
+	#"ts":"ts-vp-1-ln",
+	#"ts":"ts-vp-1",
 	
-	#"vs":"vs-3-faint", # <-- the default vs
+	"vs":"vs-3-faint", # <-- the default vs
 	#"vs":"vs-1-faint",
 	#"vs":"ts-2-easy",
 	#"vs":"vs-2-easy",	
 	#"vs":"vs-vp-1s",
-	"vs":"vs-vp-1-ln",
+	#"vs":"vs-vp-1-ln",
 	
 	#"tw":"tw-3-faint",
 	#"tw":"tw-4-faint",
@@ -64,6 +65,8 @@ datasets = {
 	"vo":"vo-3-faint-nosnc", # <-- the default vo
 	#"vo":"vo-3-faint-nosnc-mini",
 	
+	#"vo":"vs-3-faint", # <--- the one for conditional bias plot with weights
+	
 	#"si":"si-1",
 	"si":"si-vp-1",
 }
@@ -72,8 +75,8 @@ datasets = {
 
 shearconflist = [
 	
-	#("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"), # <--- We use those
-	#("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
+	("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
 	
 	
 	# vp:
@@ -81,8 +84,8 @@ shearconflist = [
 	#("mlconfig/ada7s1f-vp-pos.cfg", "mlconfig/sum77.cfg"),
 	#("mlconfig/ada7s2f-vp-pos.cfg", "mlconfig/sum77.cfg")
 	
-	("mlconfig/ada8s1f-vp-mom.cfg", "mlconfig/sum88.cfg"),
-	("mlconfig/ada8s2f-vp-mom.cfg", "mlconfig/sum88.cfg")
+	#("mlconfig/ada8s1f-vp-mom.cfg", "mlconfig/sum88.cfg"),
+	#("mlconfig/ada8s2f-vp-mom.cfg", "mlconfig/sum88.cfg")
 	
 	# Old experiemtns:
 	

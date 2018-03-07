@@ -34,11 +34,11 @@ if select:
 	megalut.tools.table.addstats(cat, "snr")
 	s = megalut.tools.table.Selector("fortrain", [
 		#("max", "adamom_failfrac", 0.01),
-		("min", "snr_mean", 100.0),
+		("min", "snr_mean", 10.0),
 	])
 	cat = s.select(cat)
 
-exit()
+#exit()
 
 
 # Running the training

@@ -13,17 +13,23 @@ plt.rc('text', usetex=True)
 import logging
 logger = logging.getLogger(__name__)
 
+#megalut.plot.figures.set_fancy(14)
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
 
-valname = "{}_on_{}".format(config.datasets["ts"], config.datasets["vs"])
-valcat = os.path.join(config.valdir, valname + ".pkl")
+
+
+valcat = os.path.join(config.valdir, config.valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
 
 #print megalut.tools.table.info(cat)
 
 
-megalut.plot.figures.set_fancy(14)
 
-cat = megalut.tools.table.shuffle(cat) # otherwise scatter plots look weird as fuc of tru s1 s2
+cat = megalut.tools.table.shuffle(cat) # otherwise scatter plots look weird as they got sorted by tru s1 s2
 
 megalut.tools.table.addstats(cat, "snr")
 
@@ -38,7 +44,7 @@ if select:
 
 
 tru_sb = Feature("tru_sb", 0, 16, nicename=r"Surface brightness $S$ [pix$^{-2}$]")
-tru_rad = Feature("tru_rad", 1, 9, nicename=r"Half-light radius $R$ [pix]")
+tru_rad = Feature("tru_rad", 1.5, 8.5, nicename=r"Half-light radius $R$ [pix]")
 
 snr_mean = Feature("snr_mean", nicename="$\\langle \mathrm{S}/\mathrm{N}\\rangle$")
 
@@ -69,7 +75,7 @@ for comp in ["1"]:
 		abs_pre_s_bias = Feature("abs_pre_s{}_bias".format(comp), 0, hard_coded_max_bias, nicename=r"$|\langle \hat{g}_{2} \rangle - g_{2}^{\mathrm{true}} |$ ")
 		log_abs_pre_s_bias = Feature("log_abs_pre_s{}_bias".format(comp), nicename=r"$\log(|g_2|$ estimation error)")
 	
-	fig = plt.figure(figsize=(13, 3.5))
+	fig = plt.figure(figsize=(11.5, 3.0))
 
 
 	
@@ -94,6 +100,6 @@ for comp in ["1"]:
 	plt.tight_layout()
 
 
-	megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_resi_{}".format(comp)), fig, fancy=True, pdf_transparence=True)
+	megalut.plot.figures.savefig(os.path.join(config.valdir, config.valname + "_resi_{}".format(comp)), fig, fancy=True, pdf_transparence=True)
 	plt.show()
 

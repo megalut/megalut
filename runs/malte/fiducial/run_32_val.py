@@ -28,7 +28,7 @@ predcatpath = os.path.join(config.valdir, config.valname + ".pkl")
 
 cat = megalut.tools.io.readpickle(valcatpath)
 
-
+"""
 select = False # prefer selecting at the plot stage, not here.
 
 if select:
@@ -40,7 +40,7 @@ if select:
 		#("min", "snr_mean", 10.0),
 	])
 	cat = s.select(cat)
-
+"""
 
 predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist, traindir)
 
