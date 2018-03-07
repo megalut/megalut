@@ -63,6 +63,56 @@ def metrics(catalog, labelfeature, predlabelfeature, pre_is_res=False):
 	ret.update(calc.linreg(lab, pre))
 	
 	return ret
+
+
+def metricsw(cat, trufeat, predfeat, wfeat=None, sigma_shape=1.0):
+	"""
+	Same as metrics, but with weights.
+	
+	sigma = sigma_shape / sqrt(weights)
+	
+	Bright large galaxies get a weight of 1.0
+	All their shear noise is shape noise.
+	Shape noise has a sigma of 0.2 -> sigma_shape is 0.2
+	
+	
+	"""
+	logger.info("Computing metrics for {} -> {}".format(predfeat.colname, trufeat.colname))
+	
+	if wfeat is None:
+		logger.info("WARNING: not using any weights!")
+		metcat = feature.get1Ddata(cat, [trufeat, predfeat], keepmasked=False)
+		x = metcat[trufeat.colname]
+		y = metcat[predfeat.colname]
+		w = np.ones(len(x))
+		
+	else:
+		logger.info("Using {} as weights.".format(wfeat.colname))
+		metcat = feature.get1Ddata(cat, [trufeat, predfeat, wfeat], keepmasked=False)
+		x = metcat[trufeat.colname]
+		y = metcat[predfeat.colname]
+		w = metcat[wfeat.colname]
+	
+	sigma = sigma_shape * np.sqrt(1.0/np.clip(w, 1e-18, 1e18)) # We don't want weights of exactly zero here.
+
+	def f(x, a, b):
+		return a * x + b
+
+	p0 = [1.0, 0.0] # initial parameter estimate
+	popt, pcov = curve_fit(f, x, y, p0, sigma, absolute_sigma=True)
+	perr = np.sqrt(np.diag(pcov))
+	
+	m = popt[0] - 1.0
+	c = popt[1]
+	merr = perr[0]
+	cerr = perr[1]
+	ret = {"m":m, "c":c, "merr":merr, "cerr":cerr}
+	
+	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % (m*1000.0, merr*1000.0, c*1000.0, cerr*1000.0)
+	logger.info("Regression: {}".format(txt))	
+	
+	return ret
+	
 	
 def linregress_with_errors(x, y, y_err):
     """
@@ -91,73 +141,74 @@ def linregress_with_errors(x, y, y_err):
     return slope, intercept, slope_err, intercept_err, slope_intercept_covar
 
 
-def wmetrics(cat, trufeat, predfeat, wfeat=None):
-	"""
-	An attempt to get metrics with errors when one has weights, *without* first "bining" things.
-	Warning, this is experimental, not yet fully tested.
-	
-	Note that the scale of weights matters for the errors!
-	Provide weights corresponding to 1/sigma**2
-	"""
-	logger.info("Computing metrics for {} -> {}".format(predfeat.colname, trufeat.colname))
-	
-	if wfeat is None:
-		logger.info("WARNING: not using any weights!")
-		metcat = feature.get1Ddata(cat, [trufeat, predfeat], keepmasked=False)
-		x = metcat[trufeat.colname]
-		y = metcat[predfeat.colname]
-		w = np.ones(len(x))
-		
-	else:
-		logger.info("Using {} as weights.".format(wfeat.colname))
-		metcat = feature.get1Ddata(cat, [trufeat, predfeat, wfeat], keepmasked=False)
-		x = metcat[trufeat.colname]
-		y = metcat[predfeat.colname]
-		w = metcat[wfeat.colname]
-	
 
-	y_err = np.sqrt(1.0/np.clip(w, 1e-18, 1e18)) # We don't want weights of exactly zero here.
-	
-	########### GSL
-	(slope, intercept, slope_err, intercept_err, slope_intercept_covar) = linregress_with_errors(x, y, y_err)
-	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % ((slope-1.0)*1000.0, slope_err*1000.0, intercept*1000.0, intercept_err*1000.0)
-	logger.info("GSL regression: {}".format(txt))	
-	
-
-	########### Scipy
-	def f(x, a, b):
-		return a * x + b
-
-	p0 = [0, 0] # initial parameter estimate
-	popt, pcov = curve_fit(f, x, y, p0, y_err, absolute_sigma=True)
-	perr = np.sqrt(np.diag(pcov))
-	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % ((popt[0]-1.0)*1000.0, perr[0]*1000.0, popt[1]*1000.0, perr[1]*1000.0)
-	logger.info("Scipy regression: {}".format(txt))	
-	
-	
-	########### statsmodels
-	X = sm.add_constant(x)
-	#model = sm.OLS(y, X)
-	model = sm.WLS(y, X, weights=1.0/(y_err**2)) # Yes, this "w" should be proportional to the inverse of the variance
-	
-	results = model.fit(cov_type='fixed scale')
-	print(results.summary())
-	
-	print('Parameters: ', results.params)
-	print('Standard errors: ', results.bse)
-	
-	c = results.params[0]
-	m = results.params[1] - 1.0
-	cerr = results.bse[0]
-	merr = results.bse[1]
-	ret = {"m":m, "c":c, "merr":merr, "cerr":cerr}
-	
-	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % (m*1000.0, merr*1000.0, c*1000.0, cerr*1000.0)
-	logger.info("StatsModels Regression: {}".format(txt))	
-	
-	return ret
-	
-	
+#def wmetrics(cat, trufeat, predfeat, wfeat=None):
+#	"""
+#	An attempt to get metrics with errors when one has weights, *without* first "bining" things.
+#	Warning, this is experimental, not yet fully tested.
+#	
+#	Note that the scale of weights matters for the errors!
+#	Provide weights corresponding to 1/sigma**2
+#	"""
+#	logger.info("Computing metrics for {} -> {}".format(predfeat.colname, trufeat.colname))
+#	
+#	if wfeat is None:
+#		logger.info("WARNING: not using any weights!")
+#		metcat = feature.get1Ddata(cat, [trufeat, predfeat], keepmasked=False)
+#		x = metcat[trufeat.colname]
+#		y = metcat[predfeat.colname]
+#		w = np.ones(len(x))
+#		
+#	else:
+#		logger.info("Using {} as weights.".format(wfeat.colname))
+#		metcat = feature.get1Ddata(cat, [trufeat, predfeat, wfeat], keepmasked=False)
+#		x = metcat[trufeat.colname]
+#		y = metcat[predfeat.colname]
+#		w = metcat[wfeat.colname]
+#	
+#
+#	y_err = np.sqrt(1.0/np.clip(w, 1e-18, 1e18)) # We don't want weights of exactly zero here.
+#	
+#	########### GSL
+#	(slope, intercept, slope_err, intercept_err, slope_intercept_covar) = linregress_with_errors(x, y, y_err)
+#	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % ((slope-1.0)*1000.0, slope_err*1000.0, intercept*1000.0, intercept_err*1000.0)
+#	logger.info("GSL regression: {}".format(txt))	
+#	
+#
+#	########### Scipy
+#	def f(x, a, b):
+#		return a * x + b
+#
+#	p0 = [0, 0] # initial parameter estimate
+#	popt, pcov = curve_fit(f, x, y, p0, y_err, absolute_sigma=True)
+#	perr = np.sqrt(np.diag(pcov))
+#	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % ((popt[0]-1.0)*1000.0, perr[0]*1000.0, popt[1]*1000.0, perr[1]*1000.0)
+#	logger.info("Scipy regression: {}".format(txt))	
+#	
+#	
+#	########### statsmodels
+#	X = sm.add_constant(x)
+#	#model = sm.OLS(y, X)
+#	model = sm.WLS(y, X, weights=1.0/(y_err**2)) # Yes, this "w" should be proportional to the inverse of the variance
+#	
+#	results = model.fit(cov_type='fixed scale')
+#	print(results.summary())
+#	
+#	print('Parameters: ', results.params)
+#	print('Standard errors: ', results.bse)
+#	
+#	c = results.params[0]
+#	m = results.params[1] - 1.0
+#	cerr = results.bse[0]
+#	merr = results.bse[1]
+#	ret = {"m":m, "c":c, "merr":merr, "cerr":cerr}
+#	
+#	txt = "m*1e3: %.1f +/- %.1f   c*1e3: %.1f +/- %.1f" % (m*1000.0, merr*1000.0, c*1000.0, cerr*1000.0)
+#	logger.info("StatsModels Regression: {}".format(txt))	
+#	
+#	return ret
+#	
+#	
 	
 	
 	

@@ -26,11 +26,19 @@ logger = logging.getLogger(__name__)
 
 
 
-def mcbin(ax, cat, feattru, featpre, featbin, nbins=10, binlims=None, showbins=True, comp=0, showlegend=False):
+def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=None, showbins=True, comp=0, showlegend=False, sigma_shape=0.2):
 	"""
 	
-	
+	feattru: the true parameter (for example tru_s1)
+	featpre: the predicted point estimate (for example pre_s1)
+	featbin: the feature to bin in (for example tru_g)
+	featprew: the predicted weights (optional, for example pre_s1w)
+
 	comp: 0, 1 or 2, if not 0 selects the symbol and color to use
+	
+	Either give nbins (to get equal-part-of-population bins) or binlims (an array of the "n+1" bin limits to use).
+	
+	
 	"""
 	
 	logger.info("Plot mcbin with featbin '{}'".format(featbin.colname))
@@ -45,6 +53,7 @@ def mcbin(ax, cat, feattru, featpre, featbin, nbins=10, binlims=None, showbins=T
 	
 	binlows = binlims[0:-1]
 	binhighs = binlims[1:]
+	#logger.info("binlims: {}".format(binlims))
 		
 	binpointcenters = []
 	ms = []
@@ -58,15 +67,22 @@ def mcbin(ax, cat, feattru, featpre, featbin, nbins=10, binlims=None, showbins=T
 		bindata = selbin.select(cat)
 		
 	
-		#cbinfrac = float(len(cbindata)) / float(len(cat))
-			
 		# And we perform the linear regression
-		# Redefining features, to get rid of any rea settings that don't apply here
+		# Redefining features, to get rid of any rea settings that don't apply here (?)
 		
-		md = tools.metrics.metrics(bindata,
-				feattru, 
-				featpre,
-				pre_is_res=False)
+		#if featprew is None:
+		#	md = tools.metrics.metrics(bindata,
+		#			feattru, 
+		#			featpre,
+		#			pre_is_res=False)
+		#else:
+		md = tools.metrics.metricsw(bindata,
+					feattru, 
+					featpre,
+					featprew,
+					sigma_shape=sigma_shape
+					)
+			
 			
 			
 		ms.append(md["m"])
