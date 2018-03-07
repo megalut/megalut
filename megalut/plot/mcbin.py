@@ -70,13 +70,13 @@ def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=N
 		# And we perform the linear regression
 		# Redefining features, to get rid of any rea settings that don't apply here (?)
 		
-		#if featprew is None:
-		#	md = tools.metrics.metrics(bindata,
-		#			feattru, 
-		#			featpre,
-		#			pre_is_res=False)
-		#else:
-		md = tools.metrics.metricsw(bindata,
+		if featprew is None:
+			md = tools.metrics.metrics(bindata,
+					feattru, 
+					featpre,
+					pre_is_res=False)
+		else:
+			md = tools.metrics.metricsw(bindata,
 					feattru, 
 					featpre,
 					featprew,
