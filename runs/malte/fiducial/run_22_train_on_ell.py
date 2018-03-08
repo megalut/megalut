@@ -39,6 +39,7 @@ print megalut.tools.table.info(cat)
 #cat["adamom_failfrac"] = np.sum(cat["adamom_g1"].mask, axis=1) / float(nrea)
 
 
+exit()
 if select:
 	s = megalut.tools.table.Selector("fortrain", [
 		("max", "adamom_failfrac", 0.01),

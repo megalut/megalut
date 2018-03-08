@@ -10,8 +10,10 @@ import config
 import logging
 logger = logging.getLogger(__name__)
 
+import argparse
 
-
+parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+parser.add_argument('snrcut', type=int, help='<S/N>-cut to apply to the data')
 
 	
 # Getting the path to the correct directories
@@ -32,13 +34,12 @@ select=True
 if select:
 	logger.warning("Selection of cases is activated!")
 	megalut.tools.table.addstats(cat, "snr")
-	s = megalut.tools.table.Selector("fortrain", [
+	s = megalut.tools.table.Selector("snrcut", [
 		#("max", "adamom_failfrac", 0.01),
-		("min", "snr_mean", 10.0),
+		("min", "snr_mean", args.snrcut),
 	])
 	cat = s.select(cat)
 
-#exit()
 
 
 # Running the training

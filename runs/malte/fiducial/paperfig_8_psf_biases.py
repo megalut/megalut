@@ -38,11 +38,11 @@ if "sum88" in config.valname:
 select = True
 if select:
 	megalut.tools.table.addstats(cat, "snr")
-	s = megalut.tools.table.Selector("snr_mean > 100", [
-		("min", "snr_mean", 100.0),
+	s = megalut.tools.table.Selector("snr_mean > 10", [
+		("min", "snr_mean", 10.0),
 	])
 	cat = s.select(cat)
-exit()
+#exit()
 
 """
 for comp in ["1","2"]:
