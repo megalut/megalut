@@ -65,7 +65,7 @@ def metrics(catalog, labelfeature, predlabelfeature, pre_is_res=False):
 	return ret
 
 
-def metricsw(cat, trufeat, predfeat, wfeat=None, sigma_shape=1.0):
+def metricsw(cat, trufeat, predfeat, wfeat=None, sigma_shape=0.2):
 	"""
 	Same as metrics, but with weights.
 	
