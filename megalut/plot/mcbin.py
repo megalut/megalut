@@ -120,15 +120,14 @@ def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=N
 
 
 
-def make_symlog(ax, featbin):
+def make_symlog(ax, featbin, linthresh=2e-3, lim=1e-1):
 	"""
 	Converts the y axis to a symlog scale with custom ticks, usually for the mcbin-plot from above
 	"""
 	
-	lintresh=2e-3
-	ax.set_yscale('symlog', linthreshy=lintresh)
-	ax.set_ylim([-1e-1, 1e-1])
-	ticks = np.concatenate([np.arange(-lintresh, lintresh, 1e-3)])#, np.arange(lintresh, 1e-2, 9)])
+	ax.set_yscale('symlog', linthreshy=linthresh)
+	ax.set_ylim([-lim, lim])
+	ticks = np.concatenate([np.arange(-linthresh, linthresh, 1e-3)])#, np.arange(lintresh, 1e-2, 9)])
 	s = ax.yaxis._scale
 	ax.yaxis.set_minor_locator(ticker.SymmetricalLogLocator(s, subs=[1., 2.,3.,4.,5.,6.,7.,8.,9.,-2.,-3.,-4.,-5.,-6.,-7.,-8.,-9.]))
 	ticks = np.concatenate([ticks, ax.yaxis.get_minor_locator().tick_values(-.1, .1)])
@@ -136,6 +135,6 @@ def make_symlog(ax, featbin):
 	
 	
 	xlim = (featbin.low, featbin.high)
-	ax.fill_between(xlim, -lintresh, lintresh, alpha=0.2, facecolor='darkgrey')
+	ax.fill_between(xlim, -linthresh, linthresh, alpha=0.2, facecolor='darkgrey')
 	ax.set_xlim(xlim)
 
