@@ -24,16 +24,22 @@ rc('text', usetex=True)
 valcat = os.path.join(config.valdir, config.valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
 
+widescale=False
 showlegend=False
 if "sum55" in config.valname:
 	text = "Ignoring the variability of the PSF"
 	showlegend=True
+	widescale=True
 if "sum77" in config.valname:
 	text = "Using field coordinates as features"
 if "sum88" in config.valname:
 	text = "Using PSF moments as features"
 
 
+if widescale:
+	lim = 1e0
+else:
+	lim = 1e-1
 
 select = True
 if select:
@@ -71,9 +77,10 @@ tru_psf_fwhm = Feature("tru_psf_fwhm", 4.1, 5.35, nicename=r"PSF FWHM [pix]")
 
 
 def make_plot(ax, featbin, showlegend=False):
+	ax.axhline(0.0, color='gray', lw=0.5)	
 	megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, comp=1)
 	megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, comp=2, showbins=False, showlegend=showlegend)
-	megalut.plot.mcbin.make_symlog(ax, featbin)
+	megalut.plot.mcbin.make_symlog(ax, featbin, lim=lim)
 	ax.set_xlabel(featbin.nicename)
 
 

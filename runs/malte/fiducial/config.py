@@ -12,8 +12,8 @@ loggerformat='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;2
 logging.basicConfig(format=loggerformat,level=logging.INFO)
 
 #workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/fiducial"
-#workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial"
-workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/new_fiducial"
+workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial" # <--- used for constant PSF
+#workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/new_fiducial" # <--- used for vp
 #workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/fiducial"
 
 simdir = os.path.join(workdir, "sim")
@@ -22,11 +22,7 @@ traindir = os.path.join(workdir, "train")
 valdir = os.path.join(workdir, "val")
 
 
-for d in [simdir, traindir, valdir]:
-	if not os.path.exists(d):
-		os.makedirs(d)
-
-stampsize = 64
+stampsize = 64 # used for measuring
 drawstampsize = stampsize # Used for drawing
 
 
@@ -46,7 +42,9 @@ datasets = {
 	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
 	#"ts":"ts-vp-1-ln",
-	"ts":"ts-vp-1",
+	#"ts":"ts-vp-1",
+	"ts":"ts-vpe-1-ln",
+	
 	
 	#"vs":"vs-3-faint", # <-- the default vs
 	#"vs":"vs-1-faint",
@@ -124,3 +122,6 @@ valname = "{}_with_{}_on_{}".format(datasets["ts"], sconfname, datasets["vs"])
 wconfname = os.path.splitext(os.path.basename(weightconflist[0][1]))[0] # extracts e.g. "sum55w"
 wvalname = "{}_and_{}_with_{}_{}_on_{}".format(datasets["ts"], datasets["tw"], sconfname, wconfname, datasets["vo"])
 
+for d in [simdir, traindir, valdir]:
+	if not os.path.exists(d):
+		os.makedirs(d)

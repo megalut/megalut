@@ -301,6 +301,44 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "ts-vpe-1": # Similar to ts-vp-1, but for ellipticity training (1M)
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0, # No SNC
+			shear = -1, # No shear here
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":100,
+			"ncat":1,
+			"ncpu":25,
+			"groupmode":"ellipticity",
+			"skipdone":False	
+		}
+
+	elif code == "ts-vpe-1-ln": # As ts-vpe-1, but with lower noise and 10 times less rea
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0, # No SNC
+			shear = -1, # No shear here
+			noise_level = 0.1,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":10,
+			"ncat":1,
+			"ncpu":25,
+			"groupmode":"ellipticity",
+			"skipdone":False	
+		}
+
 
 	elif code == "ts-3-ln": # 10 times smaller then ts-2, but with 10 times lower noise
 		sp = simparams.Fiducial_statshear(
