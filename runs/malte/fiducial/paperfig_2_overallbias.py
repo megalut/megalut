@@ -62,7 +62,7 @@ for comp in ["1","2"]:
 	cat["pre_s{}_wbias".format(comp)] = cat["pre_s{}_wmean".format(comp)] - cat["tru_s{}".format(comp)]
 
 
-resr = 0.015
+resr = 0.01
 symthres = 0.002
 wplotrea = -10
 snr = Feature("snr", nicename="S/N", rea=wplotrea)
@@ -80,14 +80,17 @@ adamom_rho4 = Feature("adamom_rho4", nicename="adamom\_rho4", rea=wplotrea)
 tru_s1 = Feature("tru_s1", nicename=r"$g_1^{\mathrm{true}}$")
 tru_s2 = Feature("tru_s2", nicename=r"$g_2^{\mathrm{true}}$")
 
-#pre_s1_bias = Feature("pre_s1_bias", -resr, resr, nicename=r"$\langle \hat{g}_{1} \rangle - g_{1}^{\mathrm{true}} $")
-#pre_s2_bias = Feature("pre_s2_bias", -resr, resr, nicename=r"$\langle \hat{g}_{2} \rangle - g_{2}^{\mathrm{true}} $")
-#pre_s1_wbias = Feature("pre_s1_wbias", -resr, resr, nicename="Shear bias")
-#pre_s2_wbias = Feature("pre_s2_wbias", -resr, resr, nicename="Shear bias")
-pre_s1_bias = Feature("pre_s1_bias", -resr, resr, nicename=r"Bias on $\hat{g}_{1}$")
-pre_s2_bias = Feature("pre_s2_bias", -resr, resr, nicename=r"Bias on $\hat{g}_{2}$")
-pre_s1_wbias = Feature("pre_s1_wbias", -resr, resr)
-pre_s2_wbias = Feature("pre_s2_wbias", -resr, resr)
+pre_s1_bias = Feature("pre_s1_bias", -resr, resr, nicename=r"$\langle \hat{g}_{1} \rangle - g_{1}^{\mathrm{true}} $")
+pre_s2_bias = Feature("pre_s2_bias", -resr, resr, nicename=r"$\langle \hat{g}_{2} \rangle - g_{2}^{\mathrm{true}} $")
+pre_s1_wbias = Feature("pre_s1_wbias", -resr, resr, nicename=r"$\left(\sum\hat{g}_1 w_1 / \sum w_1 \right) - g_{1}^{\mathrm{true}}$")
+pre_s2_wbias = Feature("pre_s2_wbias", -resr, resr, nicename=r"$\left(\sum\hat{g}_2 w_2 / \sum w_2 \right) - g_{2}^{\mathrm{true}}$")
+
+
+
+#pre_s1_bias = Feature("pre_s1_bias", -resr, resr, nicename=r"Bias on $\hat{g}_{1}$")
+#pre_s2_bias = Feature("pre_s2_bias", -resr, resr, nicename=r"Bias on $\hat{g}_{2}$")
+#pre_s1_wbias = Feature("pre_s1_wbias", -resr, resr)
+#pre_s2_wbias = Feature("pre_s2_wbias", -resr, resr)
 
 
 def addmetrics(ax, xfeat, yfeat):
@@ -109,7 +112,7 @@ plt.subplots_adjust(
 	right = 0.90,    # the right side of the subplots of the figure
 	bottom = 0.1,   # the bottom of the subplots of the figure
 	top = 0.90,      # the top of the subplots of the figure
-	wspace = 0.15,   # the amount of width reserved for blank space between subplots,
+	wspace = 0.30,   # the amount of width reserved for blank space between subplots,
 	                # expressed as a fraction of the average axis width
 	hspace = 0.25,   # the amount of height reserved for white space between subplots,
 					# expressed as a fraction of the average axis heightbottom=0.1, right=0.8, top=0.9)
@@ -137,7 +140,7 @@ ax.title.set_position([.5, 1.1])
 addmetrics(ax, tru_s1, pre_s1_wbias)
 #ax.set_xlabel("")
 #ax.set_xticklabels([])
-ax.set_ylabel("")
+#ax.set_ylabel("")
 ax.set_yticklabels([])
 
 
@@ -161,7 +164,7 @@ ax = fig.add_subplot(2, 3, 5)
 megalut.plot.scatter.scatter(ax, cat, tru_s2, pre_s2_wbias, showidline=True, idlinekwargs=idlinekwargs, yisres=True)
 #ax.fill_between([-1, 1], -symthres, symthres, alpha=0.2, facecolor='darkgrey')
 addmetrics(ax, tru_s2, pre_s2_wbias)
-ax.set_ylabel("")
+#ax.set_ylabel("")
 ax.set_yticklabels([])
 
 

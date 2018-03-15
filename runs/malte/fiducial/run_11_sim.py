@@ -35,6 +35,7 @@ def configure(args):
 			name = code,
 			snc_type = 0,
 			shear = 0,
+			min_tru_sb = 1.0,
 			noise_level = 1.0
 		)
 		drawconf = {
@@ -47,7 +48,7 @@ def configure(args):
 			"skipdone":False	
 		}
 
-	if code == "si-vp-1": # Just to quickly draw 1000 galaxies probing the distributions.
+	elif code == "si-vp-1": # Just to quickly draw 1000 galaxies probing the distributions.
 		sp = simparams.Fiducial(
 			name = code,
 			snc_type = 0,
@@ -67,68 +68,86 @@ def configure(args):
 	
 	
 	
-	elif code == "vo-1": # As a first test, no SNC: 100 cases with 10'000 gals (1 M)
+#	elif code == "vo-1": # As a first test, no SNC: 100 cases with 10'000 gals (1 M)
+#		sp = simparams.Fiducial_statshear(
+#			name = code,
+#			snc_type = 0,
+#			shear = 0.1,
+#			noise_level = 1.0
+#		)
+#		drawconf = {
+#			"n":10000,
+#			"nc":100,
+#			"nrea":1,
+#			"ncat":100,
+#			"ncpu":10,
+#			"groupmode":"shear",
+#			"skipdone":False	
+#		}
+#
+#	elif code == "vo-2": # With 2-fold SNC, 1000 cases, 10'000 gals (20 M)
+#		sp = simparams.Fiducial_statshear(
+#			name = code,
+#			snc_type = 2,
+#			shear = 0.1,
+#			noise_level = 1.0
+#		)
+#		drawconf = {
+#			"n":10000,
+#			"nc":100,
+#			"nrea":1,
+#			"ncat":1000,
+#			"ncpu":20,
+#			"groupmode":"shear",
+#			"skipdone":False	
+#		}
+#
+#	elif code == "vo-3-faint": # Intermediate size, with 2-fold SNC, 200 cases, 10'000 gals (4 M)
+#		sp = simparams.Fiducial_statshear(
+#			name = code,
+#			snc_type = 2,
+#			shear = 0.1,
+#			noise_level = 1.0,
+#			min_tru_sb = 1.0
+#		)
+#		drawconf = {
+#			"n":10000,
+#			"nc":100,
+#			"nrea":1,
+#			"ncat":200,
+#			"ncpu":20,
+#			"groupmode":"shear",
+#			"skipdone":False	
+#		}
+#
+#	elif code == "vo-3-faint-nosnc": # No SNC, 200 cases, 50'000 gals (10 M)
+#		sp = simparams.Fiducial_statshear(
+#			name = code,
+#			snc_type = 0,
+#			shear = 0.1,
+#			noise_level = 1.0,
+#			min_tru_sb = 1.0
+#		)
+#		drawconf = {
+#			"n":50000,
+#			"nc":100,
+#			"nrea":1,
+#			"ncat":200,
+#			"ncpu":50,
+#			"groupmode":"shear",
+#			"skipdone":False	
+#		}
+
+	elif code == "vo-4-faint-nosnc": # No SNC, 200 cases, 100'000 gals (20 M)
 		sp = simparams.Fiducial_statshear(
 			name = code,
 			snc_type = 0,
-			shear = 0.1,
-			noise_level = 1.0
-		)
-		drawconf = {
-			"n":10000,
-			"nc":100,
-			"nrea":1,
-			"ncat":100,
-			"ncpu":10,
-			"groupmode":"shear",
-			"skipdone":False	
-		}
-
-	elif code == "vo-2": # With 2-fold SNC, 1000 cases, 10'000 gals (20 M)
-		sp = simparams.Fiducial_statshear(
-			name = code,
-			snc_type = 2,
-			shear = 0.1,
-			noise_level = 1.0
-		)
-		drawconf = {
-			"n":10000,
-			"nc":100,
-			"nrea":1,
-			"ncat":1000,
-			"ncpu":20,
-			"groupmode":"shear",
-			"skipdone":False	
-		}
-
-	elif code == "vo-3-faint": # Intermediate size, with 2-fold SNC, 200 cases, 10'000 gals (4 M)
-		sp = simparams.Fiducial_statshear(
-			name = code,
-			snc_type = 2,
 			shear = 0.1,
 			noise_level = 1.0,
 			min_tru_sb = 1.0
 		)
 		drawconf = {
-			"n":10000,
-			"nc":100,
-			"nrea":1,
-			"ncat":200,
-			"ncpu":20,
-			"groupmode":"shear",
-			"skipdone":False	
-		}
-
-	elif code == "vo-3-faint-nosnc": # No SNC, 200 cases, 50'000 gals (20 M)
-		sp = simparams.Fiducial_statshear(
-			name = code,
-			snc_type = 0,
-			shear = 0.1,
-			noise_level = 1.0,
-			min_tru_sb = 1.0
-		)
-		drawconf = {
-			"n":50000,
+			"n":100000,
 			"nc":100,
 			"nrea":1,
 			"ncat":200,
@@ -137,23 +156,23 @@ def configure(args):
 			"skipdone":False	
 		}
 	
-	elif code == "vo-3-faint-nosnc-mini": # for tests
-		sp = simparams.Fiducial_statshear(
-			name = code,
-			snc_type = 0,
-			shear = 0.1,
-			noise_level = 1.0,
-			min_tru_sb = 1.0
-		)
-		drawconf = {
-			"n":100,
-			"nc":100,
-			"nrea":1,
-			"ncat":100,
-			"ncpu":10,
-			"groupmode":"shear",
-			"skipdone":False	
-		}
+#	elif code == "vo-3-faint-nosnc-mini": # for tests
+#		sp = simparams.Fiducial_statshear(
+#			name = code,
+#			snc_type = 0,
+#			shear = 0.1,
+#			noise_level = 1.0,
+#			min_tru_sb = 1.0
+#		)
+#		drawconf = {
+#			"n":100,
+#			"nc":100,
+#			"nrea":1,
+#			"ncat":100,
+#			"ncpu":10,
+#			"groupmode":"shear",
+#			"skipdone":False	
+#		}
 	
 	elif code == "ts-1": # 500 cases, 500-SNC rotations per case (0.25 M)
 		sp = simparams.Fiducial_statshear(
@@ -335,6 +354,44 @@ def configure(args):
 			"nrea":10,
 			"ncat":1,
 			"ncpu":25,
+			"groupmode":"ellipticity",
+			"skipdone":False	
+		}
+
+	elif code == "ts-vpe-2-ln": # As ts-vpe-1-ln, but 10x larger (1M)
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0, # No SNC
+			shear = -1, # No shear here
+			noise_level = 0.1,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":20000,
+			"nc":100,
+			"nrea":50,
+			"ncat":1,
+			"ncpu":50,
+			"groupmode":"ellipticity",
+			"skipdone":False	
+		}
+
+	elif code == "ts-vpe-2": # 2M
+		sp = simparams.Fiducial(
+			name = code,
+			snc_type = 0, # No SNC
+			shear = -1, # No shear here
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":200,
+			"ncat":1,
+			"ncpu":50,
 			"groupmode":"ellipticity",
 			"skipdone":False	
 		}
@@ -667,11 +724,49 @@ def configure(args):
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+
+	elif code == "tw-vp-1": # 2000 cases (10x stat psf), but only 10'000 gals (no SNC) (20 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vo-vp-1-snc": # same as tw-vp-1, but with 2-fold SNC
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":5000,
+			"nc":100,
+			"nrea":1,
+			"ncat":2000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 	
 	else:
 		
-		logger.info("Unknown code")
-		return
+		logger.info("Unknown code '{}'".format(code))
+		exit()
 		
 	
 	return (sp, drawconf)

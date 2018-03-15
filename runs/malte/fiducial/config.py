@@ -14,7 +14,7 @@ logging.basicConfig(format=loggerformat,level=logging.INFO)
 #workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/fiducial"
 workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_fiducial" # <--- used for constant PSF
 #workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/new_fiducial" # <--- used for vp
-#workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/fiducial"
+#workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/fiducial" # <-- for weights vp
 
 simdir = os.path.join(workdir, "sim")
 simmeasdir = os.path.join(workdir, "simmeas")
@@ -32,7 +32,7 @@ datasets = {
 	#"ts":"ts-3-ln",
 	#"ts":"ts-2-easy",
 	#"ts":"ts-2-faint",
-	#"ts":"ts-2-faint-p1", # <-- selected
+	"ts":"ts-2-faint-p1", # <-- selected
 	#"ts":"ts-2-faint-d1", # <--- the one for the nice training evolution plot
 	#"ts":"ts-2-faint-d2",
 	#"ts":"ts-2-faint-ln",
@@ -42,15 +42,17 @@ datasets = {
 	#"ts":"ts-2-sel-large",
 	#"ts":"ts-e-1",
 	#"ts":"ts-vp-1-ln",
-	#"ts":"ts-vp-1",
-	"ts":"ts-vpe-1-ln",
-	
+	#"ts":"ts-vp-1", # <-----
+	#"ts":"ts-vpe-1-ln",
+	#"ts":"ts-vpe-2-ln",
+	#"ts":"ts-vpe-1", # <--
+	#"ts":"ts-vpe-2", (never used so far)
 	
 	#"vs":"vs-3-faint", # <-- the default vs
 	#"vs":"vs-1-faint",
 	#"vs":"ts-2-easy",
 	#"vs":"vs-2-easy",	
-	"vs":"vs-vp-1",
+	"vs":"vs-vp-1", # the vs - vp
 	#"vs":"vs-vp-1-ln",
 	
 	#"tw":"tw-3-faint",
@@ -60,7 +62,9 @@ datasets = {
 	
 	#"vo":"vo-2",
 	#"vo":"vo-3-faint",
-	"vo":"vo-3-faint-nosnc", # <-- the default vo
+	#"vo":"vo-3-faint-nosnc",
+	"vo":"vo-4-faint-nosnc", # <-- the new default, as large as tw-5-faint (20M)
+	
 	#"vo":"vo-3-faint-nosnc-mini",
 	
 	#"vo":"vs-3-faint", # <--- the one for conditional bias plot with weights
@@ -73,8 +77,8 @@ datasets = {
 
 shearconflist = [
 	
-	#("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"), # <--- We use those
-	#("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
+	("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
 	
 	
 	# vp:
@@ -83,7 +87,15 @@ shearconflist = [
 	#("mlconfig/ada7s2f-vp-pos.cfg", "mlconfig/sum77.cfg")
 	
 	#("mlconfig/ada8s1f-vp-mom.cfg", "mlconfig/sum88.cfg"),
-	("mlconfig/ada8s2f-vp-mom.cfg", "mlconfig/sum88.cfg")
+	#("mlconfig/ada8s2f-vp-mom.cfg", "mlconfig/sum88.cfg")
+	
+	# large vp:
+	
+	#("mlconfig/ada7s1f-vp-pos.cfg", "mlconfig/sum1010pos.cfg"),
+	#("mlconfig/ada7s2f-vp-pos.cfg", "mlconfig/sum1010pos.cfg")
+	#("mlconfig/ada8s1f-vp-mom.cfg", "mlconfig/sum1010mom.cfg"),
+	#("mlconfig/ada8s2f-vp-mom.cfg", "mlconfig/sum1010mom.cfg")
+	
 	
 	# Old experiemtns:
 	

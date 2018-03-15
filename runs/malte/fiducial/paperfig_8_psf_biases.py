@@ -30,9 +30,9 @@ if "sum55" in config.valname:
 	text = "Ignoring the variability of the PSF"
 	showlegend=True
 	widescale=True
-if "sum77" in config.valname:
+if "sum77" in config.valname or "pos" in config.valname:
 	text = "Using field coordinates as features"
-if "sum88" in config.valname:
+if "sum88" in config.valname or "mom" in config.valname:
 	text = "Using PSF moments as features"
 
 

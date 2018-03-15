@@ -20,8 +20,8 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
 
 
-useweights = True
-select = False
+useweights = False
+select = True
 
 
 if useweights is False:

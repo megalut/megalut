@@ -49,7 +49,7 @@ for (dataconfpath, toolconfpath) in config.shearconflist:
 	ax.set_xscale('log')
 	ax.set_xlabel(r"Iteration")
 	ax.set_ylim(1e-6, 1e-3)
-	ax.set_xlim((5, 5e3))
+	ax.set_xlim((5, 1e4))
 	ax.set_ylabel(r"MSB cost function value")
 	#ax.legend()
 

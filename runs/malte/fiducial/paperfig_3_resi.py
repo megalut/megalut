@@ -81,7 +81,7 @@ for comp in ["1"]:
 	
 	ax = fig.add_subplot(1, 3, 1)
 	megalut.plot.scatter.scatter(ax, cat, tru_s,  pre_s_bias, featc=snr_mean, cmap="plasma_r", s=10)
-	ax.axhline()
+	ax.axhline(color="black", lw=0.5)
 	
 	ax = fig.add_subplot(1, 3, 2)
 	cnorm = matplotlib.colors.SymLogNorm(linthresh=0.005)
