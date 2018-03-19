@@ -35,7 +35,7 @@ predcat = megalut.learn.tenbilacrun.predict(cat, config.shearconflist, traindir)
 
 
 # Predict weights:
-wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"])
+wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"] + "_" + config.sconfname)
 predcat = megalut.learn.tenbilacrun.predict(predcat, config.weightconflist, wtraindir)
 
 

@@ -545,6 +545,24 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "vs-3-faint-small": # 200 cases, 100 SNC rotations each, for fast plot tests
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 100,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 	
 	elif code == "vs-3": # idem but not down to S=1 ? 
 		sp = simparams.Fiducial_statshear(
@@ -744,6 +762,25 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "tw-vp-1-snc": # 1000 cases, but only 2000 gals (+ 2 fold SNC) (4 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":2000,
+			"nc":100,
+			"nrea":1,
+			"ncat":1000,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 	elif code == "vo-vp-1-snc": # same as tw-vp-1, but with 2-fold SNC
 		sp = simparams.Fiducial_statshear(
 			name = code,
@@ -758,6 +795,25 @@ def configure(args):
 			"nc":100,
 			"nrea":1,
 			"ncat":2000,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vo-vp-1-snc-mini":
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":500,
+			"nc":100,
+			"nrea":1,
+			"ncat":20,
 			"ncpu":20,
 			"groupmode":"shear",
 			"skipdone":False	

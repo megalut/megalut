@@ -19,10 +19,24 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 #rc('font',**{'family':'serif','serif':['Palatino']})
 rc('text', usetex=True)
 
+###############################
 
+weights = True # Run on a validation catalog with weights, or without weights ?
+select = True # Select accordign to <SNR> (only if without weights) ?
 
-valcat = os.path.join(config.valdir, config.valname + ".pkl")
+###############################
+
+if weights is True:
+	select = False
+
+if weights is True:
+	valname = config.wvalname
+else:
+	valname = config.valname
+
+valcat = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
+
 
 widescale=False
 showlegend=False
@@ -41,7 +55,7 @@ if widescale:
 else:
 	lim = 1e-1
 
-select = True
+
 if select:
 	megalut.tools.table.addstats(cat, "snr")
 	s = megalut.tools.table.Selector("snr_mean > 10", [
@@ -78,8 +92,12 @@ tru_psf_fwhm = Feature("tru_psf_fwhm", 4.1, 5.35, nicename=r"PSF FWHM [pix]")
 
 def make_plot(ax, featbin, showlegend=False):
 	ax.axhline(0.0, color='gray', lw=0.5)	
-	megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, comp=1)
-	megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, comp=2, showbins=False, showlegend=showlegend)
+	if weights is True:
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, featprew=Feature("pre_s1w", rea="all"), comp=1)
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, featprew=Feature("pre_s2w", rea="all"), comp=2, showbins=False, showlegend=showlegend)
+	else:
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, comp=1)
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, comp=2, showbins=False, showlegend=showlegend)	
 	megalut.plot.mcbin.make_symlog(ax, featbin, lim=lim)
 	ax.set_xlabel(featbin.nicename)
 
@@ -112,7 +130,7 @@ ax.set_yticklabels([])
 
 fig.text(.005, .94, text, fontdict={"fontsize":12})
 
-megalut.plot.figures.savefig(os.path.join(config.valdir, config.valname + "_psf_biases"), fig, fancy=True)
+megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_psf_biases"), fig, fancy=True)
 
 plt.show()
 

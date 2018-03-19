@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 
-wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"])
+wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["ts"] + "_" + config.sconfname)
 catpath = os.path.join(wtraindir, "groupmeascat_predforw.pkl")
 
 cat = megalut.tools.io.readpickle(catpath)
