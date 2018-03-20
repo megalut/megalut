@@ -781,6 +781,25 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "tw-vp-2-snc": # 1000 cases, but only 10'000 gals (with 2 fold SNC) (10 M)
+		sp = simparams.Fiducial_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			noise_level = 1.0,
+			min_tru_sb = 1.0,
+			varpsf_type = 1,
+		)
+		drawconf = {
+			"n":5000,
+			"nc":100,
+			"nrea":1,
+			"ncat":1000,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 	elif code == "vo-vp-1-snc": # same as tw-vp-1, but with 2-fold SNC
 		sp = simparams.Fiducial_statshear(
 			name = code,
