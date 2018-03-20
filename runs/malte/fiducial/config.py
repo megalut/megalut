@@ -62,7 +62,8 @@ datasets = {
 	#"tw":"tw-4-faint-snc",
 	#"tw":"tw-5-faint", # <-- the default tw
 	#"tw":"tw-vp-1", # <-- the default for vp
-	"tw":"tw-vp-1-snc", # <-- the default for vp
+	#"tw":"tw-vp-1-snc", # <-- the default for vp
+	"tw":"tw-vp-2-snc", # <-- the default for vp
 	
 	#"vo":"vo-2",
 	#"vo":"vo-3-faint",
@@ -123,7 +124,7 @@ shearconflist = [
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"), # <--- We use those
+	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"), # <--- We use those
 	("mlconfig/ada5s2wf.cfg", "mlconfig/sum5w.cfg")
 
 	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum55w.cfg"), # Does not improve things
@@ -137,6 +138,14 @@ weightconflist = [
 	
 	#("mlconfig/ada8s1wf-vp-mom.cfg", "mlconfig/sum8w.cfg"),
 	#("mlconfig/ada8s2wf-vp-mom.cfg", "mlconfig/sum8w.cfg")
+	
+	# large vp
+	
+	#("mlconfig/ada7s1wf-vp-pos.cfg", "mlconfig/sum10w.cfg"),
+	#("mlconfig/ada7s2wf-vp-pos.cfg", "mlconfig/sum10w.cfg")
+	
+	#("mlconfig/ada8s1wf-vp-mom.cfg", "mlconfig/sum10w.cfg"),
+	#("mlconfig/ada8s2wf-vp-mom.cfg", "mlconfig/sum10w.cfg")
 	
 	
 	

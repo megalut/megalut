@@ -21,7 +21,7 @@ rc('text', usetex=True)
 
 ###############################
 
-weights = True # Run on a validation catalog with weights, or without weights ?
+weights = False # Run on a validation catalog with weights, or without weights ?
 select = True # Select accordign to <SNR> (only if without weights) ?
 
 ###############################
