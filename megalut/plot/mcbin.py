@@ -26,8 +26,9 @@ logger = logging.getLogger(__name__)
 
 
 
-def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=None, showbins=True, comp=0, showlegend=False, sigma_shape=0.2):
+def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=None, showbins=True, comp=0, showlegend=False, regressmethod=1, sigma_shape=0.2):
 	"""
+	Makes plots of mu and c bias terms evaluated in bins of some (usually true) parameter.
 	
 	feattru: the true parameter (for example tru_s1)
 	featpre: the predicted point estimate (for example pre_s1)
@@ -38,6 +39,17 @@ def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=N
 	
 	Either give nbins (to get equal-part-of-population bins) or binlims (an array of the "n+1" bin limits to use).
 	
+	About the regressmethod:
+	This affects how the weights given by featprew are used: if you don't have weights, you can ignore regressmethod.
+	
+	regressmethod = 1 : a weighted least squares regression is performed on *all* individual realizations within a bin.
+		For this, a value of sigma_shape is required to turn the weights into shear errors and give meaningful error bars.
+		
+	regressmethod = 2 : the weights are used to compute the weighted average true shear within each *case*, and then a non-weighted
+		least square regression is performed on the true-shear vs weighted-average-shear relation.
+		In this case sigma_shape is not used, as it is not required.
+		A pracitcal advantage of regessmethod 2 is that it gives meaningful errors even if SNC is used within the cases.
+		You want to use this if your care about all cases equally, for instance if different cases have different PSFs.
 	
 	"""
 	
@@ -66,22 +78,43 @@ def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=N
 		selbin = tools.table.Selector(featbin.colname, [("in", featbin.colname, binlows[i], binhighs[i])])
 		bindata = selbin.select(cat)
 		
+		if regressmethod is 1:
 	
-		# And we perform the linear regression
-		# Redefining features, to get rid of any rea settings that don't apply here (?)
+			# And we perform the linear regression
+			# Redefining features, to get rid of any rea settings that don't apply here (?)
 		
-		if featprew is None:
+			if featprew is None:
+				md = tools.metrics.metrics(bindata,
+						feattru, 
+						featpre,
+						pre_is_res=False)
+			else:
+				md = tools.metrics.metricsw(bindata,
+						feattru, 
+						featpre,
+						featprew,
+						sigma_shape=sigma_shape
+						)
+		elif regressmethod is 2:
+		
+			# We first compute (weighted) average shear per case, for each selected case (meaningful for cases that have the same shear).
+			# Then we perform a non-weighted regression to get m and c 
+			# Advantage is for the weights: we don't care about sigma_shape or any SNC which modifies the shape noise
+			
+			
+			if bindata[feattru.colname].shape[0] != len(bindata):
+				raise RuntimeError("Using regressmethod 2 implies that the cases should all have the same feattru value!")
+			
+			tools.table.addstats(bindata, featpre.colname, wcol=featprew.colname)
+			#print tools.table.info(bindata)
+			
+			wmeancolname = featpre.colname + "_wmean"
+			featwmean = tools.feature.Feature(wmeancolname)
+			
 			md = tools.metrics.metrics(bindata,
-					feattru, 
-					featpre,
-					pre_is_res=False)
-		else:
-			md = tools.metrics.metricsw(bindata,
-					feattru, 
-					featpre,
-					featprew,
-					sigma_shape=sigma_shape
-					)
+						feattru, 
+						featwmean,
+						pre_is_res=False)
 			
 			
 			
