@@ -22,16 +22,18 @@ rc('text', usetex=True)
 ###############################
 
 weights = False # Run on a validation catalog with weights, or without weights ?
-select = True # Select accordign to <SNR> (only if without weights) ?
+
+select = True # Select accordign to <SNR> (only if without weights, is set to False otherwise)
+regressmethod = 2 # Only matter when runnign with weights. 2 should be used, as we care about each PSF equally.
 
 ###############################
 
-if weights is True:
-	select = False
 
 if weights is True:
+	select = False
 	valname = config.wvalname
 else:
+	regressmethod = 1
 	valname = config.valname
 
 valcat = os.path.join(config.valdir, valname + ".pkl")
@@ -93,11 +95,11 @@ tru_psf_fwhm = Feature("tru_psf_fwhm", 4.1, 5.35, nicename=r"PSF FWHM [pix]")
 def make_plot(ax, featbin, showlegend=False):
 	ax.axhline(0.0, color='gray', lw=0.5)	
 	if weights is True:
-		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, featprew=Feature("pre_s1w", rea="all"), comp=1)
-		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, featprew=Feature("pre_s2w", rea="all"), comp=2, showbins=False, showlegend=showlegend)
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, featprew=Feature("pre_s1w", rea="all"), comp=1, regressmethod=regressmethod)
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, featprew=Feature("pre_s2w", rea="all"), comp=2, showbins=False, showlegend=showlegend, regressmethod=regressmethod)
 	else:
-		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, comp=1)
-		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, comp=2, showbins=False, showlegend=showlegend)	
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s1"), Feature("pre_s1", rea="all"), featbin, comp=1, regressmethod=regressmethod)
+		megalut.plot.mcbin.mcbin(ax, cat, Feature("tru_s2"), Feature("pre_s2", rea="all"), featbin, comp=2, showbins=False, showlegend=showlegend, regressmethod=regressmethod)	
 	megalut.plot.mcbin.make_symlog(ax, featbin, lim=lim)
 	ax.set_xlabel(featbin.nicename)
 

@@ -20,14 +20,22 @@ rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 rc('text', usetex=True)
 
 
-useweights = False
-select = True
+###############################
 
+select = True # will be set to False if useweights is True
+
+useweights = False # <--- to be used with a "VP" like structure in place of "VO".
+regressmethod = 1 # Only matters if useweights.
+# For a VP-like dataset, it only makes sense to use regressmethod1 here, as we want the weights to act over the different true galaxies within each bin.
+# Regressmethod 2 would kill the effect of weights, only use it if cases contain different gals.
+
+###############################
 
 if useweights is False:
 	valname = config.valname
 else:
 	valname = config.wvalname
+	select = False
 
 valcat = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcat)
@@ -78,9 +86,9 @@ def make_plot(ax, featbin, showlegend=False, sersic=False):
 		showbins = True
 		binlims = None
 	# The first component
-	megalut.plot.mcbin.mcbin(ax, cat, tru_s1, pre_s1, featbin, featprew=pre_s1w, comp=1, binlims=binlims, showbins=showbins)
+	megalut.plot.mcbin.mcbin(ax, cat, tru_s1, pre_s1, featbin, featprew=pre_s1w, comp=1, binlims=binlims, showbins=showbins, regressmethod=regressmethod)
 	# For the second component, we do not overplot bins again, but we might show the legend
-	megalut.plot.mcbin.mcbin(ax, cat, tru_s2, pre_s2, featbin, featprew=pre_s2w, comp=2, binlims=binlims, showbins=False, showlegend=showlegend)
+	megalut.plot.mcbin.mcbin(ax, cat, tru_s2, pre_s2, featbin, featprew=pre_s2w, comp=2, binlims=binlims, showbins=False, showlegend=showlegend, regressmethod=regressmethod)
 	megalut.plot.mcbin.make_symlog(ax, featbin)
 	ax.set_xlabel(featbin.nicename)
 
