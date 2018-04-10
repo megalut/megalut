@@ -45,7 +45,7 @@ datasets = {
 	"ts":"ts-vp-1", # <----- selected for vp
 	#"ts":"ts-vpe-1-ln",
 	#"ts":"ts-vpe-2-ln",# <-- pre training of vp
-	#"ts":"ts-vpe-1", # intermediate training ?
+	#"ts":"ts-vpe-1", # intermediate training ? Tried, but doesnt bring anythign it seems.
 	#"ts":"ts-vpe-2", (never used so far)
 	
 	#"vs":"vs-3-faint", # <-- the default vs
@@ -89,11 +89,9 @@ shearconflist = [
 	#("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
 	
 	
-	# vp:
-	
+	# vp: (disregarded for paper)
 	#("mlconfig/ada7s1f-vp-pos.cfg", "mlconfig/sum77.cfg"),
 	#("mlconfig/ada7s2f-vp-pos.cfg", "mlconfig/sum77.cfg")
-	
 	#("mlconfig/ada8s1f-vp-mom.cfg", "mlconfig/sum88.cfg"),
 	#("mlconfig/ada8s2f-vp-mom.cfg", "mlconfig/sum88.cfg")
 	
@@ -147,6 +145,14 @@ weightconflist = [
 	
 	#("mlconfig/ada8s1wf-vp-mom.cfg", "mlconfig/sum10w.cfg"),
 	#("mlconfig/ada8s2wf-vp-mom.cfg", "mlconfig/sum10w.cfg")
+	
+	# large vp 1010 test (no, does not work better it seems)
+	
+	#("mlconfig/ada7s1wf-vp-pos.cfg", "mlconfig/sum1010w.cfg"),
+	#("mlconfig/ada7s2wf-vp-pos.cfg", "mlconfig/sum1010w.cfg")
+	
+	#("mlconfig/ada8s1wf-vp-mom.cfg", "mlconfig/sum1010w.cfg"),
+	#("mlconfig/ada8s2wf-vp-mom.cfg", "mlconfig/sum1010w.cfg")
 	
 	
 	

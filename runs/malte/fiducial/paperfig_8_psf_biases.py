@@ -21,7 +21,9 @@ rc('text', usetex=True)
 
 ###############################
 
-weights = False # Run on a validation catalog with weights, or without weights ?
+weights = True # Run on a validation catalog with weights, or without weights ?
+
+###############################
 
 select = True # Select accordign to <SNR> (only if without weights, is set to False otherwise)
 regressmethod = 2 # Only matter when runnign with weights. 2 should be used, as we care about each PSF equally.
