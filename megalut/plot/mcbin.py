@@ -78,7 +78,7 @@ def mcbin(ax, cat, feattru, featpre, featbin, featprew=None, nbins=10, binlims=N
 		selbin = tools.table.Selector(featbin.colname, [("in", featbin.colname, binlows[i], binhighs[i])])
 		bindata = selbin.select(cat)
 		
-		if regressmethod is 1:
+		if regressmethod is 1 or featprew is None:
 	
 			# And we perform the linear regression
 			# Redefining features, to get rid of any rea settings that don't apply here (?)

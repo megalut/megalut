@@ -173,6 +173,11 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	
 	gsparams = galsim.GSParams(maximum_fft_size=10240)
 	
+	nico_pixel_scale_factor = 0.1 # This is required here as withing megalut, the "scale" of Galsim is always in pixels, not in arcsec.
+	nico_galsim_psf = galsim.Airy(lam=800, diam=1.2 * nico_pixel_scale_factor, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3) + \
+		galsim.Airy(lam=700, diam=1.2 * nico_pixel_scale_factor, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3) + \
+		galsim.Airy(lam=600, diam=1.2 * nico_pixel_scale_factor, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3)
+
 	if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
 		raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
 	if "stampsize" not in catalog.meta.keys():
@@ -290,13 +295,20 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		
 		if "usegausspsf" in todo:
 			
-			psf = galsim.Gaussian(flux=1., sigma=row["tru_psf_sigma"])
-			
-			psf = psf.shear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
-			# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
-			psf_xjitter = ud() - 0.5
-			psf_yjitter = ud() - 0.5
-			psf = psf.shift(psf_xjitter,psf_yjitter)
+			if np.isclose(row["tru_psf_sigma"], -42.0):
+				psf = nico_galsim_psf
+				#logger.info("Using Nico's PSF")
+			elif row["tru_psf_sigma"] < 0.0:
+				raise RuntimeError("Unknown hack!")	
+			else:
+				psf = galsim.Gaussian(flux=1., sigma=row["tru_psf_sigma"])	
+				psf = psf.shear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
+		
+				# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
+				psf_xjitter = ud() - 0.5
+				psf_yjitter = ud() - 0.5
+				psf = psf.shift(psf_xjitter,psf_yjitter)
+				
 			if simpsfimgfilepath != None:
 				psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
 	
@@ -407,7 +419,7 @@ def checkcat(cat):
 				psf_gauss_ok = False
 		
 		if psf_gauss_ok:
-			logger.info("I will use analytical Gaussians PSFs.")
+			logger.info("I will use analytical PSFs.")
 			todo.append("usegausspsf")
 		else:
 			logger.warning("No or not enough PSF information given, I will NOT convolve the simulated galaxies!")
