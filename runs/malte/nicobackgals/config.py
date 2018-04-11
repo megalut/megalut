@@ -28,26 +28,30 @@ drawstampsize = stampsize # Used for drawing
 
 
 datasets = {
-	"tp":"tp-1",
+	#"tp":"tp-1",
+	"tp":"tp-1-ln",
+	
+	
 	"vp":"vp-1",
 	"tw":"tw-1",
 	"vo":"vo-1",
 
-	"si":"si-1",
+	"si":"si-1-uni",
+	#"si":"si-1",
 }
 
 
 shearconflist = [
 	
-	("mlconfig/ada5s1f.cfg", "mlconfig/sum55.cfg"), # <--- We use those
-	("mlconfig/ada5s2f.cfg", "mlconfig/sum55.cfg")
+	#("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
 	
 	
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"),
-	("mlconfig/ada5s2wf.cfg", "mlconfig/sum5w.cfg")
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
 
 ]
 

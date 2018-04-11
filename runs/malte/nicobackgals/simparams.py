@@ -61,7 +61,7 @@ noise_sigma = sourcecat.meta["noise_sigma"]
 class FromCat(megalut.sim.params.Params):
 
 	
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, dist_type="cat"):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
@@ -74,6 +74,7 @@ class FromCat(megalut.sim.params.Params):
 		self.snc_type = snc_type
 		self.shear = shear
 		self.noise_level = noise_level
+		self.dist_type = dist_type
 		
 
 
@@ -135,25 +136,50 @@ class FromCat(megalut.sim.params.Params):
 		Called for each galaxy	
 		"""
 		
-		source_row = random.choice(sourcecat)
-		
-		sigma = 0.3
+		sigma = 0.3 # par composante
 		maxamp = 0.7
 		tru_e1 = clip_gaussian(sigma, maxamp)
 		tru_e2 = clip_gaussian(sigma, maxamp)
 		shear = galsim.Shear(e1=tru_e1, e2=tru_e2)
 		tru_g1 = shear.g1
 		tru_g2 = shear.g2
-
-		#tru_g1 = source_row["tru_g1"]
-		#tru_g2 = source_row["tru_g2"]
-		#tru_e1 = source_row["tru_e1"]
-		#tru_e2 = source_row["tru_e2"]
+	
 		
-		tru_flux = source_row["tru_flux"]
-		tru_rad = source_row["tru_rad"]
-		tru_sersicn = source_row["tru_sersicn"]
-		tru_mag = source_row["tru_mag"]
+		if self.dist_type == "cat":
+			"""
+			This mimics Nico's simulations of bright galaxies
+			"""
+			
+			source_row = random.choice(sourcecat)
+			
+			tru_flux = source_row["tru_flux"]
+			tru_rad = source_row["tru_rad"]
+			tru_sersicn = source_row["tru_sersicn"]
+			tru_mag = source_row["tru_mag"]
+			tru_sb = 0.0
+		
+		elif self.dist_type == "uni":
+			"""
+			For training the point estimators, simpler uniform sims
+			"""
+			"""
+			tru_g = np.random.uniform(0.0, 0.7)
+			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)		
+			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+			tru_e1 = 0.0
+			tru_e2 = 0.0
+			"""
+			
+			tru_sersicn = random.choice(np.concatenate([np.linspace(0.3, 6.2, 5), np.linspace(0.5, 1.5, 10)]))
+			tru_sb = np.random.uniform(2.0, 50.0)
+			tru_rad = np.random.uniform(1.0, 12.0)
+			tru_flux = np.pi * tru_rad * tru_rad * tru_sb
+			tru_mag = 0.0
+		
+		else:
+			raise RuntimeError("Unknown dist_type")
+		
+	
 			
 		out = { # It's ugly to not directly fill this dict, but this makes it clearer what is actually returned:
 			"tru_flux":tru_flux,
@@ -164,6 +190,7 @@ class FromCat(megalut.sim.params.Params):
 			"tru_e2":tru_e2,
 			"tru_sersicn":tru_sersicn,
 			"tru_mag":tru_mag,
+			"tru_sb":tru_sb
 		}
 		
 		out.update(self.draw_s()) # Here the shear gets drawn for each "galaxy"
@@ -181,7 +208,7 @@ class FromCat_statshear(FromCat):
 	"""
 	
 	def __init__(self, **kwargs):
-		Fiducial.__init__(self, **kwargs)
+		FromCat.__init__(self, **kwargs)
 		
 	def stat(self):
 		"""
@@ -193,4 +220,5 @@ class FromCat_statshear(FromCat):
 		out.update(self.draw_constants())
 		
 		return out
+			
 				
