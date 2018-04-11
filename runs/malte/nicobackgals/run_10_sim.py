@@ -128,10 +128,46 @@ def configure(args):
 			"nc":1,
 			"nrea":1,
 			"ncat":4000,
+			"ncpu":80,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vp-2": # (8 M) same as tp-1, but for "cat" distributions, to check on these.
+		sp = simparams.FromCat_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			dist_type="cat"
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":4000,
 			"ncpu":40,
 			"groupmode":"shear",
 			"skipdone":False	
 		}
+
+	elif code == "tw-1": # (no SNC) (20 M)
+		sp = simparams.FromCat_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			dist_type="cat"
+		)
+		drawconf = {
+			"n":100000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+
 
 	elif code == "vo-1": # (20 M, no SNC)
 		sp = simparams.FromCat_statshear(
