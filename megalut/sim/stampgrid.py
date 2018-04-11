@@ -20,7 +20,7 @@ from .. import tools
 from . import params
 
 
-def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix=""):
+def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix="", metadict=None):
 	"""
 	Generates a catalog of all the "truth" input parameters for each simulated galaxy.
 	
@@ -36,6 +36,8 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix=""):
 	:param pixelscale: scale in arcsec of the image, IGNORED: we always draw images with a scale of 1.0
 	:type pixelscale: float
 	:param idprefix: a string to use as prefix for the galaxy ids. Was tempted to call this idefix.
+	
+	:param medadict: further content added to the meta of the output catalog
 	
 	The ix index moves faster than the iy index when iterating over the output catalog.
 	So if you want a parameter to change seldomly, link it to the iy index.
@@ -136,6 +138,9 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix=""):
 	catalog.meta["nsnc"] = nsnc
 	catalog.meta["snc_type"] = statparams["snc_type"]
 	
+	if metadict:
+		catalog.meta.update(metadict)
+	
 	return catalog
 	
 
@@ -167,203 +172,294 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 		About speed, if you specify trunc, better express the scale radius.
 		But scale radius is crazy dependent on n, so I keep half-light-radius
 		http://galsim-developers.github.io/GalSim/classgalsim_1_1base_1_1_sersic.html
+		
+		
+	.. note::
+		To use the hacks, give "metadict":{"hack":"nicobackgals"} as drawcatkwargs to sim.run.multi()...
 	
 	"""
 	starttime = datetime.now()	
 	
-	gsparams = galsim.GSParams(maximum_fft_size=10240)
+	hack = catalog.meta.get("hack", None)
 	
-	nico_pixel_scale_factor = 0.1 # This is required here as withing megalut, the "scale" of Galsim is always in pixels, not in arcsec.
-	nico_galsim_psf = galsim.Airy(lam=800, diam=1.2 * nico_pixel_scale_factor, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3) + \
-		galsim.Airy(lam=700, diam=1.2 * nico_pixel_scale_factor, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3) + \
-		galsim.Airy(lam=600, diam=1.2 * nico_pixel_scale_factor, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3)
-
-	if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
-		raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
-	if "stampsize" not in catalog.meta.keys():
-		raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")	
+	if hack is None: # The default behavior, without specific gsparams or tricks.
 	
-	nx = catalog.meta["nx"]
-	ny = catalog.meta["ny"]
-	stampsize = catalog.meta["stampsize"] # The stamps I'm going to draw
-		
-	logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), nx, ny))
-	logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
-
-	# A special function checks the combination of settings in the provided catalog:
-	todo = checkcat(catalog)
 	
-	if "loadpsfimg" in todo:
-		psfimg = catalog.meta["psf"].load() # Loading the actual GalSim Image
-		psfinfo = catalog.meta["psf"]
+		gsparams = galsim.GSParams(maximum_fft_size=10240)
 
-	if "tru_pixel" in todo:
-		# This is only if you want "effective pixels" larger than the actual pixels (related to SBE, normally you don't want this).
-		pix = galsim.Pixel(catalog["tru_pixel"][0]) # We have checked in checkcat that all values are equal.
+		if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
+			raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
+		if "stampsize" not in catalog.meta.keys():
+			raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")	
 		
-	# Galsim random number generators
-	rng = galsim.BaseDeviate()
-	ud = galsim.UniformDeviate() # This gives a random float in [0, 1)
-
-	# We prepare the big images :
-	gal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
-	trugal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
-	psf_image = galsim.ImageF(stampsize * nx , stampsize * ny)
+		nx = catalog.meta["nx"]
+		ny = catalog.meta["ny"]
+		stampsize = catalog.meta["stampsize"] # The stamps I'm going to draw
+			
+		logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), nx, ny))
+		logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
 	
-	gal_image.scale = 1.0 # we use pixels as units. Note that if you change something here, you also have to change the jitter.
-	trugal_image.scale = 1.0
-	psf_image.scale = 1.0
-
-	# And loop through the catalog:
-	for row in catalog:
+		# A special function checks the combination of settings in the provided catalog:
+		todo = checkcat(catalog)
 		
-		# Some simplistic progress indication:
-		fracdone = float(row.index) / len(catalog)
-		if row.index%500 == 0:
-			logger.info("%6.2f%% done (%i/%i) " % (fracdone*100.0, row.index, len(catalog)))
-		
-		# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
-		ix = int(row["ix"])
-		iy = int(row["iy"])
-		assert ix < nx and iy < ny
-		bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
-		gal_stamp = gal_image[bounds]
-		trugal_stamp = trugal_image[bounds]
-		psf_stamp = psf_image[bounds]
+		if "loadpsfimg" in todo:
+			psfimg = catalog.meta["psf"].load() # Loading the actual GalSim Image
+			psfinfo = catalog.meta["psf"]
 	
-		# We draw the desired profile
-		profile_type = params.profile_types[row["tru_type"]]
-		
-		if profile_type == "Sersic":
+		if "tru_pixel" in todo:
+			# This is only if you want "effective pixels" larger than the actual pixels (related to SBE, normally you don't want this).
+			pix = galsim.Pixel(catalog["tru_pixel"][0]) # We have checked in checkcat that all values are equal.
 			
-			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams)
-			# We make this profile elliptical
-			gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+		# Galsim random number generators
+		rng = galsim.BaseDeviate()
+		ud = galsim.UniformDeviate() # This gives a random float in [0, 1)
 
-		elif profile_type == "Gaussian":
-			
-			gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]), gsparams=gsparams)
-			# We make this profile elliptical
-			gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+		# We prepare the big images :
+		gal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
+		trugal_image = galsim.ImageF(stampsize * nx , stampsize * ny)
+		psf_image = galsim.ImageF(stampsize * nx , stampsize * ny)
+		
+		gal_image.scale = 1.0 # we use pixels as units. Note that if you change something here, you also have to change the jitter.
+		trugal_image.scale = 1.0
+		psf_image.scale = 1.0
 
-		elif profile_type == "EBulgeDisk":
+		# And loop through the catalog:
+		for row in catalog:
 			
-			# A more advanced Bulge + Disk model
-			# It needs GalSim version master, as of April 2017 (probably 1.5).
+			# Some simplistic progress indication:
+			fracdone = float(row.index) / len(catalog)
+			if row.index%500 == 0:
+				logger.info("%6.2f%% done (%i/%i) " % (fracdone*100.0, row.index, len(catalog)))
 			
-			# Get a Sersic bulge:
-			bulge = galsim.Sersic(n=row["tru_bulge_sersicn"], half_light_radius=row["tru_bulge_hlr"], flux=row["tru_bulge_flux"])
-			# Make it elliptical:
-			bulge_ell = galsim.Shear(g=row["tru_bulge_g"], beta=row["tru_theta"] * galsim.degrees)
-			bulge = bulge.shear(bulge_ell)
+			# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
+			ix = int(row["ix"])
+			iy = int(row["iy"])
+			assert ix < nx and iy < ny
+			bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
+			gal_stamp = gal_image[bounds]
+			trugal_stamp = trugal_image[bounds]
+			psf_stamp = psf_image[bounds]
+	
+			# We draw the desired profile
+			profile_type = params.profile_types[row["tru_type"]]
 			
-			# Get a disk
-			scale_radius = row["tru_disk_hlr"] / galsim.Exponential._hlr_factor
-			disk = galsim.InclinedExponential(inclination=row["tru_disk_tilt"] * galsim.degrees, scale_radius=scale_radius,
-				flux=row["tru_disk_flux"], scale_h_over_r=row["tru_disk_scale_h_over_r"])
-			# Rotate it in the same orientation as the bulge:
-			disk = disk.rotate(row["tru_theta"] * galsim.degrees)
-			
-			# And we add those profiles, as done in GalSim demo3.py :
-			gal = bulge + disk
-			
-		else:
-			raise RuntimeError("Unknown galaxy profile!")	
-		
-		
-		# And now we add lensing, if s1, s2 and mu are different from no lensing...
-		if row["tru_s1"] != 0 or row["tru_s2"] != 0 or row["tru_mu"] != 1:
-			gal = gal.lens(float(row["tru_s1"]), float(row["tru_s2"]), float(row["tru_mu"]))
-		else:
-			pass
-			#logger.info("No lensing!")
-		
-		
-		# We apply some jitter to the position of this galaxy
-		xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
-		yjitter = ud() - 0.5
-		gal = gal.shift(xjitter,yjitter)
-		
-		# We draw the pure unconvolved galaxy
-		if simtrugalimgfilepath != None:
-			gal.drawImage(trugal_stamp, method="auto") # Will convolve by the sampling pixel.
-
-		# We prepare/get the PSF and do the convolution:
-		
-		# Should the final operation skip the convolution by the pixel (because the PSF already is in large pixels) ?
-		skip_pixel_conv = False
-		
-		if "usegausspsf" in todo:
-			
-			if np.isclose(row["tru_psf_sigma"], -42.0):
-				psf = nico_galsim_psf
-				#logger.info("Using Nico's PSF")
-			elif row["tru_psf_sigma"] < 0.0:
-				raise RuntimeError("Unknown hack!")	
-			else:
-				psf = galsim.Gaussian(flux=1., sigma=row["tru_psf_sigma"])	
-				psf = psf.shear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
-		
-				# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
-				psf_xjitter = ud() - 0.5
-				psf_yjitter = ud() - 0.5
-				psf = psf.shift(psf_xjitter,psf_yjitter)
+			if profile_type == "Sersic":
 				
-			if simpsfimgfilepath != None:
-				psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
+				gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams)
+				# We make this profile elliptical
+				gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+
+			elif profile_type == "Gaussian":
+				
+				gal = galsim.Gaussian(flux=float(row["tru_flux"]), sigma=float(row["tru_sigma"]), gsparams=gsparams)
+				# We make this profile elliptical
+				gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy	
 	
-			if "tru_pixel" in todo: # Not sure if this should only apply to gaussian PSFs, but so far this seems OK.
-				# Remember that this is an "additional" pixel convolution, not the usual sampling-related convolution that happens in drawImage.
-				galconv = galsim.Convolve([gal, psf, pix])
+			elif profile_type == "EBulgeDisk":
 			
+				# A more advanced Bulge + Disk model
+				# It needs GalSim version master, as of April 2017 (probably 1.5).
+				
+				# Get a Sersic bulge:
+				bulge = galsim.Sersic(n=row["tru_bulge_sersicn"], half_light_radius=row["tru_bulge_hlr"], flux=row["tru_bulge_flux"])
+				# Make it elliptical:
+				bulge_ell = galsim.Shear(g=row["tru_bulge_g"], beta=row["tru_theta"] * galsim.degrees)
+				bulge = bulge.shear(bulge_ell)
+				
+				# Get a disk
+				scale_radius = row["tru_disk_hlr"] / galsim.Exponential._hlr_factor
+				disk = galsim.InclinedExponential(inclination=row["tru_disk_tilt"] * galsim.degrees, scale_radius=scale_radius,
+					flux=row["tru_disk_flux"], scale_h_over_r=row["tru_disk_scale_h_over_r"])
+				# Rotate it in the same orientation as the bulge:
+				disk = disk.rotate(row["tru_theta"] * galsim.degrees)
+				
+				# And we add those profiles, as done in GalSim demo3.py :
+				gal = bulge + disk
+				
 			else:
-				galconv = galsim.Convolve([gal,psf])
+				raise RuntimeError("Unknown galaxy profile!")	
+		
+		
+			# And now we add lensing, if s1, s2 and mu are different from no lensing...
+			if row["tru_s1"] != 0 or row["tru_s2"] != 0 or row["tru_mu"] != 1:
+				gal = gal.lens(float(row["tru_s1"]), float(row["tru_s2"]), float(row["tru_mu"]))
+			else:
+				pass
+				#logger.info("No lensing!")
 			
-		elif "loadpsfimg" in todo:
 			
-			(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
-			psfpixelscale = getattr(psfinfo, "pixelscale", 1.0) # Using getattr so that it works with old objects as well
-			if psfpixelscale > 0.5:
-				#logger.warning("You seem to be using a sampled PSF with large pixels (e.g., observed stars). I'll do my best and skip the pixel conv, but this might well lead to errors.")
-				skip_pixel_conv = True
-			if flag != 0:
-				raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
-					(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
-			psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, scale=psfpixelscale)
-			if simpsfimgfilepath != None:
-				psf.drawImage(psf_stamp, method="no_pixel") # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
+			# We apply some jitter to the position of this galaxy
+			xjitter = ud() - 0.5 # This is the minimum amount -- should we do more, as real galaxies are not that well centered in their stamps ?
+			yjitter = ud() - 0.5
+			gal = gal.shift(xjitter,yjitter)
 			
-			#galconv = galsim.Convolve([gal,psf], real_space=False)	
-			galconv = galsim.Convolve([gal,psf])	
+			# We draw the pure unconvolved galaxy
+			if simtrugalimgfilepath != None:
+				gal.drawImage(trugal_stamp, method="auto") # Will convolve by the sampling pixel.	
 
-		elif "nopsf" in todo:
-			# Nothing to do		
-			galconv = gal
+			# We prepare/get the PSF and do the convolution:
 			
-		else:
-			raise RuntimeError("Bug in todo.")
-	
-		# Draw the convolved galaxy	
-		if skip_pixel_conv == False:	
-			galconv.drawImage(gal_stamp, method="auto") # This will convolve by the image sampling pixel. Don't do this yourself ahead! 
-		else:
-			#logger.warning("NOT computing any pixel convolution")
-			galconv.drawImage(gal_stamp, method="no_pixel") # Simply uses pixel-center values. Know what you are doing, see doc of galsim. 
+			# Should the final operation skip the convolution by the pixel (because the PSF already is in large pixels) ?
+			skip_pixel_conv = False
+			
+			if "usegausspsf" in todo:
+				
+				if row["tru_psf_sigma"] < 0.0:
+					raise RuntimeError("Unknown hack!")	
+				else:
+					psf = galsim.Gaussian(flux=1., sigma=row["tru_psf_sigma"])	
+					psf = psf.shear(g1=row["tru_psf_g1"], g2=row["tru_psf_g2"])
+			
+					# Let's apply some jitter to the position of the PSF (not sure if this is required, but should not harm ?)
+					psf_xjitter = ud() - 0.5
+					psf_yjitter = ud() - 0.5
+					psf = psf.shift(psf_xjitter,psf_yjitter)
+					
+				if simpsfimgfilepath != None:
+					psf.drawImage(psf_stamp, method="auto") # Will convolve by the sampling pixel.
+		
+				if "tru_pixel" in todo: # Not sure if this should only apply to gaussian PSFs, but so far this seems OK.
+					# Remember that this is an "additional" pixel convolution, not the usual sampling-related convolution that happens in drawImage.
+					galconv = galsim.Convolve([gal, psf, pix])
+				
+				else:
+					galconv = galsim.Convolve([gal,psf])
+				
+			elif "loadpsfimg" in todo:
+				
+				(inputpsfstamp, flag) = tools.image.getstamp(row[psfinfo.xname], row[psfinfo.yname], psfimg, psfinfo.stampsize)
+				psfpixelscale = getattr(psfinfo, "pixelscale", 1.0) # Using getattr so that it works with old objects as well
+				if psfpixelscale > 0.5:
+					#logger.warning("You seem to be using a sampled PSF with large pixels (e.g., observed stars). I'll do my best and skip the pixel conv, but this might well lead to errors.")
+					skip_pixel_conv = True
+				if flag != 0:
+					raise RuntimeError("Could not extract a %ix%i stamp at (%.2f, %.2f) from the psfimg %s" %\
+						(psfinfo.stampsize, psfinfo.stampsize, row[psfinfo.xname], row[psfinfo.yname], psfinfo.name))
+				psf = galsim.InterpolatedImage(inputpsfstamp, flux=1.0, scale=psfpixelscale)
+				if simpsfimgfilepath != None:
+					psf.drawImage(psf_stamp, method="no_pixel") # psf_stamp has a different size than inputpsfstamp, so this could lead to problems one day.
+				
+				#galconv = galsim.Convolve([gal,psf], real_space=False)	
+				galconv = galsim.Convolve([gal,psf])			
+
+			elif "nopsf" in todo:
+				# Nothing to do		
+				galconv = gal
+				
+			else:
+				raise RuntimeError("Bug in todo.")
+		
+			# Draw the convolved galaxy	
+			if skip_pixel_conv == False:	
+				galconv.drawImage(gal_stamp, method="auto") # This will convolve by the image sampling pixel. Don't do this yourself ahead! 
+			else:
+				#logger.warning("NOT computing any pixel convolution")
+				galconv.drawImage(gal_stamp, method="no_pixel") # Simply uses pixel-center values. Know what you are doing, see doc of galsim. 
 
 		
-		# And add noise to the convolved galaxy:
-		gal_stamp.addNoise(galsim.CCDNoise(rng, sky_level=float(row["tru_sky_level"]), gain=float(row["tru_gain"]), read_noise=float(row["tru_read_noise"])))
+			# And add noise to the convolved galaxy:
+			gal_stamp.addNoise(galsim.CCDNoise(rng, sky_level=float(row["tru_sky_level"]), gain=float(row["tru_gain"]), read_noise=float(row["tru_read_noise"])))
 	
 		
-	logger.info("Done with drawing, now writing output FITS files ...")	
+		logger.info("Done with drawing, now writing output FITS files ...")	
 
-	gal_image.write(simgalimgfilepath)
+		gal_image.write(simgalimgfilepath)
+		
+		if simtrugalimgfilepath != None:
+			trugal_image.write(simtrugalimgfilepath)
+		
+		if simpsfimgfilepath != None:
+			psf_image.write(simpsfimgfilepath)
+		
+			
+	elif hack == "nicobackgals":
+		"""
+		This is taken and/or adapted from Nico's simulation code, to be sure to do the same thing.
+			- Nico uses GalSim in units of arcsec (instaed of pixels), and we suspect that this affects the convolution.
+			- Nico has different gsparams
+			- Nico truncates Sersic profiles
+			
+		"""
+		logger.info("Using special hack for nicobackgals")
+						
+		gsparams = galsim.GSParams(xvalue_accuracy=2.e-4, kvalue_accuracy=2.e-4, maxk_threshold=5.e-3, folding_threshold=1.e-2)
+		pixel_scale = 0.1
+		
+		if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
+			raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
+		if "stampsize" not in catalog.meta.keys():
+			raise RuntimeError("Provide stampsize in the meta data of the input catalog to drawimg.")	
+		
+		nx = catalog.meta["nx"]
+		ny = catalog.meta["ny"]
+		stampsize = catalog.meta["stampsize"] # The stamps I'm going to draw
+			
+		logger.info("Drawing images of %i galaxies on a %i x %i grid..." % (len(catalog), nx, ny))
+		logger.info("The stampsize for the simulated galaxies is %i." % (stampsize))
+
+		# Galsim random number generators
+		rng = galsim.BaseDeviate()
+		ud = galsim.UniformDeviate() # This gives a random float in [0, 1)
+
+		# We prepare the big image, and set the pixel scale
+		gal_image = galsim.ImageF(stampsize * nx , stampsize * ny, scale=pixel_scale)
+		
+
+		psf = galsim.Airy(lam=800, diam=1.2, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3) + \
+			galsim.Airy(lam=700, diam=1.2, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3) + \
+			galsim.Airy(lam=600, diam=1.2, obscuration=0.3, scale_unit=galsim.arcsec, flux=1./3)
+
+		for row in catalog:
+			
+			# Some simplistic progress indication:
+			fracdone = float(row.index) / len(catalog)
+			if row.index%500 == 0:
+				logger.info("%6.2f%% done (%i/%i) " % (fracdone*100.0, row.index, len(catalog)))
+			
+			# We will draw this galaxy in a postage stamp, but first we need the bounds of this stamp.
+			ix = int(row["ix"])
+			iy = int(row["iy"])
+			assert ix < nx and iy < ny
+			bounds = galsim.BoundsI(ix*stampsize+1 , (ix+1)*stampsize, iy*stampsize+1 , (iy+1)*stampsize) # Default Galsim convention, index starts at 1.
+			gal_stamp = gal_image[bounds]
 	
-	if simtrugalimgfilepath != None:
-		trugal_image.write(simtrugalimgfilepath)
 	
-	if simpsfimgfilepath != None:
-		psf_image.write(simpsfimgfilepath)
+			# Drawing the galaxy
+			half_light_radius=float(row["tru_rad"]) * pixel_scale
+			gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=half_light_radius, flux=float(row["tru_flux"]), gsparams=gsparams, trunc=half_light_radius*4.5)
+			# We make this profile elliptical
+			gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
+
+			# And now we add lensing, if s1, s2 and mu are different from no lensing...
+			if row["tru_s1"] != 0 or row["tru_s2"] != 0 or row["tru_mu"] != 1:
+				gal = gal.lens(float(row["tru_s1"]), float(row["tru_s2"]), float(row["tru_mu"]))
+			else:
+				pass
+				#logger.info("No lensing!")
+			
+			# We apply some jitter to the position of this galaxy # it seems this has to be given in the image scale...
+			xjitter = (ud() - 0.5) * pixel_scale
+			yjitter = (ud() - 0.5) * pixel_scale
+			gal = gal.shift(xjitter,yjitter)
+
+			final = galsim.Convolve([psf, gal])
+
+ 			final.drawImage(gal_stamp)
+
+ 			# And add noise to the convolved galaxy:
+			gal_stamp.addNoise(galsim.CCDNoise(rng, sky_level=float(row["tru_sky_level"]), gain=float(row["tru_gain"]), read_noise=float(row["tru_read_noise"])))
+	
+			
+		logger.info("Done with drawing, now writing output FITS files ...")	
+
+		gal_image.write(simgalimgfilepath)
+		
+	
+			
+	else:
+		raise RuntimeError("Unknown hack")
+
+	
 	
 	endtime = datetime.now()
 	logger.info("This drawing took %s" % (str(endtime - starttime)))
