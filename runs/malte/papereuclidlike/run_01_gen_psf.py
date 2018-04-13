@@ -13,9 +13,9 @@ This is smaller than what can be found in Cropper 2016, but the pixel convolutio
 """
 
 
-oversampling = 10 # means that PSF will be drawn with pixels N times smaller than VIS pixels.
+oversampling = config.psfoversampling # means that PSF will be drawn with pixels N times smaller than VIS pixels.
 
-stamp_size = 64 * oversampling
+stamp_size = config.stampsize * oversampling
 
 filterband_min = 550. 
 filterband_max = 900.

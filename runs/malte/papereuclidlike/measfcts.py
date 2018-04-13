@@ -1,7 +1,7 @@
 import megalut.meas
 
 
-def default(catalog, stampsize):
+def default(catalog, stampsize, gain):
 	"""
 	Default measfct, runs on "img".
 	"""	
@@ -14,7 +14,7 @@ def default(catalog, stampsize):
 	catalog = megalut.meas.skystats.measfct(catalog, stampsize=stampsize)
 	
 	# And snr
-	catalog = megalut.meas.snr.measfct(catalog, gain=1.0e12) # Gain set to give sky-limited SNR
+	catalog = megalut.meas.snr.measfct(catalog, gain=gain)
 	
 	
 	return catalog
