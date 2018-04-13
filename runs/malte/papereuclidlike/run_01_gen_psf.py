@@ -8,14 +8,12 @@ import matplotlib.pyplot as plt
 
 
 """
-The resulting PSF has a FWHM of about 10 pixels (measured with skycat or fv) -> 1 VIS pixel -> 0.1 arcsec
+If psfoversampling is 10,
+the resulting PSF has a FWHM of about 10 pixels (measured with skycat or fv) -> 1 VIS pixel -> 0.1 arcsec
 This is smaller than what can be found in Cropper 2016, but the pixel convolution is missing here!
 """
 
 
-oversampling = config.psfoversampling # means that PSF will be drawn with pixels N times smaller than VIS pixels.
-
-stamp_size = config.stampsize * oversampling
 
 filterband_min = 550. 
 filterband_max = 900.
@@ -63,8 +61,8 @@ for i, index in enumerate(indices):
 		flux = 1.0
 		)
 		
-	image = galsim.ImageF(stamp_size, stamp_size)
-	psf.drawImage(image=image, scale=0.1/oversampling)
+	image = galsim.ImageF(config.psfstampsize, config.psfstampsize)
+	psf.drawImage(image=image, scale=0.1/config.psfoversampling)
 	
 	image *= nphot
 	

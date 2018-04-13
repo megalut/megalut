@@ -38,7 +38,7 @@ def configure(args):
 			dist_type="gems"
 		)
 		drawconf = {
-			"n":50,
+			"n":500,
 			"nc":5,
 			"nrea":1,
 			"ncat":20,

@@ -18,10 +18,11 @@ print psf.shape
 
 
 myimage = f2n.fromfits(filepath)
-crop = 100
-myimage.crop(crop, -crop, crop, -crop)
+
+#crop = 1
+#myimage.crop(crop, -crop, crop, -crop)
     
-myimage.setzscale(-2.0e-4, 0.003)
+myimage.setzscale(-1.0e-4, 0.003)
 myimage.makepilimage("log", negative = False)
 #myimage.setzscale(-0.3, 1.0)
 #myimage.makepilimage("lin", negative = False)
