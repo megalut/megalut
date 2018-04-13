@@ -24,7 +24,7 @@ def trunc_gaussian(m, s, minval, maxval):
 
 def clip_gaussian(sigma, maxamp):
 	"""
-	A truncated Gaussian distrib
+	A clipped Gaussian distrib, which Nico is in fact using
 	"""
 	return np.clip(sigma * np.random.normal(), -maxamp, maxamp)
 	
