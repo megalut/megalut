@@ -30,7 +30,7 @@ def configure(args):
 	
 	code = args.code
 	
-	if code == "si-1-gems": # Just to quickly draw 10'000 galaxies probing the distributions.
+	if code == "si-1-gems": # 10'000 gals
 		sp = simparams.EuclidLike(
 			name = code,
 			snc_type = 0,
@@ -47,8 +47,25 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "si-1-gems-20rea": # 1'000 gals with 20 rea
+		sp = simparams.EuclidLike(
+			name = code,
+			snc_type = 0,
+			shear = 0,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":1000,
+			"nc":10,
+			"nrea":20,
+			"ncat":1,
+			"ncpu":20,
+			"groupmode":None,
+			"skipdone":False	
+		}
 
-	elif code == "si-1-uni": # Uniform distributions for the point estimator training.
+
+	elif code == "si-1-uni": # 10'000 gals
 		sp = simparams.EuclidLike(
 			name = code,
 			snc_type = 0,
@@ -57,7 +74,7 @@ def configure(args):
 		)
 		drawconf = {
 			"n":500,
-			"nc":100,
+			"nc":5,
 			"nrea":1,
 			"ncat":20,
 			"ncpu":20,

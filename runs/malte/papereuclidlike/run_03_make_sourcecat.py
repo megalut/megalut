@@ -30,9 +30,9 @@ cat["magdiff"] = np.fabs(cat["ST_MAG_BEST"] - cat["ST_MAG_GALFIT"])
 s = megalut.tools.table.Selector("select", [
 		("is", "GEMS_FLAG", 4),
 		("max", "magdiff", 0.5),
-		("in", "ST_MAG_GALFIT", 20.5, 26.0),
+		("in", "ST_MAG_GALFIT", 20.5, 25.5),
 		("in", "ST_N_GALFIT", 0.3, 6.0),
-		("in", "ST_RE_GALFIT", 0.0 / (0.03 / 0.1), 10.0 / (0.03 / 0.1)),
+		("in", "ST_RE_GALFIT", 0.0, 12.0 / (0.03 / 0.1)), # Between 0 and 12 VIS pixels
 	])
 
 cat = s.select(cat)
@@ -78,7 +78,7 @@ ax = fig.add_subplot(2, 4, 3)
 megalut.plot.scatter.scatter(ax, cat, maggal,  radgal, sidehists=True)
 
 ax = fig.add_subplot(2, 4, 4)
-magbinlims = np.arange(20.0, 26.1, 0.5)
+magbinlims = np.arange(np.min(cat["tru_mag"]), np.max(cat["tru_mag"])+0.1, 0.5)
 magbincents = 0.5*(magbinlims[:-1] + magbinlims[1:])
 magcounts, bla = np.histogram(cat["tru_mag"], bins=magbinlims)
 ax.plot(magbincents, magcounts, label="GEMS")
