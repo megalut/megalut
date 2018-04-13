@@ -5,7 +5,7 @@ Feads a catalog at import and draws from it
 import megalut.sim
 import numpy as np
 import random # np.random.choice is only available for newer numpys...
-
+import scipy.stats
 import config
 
 import itertools
@@ -175,6 +175,23 @@ class FromCat(megalut.sim.params.Params):
 			tru_rad = np.random.uniform(1.0, 12.0)
 			tru_flux = np.pi * tru_rad * tru_rad * tru_sb
 			tru_mag = 0.0
+		
+		elif self.dist_type == "uni2":
+			"""
+			Simpler
+			"""	
+			tru_sersicn_tmp = trunc_gaussian(1.0, 2.5, 0.3, 6.0)
+			# We want discrete sersic indices, so we approximate this to the closest steop:
+			tru_sersicns = np.linspace(0.3, 6.0, 30)
+			tru_sersicn = tru_sersicns[(np.abs(tru_sersicns-tru_sersicn_tmp)).argmin()]
+			
+			tru_rad = np.random.uniform(2.0, 10.0)
+			t_exp = 3*565.0 # s
+			gain = 3.1 # e-/ADU
+			ZP = 24.14
+			tru_mag = np.random.uniform(20.5, 24.5)
+			tru_flux =  t_exp * 10**(-0.4 * (tru_mag - ZP)) / gain # ADU
+			tru_sb = 0.0
 		
 		else:
 			raise RuntimeError("Unknown dist_type")

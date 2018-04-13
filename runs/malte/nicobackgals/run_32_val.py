@@ -9,7 +9,6 @@ import config
 import numpy as np
 import os
 
-import plot_3_val_s as plot
 
 import logging
 logging.basicConfig(format=config.loggerformat, level=logging.DEBUG)

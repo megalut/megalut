@@ -29,15 +29,27 @@ drawstampsize = stampsize # Used for drawing
 
 datasets = {
 	#"tp":"tp-1",
-	"tp":"tp-1-ln",
+	#"tp":"tp-1-ln",
+	#"tp":"tp-1-uni2",
+	#"tp":"tp-1-e-uni2",
+	"tp":"tp-1-uni2-pretrain",
 	
 	
-	"vp":"vp-1",
+	#"vp":"vp-2",
+	"vp":"vp-1-uni2",
+
+
 	"tw":"tw-1",
 	"vo":"vo-1",
 
-	"si":"si-1-uni",
+
+
 	#"si":"si-1",
+	#"si":"si-1-uni",
+	"si":"si-1-uni2",
+
+
+
 }
 
 

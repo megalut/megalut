@@ -7,6 +7,11 @@ import config
 import matplotlib.pyplot as plt
 
 
+"""
+The resulting PSF has a FWHM of about 10 pixels (measured with skycat or fv) -> 1 VIS pixel -> 0.1 arcsec
+This is smaller than what can be found in Cropper 2016, but the pixel convolution is missing here!
+"""
+
 
 oversampling = 10 # means that PSF will be drawn with pixels N times smaller than VIS pixels.
 
