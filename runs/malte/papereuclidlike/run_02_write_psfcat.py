@@ -22,7 +22,7 @@ cat.meta["img"] = megalut.tools.imageinfo.ImageInfo(
     yname="{}y".format(prefix),
     stampsize=psfstampsize,
     workdir=os.path.join(config.workdir, "psf_measworkdir"),
-	#pixelscale=config.pixelscale
+	pixelscale= 1.0 / config.psfoversampling
     )
 
 # We measure the PSF. Not really needed, but serves as a check.

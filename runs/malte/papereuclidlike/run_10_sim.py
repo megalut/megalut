@@ -38,8 +38,8 @@ def configure(args):
 			dist_type="gems"
 		)
 		drawconf = {
-			"n":500,
-			"nc":100,
+			"n":50,
+			"nc":5,
 			"nrea":1,
 			"ncat":20,
 			"ncpu":20,
@@ -240,7 +240,7 @@ def run(configuration):
 		simparams=sp,
 		measdir=measdir,
 		measfct=measfcts.default,
-		measfctkwargs={"stampsize":config.stampsize},
+		measfctkwargs={"stampsize":config.stampsize, "gain":simparams.gain},
 		ncpu=drawconf["ncpu"],
 		skipdone=drawconf["skipdone"]
 	)

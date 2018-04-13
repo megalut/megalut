@@ -27,7 +27,7 @@ sourcecat = os.path.join(workdir, "cat.pkl")
 stampsize = 64 # used for measuring
 drawstampsize = stampsize # Used for drawing
 
-psfoversampling = 10
+psfoversampling = 5
 
 
 datasets = {
