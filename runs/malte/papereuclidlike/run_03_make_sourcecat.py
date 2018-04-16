@@ -30,7 +30,7 @@ cat["magdiff"] = np.fabs(cat["ST_MAG_BEST"] - cat["ST_MAG_GALFIT"])
 s = megalut.tools.table.Selector("select", [
 		("is", "GEMS_FLAG", 4),
 		("max", "magdiff", 0.5),
-		("in", "ST_MAG_GALFIT", 20.5, 25.5),
+		("in", "ST_MAG_GALFIT", 20.5, 25.0),
 		("in", "ST_N_GALFIT", 0.3, 6.0),
 		("in", "ST_RE_GALFIT", 0.0, 12.0 / (0.03 / 0.1)), # Between 0 and 12 VIS pixels
 	])

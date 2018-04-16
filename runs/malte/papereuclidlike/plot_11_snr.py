@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 
 
 
-cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, "si-1-gems-20rea", "groupmeascat.pkl"))
+#cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, "si-1-gems-20rea", "groupmeascat.pkl"))
+cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, "si-1-uni-100rea", "groupmeascat.pkl"))
+
+
 megalut.tools.table.addstats(cat, "snr")
 
 #print megalut.tools.table.info(cat)
@@ -45,6 +48,9 @@ megalut.plot.scatter.scatter(ax, cat, tru_mag,  snr_mean, tru_rad)
 
 ax = fig.add_subplot(2, 3, 3)
 megalut.plot.scatter.scatter(ax, cat, tru_rad,  snr_mean, tru_mag)
+
+ax = fig.add_subplot(2, 3, 4)
+megalut.plot.scatter.scatter(ax, cat, tru_rad, tru_mag, snr_mean)
 
 plt.tight_layout()
 plt.show()

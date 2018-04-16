@@ -143,7 +143,7 @@ class EuclidLike(megalut.sim.params.Params):
 		#tru_g1 = shear.g1
 		#tru_g2 = shear.g2
 		
-		tru_g = trunc_rayleigh(0.25, 0.9) # Follows Hoekstra et al. 2017 and 2015
+		tru_g = trunc_rayleigh(0.25, 0.7) # Follows Hoekstra et al. 2017 and 2015, for the sigma-e (yes, the do use a-b/a+b as def)
 		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)
 		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 		
@@ -160,15 +160,23 @@ class EuclidLike(megalut.sim.params.Params):
 			tru_sersicn_tmp = source_row["tru_sersicn"]
 			
 			
-		elif self.dist_type == "uni":
+		elif self.dist_type == "unig":
 			"""
 			Uniform or very simple distributions
 			"""
-			tru_rad = np.random.uniform(2.0, 10.0)
-			tru_mag = np.random.uniform(20.5, 24.5)
-			
+			tru_rad = np.random.uniform(1.0, 10.0)
+			tru_mag = np.random.uniform(20.5, 25.0)
 			tru_sersicn_tmp = trunc_gaussian(1.0, 2.5, 0.3, 6.0)
-		
+			
+
+		elif self.dist_type == "uni":
+			"""
+			Uniform only distributions -- can this work ?
+			"""
+			tru_rad = np.random.uniform(1.0, 10.0)
+			tru_mag = np.random.uniform(20.5, 25.0)
+			tru_sersicn_tmp = np.random.uniform(0.3, 6.0)
+			
 		
 		else:
 			raise RuntimeError("Unknown dist_type")
