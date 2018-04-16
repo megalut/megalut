@@ -146,7 +146,7 @@ def drawcat(simparams, n=10, nc=2, stampsize=64, pixelscale=1.0, idprefix="", me
 
 
 
-def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, simpsfimgfilepath=None):
+def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, simpsfimgfilepath=None, gsparams=None, sersiccut=None):
 
 	"""
 	Turns a catalog as obtained from drawcat into FITS images.
@@ -164,6 +164,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	:param simgalimgfilepath: where I write my output image of simulated and noisy galaxies
 	:param simtrugalimgfilepath: (optional) where I write the image without convolution and noise
 	:param simpsfimgfilepath: (optional) where I write the PSFs
+	
+	:param sersiccut: cuts the sersic profile at this number of rad
 	
 	.. note::
 		See this function in MegaLUT v4 (great3) for attempts to speed up galsim by playing with fft params, accuracy, etc...
@@ -184,8 +186,8 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 	
 	if hack is None: # The default behavior, without specific gsparams or tricks.
 	
-	
-		gsparams = galsim.GSParams(maximum_fft_size=10240)
+		if gsparams is None:
+			gsparams = galsim.GSParams(maximum_fft_size=10240)
 
 		if "nx" not in catalog.meta.keys() or "ny" not in catalog.meta.keys():
 			raise RuntimeError("Provide nx and ny in the meta data of the input catalog to drawimg.")
@@ -244,8 +246,11 @@ def drawimg(catalog, simgalimgfilepath="test.fits", simtrugalimgfilepath=None, s
 			profile_type = params.profile_types[row["tru_type"]]
 			
 			if profile_type == "Sersic":
-				
-				gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams)
+				if sersiccut is False:
+					trunc = 0
+				else:
+					trunc = float(row["tru_rad"]) * sersiccut
+				gal = galsim.Sersic(n=float(row["tru_sersicn"]), half_light_radius=float(row["tru_rad"]), flux=float(row["tru_flux"]), gsparams=gsparams, trunc=trunc)
 				# We make this profile elliptical
 				gal = gal.shear(g1=row["tru_g1"], g2=row["tru_g2"]) # This adds the ellipticity to the galaxy
 
