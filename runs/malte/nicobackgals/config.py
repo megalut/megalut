@@ -55,14 +55,14 @@ datasets = {
 
 shearconflist = [
 	
-	#("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
 	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
 	
 	
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
 	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
 
 ]

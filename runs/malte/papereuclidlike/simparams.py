@@ -143,7 +143,7 @@ class EuclidLike(megalut.sim.params.Params):
 		#tru_g1 = shear.g1
 		#tru_g2 = shear.g2
 		
-		tru_g = trunc_rayleigh(0.2, 0.6)
+		tru_g = trunc_rayleigh(0.25, 0.9) # Follows Hoekstra et al. 2017 and 2015
 		tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)
 		(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 		

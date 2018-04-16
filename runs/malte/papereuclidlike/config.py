@@ -16,8 +16,8 @@ gemsdir = "/vol/fohlen12/data1/mtewes/GEMS"
 spectrumpath = "/vol/fohlen12/data1/mtewes/Pickles_spectra/pickles_uk_27.fits"
 
 
-simdir = os.path.join(workdir, "sim")
-simmeasdir = os.path.join(workdir, "simmeas")
+simdir = os.path.join(workdir, "sim2")
+simmeasdir = os.path.join(workdir, "simmeas2")
 traindir = os.path.join(workdir, "train")
 valdir = os.path.join(workdir, "val")
 
