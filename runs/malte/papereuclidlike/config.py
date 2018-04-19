@@ -42,8 +42,8 @@ datasets = {
 	"tw":"tw-1",
 	"vo":"vo-1",
 
-	#"si":"si-1-gems",
-	"si":"si-1-uni",
+	"si":"si-1-gems",
+	#"si":"si-1-uni",
 	
 }
 
