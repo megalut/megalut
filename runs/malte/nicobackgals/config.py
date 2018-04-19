@@ -62,8 +62,11 @@ shearconflist = [
 ]
 
 weightconflist = [
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
 	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
+	
+	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"), # As a test, just for w. No, log-flux is slightly better it seems, we keep the above.
+	#("mlconfig/ada5s2wf.cfg", "mlconfig/sum5w.cfg")
 
 ]
 

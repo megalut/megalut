@@ -38,5 +38,7 @@ nice -n 19 python run_21_train.py 10 e
 
 
 
-todo:
-make validation plot
+Todo :
+======
+
+Prepare run_allobs.py
