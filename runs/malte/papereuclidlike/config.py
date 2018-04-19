@@ -32,8 +32,12 @@ psfstampsize = 64
 
 
 datasets = {
-	"tp":"tp-1",
-	"vp":"vp-1",
+	#"tp":"tp-1-e",
+	"tp":"tp-1-pretrain",
+	
+	
+	#"vp":"vp-1",
+	"vp":"vp-1s",
 	
 	"tw":"tw-1",
 	"vo":"vo-1",
@@ -46,7 +50,7 @@ datasets = {
 
 shearconflist = [
 	
-	("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	#("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
 	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
 	
 	

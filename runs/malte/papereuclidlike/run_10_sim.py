@@ -159,6 +159,22 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "vp-1s": # (1 M, for plot tests)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 10000,
+			shear = 0.1,
+			dist_type="uni"
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":100,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 
 	elif code == "tw-1": # (no SNC) (20 M)
 		sp = simparams.EuclidLike_statshear(
