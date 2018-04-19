@@ -36,8 +36,8 @@ datasets = {
 	"tp":"tp-1-pretrain",
 	
 	
-	#"vp":"vp-1",
-	"vp":"vp-1s",
+	"vp":"vp-1",
+	#"vp":"vp-1s",
 	
 	"tw":"tw-1",
 	"vo":"vo-1",
@@ -50,14 +50,14 @@ datasets = {
 
 shearconflist = [
 	
-	#("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
 	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
 	
 	
 ]
 
 weightconflist = [
-	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
 	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
 
 ]

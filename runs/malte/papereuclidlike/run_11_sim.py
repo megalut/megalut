@@ -176,6 +176,23 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "vp-1-gems": # (40 M, huge!)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 10000,
+			shear = 0.1,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":4000,
+			"ncpu":40,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+		
 	elif code == "tw-1": # (no SNC) (20 M)
 		sp = simparams.EuclidLike_statshear(
 			name = code,

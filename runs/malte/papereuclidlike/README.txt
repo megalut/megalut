@@ -1,13 +1,12 @@
 
 
-Todo:
+todo: 
+
+make vo sets with SNR cut (from vo-1)
+
+make tw set with SNR cut
 
 
-- Make plot that compares gems and uni measurements:
-	- uni should cover gems with SNR > 10, and be efficient
-	
-	
-
-- Make uni tp (with tp-e), vp
 
 
+make fig that analyzses results on these sets
