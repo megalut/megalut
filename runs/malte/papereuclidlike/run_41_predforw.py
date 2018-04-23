@@ -24,7 +24,8 @@ cat = megalut.tools.io.readpickle(catpath)
 #exit()
 
 wtraindir = os.path.join(config.traindir, config.datasets["tw"] + "_with_" + config.datasets["tp"] + "_" + config.sconfname)
-os.makedirs(wtraindir)
+if not os.path.exists(wtraindir):
+	os.makedirs(wtraindir)
 
 predcatpath = os.path.join(wtraindir, "groupmeascat_predforw.pkl")
 

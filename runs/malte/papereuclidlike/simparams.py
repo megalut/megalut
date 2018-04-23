@@ -176,6 +176,14 @@ class EuclidLike(megalut.sim.params.Params):
 			tru_rad = np.random.uniform(1.0, 10.0)
 			tru_mag = np.random.uniform(20.5, 25.0)
 			tru_sersicn_tmp = np.random.uniform(0.3, 6.0)
+
+		elif self.dist_type == "uni05":
+			"""
+			Uniform only distributions -- can this work ?
+			"""
+			tru_rad = np.random.uniform(0.5, 10.0)
+			tru_mag = np.random.uniform(20.5, 25.0)
+			tru_sersicn_tmp = np.random.uniform(0.3, 6.0)
 			
 		
 		else:

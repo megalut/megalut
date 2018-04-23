@@ -123,6 +123,23 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "tp-05": # (8 M)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 2000,
+			shear = 0.1,
+			dist_type="uni05"
+		)
+		drawconf = {
+			"n":1,
+			"nc":1,
+			"nrea":1,
+			"ncat":4000,
+			"ncpu":40,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 
 	elif code == "tp-1-e": # ellipticity pre-training (1M)
 		sp = simparams.EuclidLike(
@@ -137,6 +154,23 @@ def configure(args):
 			"nrea":100,
 			"ncat":1,
 			"ncpu":50,
+			"groupmode":"ellipticity",
+			"skipdone":False	
+		}
+
+	elif code == "tp-05-e": # ellipticity pre-training (1M)
+		sp = simparams.EuclidLike(
+			name = code,
+			snc_type = 0,
+			shear = -1, # no shear
+			dist_type="uni05"
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":100,
+			"ncat":1,
+			"ncpu":100,
 			"groupmode":"ellipticity",
 			"skipdone":False	
 		}
@@ -210,6 +244,39 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "tw-1-snc": # (2 M)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":10000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "tw-2-snc": # SNC with 10M
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 2,
+			shear = 0.1,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":20000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":500,
+			"ncpu":100,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
 
 
 	elif code == "vo-1": # (no SNC) (20 M)
@@ -221,6 +288,23 @@ def configure(args):
 		)
 		drawconf = {
 			"n":100000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vo-2": # (no SNC) (40 M)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":200000,
 			"nc":1000,
 			"nrea":1,
 			"ncat":200,

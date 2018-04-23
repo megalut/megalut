@@ -9,8 +9,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-incatname = "vo-1"
-outcatname = "vo-1-snr-above-10"
+#incatname = "vo-1"
+#incatname = "tw-1"
+incatname = "tw-1-snc"
+
+
+
+outcatname = incatname + "-snr-above-10"
 
 
 incatpath = os.path.join(config.simmeasdir, incatname, "groupmeascat.pkl")

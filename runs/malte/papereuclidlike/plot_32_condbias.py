@@ -126,7 +126,7 @@ ax.set_yticklabels([])
 
 
 megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_cond_biases"), fig, fancy=True)
-#plt.show()
+plt.show()
 
 
 
