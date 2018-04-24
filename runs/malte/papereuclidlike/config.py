@@ -37,23 +37,30 @@ datasets = {
 	
 	
 	"tp":"tp-1-pretrain",
+	#"tp":"tp-05-pretrain",
 	
 	
-	"vp":"vp-1",
+	#"vp":"vp-1",
 	#"vp":"vp-1s",
-	#"vp":"vp-1-gems",
+	"vp":"vp-1-gems",
 	
-	#"tw":"tw-1",
-	#"tw":"tw-1-snc",
-	
-	
+	"tw":"tw-1",
 	#"tw":"tw-1-snr-above-10",
-	"tw":"tw-1-snc-snr-above-10",
+	#"tw":"tw-1-snr-above-10-sigma-above-1.5",
+	
+	# SNC stuff:
+	#"tw":"tw-1-snc",
+	#"tw":"tw-1-snc-snr-above-10",
+	#"tw":"tw-1-snc-snr-above-10-sigma-above-1.5",
 	
 	
 	
 	#"vo":"vo-1",
-	"vo":"vo-1-snr-above-10",
+	#"vo":"vo-1-snr-above-10",
+	#"vo":"vo-1-snr-above-10-sigma-above-1.5",
+	
+	#"vo":"vo-2",
+	"vo":"vo-2-snr-above-10-sigma-above-1.5",
 
 	"si":"si-1-gems",
 	#"si":"si-1-uni",
@@ -70,7 +77,7 @@ shearconflist = [
 ]
 
 weightconflist = [
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
 	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
 
 ]

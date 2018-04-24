@@ -30,13 +30,19 @@ rc('text', usetex=True)
 
 valname = config.wvalname
 
-selstr = "snr-above-10"
+#selstr = "snr-above-10"
+selstr = "snr-above-10-sigma-above-1p5"
 
 if selstr in config.datasets["vo"] and not selstr in config.datasets["tw"]:
-	title=r"Retaining only galaxies with S/N $>$ 10.0 for the validation"
+	#title=r"Retaining only galaxies with S/N $>$ 10.0 for the validation"
+	title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the validation"
+	
+	
 
 elif selstr in config.datasets["vo"] and selstr in config.datasets["tw"]:
-	title=r"Retaining galaxies with S/N $>$ 10.0 for the training and the validation"
+	#title=r"Retaining galaxies with S/N $>$ 10.0 for the training and the validation"
+	title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the training and the validation"
+	
 
 else:
 	title=r"Without specific selection of training or validation galaxies"
@@ -45,20 +51,8 @@ valcatpath = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcatpath)
 
 
+# Important so that masked point don't show up in the third panel
 cat["snr"].mask = cat["pre_s1"].mask
-
-"""
-newmask = cat["tru_rad"] < 1.0
-logger.info("Fraction of gals with rad < 1")
-logger.info(float(np.sum(newmask)) / np.size(newmask) )
-origmask = cat["pre_s1"].mask
-combimask = np.logical_or(newmask, origmask)
-cat["pre_s1"].mask = combimask
-cat["pre_s2"].mask = combimask
-cat["pre_s1w"].mask = combimask
-cat["pre_s2w"].mask = combimask
-"""
-
 
 #print megalut.tools.table.info(cat)
 
@@ -80,7 +74,6 @@ tru_mag = Feature("tru_mag", 20, 25.7, nicename="Magnitude", rea=wplotrea)
 tru_rad = Feature("tru_rad", 0.0, 13.0, nicename=r"Half-light radius $R$ [pix]", rea=wplotrea)
 
 
-
 tru_s1 = Feature("tru_s1", nicename=r"$g_1^{\mathrm{true}}$")
 tru_s2 = Feature("tru_s2", nicename=r"$g_2^{\mathrm{true}}$")
 
@@ -91,28 +84,22 @@ pre_s2_wbias = Feature("pre_s2_wbias", -resr, resr, nicename=r"$\left(\sum\hat{g
 
 
 
-#pre_s1_bias = Feature("pre_s1_bias", -resr, resr, nicename=r"Bias on $\hat{g}_{1}$")
-#pre_s2_bias = Feature("pre_s2_bias", -resr, resr, nicename=r"Bias on $\hat{g}_{2}$")
-#pre_s1_wbias = Feature("pre_s1_wbias", -resr, resr)
-#pre_s2_wbias = Feature("pre_s2_wbias", -resr, resr)
-
-
 def addmetrics(ax, xfeat, yfeat):
 	metrics = megalut.tools.metrics.metrics(cat, xfeat, yfeat, pre_is_res=True)
 	line1 = r"$10^3 \mu=%.1f \pm %.1f $" % (metrics["m"]*1000.0, metrics["merr"]*1000.0)
-	line2 = r"$10^3 c=%.1f \pm %.1f $" % (metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+	line2 = r"$10^3 c=%.2f \pm %.2f $" % (metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 	
 	ax.annotate(line1, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -9), textcoords='offset points', ha='left', va='top', fontsize=12)
 	ax.annotate(line2, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -22), textcoords='offset points', ha='left', va='top', fontsize=12)
 	
 
-fig = plt.figure(figsize=(11.5, 3.2))
+fig = plt.figure(figsize=(10, 3))
 plt.subplots_adjust(
-	left  = 0.08,  # the left side of the subplots of the figure
+	left  = 0.09,  # the left side of the subplots of the figure
 	right = 0.93,    # the right side of the subplots of the figure
-	bottom = 0.15,   # the bottom of the subplots of the figure
+	bottom = 0.18,   # the bottom of the subplots of the figure
 	top = 0.85,      # the top of the subplots of the figure
-	wspace = 0.40,   # the amount of width reserved for blank space between subplots,
+	wspace = 0.45,   # the amount of width reserved for blank space between subplots,
 	                # expressed as a fraction of the average axis width
 	hspace = 0.25,   # the amount of height reserved for white space between subplots,
 					# expressed as a fraction of the average axis heightbottom=0.1, right=0.8, top=0.9)

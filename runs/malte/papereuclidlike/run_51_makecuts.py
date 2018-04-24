@@ -9,40 +9,46 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-#incatname = "vo-1"
+incatname = "vo-2"
 #incatname = "tw-1"
-incatname = "tw-1-snc"
+#incatname = "tw-1-snc"
+#incatname = "tw-1"
 
 
-
-outcatname = incatname + "-snr-above-10"
-
+#variant = "snr"
+variant = "snrsigma"
 
 incatpath = os.path.join(config.simmeasdir, incatname, "groupmeascat.pkl")
 cat = megalut.tools.io.readpickle(incatpath)
-
-#print megalut.tools.table.info(cat)
-
-
 logger.info("Fraction of masked gals in input catalog:")
 logger.info(float(np.sum(cat["adamom_sigma"].mask)) / np.size(cat["adamom_sigma"].mask))
 
-snrmask = cat["snr"] < 10.0
+#print megalut.tools.table.info(cat)
 
-logger.info("Fraction of gals with SNR < 10:")
-logger.info(float(np.sum(snrmask)) / np.size(snrmask) )
+if variant is "snr":
+
+	outcatname = incatname + "-snr-above-10"
+	newmask = cat["snr"] < 10.0
+
+elif variant is "snrsigma":
+
+	outcatname = incatname + "-snr-above-10-sigma-above-1.5"
+	newmask = np.logical_or(cat["snr"] < 10.0, cat["adamom_sigma"] < 1.5)
+
+else:
+	raise RuntimeError("Unknown")
+
+logger.info("Fraction of selected gals:")
+logger.info(float(np.sum(newmask)) / np.size(newmask) )
 
 
 origmask = cat["adamom_sigma"].mask
-combimask = np.logical_or(snrmask, origmask)
+combimask = np.logical_or(newmask, origmask)
 cat["adamom_sigma"].mask = combimask
 
 
 logger.info("Fraction of masked gals in output catalog:")
 logger.info(float(np.sum(cat["adamom_sigma"].mask)) / np.size(cat["adamom_sigma"].mask))
-
-
-
 
 outcatdir = os.path.join(config.simmeasdir, outcatname)
 if not os.path.exists(outcatdir):
