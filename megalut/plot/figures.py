@@ -10,7 +10,7 @@ def get_colors():
 	return ['k', 'orange', 'skyblue', 'lightgrey', "royalblue", 'r', "#a65628", "#f781bf", "#4daf4a"]
 	#return ['k', 'orange', 'skyblue', 'seagreen', "#984ea3", 'r', "#a65628", "#f781bf", "#4daf4a"]
 
-def savefig(fname,fig,fancy=False,pdf_transparence=True):
+def savefig(fname,fig,fancy=False,pdf_transparence=True, nocrop=False):
 	import os
 	import subprocess
 
@@ -24,9 +24,10 @@ def savefig(fname,fig,fancy=False,pdf_transparence=True):
 		fig.savefig(fname+'.pdf',transparent=pdf_transparence)
 		#fig.savefig(fname+'.eps',transparent=True)
 		#os.system("epstopdf "+fname+".eps")
-		command = 'pdfcrop %s.pdf' % fname
-		subprocess.check_output(command, shell=True)
-		os.system('mv '+fname+'-crop.pdf '+fname+'.pdf')
+		if nocrop is False:
+			command = 'pdfcrop %s.pdf' % fname
+			subprocess.check_output(command, shell=True)
+			os.system('mv '+fname+'-crop.pdf '+fname+'.pdf')
 	
 
 def set_fancy(txtsize=16):
