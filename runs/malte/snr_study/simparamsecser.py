@@ -45,13 +45,13 @@ class Simple1(megalut.sim.params.Params):
 		#zeropoint = 25.9 # mag. Should give SNR 10 when observing with 3 x 565 second exposures.
 		
 		#zeropoint = 24.7 + float(ny - iy)/float(ny) * 1.0 # mag. Should give SNR 10 when observing with 3 x 565 second exposures.
-		zeropoint = 26.8
+		zeropoint = 25.6
 		
 		exptime = 3.0*565.0	# seconds
 	
 		########## Noise ##########
 
-		tru_sky_level = 0.01 * exptime * 10**((skyback - zeropoint)/(-2.5))  # In ADU per pixel. 0.01 because of the pixel size of 0.1 arcsec. No gain, as in ADU!
+		tru_sky_level = 0.01 * (exptime/gain) * 10**((skyback - zeropoint)/(-2.5))  # In ADU per pixel. 0.01 because of the pixel size of 0.1 arcsec.
 		tru_gain = gain
 		tru_read_noise = ron
 		
@@ -72,6 +72,7 @@ class Simple1(megalut.sim.params.Params):
 		tru_flux = (exptime / gain) * 10**((tru_mag - zeropoint)/(-2.5))
 
 		# For sersic index 2, factor = 1.6
+		# For sersic index 4, factor = 3 (?)
 		factor = 3.0
 		
 		tru_rad = 1.95 * factor

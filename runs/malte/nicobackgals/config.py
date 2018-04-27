@@ -7,35 +7,80 @@ import os
 import numpy as np
 
 import logging
+loggerformat='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;21m%(message)s\033[1;0m'
+#loggerformat='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s'
+logging.basicConfig(format=loggerformat,level=logging.INFO)
 
-#logging.basicConfig(level=logging.INFO)
-logging.basicConfig(format='PID %(process)06d | %(asctime)s | %(levelname)s: %(name)s(%(funcName)s): %(message)s',level=logging.INFO)
+#workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_nicobackgals"
+workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/nicobackgals"
 
-
-
-
-workdir = "/vol/fohlen11/fohlen11_1/mtewes/backgals-megalut/"
-
-
-obsdir = os.path.join(workdir, "obs_Nicolas")
-#obsdir = "/vol/euclid1/euclid1_raid1/nmartinet/CLUSTERING/condor/simulations"
-
-
-obsworkdir = os.path.join(workdir, "obswork_Nicolas")
 
 simdir = os.path.join(workdir, "sim")
+simmeasdir = os.path.join(workdir, "simmeas")
+traindir = os.path.join(workdir, "train")
+valdir = os.path.join(workdir, "val")
 
 
-psfimgpath = os.path.join(workdir, "psf.fits")
-psfcatpath = os.path.join(workdir, "psfcat.pkl")
+sourcecat = os.path.join(workdir, "cat.pkl")
+
+stampsize = 64 # used for measuring
+drawstampsize = stampsize # Used for drawing
 
 
-ncpu = 10
+datasets = {
+	#"tp":"tp-1",
+	#"tp":"tp-1-ln",
+	#"tp":"tp-1-uni2",
+	#"tp":"tp-1-e-uni2",
+	"tp":"tp-1-uni2-pretrain",
+	
+	
+	#"vp":"vp-2",
+	"vp":"vp-1-uni2",
 
 
-# Nicolas sims
-
-stampsize = 64
-nside = 100
+	"tw":"tw-1",
+	"vo":"vo-1",
 
 
+
+	#"si":"si-1",
+	#"si":"si-1-uni",
+	"si":"si-1-uni2",
+
+
+
+}
+
+
+shearconflist = [
+	
+	("mlconfig/ada5s1.cfg", "mlconfig/sum55.cfg"), # <--- We use those
+	("mlconfig/ada5s2.cfg", "mlconfig/sum55.cfg")
+	
+	
+]
+
+weightconflist = [
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
+	
+	#("mlconfig/ada5s1wf.cfg", "mlconfig/sum5w.cfg"), # As a test, just for w. No, log-flux is slightly better it seems, we keep the above.
+	#("mlconfig/ada5s2wf.cfg", "mlconfig/sum5w.cfg")
+
+]
+
+
+#######################################################################################################################################
+
+# Some automatically generated names, used for saving figures etc depending on your above settings.
+# Not meant to be changed by the user...
+
+sconfname = os.path.splitext(os.path.basename(shearconflist[0][1]))[0] # extracts e.g. "sum55"
+valname = "{}_with_{}_on_{}".format(datasets["tp"], sconfname, datasets["vp"])
+wconfname = os.path.splitext(os.path.basename(weightconflist[0][1]))[0] # extracts e.g. "sum55w"
+wvalname = "{}_and_{}_with_{}_{}_on_{}".format(datasets["tp"], datasets["tw"], sconfname, wconfname, datasets["vo"])
+
+for d in [simdir, traindir, valdir]:
+	if not os.path.exists(d):
+		os.makedirs(d)

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.datasets["train-shear"], "groupmeascat.pkl"))
+cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.datasets["ts"], "groupmeascat.pkl"))
 #print megalut.tools.table.info(cat)
 
 fig = plt.figure(figsize=(8, 8))
