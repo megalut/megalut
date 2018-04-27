@@ -36,7 +36,7 @@ datasets = {
 	#"tp":"tp-05-e",
 	
 	
-	"tp":"tp-1-pretrain",
+	"tp":"tp-1-pretrain", # <-------
 	#"tp":"tp-05-pretrain",
 	
 	
@@ -44,11 +44,11 @@ datasets = {
 	#"vp":"vp-1s",
 	"vp":"vp-1-gems",
 	
-	"tw":"tw-1",
+	#"tw":"tw-1",
 	#"tw":"tw-1-snr-above-10",
-	#"tw":"tw-1-snr-above-10-sigma-above-1.5",
+	"tw":"tw-1-snr-above-10-sigma-above-1.5",
 	
-	# SNC stuff:
+	# SNC stuff:	# No, not needed!
 	#"tw":"tw-1-snc",
 	#"tw":"tw-1-snc-snr-above-10",
 	#"tw":"tw-1-snc-snr-above-10-sigma-above-1.5",
@@ -60,7 +60,8 @@ datasets = {
 	#"vo":"vo-1-snr-above-10-sigma-above-1.5",
 	
 	#"vo":"vo-2",
-	"vo":"vo-2-snr-above-10-sigma-above-1.5",
+	#"vo":"vo-2-snr-above-10-sigma-above-1.5",
+	"vo":"tw-2-snr-above-10-sigma-above-1.5",
 
 	"si":"si-1-gems",
 	#"si":"si-1-uni",

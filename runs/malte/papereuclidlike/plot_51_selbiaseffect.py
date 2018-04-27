@@ -31,21 +31,24 @@ rc('text', usetex=True)
 valname = config.wvalname
 
 #selstr = "snr-above-10"
-selstr = "snr-above-10-sigma-above-1p5"
+selstr = "snr-above-10-sigma-above-1.5"
+
 
 if selstr in config.datasets["vo"] and not selstr in config.datasets["tw"]:
 	#title=r"Retaining only galaxies with S/N $>$ 10.0 for the validation"
-	title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the validation"
+	#title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the validation"
+	title=r"Same shear estimator applied on a selection of sources with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 pixel:"
+	mode = 2
 	
-	
-
 elif selstr in config.datasets["vo"] and selstr in config.datasets["tw"]:
 	#title=r"Retaining galaxies with S/N $>$ 10.0 for the training and the validation"
-	title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the training and the validation"
-	
+	#title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the training and the validation"
+	title=r"Using weight predictions trained with the selection S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 pixel:"
+	mode = 3
 
 else:
-	title=r"Without specific selection of training or validation galaxies"
+	title=r"Without specific selection of training or validation galaxies:"
+	mode = 1
 
 valcatpath = os.path.join(config.valdir, valname + ".pkl")
 cat = megalut.tools.io.readpickle(valcatpath)
@@ -129,14 +132,18 @@ addmetrics(ax, tru_s2, pre_s2_wbias)
 #ax.set_yticklabels([])
 
 
-ax = fig.add_subplot(1, 3, 3)
-cb = megalut.plot.scatter.scatter(ax, cat, tru_mag, tru_rad, snr, cmap="plasma_r", rasterized = True, norm=matplotlib.colors.LogNorm(vmin=5.0, vmax=150.0))
-#cb.set_ticks([5, 10, 20, 40, 80, 160])
+if mode != 3:
+	ax = fig.add_subplot(1, 3, 3)
+	cb = megalut.plot.scatter.scatter(ax, cat, tru_mag, tru_rad, snr, cmap="plasma_r", rasterized = True, norm=matplotlib.colors.LogNorm(vmin=3.0, vmax=150.0))
+	ticks = [5, 10, 20, 40, 80]
+	ticklabels = [str(tick) for tick in ticks]
+	cb.set_ticks(ticks)
+	cb.ax.set_yticklabels(ticklabels)
+
 
 fig.text(.005, .94, title, fontdict={"fontsize":12})
 
-
-megalut.plot.figures.savefig(os.path.join(config.valdir, valname + "_selbiaseffect"), fig, fancy=True, pdf_transparence=True)
+megalut.plot.figures.savefig(os.path.join(config.valdir, valname.replace(".", "p") + "_selbiaseffect"), fig, fancy=True, pdf_transparence=True, nocrop=True)
 plt.show()
 
 

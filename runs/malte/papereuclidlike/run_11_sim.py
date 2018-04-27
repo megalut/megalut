@@ -244,6 +244,27 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "tw-2": # (no SNC) (40 M)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":200000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":50,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+
+
+
+
 	elif code == "tw-1-snc": # (2 M)
 		sp = simparams.EuclidLike_statshear(
 			name = code,
@@ -313,6 +334,22 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "vo-3": # (no SNC) (80 M)
+		sp = simparams.EuclidLike_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			dist_type="gems"
+		)
+		drawconf = {
+			"n":400000,
+			"nc":2000,
+			"nrea":1,
+			"ncat":59,
+			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":True	
+		}
 
 
 

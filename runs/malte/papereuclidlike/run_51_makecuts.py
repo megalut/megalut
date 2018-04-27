@@ -9,10 +9,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-incatname = "vo-2"
+#incatname = "vo-2"
 #incatname = "tw-1"
 #incatname = "tw-1-snc"
 #incatname = "tw-1"
+incatname = "tw-2"
 
 
 #variant = "snr"
