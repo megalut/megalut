@@ -47,7 +47,9 @@ datasets = {
 	#"tw":"tw-1", #<-------
 	#"tw":"tw-1-snr-above-10",
 	#"tw":"tw-1-snr-above-10-sigma-above-1.5", #<-------
-	"tw":"tw-2-snr-above-10-sigma-above-1.5",
+
+	"tw":"tw-2-snr-above-10-sigma-above-1.5", # <-- running
+	#"tw":"tw-2-snr-above-10-sigma-above-1.5-mbfrac1", # <-- running, seems to be equally good
 	
 	# SNC stuff:	# No, not needed!
 	#"tw":"tw-1-snc",
@@ -82,7 +84,7 @@ shearconflist = [
 ]
 
 weightconflist = [
-	#("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
+	("mlconfig/ada5s1w.cfg", "mlconfig/sum5w.cfg"),
 	("mlconfig/ada5s2w.cfg", "mlconfig/sum5w.cfg")
 
 ]
