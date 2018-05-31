@@ -141,8 +141,8 @@ def addmetrics(ax, xfeat, yfeat):
 	line1 = r"$\mathrm{RMSD} = %.5f $" % (metrics["rmsd"])
 	#line2 = r"$m: %.1f +/- %.1f; c: %.1f +/- %.1f$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 	#line2 = r"$m=%.1f \pm %.1f; c=%.1f \pm %.1f \, [10^{-3}]$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0, metrics["c"]*1000.0, metrics["cerr"]*1000.0)
-	line2 = r"$m=%.1f \pm %.1f \cdot 10^{-3}$" % (metrics["m"]*1000.0, metrics["merr"]*1000.0)
-	line3 = r"$c=%.1f \pm %.1f \cdot 10^{-3}$" % (metrics["c"]*1000.0, metrics["cerr"]*1000.0)
+	line2 = r"$10^3 \mu=%.1f \pm %.1f $" % (metrics["m"]*1000.0, metrics["merr"]*1000.0)
+	line3 = r"$10^3 c=%.1f \pm %.1f $" % (metrics["c"]*1000.0, metrics["cerr"]*1000.0)
 	
 	ax.annotate(line1, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -7), textcoords='offset points', ha='left', va='top', fontsize=8)
 	ax.annotate(line2, xy=(0.0, 1.0), xycoords='axes fraction', xytext=(8, -16), textcoords='offset points', ha='left', va='top', fontsize=8)
