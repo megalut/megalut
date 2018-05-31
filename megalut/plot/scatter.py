@@ -136,6 +136,8 @@ def scatter(ax, cat, featx, featy, featc=None, cmap="jet", title=None, text=None
 			cax = divider.append_axes("right", "5%", pad="3%")
 			cax = plt.colorbar(stuff, cax)
 			cax.set_label(featc.nicename)
+		else:
+			cax = None
 
 			
 	else: # We will use plot()
