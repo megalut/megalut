@@ -24,7 +24,7 @@ great3 = mg3.great3.GREAT3Run(
 	
 	#subfields = [1099], # Copy of 99, used for manual tests (to avoid messing up 99)
 
-	subfields = range(0, 50),
+	#subfields = range(0, 50),
 	#subfields = range(50, 100),
 	#subfields = range(100, 150),
 	#subfields = range(150, 200),
@@ -102,4 +102,4 @@ weightconflist = [
 
 trainmode = "g" # When training for ellipticity, switch this to "g". It's for the plots.
 
-predcode = "2" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
+predcode = "1" # String used in file names of GREAT3 predictions. Allows you to keep several predictions side by side.
