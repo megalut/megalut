@@ -31,8 +31,8 @@ rc('text', usetex=True)
 valname = config.wvalname
 
 #selstr = "snr-above-10"
-#selstr = "snr-above-10-sigma-above-1.5"
-selstr = "realcut"
+selstr = "snr-above-10-sigma-above-1.5"
+#selstr = "realcut"
 
 
 if selstr in config.datasets["vo"] and not selstr in config.datasets["tw"]:
@@ -47,7 +47,9 @@ if selstr in config.datasets["vo"] and not selstr in config.datasets["tw"]:
 elif selstr in config.datasets["vo"] and selstr in config.datasets["tw"]:
 	#title=r"Retaining galaxies with S/N $>$ 10.0 for the training and the validation"
 	#title=r"Retaining only galaxies with S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 for the training and the validation"
-	title=r"Using weight predictions trained with the selection S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 pixel:"
+	#title=r"Using weight predictions trained with the selection S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 pixel:"
+	title=r"Applying the same selection S/N $>$ 10.0 and {\tt adamom\_sigma} $>$ 1.5 pixel for both training and validation:"
+	
 	mode = 3
 
 else:

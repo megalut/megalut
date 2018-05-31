@@ -18,8 +18,8 @@ incatname = "vo-3"
 
 
 #variant = "snr" # No longer used
-#variant = "snrsigma" #<----
-variant = "realcut" # <-----
+variant = "snrsigma" #<----
+#variant = "realcut" # <-----
 
 incatpath = os.path.join(config.simmeasdir, incatname, "groupmeascat.pkl")
 cat = megalut.tools.io.readpickle(incatpath)
