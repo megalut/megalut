@@ -61,11 +61,16 @@ noise_sigma = sourcecat.meta["noise_sigma"]
 class FromCat(megalut.sim.params.Params):
 
 	
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, dist_type="cat"):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, dist_type="cat", e_type=1):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
 		- noise_level 1.0 means that the fiducial noise level will be used, 0 means no noise
+		
+		- e_type is the kind of ellipticity distribution to use:
+			1 : a flawed way, for the June 2018 run
+			2 : a better way, for the Sep 2018 run
+			
 		"""
 		
 		megalut.sim.params.Params.__init__(self)
@@ -76,6 +81,7 @@ class FromCat(megalut.sim.params.Params):
 		self.noise_level = noise_level
 		self.dist_type = dist_type
 		
+		self.e_type = e_type
 
 
 	def draw_constants(self):
@@ -136,14 +142,29 @@ class FromCat(megalut.sim.params.Params):
 		Called for each galaxy	
 		"""
 		
-		sigma = 0.3 # par composante
-		maxamp = 0.7
-		tru_e1 = clip_gaussian(sigma, maxamp)
-		tru_e2 = clip_gaussian(sigma, maxamp)
-		shear = galsim.Shear(e1=tru_e1, e2=tru_e2)
-		tru_g1 = shear.g1
-		tru_g2 = shear.g2
+		if self.e_type == 1:
+			
+			raise RuntimeError("Should no longer be used")
+			sigma = 0.3 # par composante
+			maxamp = 0.7
+			tru_e1 = clip_gaussian(sigma, maxamp)
+			tru_e2 = clip_gaussian(sigma, maxamp)
+			shear = galsim.Shear(e1=tru_e1, e2=tru_e2)
+			tru_g1 = shear.g1
+			tru_g2 = shear.g2
+			
+			
+		elif self.e_type == 2:
+			
+			tru_g = trunc_rayleigh(0.26, 0.9) # Agreed with Nico and Tim
+			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)
+			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
+			shear = galsim.Shear(g1=tru_g1, g2=tru_g2)
+			tru_e1 = shear.e1
+			tru_e2 = shear.e2
 	
+		else:
+			raise RuntimeError("Unknown e_type")
 		
 		if self.dist_type == "cat":
 			"""

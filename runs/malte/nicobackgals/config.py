@@ -12,7 +12,10 @@ loggerformat='\033[1;31m%(levelname)s\033[1;0m: %(name)s(%(funcName)s): \033[1;2
 logging.basicConfig(format=loggerformat,level=logging.INFO)
 
 #workdir = "/vol/euclid5/euclid5_raid3/mtewes/MegaLUT_nicobackgals"
-workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/nicobackgals"
+#workdir = "/vol/fohlen12/data1/mtewes/MegaLUT/nicobackgals"
+
+workdir = "/vol/fohlen11/fohlen11_1/mtewes/MegaLUT/nicobackgals" # Copying stuff here due to fohlen12 disk problems.
+
 
 
 simdir = os.path.join(workdir, "sim")
@@ -32,21 +35,33 @@ datasets = {
 	#"tp":"tp-1-ln",
 	#"tp":"tp-1-uni2",
 	#"tp":"tp-1-e-uni2",
-	"tp":"tp-1-uni2-pretrain",
+	#"tp":"tp-1-uni2-pretrain",
+	
+	#"tp":"tp-1-e-ln-uni2-etype2",
+	#"tp":"tp-1-e-uni2-etype2", # We use this one for the pre-training
+	
+	
+	"tp":"tp-1-uni2-etype2-pretrain",
+	
 	
 	
 	#"vp":"vp-2",
 	"vp":"vp-1-uni2",
+	#"vp":"vp-1-uni2-etype2", # This is not needed, we don't care about the e distrib here!
 
 
-	"tw":"tw-1",
-	"vo":"vo-1",
+	#"tw":"tw-1",
+	"tw":"tw-1-etype2",
 
+
+	#"vo":"vo-1",
+	"vo":"vo-1-etype2",
 
 
 	#"si":"si-1",
 	#"si":"si-1-uni",
-	"si":"si-1-uni2",
+	#"si":"si-1-uni2",
+	"si":"si-1-uni2-etype2",
 
 
 

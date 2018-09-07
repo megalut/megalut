@@ -12,7 +12,15 @@ import matplotlib.pyplot as plt
 
 cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.datasets["si"], "groupmeascat.pkl"))
 
-#print megalut.tools.table.info(cat)
+print megalut.tools.table.info(cat)
+
+print("std(tru_g1) = {}".format(np.std(cat["tru_g1"])))
+print("std(tru_g2) = {}".format(np.std(cat["tru_g2"])))
+print("std(tru_e1) = {}".format(np.std(cat["tru_e1"])))
+print("std(tru_e2) = {}".format(np.std(cat["tru_e2"])))
+print("max(tru_g1) = {}".format(np.max(cat["tru_g1"])))
+print("max(tru_g2) = {}".format(np.max(cat["tru_g2"])))
+
 
 
 fig = plt.figure(figsize=(20, 13))
