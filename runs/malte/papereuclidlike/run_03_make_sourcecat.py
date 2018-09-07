@@ -21,6 +21,7 @@ catpath = os.path.join(config.workdir, "cat.pkl")
 cat = astropy.table.Table.read(gemspath)
 #print cat.colnames
 
+print len(cat)
 
 cat.keep_columns(['ST_FLUX_RADIUS', 'ST_N_GALFIT', 'ST_MAG_GALFIT', 'ST_RE_GALFIT', 'ST_Q_GALFIT', "GEMS_FLAG", 'ST_MAG_BEST'])
 

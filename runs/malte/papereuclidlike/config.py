@@ -44,9 +44,12 @@ datasets = {
 	#"vp":"vp-1s",
 	"vp":"vp-1-gems",
 	
-	#"tw":"tw-1",
+	#"tw":"tw-1", #<-------
 	#"tw":"tw-1-snr-above-10",
-	"tw":"tw-1-snr-above-10-sigma-above-1.5",
+	#"tw":"tw-1-snr-above-10-sigma-above-1.5", #<------- old version
+
+	"tw":"tw-2-snr-above-10-sigma-above-1.5", # <------ this is now the best it seems
+	#"tw":"tw-2-snr-above-10-sigma-above-1.5-mbfrac1", # <-- running, seems to be equally good
 	
 	# SNC stuff:	# No, not needed!
 	#"tw":"tw-1-snc",
@@ -58,11 +61,15 @@ datasets = {
 	#"vo":"vo-1",
 	#"vo":"vo-1-snr-above-10",
 	#"vo":"vo-1-snr-above-10-sigma-above-1.5",
-	
+
 	#"vo":"vo-2",
 	#"vo":"vo-2-snr-above-10-sigma-above-1.5",
-	"vo":"tw-2-snr-above-10-sigma-above-1.5",
-
+	#"vo":"tw-2-snr-above-10-sigma-above-1.5",
+	
+	#"vo":"vo-3",
+	"vo":"vo-3-snr-above-10-sigma-above-1.5", # <------ 
+	#"vo":"vo-3-realcut",
+	
 	"si":"si-1-gems",
 	#"si":"si-1-uni",
 	

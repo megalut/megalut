@@ -13,11 +13,13 @@ logger = logging.getLogger(__name__)
 #incatname = "tw-1"
 #incatname = "tw-1-snc"
 #incatname = "tw-1"
-incatname = "tw-2"
+#incatname = "tw-2"
+incatname = "vo-3"
 
 
-#variant = "snr"
-variant = "snrsigma"
+#variant = "snr" # No longer used
+variant = "snrsigma" #<----
+#variant = "realcut" # <-----
 
 incatpath = os.path.join(config.simmeasdir, incatname, "groupmeascat.pkl")
 cat = megalut.tools.io.readpickle(incatpath)
@@ -35,6 +37,18 @@ elif variant is "snrsigma":
 
 	outcatname = incatname + "-snr-above-10-sigma-above-1.5"
 	newmask = np.logical_or(cat["snr"] < 10.0, cat["adamom_sigma"] < 1.5)
+
+elif variant is "realcut":
+
+	outcatname = incatname + "-realcut"
+	
+	# 2 points:
+	a = (24.8, 2.0)
+	b = (23.0, 10.0)
+	# equation y = mx + h
+	m = (a[1] - b[1]) / (a[0] - b[0])
+	h = a[1] - m*a[0]
+	newmask = np.logical_or(cat["tru_rad"] < 1.4, cat["tru_rad"] > m*cat["tru_mag"] + h)
 
 else:
 	raise RuntimeError("Unknown")
