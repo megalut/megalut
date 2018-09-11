@@ -39,7 +39,10 @@ sky_bkg = 22.35 # mag/arcsec2
 #ZP = 37.46 # mag, but with a different definition of what a ZP is.
 #ZP = 24.6 # mag
 #ZP = 29.44 # mag
-ZP = 24.14
+#ZP = 24.14 # 2018-09-10: we decide with Nico that this should be 24.0 instead, but don't redo the point estimate training.
+
+ZP = 24.0
+
 
 cat = astropy.table.Table()
 

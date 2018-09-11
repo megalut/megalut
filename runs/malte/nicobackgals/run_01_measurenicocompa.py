@@ -15,7 +15,7 @@ compadir = os.path.join(config.workdir, "compa_with_nico")
 nside = 100
 stampsize = 64
 
-imgpaths = glob.glob(os.path.join(compadir, "sim_0000*.fits"))
+imgpaths = glob.glob(os.path.join(compadir, "sim_*.fits"))
 
 
 logger.info("Found {} files".format(len(imgpaths)))
