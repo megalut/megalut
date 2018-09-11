@@ -51,17 +51,19 @@ datasets = {
 
 
 	#"tw":"tw-1",
-	"tw":"tw-1-etype2",
+	"tw":"tw-1-etype2-emaxamp7",
 
 
 	#"vo":"vo-1",
-	"vo":"vo-1-etype2",
-
+	"vo":"vo-1-etype2-emaxamp7",
+	#"vo":"tw-1-etype2-emaxamp7",
 
 	#"si":"si-1",
 	#"si":"si-1-uni",
 	#"si":"si-1-uni2",
-	"si":"si-1-uni2-etype2",
+	#"si":"si-1-uni2-etype2",
+	#"si":"si-1-cat-etype2",
+	"si":"si-1-cat-etype2-emaxamp7",
 
 
 
