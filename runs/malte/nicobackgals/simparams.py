@@ -61,7 +61,7 @@ noise_sigma = sourcecat.meta["noise_sigma"]
 class FromCat(megalut.sim.params.Params):
 
 	
-	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, dist_type="cat", e_type=1):
+	def __init__(self, name=None, snc_type=1, shear=0, noise_level=1.0, dist_type="cat", e_type=1, e_maxamp=0.9):
 		"""
 		- snc_type is the number of shape noise cancellation rotations
 		- shear is the maximum shear to be drawn, 0 for no shear
@@ -82,6 +82,9 @@ class FromCat(megalut.sim.params.Params):
 		self.dist_type = dist_type
 		
 		self.e_type = e_type
+		self.e_maxamp = e_maxamp
+		if self.e_maxamp > 0.8:
+			raise RuntimeError("We decided with Nico on 2018-09-10 that we should cut at 0.7 to avoid ugly galaxies, but I only redo the weight training.")
 
 
 	def draw_constants(self):
@@ -143,6 +146,7 @@ class FromCat(megalut.sim.params.Params):
 		"""
 		
 		if self.e_type == 1:
+			# This is what Nico was doing for the first tests. Yes, indeed, clip_gaussian.
 			
 			raise RuntimeError("Should no longer be used")
 			sigma = 0.3 # par composante
@@ -156,7 +160,7 @@ class FromCat(megalut.sim.params.Params):
 			
 		elif self.e_type == 2:
 			
-			tru_g = trunc_rayleigh(0.26, 0.9) # Agreed with Nico and Tim
+			tru_g = trunc_rayleigh(0.26, self.e_maxamp) # Agreed with Nico and Tim
 			tru_theta = 2.0 * np.pi * np.random.uniform(0.0, 1.0)
 			(tru_g1, tru_g2) = (tru_g * np.cos(2.0 * tru_theta), tru_g * np.sin(2.0 * tru_theta))
 			shear = galsim.Shear(g1=tru_g1, g2=tru_g2)
