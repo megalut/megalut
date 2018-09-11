@@ -34,6 +34,21 @@ However I have to move to fohlen, as fohlen12 gets too slow.
 Training of weights with 150 its.
 
 
+##### CHANGE
+- ZP should be 24.0, not 24.14
+- We cut the g at 0.7, not 0.9
+I only reapeat the weight training
+
+-> new sims:
+
+si-1-cat-etype2-emaxamp7
+tw-1-etype2-emaxamp7
+vo-1-etype2-emaxamp7
+
+done, training 150 its, looks ok.
+
+
+
 
 
 Sim generation

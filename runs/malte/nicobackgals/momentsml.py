@@ -222,8 +222,8 @@ def run(imgpath, outcatpath, workdir, traindir, stampsize, nside, plots=False, s
 	conflist = [
 		(os.path.join(traindir, "ada5s1.cfg"), os.path.join(traindir, "mini_ada5s1_sum55_2018-09-05T15-52-55")),
 		(os.path.join(traindir, "ada5s2.cfg"), os.path.join(traindir, "mini_ada5s2_sum55_2018-09-05T15-58-19")),
-		(os.path.join(traindir, "ada5s1w.cfg"), os.path.join(traindir, "mini_ada5s1w_sum5w_2018-09-06T11-04-51")),
-		(os.path.join(traindir, "ada5s2w.cfg"), os.path.join(traindir, "mini_ada5s2w_sum5w_2018-09-06T11-22-41"))
+		(os.path.join(traindir, "ada5s1w.cfg"), os.path.join(traindir, "mini_ada5s1w_sum5w_2018-09-10T20-50-49")),
+		(os.path.join(traindir, "ada5s2w.cfg"), os.path.join(traindir, "mini_ada5s2w_sum5w_2018-09-10T20-51-29"))
 	]
 
 	logger.info("====== Starting ML predictions on  image '{}'...".format(imgpath))

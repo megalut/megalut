@@ -89,11 +89,47 @@ def configure(args):
 			e_type = 2
 		)
 		drawconf = {
-			"n":500,
+			"n":10000,
 			"nc":100,
 			"nrea":1,
-			"ncat":20,
-			"ncpu":20,
+			"ncat":1,
+			"ncpu":1,
+			"groupmode":None,
+			"skipdone":False	
+		}
+
+	elif code == "si-1-cat-etype2": # Uniform distributions for the point estimator training.
+		sp = simparams.FromCat(
+			name = code,
+			snc_type = 0,
+			shear = 0,
+			dist_type="cat",
+			e_type = 2
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":1,
+			"ncat":1,
+			"ncpu":1,
+			"groupmode":None,
+			"skipdone":False	
+		}
+	elif code == "si-1-cat-etype2-emaxamp7": # Uniform distributions for the point estimator training.
+		sp = simparams.FromCat(
+			name = code,
+			snc_type = 0,
+			shear = 0,
+			dist_type="cat",
+			e_type = 2,
+			e_maxamp = 0.7
+		)
+		drawconf = {
+			"n":10000,
+			"nc":100,
+			"nrea":1,
+			"ncat":1,
+			"ncpu":1,
 			"groupmode":None,
 			"skipdone":False	
 		}
@@ -329,6 +365,25 @@ def configure(args):
 			"skipdone":False	
 		}
 
+	elif code == "tw-1-etype2-emaxamp7": # (no SNC) (20 M)
+		sp = simparams.FromCat_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			dist_type="cat",
+			e_type = 2,
+			e_maxamp = 0.7
+		)
+		drawconf = {
+			"n":100000,
+			"nc":1000,
+			"nrea":1,
+			"ncat":200,
+			"ncpu":100,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
 
 	elif code == "vo-1": # (20 M, no SNC)
 		sp = simparams.FromCat_statshear(
@@ -362,6 +417,26 @@ def configure(args):
 			"ncat":200,
 			#"ncpu":50,
 			"ncpu":20,
+			"groupmode":"shear",
+			"skipdone":False	
+		}
+
+	elif code == "vo-1-etype2-emaxamp7": # (20 M, no SNC)
+		sp = simparams.FromCat_statshear(
+			name = code,
+			snc_type = 0,
+			shear = 0.1,
+			dist_type="cat",
+			e_type = 2,
+			e_maxamp = 0.7
+		)
+		drawconf = {
+			"n":100000,
+			"nc":100,
+			"nrea":1,
+			"ncat":200,
+			#"ncpu":50,
+			"ncpu":25,
 			"groupmode":"shear",
 			"skipdone":False	
 		}

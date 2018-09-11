@@ -14,7 +14,7 @@ cat = megalut.tools.io.readpickle(os.path.join(config.simmeasdir, config.dataset
 
 compadir = os.path.join(config.workdir, "compa_with_nico")
 
-nicocat = megalut.tools.io.readpickle(os.path.join(compadir, "meascat_sim_0000001_24.5_a0_polypsf.pkl"))
+nicocat = megalut.tools.io.readpickle(os.path.join(compadir, "meascat_sim_2001001_24.5_a0_m_polypsf_l3.0_bk0_0.7.pkl"))
 #print megalut.tools.table.info(nicocat)
 #exit()
 
@@ -28,6 +28,8 @@ tru_sersicn = Feature("tru_sersicn", 0, 7, nicename="True Sersic index")
 
 skystd = Feature("skystd")
 skymed = Feature("skymed")
+skymad = Feature("skymad")
+
 adamom_flux = Feature("adamom_flux")
 adamom_logflux = Feature("adamom_logflux")
 adamom_sigma = Feature("adamom_sigma")
@@ -48,7 +50,7 @@ ax = fig.add_subplot(2, 3, 1)
 megalut.plot.contour.simobs(ax, cat, nicocat, snr, adamom_flux)
 
 ax = fig.add_subplot(2, 3, 2)
-megalut.plot.contour.simobs(ax, cat, nicocat, skystd, skymed)
+megalut.plot.contour.simobs(ax, cat, nicocat, skymad, skymed)
 
 ax = fig.add_subplot(2, 3, 3)
 megalut.plot.contour.simobs(ax, cat, nicocat, adamom_logflux, adamom_sigma)
